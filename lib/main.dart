@@ -1,0 +1,36 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import 'presentation/screens/home_page.dart';
+import 'routes/app_pages.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return GetMaterialApp(
+      title: 'Chessground Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+          brightness: Brightness.light,
+        ),
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+          brightness: Brightness.dark,
+        ),
+      ),
+      home: const HomePage(),
+      debugShowCheckedModeBanner: false,
+      getPages: AppPages.routes,
+    );
+  }
+}
