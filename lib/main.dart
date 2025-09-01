@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import 'presentation/screens/home_page.dart';
 import 'routes/app_pages.dart';
+import 'routes/game_binding.dart';
 
 void main() {
   runApp(const MyApp());
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
+      initialBinding: GameBinding(),
       home: const HomePage(),
       debugShowCheckedModeBanner: false,
       getPages: AppPages.routes,

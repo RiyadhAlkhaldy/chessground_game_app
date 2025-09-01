@@ -2,6 +2,7 @@ import 'package:chess_vectors_flutter/chess_vectors_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../routes/app_pages.dart';
 import '../widgets/animated_background.dart';
 
 class HomePage extends StatelessWidget {
@@ -82,7 +83,8 @@ class HomePage extends StatelessWidget {
                           _buildButton(
                             "العب مع الكمبيوتر",
                             Icons.smart_toy,
-                            onPressed: () => Get.toNamed('/GameOptionsView'),
+                            onPressed: () =>
+                                Get.toNamed(RouteNames.sideChoosingView),
                             '',
                           ),
                           _buildButton(

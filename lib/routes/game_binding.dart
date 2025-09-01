@@ -1,7 +1,12 @@
 import 'package:chessground_game_app/presentation/controllers/chess_controller.dart';
 import 'package:get/get.dart';
 
-import '../presentation/controllers/get_options_controller.dart';
+import '../data/engine/eval.dart';
+import '../data/engine/search.dart';
+import '../data/usecases/get_ai_move.dart';
+import '../presentation/controllers/game_computer_controller.dart';
+import '../presentation/controllers/games_controller.dart';
+import '../presentation/controllers/side_choosing_controller.dart';
 
 /// [GameBinding]
 /// يربط الاعتمادات (dependencies) لوحدة اللعبة.
@@ -22,13 +27,16 @@ class GameBinding extends Bindings {
     ); // Local storage service
 
     // // make this controller singleton
-    Get.lazyPut<GameOptionsController>(
-      () => GameOptionsController(),
+    Get.lazyPut<SideChoosingController>(
+      () => SideChoosingController(),
       fenix: true,
     );
 
-    // // تسجيل الـ Repository
-    // Get.lazyPut<GameRepository>(() => GameRepositoryImpl());
+    Get.lazyPut<Evaluator>(() => Evaluator(), fenix: true);
+    Get.lazyPut<SearchEngine>(
+      () => SearchEngine(eval: Get.find<Evaluator>()),
+      fenix: true,
+    );
 
     // // تسجيل الـ Use Cases
     // Get.lazyPut(
@@ -56,10 +64,10 @@ class GameBinding extends Bindings {
     //   () => IsKingInCheck(Get.find<GameRepository>()),
     //   fenix: true, // Make this controller singleton
     // );
-    // Get.lazyPut(
-    //   () => GetAiMove(Get.find<GameRepository>()),
-    //   fenix: true, // Make this controller singleton
-    // ); // تسجيل جديد
+    Get.lazyPut<GetAiMove>(
+      () => GetAiMove(Get.find<SearchEngine>()),
+      fenix: true,
+    ); // تسجيل جديد
     // Get.lazyPut<AudioPlayerService>(
     //   () => AudioPlayerServiceImpl(),
     //   fenix: true, // Make this controller singleton
@@ -69,20 +77,15 @@ class GameBinding extends Bindings {
     //   fenix: true, // Make this controller singleton
     // ); // تسجيل جديد
 
-    // // تسجيل المتحكم (Controller)
-    // Get.lazyPut<GameController>(
-    //   () => GameController(
-    //     getBoardState: Get.find<GetBoardState>(),
-    //     getLegalMoves: Get.find<GetLegalMoves>(),
-    //     makeMove: Get.find<MakeMove>(),
-    //     resetGame: Get.find<ResetGame>(),
-    //     getGameResult: Get.find<GetGameResult>(),
-    //     isKingInCheck: Get.find<IsKingInCheck>(),
-    //     // getAiMove: Get.find<GetAiMove>(),
-    //     getAIMoveUseCase: Get.find(),
-    //     playSoundUseCase: Get.find<PlaySoundUseCase>(),
-    //   ),
-    //   fenix: true, // Make this controller singleton
-    // );
+    // // تسجيل المتحكم (GameComputerController)
+    Get.lazyPut<GameComputerController>(
+      () => GameComputerController(Get.find<GetAiMove>()),
+      fenix: true, // Make this controller singleton
+    );
+    // // تسجيل المتحكم (GameComputerController)
+    Get.lazyPut<GamesController>(
+      () => GamesController(),
+      fenix: true, // Make this controller singleton
+    );
   }
 }

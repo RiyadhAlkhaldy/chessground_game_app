@@ -2,43 +2,40 @@ import 'package:chess_vectors_flutter/chess_vectors_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../package/src/models.dart';
-import '../controllers/get_options_controller.dart';
+import '../controllers/side_choosing_controller.dart';
 
-class SideChosing extends StatelessWidget {
-  final GameOptionsController controller;
+class SideChosingWidget extends StatelessWidget {
+  final SideChoosingController controller;
 
-  const SideChosing({super.key, required this.controller});
+  const SideChosingWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Obx(
       () => Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: PlayerSide.values.map((color) {
-          // if (PlayerSide.both == color) ;
+        children: SideChoosing.values.map((color) {
+          // if (SideChoosing.both == color) ;
           Widget? widget;
           String? label;
           switch (color) {
-            case PlayerSide.white:
+            case SideChoosing.white:
               label = 'White';
               widget = WhitePawn(size: 50);
               break;
-            case PlayerSide.none:
+            case SideChoosing.random:
               label = 'Random';
               widget = Row(
                 children: [BlackPawn(size: 30), WhitePawn(size: 30)],
               );
               break;
-            case PlayerSide.black:
+            case SideChoosing.black:
               label = 'Black';
               widget = BlackPawn(size: 50);
               break;
-            case PlayerSide.both:
-              return Center();
           }
           return GestureDetector(
-            onTap: () => controller.choseColor.value == color,
+            onTap: () => controller.choseColor.value = color,
             child: Column(
               children: [
                 CircleAvatar(

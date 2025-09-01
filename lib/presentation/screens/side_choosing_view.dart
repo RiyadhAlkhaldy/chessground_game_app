@@ -1,13 +1,13 @@
-import 'package:chessground_game_app/presentation/widgets/side_chosing.dart';
+import 'package:chessground_game_app/presentation/widgets/side_choosing_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/get_options_controller.dart';
+import '../controllers/side_choosing_controller.dart';
 
-class GameOptionsView extends StatelessWidget {
-  final controller = Get.put(GameOptionsController());
+class SideChoosingView extends StatelessWidget {
+  final controller = Get.put(SideChoosingController());
 
-  GameOptionsView({super.key});
+  SideChoosingView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class GameOptionsView extends StatelessWidget {
               SizedBox(height: 16),
 
               // Color selector
-              SideChosing(controller: controller),
+              SideChosingWidget(controller: controller),
               SizedBox(height: 20),
 
               // ELO info
@@ -51,7 +51,7 @@ class GameOptionsView extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10),
-              GetX<GameOptionsController>(
+              GetX<SideChoosingController>(
                 builder: (con) {
                   int aiDepth = con.aiDepth.value;
                   return Slider(
@@ -71,20 +71,6 @@ class GameOptionsView extends StatelessWidget {
                 },
               ),
               const Text('AI Difficulty (Depth)'),
-
-              // // Difficulty slider
-              // Obx(
-              //   () => Slider(
-              //     value: controller.difficultyLevel.value.toDouble(),
-              //     min: 0,
-              //     max: 9,
-              //     divisions: 9,
-              //     label: controller.elo.toString(),
-              //     onChanged:
-              //         (val) => controller.difficultyLevel.value = val.toInt(),
-              //   ),
-              // ),
-
               // Show move hints toggle
               Obx(
                 () => Row(
