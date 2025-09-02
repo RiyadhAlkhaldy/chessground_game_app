@@ -53,14 +53,10 @@ class GamesController extends GetxController {
 
   void onCompleteShape(Shape shape) {
     if (shapes.any((element) => element == shape)) {
-      // setState(() {
       shapes = shapes.remove(shape);
-      // });
       return;
     } else {
-      // setState(() {
       shapes = shapes.add(shape);
-      // });
     }
   }
 
@@ -129,9 +125,7 @@ class GamesController extends GetxController {
   }
 
   void onPromotionCancel() {
-    // setState(() {
     promotionMove = null;
-    // });
   }
 
   void playMove(NormalMove move, {bool? isDrop, bool? isPremove}) {
@@ -197,12 +191,10 @@ class GamesController extends GetxController {
         mv = mv.withPromotion(role);
       }
 
-      // setState(() {
       position = position.playUnchecked(mv);
       lastMove = NormalMove(from: mv.from, to: mv.to, promotion: mv.promotion);
       fen = position.fen;
       validMoves = makeLegalMoves(position);
-      // });
       lastPos = position;
     }
   }

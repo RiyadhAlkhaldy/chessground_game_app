@@ -1,4 +1,3 @@
-import 'package:chessground_game_app/presentation/controllers/chess_controller.dart';
 import 'package:get/get.dart';
 
 import '../data/engine/eval.dart';
@@ -19,12 +18,6 @@ class GameBinding extends Bindings {
     // Get.lazyPut<GetAIMoveUseCase>(
     //   () => GetAIMoveUseCase(Get.find<AIGameRepositoryImpl>()),
     // );
-
-    // Data Layer: Register concrete implementations of services and repositories
-    Get.lazyPut<ChessController>(
-      () => ChessController(),
-      fenix: true,
-    ); // Local storage service
 
     // // make this controller singleton
     Get.lazyPut<SideChoosingController>(
