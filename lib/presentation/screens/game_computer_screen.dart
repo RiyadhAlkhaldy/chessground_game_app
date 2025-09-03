@@ -180,7 +180,15 @@ class GameComputerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       primary: MediaQuery.of(context).orientation == Orientation.portrait,
-      appBar: AppBar(title: const Text('Random Bot')),
+      appBar: AppBar(
+        title: GetX<GameComputerController>(
+          // init: GameComputerController(),
+          initState: (_) {},
+          builder: (_) {
+            return Text(controller.textState.value);
+          },
+        ),
+      ),
 
       body: OrientationBuilder(
         builder: (context, orientation) => orientation == Orientation.portrait

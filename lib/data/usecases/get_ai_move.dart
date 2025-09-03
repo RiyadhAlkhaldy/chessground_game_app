@@ -54,7 +54,7 @@ class GetAiMove {
     // استدعاء دالة الذكاء الاصطناعي من الـ repository
     final aiMove = repository.search(
       pos,
-      const SearchLimits(maxDepth: 7, moveTime: Duration(milliseconds: 1500)),
+      SearchLimits(maxDepth: aiDepth, moveTime: Duration(milliseconds: 2000)),
     );
 
     // إرسال النتيجة مرة أخرى إلى الـ Isolate الرئيسي

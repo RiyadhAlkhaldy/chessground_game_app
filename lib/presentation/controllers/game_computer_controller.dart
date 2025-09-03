@@ -9,11 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/board_theme.dart';
-import '../../data/engine/alphabeta.dart';
-import '../../data/engine/eval.dart';
-import '../../data/engine/minimax.dart';
-import '../../data/engine/search.dart';
 import '../../data/usecases/get_ai_move.dart';
+import 'side_choosing_controller.dart';
 
 String pieceShiftMethodLabel(PieceShiftMethod method) {
   switch (method) {
@@ -29,11 +26,8 @@ String pieceShiftMethodLabel(PieceShiftMethod method) {
 enum Mode { botPlay, freePlay }
 
 class GameComputerController extends ChessController {
-  final eval = Evaluator();
-  final mm = MiniMax(Evaluator());
-  final ab = AlphaBeta(Evaluator());
-  final eng = SearchEngine(eval: Evaluator());
   final GetAiMove getAiMove;
+  final SideChoosingController sideChoosingController;
   BasicSearch basicSearch = BasicSearch();
   Rx<Side> orientation = Side.white.obs;
   NormalMove? lastMove;
@@ -50,7 +44,15 @@ class GameComputerController extends ChessController {
   Position? lastPos;
   Rx<ISet<Shape>> shapes = ISet<Shape>().obs;
   RxBool showBorder = false.obs;
-  GameComputerController(this.getAiMove);
+  GameComputerController(this.getAiMove, this.sideChoosingController);
+  int aiDepth = 3;
+
+  @override
+  void onInit() {
+    super.onInit();
+    validMoves = makeLegalMoves(position.value);
+    aiDepth = sideChoosingController.aiDepth.value;
+  }
 
   /// undo
   // void undo() {
@@ -133,10 +135,50 @@ class GameComputerController extends ChessController {
     );
   }
 
-  @override
-  void onInit() {
-    super.onInit();
-    validMoves = makeLegalMoves(position.value);
+  RxString textState = "AI chess".obs;
+  void updateTextState() {
+    String statusText = "AI chess";
+
+    if (position.value.isCheck) {
+      statusText += ' (كش)';
+    } else if (position.value.isInsufficientMaterial) {
+      statusText = "لا يمكن إنهاء اللعبة";
+    } else if (position.value.isStalemate) {
+      statusText += ' - طريق مسدود!';
+    } else if (position.value.isGameOver) {
+      statusText = ' - انتهت اللعبة';
+      switch (position.value.outcome) {
+        case Outcome.blackWins:
+          statusText += ' الفائز: لأسود';
+          break;
+        case Outcome.whiteWins:
+          statusText += ' الفائز: لابيض';
+          break;
+        case Outcome.draw:
+          statusText += ' - تعادل!';
+          break;
+      }
+    } else if (position.value.turn == Side.white) {
+      statusText = "دور الأبيض";
+    } else if (position.value.turn == Side.black) {
+      statusText = "دور الأسود";
+    } else if (position.value.isVariantEnd) {
+      statusText += ' - انتهت اللعبة';
+    } else if (position.value.isCheckmate) {
+      statusText = ' - كش موت!';
+      switch (position.value.outcome) {
+        case Outcome.blackWins:
+          statusText += ' الفائز: لأسود';
+          break;
+        case Outcome.whiteWins:
+          statusText += ' الفائز: لابيض';
+          break;
+        case Outcome.draw:
+          statusText += ' - تعادل!';
+          break;
+      }
+    }
+    update([textState.value = statusText]);
   }
 
   void onSetPremove(NormalMove? move) {
@@ -175,14 +217,17 @@ class GameComputerController extends ChessController {
       if (isPremove == true) {
         premove.value = null;
       }
+
       playBlackMove();
     }
   }
 
   Future<void> playBlackMove() async {
+    updateTextState();
     await Future.delayed(const Duration(milliseconds: 100)).then((value) {});
+    textState.value = "AI is thinking...";
     if (position.value.isGameOver) return;
-    final r3 = await getAiMove.execute(position.value, 5);
+    final r3 = await getAiMove.execute(position.value, aiDepth);
     final random = Random();
     await Future.delayed(Duration(milliseconds: random.nextInt(1000) + 500));
     // final allMoves = [
@@ -212,6 +257,7 @@ class GameComputerController extends ChessController {
 
     lastPos = position.value;
     undoEnabled = true;
+    updateTextState();
   }
 
   bool isPromotionPawnMove(NormalMove move) {

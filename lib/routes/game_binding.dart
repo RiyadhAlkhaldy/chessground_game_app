@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../data/engine/eval.dart';
+import '../data/engine/evaluation.dart';
 import '../data/engine/search.dart';
 import '../data/usecases/get_ai_move.dart';
 import '../presentation/controllers/game_computer_controller.dart';
@@ -26,8 +27,9 @@ class GameBinding extends Bindings {
     );
 
     Get.lazyPut<Evaluator>(() => Evaluator(), fenix: true);
+    Get.lazyPut<Evaluation>(() => Evaluation(), fenix: true);
     Get.lazyPut<SearchEngine>(
-      () => SearchEngine(eval: Get.find<Evaluator>()),
+      () => SearchEngine(eval: Get.find<Evaluation>()),
       fenix: true,
     );
 
@@ -72,7 +74,10 @@ class GameBinding extends Bindings {
 
     // // تسجيل المتحكم (GameComputerController)
     Get.lazyPut<GameComputerController>(
-      () => GameComputerController(Get.find<GetAiMove>()),
+      () => GameComputerController(
+        Get.find<GetAiMove>(),
+        Get.find<SideChoosingController>(),
+      ),
       fenix: true, // Make this controller singleton
     );
     // // تسجيل المتحكم (GameComputerController)

@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:dartchess/dartchess.dart';
 
-import 'eval.dart';
+import 'evaluation.dart';
 import 'move_ordering.dart';
 import 'movegen.dart';
 import 'tt.dart';
@@ -30,7 +30,7 @@ class BestMoveResult {
 }
 
 class SearchEngine {
-  final Evaluator eval;
+  final Evaluation eval;
   final TranspositionTable tt;
   final Zobrist zob;
   final KillerTable killers;
@@ -176,7 +176,7 @@ class SearchEngine {
 
     if (depth <= 0) return _quiescence(pos, alpha, beta, ply);
 
-    if (pos.isGameOver) return eval.evaluate(pos);
+    if (pos.isGameOver) return eval.evaluatePosition(pos);
 
     // Null-move pruning
     if (allowNull && depth >= 3 && !pos.isCheck) {
@@ -198,7 +198,7 @@ class SearchEngine {
 
     // توليد وترتيب النقلات
     final l = generateLegalMoves(pos).toList();
-    if (l.isEmpty) return eval.evaluate(pos); // مات/تعادل
+    if (l.isEmpty) return eval.evaluatePosition(pos); // مات/تعادل
     final ttMove = hit?.best;
     final moves = orderMoves(
       pos,
@@ -214,7 +214,7 @@ class SearchEngine {
     int moveIndex = 0;
 
     // Futility pruning (شبه-آمن على الأعماق الصغيرة)
-    final staticEval = eval.evaluate(pos);
+    final staticEval = eval.evaluatePosition(pos);
 
     for (final m in moves) {
       if (_timeUp()) break;
@@ -304,7 +304,7 @@ class SearchEngine {
 
   int _quiescence(Position pos, int alpha, int beta, int ply) {
     stats.qnodes++;
-    final stand = eval.evaluate(pos);
+    final stand = eval.evaluatePosition(pos);
     if (stand >= beta) return stand;
     if (stand > alpha) alpha = stand;
 
