@@ -158,6 +158,7 @@ class GameComputerController extends ChessController {
 
   void playMove(NormalMove move, {bool? isDrop, bool? isPremove}) {
     undoEnabled = false;
+    redoEnabled = false;
     lastPos = position.value;
 
     if (isPromotionPawnMove(move)) {
@@ -297,6 +298,7 @@ abstract class ChessController extends GetxController {
     if (future.isEmpty) return;
     past.add(position.value);
     redoEnabled = true;
+    undoEnabled = true;
     position.value = future.removeLast();
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
