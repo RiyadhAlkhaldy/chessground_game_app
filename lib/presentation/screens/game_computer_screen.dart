@@ -185,7 +185,7 @@ class GameComputerScreen extends StatelessWidget {
           // init: GameComputerController(),
           initState: (_) {},
           builder: (_) {
-            return Text(controller.textState.value);
+            return Text(controller.statusText.value);
           },
         ),
       ),

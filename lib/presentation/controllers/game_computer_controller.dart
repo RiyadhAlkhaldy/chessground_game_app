@@ -46,12 +46,25 @@ class GameComputerController extends ChessController {
   RxBool showBorder = false.obs;
   GameComputerController(this.getAiMove, this.sideChoosingController);
   int aiDepth = 3;
-
+  Side humanSide = Side.white;
   @override
   void onInit() {
     super.onInit();
     validMoves = makeLegalMoves(position.value);
     aiDepth = sideChoosingController.aiDepth.value;
+    humanSide = sideChoosingController.choseColor.value == SideChoosing.white
+        ? Side.white
+        : Side.black;
+    ever(position, (_) {
+      _handleAiTurn();
+    });
+  }
+
+  Future<void> _handleAiTurn() async {
+    if (position.value.turn != humanSide) {
+      statusText.value = "AI is thinking...";
+      playAiMove();
+    }
   }
 
   /// undo
@@ -135,50 +148,55 @@ class GameComputerController extends ChessController {
     );
   }
 
-  RxString textState = "AI chess".obs;
+  RxString statusText = "AI chess".obs;
   void updateTextState() {
-    String statusText = "AI chess";
-
-    if (position.value.isCheck) {
-      statusText += ' (كش)';
+    if (position.value.isCheckmate) {
+      statusText.value = ' - كش موت!';
+      switch (position.value.outcome) {
+        case Outcome.blackWins:
+          statusText.value += ' الفائز: لأسود';
+          break;
+        case Outcome.whiteWins:
+          statusText.value += ' الفائز: لابيض';
+          break;
+        case Outcome.draw:
+          statusText.value = ' - تعادل!';
+          break;
+      }
+      return;
+    } else if (position.value.isCheck) {
+      statusText.value = '(كش)';
+      return;
     } else if (position.value.isInsufficientMaterial) {
-      statusText = "لا يمكن إنهاء اللعبة";
+      statusText.value = "لا يمكن إنهاء اللعبة";
+      return;
     } else if (position.value.isStalemate) {
-      statusText += ' - طريق مسدود!';
+      statusText.value = ' - طريق مسدود!';
+      return;
     } else if (position.value.isGameOver) {
-      statusText = ' - انتهت اللعبة';
+      statusText.value = ' - انتهت اللعبة';
       switch (position.value.outcome) {
         case Outcome.blackWins:
-          statusText += ' الفائز: لأسود';
+          statusText.value += ' الفائز: لأسود';
           break;
         case Outcome.whiteWins:
-          statusText += ' الفائز: لابيض';
+          statusText.value += ' الفائز: لابيض';
           break;
         case Outcome.draw:
-          statusText += ' - تعادل!';
+          statusText.value += ' - تعادل!';
           break;
       }
+      return;
     } else if (position.value.turn == Side.white) {
-      statusText = "دور الأبيض";
+      statusText.value = "دور الأبيض";
+      return;
     } else if (position.value.turn == Side.black) {
-      statusText = "دور الأسود";
+      statusText.value = "دور الأسود";
+      return;
     } else if (position.value.isVariantEnd) {
-      statusText += ' - انتهت اللعبة';
-    } else if (position.value.isCheckmate) {
-      statusText = ' - كش موت!';
-      switch (position.value.outcome) {
-        case Outcome.blackWins:
-          statusText += ' الفائز: لأسود';
-          break;
-        case Outcome.whiteWins:
-          statusText += ' الفائز: لابيض';
-          break;
-        case Outcome.draw:
-          statusText += ' - تعادل!';
-          break;
-      }
+      statusText.value = ' - انتهت اللعبة';
+      return;
     }
-    update([textState.value = statusText]);
   }
 
   void onSetPremove(NormalMove? move) {
@@ -217,15 +235,14 @@ class GameComputerController extends ChessController {
       if (isPremove == true) {
         premove.value = null;
       }
-
-      playBlackMove();
+      if (validMoves.isEmpty) {
+        updateTextState();
+      }
     }
   }
 
-  Future<void> playBlackMove() async {
-    updateTextState();
+  Future<void> playAiMove() async {
     await Future.delayed(const Duration(milliseconds: 100)).then((value) {});
-    textState.value = "AI is thinking...";
     if (position.value.isGameOver) return;
     final r3 = await getAiMove.execute(position.value, aiDepth);
     final random = Random();
