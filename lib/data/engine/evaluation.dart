@@ -470,8 +470,9 @@ class Evaluation {
         }
         if (!hasFriendlyPawn && !hasEnemyPawn) {
           score += sign * EvalWeights.rookOnOpenFile;
-        } else if (!hasFriendlyPawn && hasEnemyPawn)
+        } else if (!hasFriendlyPawn && hasEnemyPawn){
           score += sign * EvalWeights.rookOnSemiOpenFile;
+        }
 
         // rook on 7th (منظور أبيض وعلى العكس للأسود)
         if ((side == Side.white && r.rank.value == 6) ||

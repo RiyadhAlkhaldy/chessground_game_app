@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       initialBinding: GameBinding(),
-      home: const HomePage(),
+      home: HomePage(),
       debugShowCheckedModeBanner: false,
       getPages: AppPages.routes,
     );

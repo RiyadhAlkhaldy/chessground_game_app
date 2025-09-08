@@ -7,9 +7,13 @@ import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../../core/board_theme.dart';
-import '../../data/usecases/get_ai_move.dart';
+import '../../data/usecases/get_ai_move_stockfish_usecase.dart';
+import '../../data/usecases/set_engine_usecase.dart';
+import '../../data/usecases/start_engine_usecase.dart';
+import '../../data/usecases/stop_engine_usecase.dart';
 import 'side_choosing_controller.dart';
 
 String pieceShiftMethodLabel(PieceShiftMethod method) {
@@ -25,9 +29,14 @@ String pieceShiftMethodLabel(PieceShiftMethod method) {
 
 enum Mode { botPlay, freePlay }
 
-class GameComputerController extends ChessController {
-  final GetAiMove getAiMove;
+class GameComputerController extends ChessController
+    with WidgetsBindingObserver {
   final SideChoosingController sideChoosingController;
+  final StartEngineUseCase startEngine;
+  final GetAiMoveStockfishUseCase getAibestMove;
+  final StopEngineUseCase stopEngine;
+  final SetEngineUseCase setEngine;
+  final Rx<StockfishState> stockfishState = StockfishState.disposed.obs;
   BasicSearch basicSearch = BasicSearch();
   Rx<Side> orientation = Side.white.obs;
   NormalMove? lastMove;
@@ -44,12 +53,21 @@ class GameComputerController extends ChessController {
   Position? lastPos;
   Rx<ISet<Shape>> shapes = ISet<Shape>().obs;
   RxBool showBorder = false.obs;
-  GameComputerController(this.getAiMove, this.sideChoosingController);
+
+  GameComputerController(
+    this.sideChoosingController,
+    this.startEngine,
+    this.getAibestMove,
+    this.stopEngine,
+    this.setEngine,
+  );
   int aiDepth = 3;
   Side humanSide = Side.white;
   @override
   void onInit() {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
+    startEngine.call().then((value) {});
     validMoves = makeLegalMoves(position.value);
     aiDepth = sideChoosingController.aiDepth.value;
     humanSide = sideChoosingController.choseColor.value == SideChoosing.white
@@ -67,15 +85,24 @@ class GameComputerController extends ChessController {
     }
   }
 
-  /// undo
-  // void undo() {
-  //   if (lastPos != null) {
-  //     position.value = lastPos!;
-  //     fen = position.value.fen;
-  //     validMoves = makeLegalMoves(position.value);
-  //     lastPos = null;
-  //   }
-  // }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      startEngine.startStockfishIfNecessary().then((_) {});
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      stopEngine.call(Get.context!).then((_) {});
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    stopEngine.call(Get.context!).then((_) {});
+
+    WidgetsBinding.instance.removeObserver(this);
+  }
 
   ///reset
   void reset() {
@@ -106,6 +133,88 @@ class GameComputerController extends ChessController {
     } else {
       shapes.value = shapes.value.add(shape);
     }
+  }
+
+  void onSetPremove(NormalMove? move) {
+    premove.value = move!;
+  }
+
+  void onPromotionSelection(Role? role) {
+    debugPrint('onPromotionSelection: $role');
+    if (role == null) {
+      onPromotionCancel();
+    } else {
+      playMove(promotionMove!.withPromotion(role));
+    }
+  }
+
+  void onPromotionCancel() {
+    promotionMove = null;
+  }
+
+  void playMove(NormalMove move, {bool? isDrop, bool? isPremove}) {
+    undoEnabled = false;
+    redoEnabled = false;
+    lastPos = position.value;
+
+    if (isPromotionPawnMove(move)) {
+      promotionMove = move;
+      update();
+    } else if (position.value.isLegal(move)) {
+      past.add(position.value);
+      future.clear();
+      position.value = position.value.playUnchecked(move);
+      lastMove = move;
+      fen = position.value.fen;
+      validMoves = makeLegalMoves(position.value);
+      promotionMove = null;
+      if (isPremove == true) {
+        premove.value = null;
+      }
+      if (validMoves.isEmpty) {
+        updateTextState();
+      }
+    }
+  }
+
+  Future<void> playAiMove() async {
+    final random = Random();
+
+    await Future.delayed(Duration(milliseconds: 100));
+    if (position.value.isGameOver) return;
+    String fen = position.value.fen.toString();
+    final bestUciMove = await getAibestMove.execute(fen);
+    debugPrint("best move from stockfish: $bestUciMove");
+    // final r3 = await getAiMove.execute(position.value, aiDepth);
+    // await Future.delayed(Duration(milliseconds: random.nextInt(1000) + 500));
+
+    if (bestUciMove == null) return;
+    var mv = NormalMove.fromUci(bestUciMove);
+    if (isPromotionPawnMove(mv)) {
+      final potentialRoles = Role.values
+          .where((role) => role != Role.pawn)
+          .toList();
+      final role = potentialRoles[random.nextInt(potentialRoles.length)];
+      mv = mv.withPromotion(role);
+    }
+    // past.add(position.value);
+    // future.clear();
+    position.value = position.value.playUnchecked(mv);
+    lastMove = mv;
+    fen = position.value.fen;
+    validMoves = makeLegalMoves(position.value);
+    // update([position.value]);
+    lastPos = position.value;
+    undoEnabled = true;
+
+    updateTextState();
+  }
+
+  bool isPromotionPawnMove(NormalMove move) {
+    return move.promotion == null &&
+        position.value.board.roleAt(move.from) == Role.pawn &&
+        ((move.to.rank == Rank.first && position.value.turn == Side.black) ||
+            (move.to.rank == Rank.eighth && position.value.turn == Side.white));
   }
 
   void showChoicesPicker<T extends Enum>(
@@ -197,91 +306,6 @@ class GameComputerController extends ChessController {
       statusText.value = ' - انتهت اللعبة';
       return;
     }
-  }
-
-  void onSetPremove(NormalMove? move) {
-    premove.value = move!;
-  }
-
-  void onPromotionSelection(Role? role) {
-    debugPrint('onPromotionSelection: $role');
-    if (role == null) {
-      onPromotionCancel();
-    } else {
-      playMove(promotionMove!.withPromotion(role));
-    }
-  }
-
-  void onPromotionCancel() {
-    promotionMove = null;
-  }
-
-  void playMove(NormalMove move, {bool? isDrop, bool? isPremove}) {
-    undoEnabled = false;
-    redoEnabled = false;
-    lastPos = position.value;
-
-    if (isPromotionPawnMove(move)) {
-      promotionMove = move;
-      update();
-    } else if (position.value.isLegal(move)) {
-      past.add(position.value);
-      future.clear();
-      position.value = position.value.playUnchecked(move);
-      lastMove = move;
-      fen = position.value.fen;
-      validMoves = makeLegalMoves(position.value);
-      promotionMove = null;
-      if (isPremove == true) {
-        premove.value = null;
-      }
-      if (validMoves.isEmpty) {
-        updateTextState();
-      }
-    }
-  }
-
-  Future<void> playAiMove() async {
-    await Future.delayed(const Duration(milliseconds: 100)).then((value) {});
-    if (position.value.isGameOver) return;
-    final r3 = await getAiMove.execute(position.value, aiDepth);
-    final random = Random();
-    await Future.delayed(Duration(milliseconds: random.nextInt(1000) + 500));
-    // final allMoves = [
-    //   for (final entry in position.value.legalMoves.entries)
-    //     for (final dest in entry.value.squares)
-    //       NormalMove(from: entry.key, to: dest),
-    // ];
-    // if (allMoves.isNotEmpty) {
-    // NormalMove mv = (allMoves..shuffle()).first;
-    // Auto promote to a random non-pawn role
-    var best = r3!.best;
-    if (best == null) return;
-    var mv = NormalMove.fromUci(best.uci);
-    if (isPromotionPawnMove(mv)) {
-      final potentialRoles = Role.values
-          .where((role) => role != Role.pawn)
-          .toList();
-      final role = potentialRoles[random.nextInt(potentialRoles.length)];
-      mv = mv.withPromotion(role);
-    }
-    // past.add(position.value);
-    // future.clear();
-    position.value = position.value.playUnchecked(mv);
-    lastMove = NormalMove(from: mv.from, to: mv.to, promotion: mv.promotion);
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
-
-    lastPos = position.value;
-    undoEnabled = true;
-    updateTextState();
-  }
-
-  bool isPromotionPawnMove(NormalMove move) {
-    return move.promotion == null &&
-        position.value.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == Rank.first && position.value.turn == Side.black) ||
-            (move.to.rank == Rank.eighth && position.value.turn == Side.white));
   }
 }
 

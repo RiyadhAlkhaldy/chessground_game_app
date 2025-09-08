@@ -1,7 +1,7 @@
 // lib/engine/movegen.dart
 import 'package:dartchess/dartchess.dart';
 
-/// يحوّل legalMoves (IMap<Square, SquareSet>) إلى قائمة Move
+/// يحوّل legalMoves إلى قائمة Move
 Iterable<NormalMove> generateLegalMoves(Position pos) sync* {
   final lm = pos.legalMoves; // IMap<Square, SquareSet>
   for (final entry in lm.entries) {

@@ -45,7 +45,7 @@ class Zobrist {
       h ^= pieceZ[c][r][sq];
     }
     // كاستلينغ: حوّل rights إلى index 0..15
-    final cs = pos.castles; // Castles
+    // final cs = pos.castles; // Castles
     int idx = 0;
     // if (cs.rooksPositions[Side.white]?[CastlingSide.king] != null) idx |= 1;
     // if (cs.whiteQueenSide) idx |= 2;

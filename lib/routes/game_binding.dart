@@ -1,9 +1,14 @@
 import 'package:get/get.dart';
 
-import '../data/engine/eval.dart';
 import '../data/engine/evaluation.dart';
 import '../data/engine/search.dart';
 import '../data/usecases/get_ai_move.dart';
+import '../data/usecases/get_ai_move_stockfish_usecase.dart';
+import '../data/usecases/set_engine_usecase.dart';
+import '../data/usecases/start_engine_usecase.dart';
+import '../data/usecases/stop_engine_usecase.dart';
+import '../domain/repositories/stockfish_repository.dart';
+import '../domain/repositories/stockfish_repository_impl.dart';
 import '../presentation/controllers/game_computer_controller.dart';
 import '../presentation/controllers/games_controller.dart';
 import '../presentation/controllers/side_choosing_controller.dart';
@@ -14,53 +19,51 @@ import '../presentation/controllers/side_choosing_controller.dart';
 class GameBinding extends Bindings {
   @override
   void dependencies() {
-    // تسجيل GetAIMoveUseCase
-    // Register GetAIMoveUseCase
-    // Get.lazyPut<GetAIMoveUseCase>(
-    //   () => GetAIMoveUseCase(Get.find<AIGameRepositoryImpl>()),
-    // );
-
     // // make this controller singleton
     Get.lazyPut<SideChoosingController>(
       () => SideChoosingController(),
       fenix: true,
     );
 
-    Get.lazyPut<Evaluator>(() => Evaluator(), fenix: true);
-    Get.lazyPut<Evaluation>(() => Evaluation(), fenix: true);
+    // Get.lazyPut<Evaluator>(() => Evaluator(), fenix: true);
+    // Get.lazyPut<Evaluation>(() => Evaluation(), fenix: true);
     Get.lazyPut<SearchEngine>(
       () => SearchEngine(eval: Get.find<Evaluation>()),
       fenix: true,
     );
 
-    // // تسجيل الـ Use Cases
-    // Get.lazyPut(
-    //   () => GetBoardState(Get.find<GameRepository>()),
-    //   fenix: true, // Make this controller singleton
-    // );
-    // Get.lazyPut(
-    //   () => GetLegalMoves(Get.find<GameRepository>()),
-    //   fenix: true, // Make this controller singleton
-    // );
-    // Get.lazyPut(
-    //   () => MakeMove(Get.find<GameRepository>()),
-    //   fenix: true, // Make this controller singleton
-    // );
-    // Get.lazyPut(
-    //   () => ResetGame(Get.find<GameRepository>()),
+    // يجب هنا استخدام lazyPut أو put حسب الحاجة
+    // Get.lazyPut<StockfishLocalDataSource>(() => StockfishLocalDataSourceImpl());
+    // Get.lazyPut(() => StockfishController(), fenix: true);
+    Get.lazyPut<StockfishRepository>(
+      () => StockfishRepositoryImpl(),
+      fenix: true,
+    );
+    // Get.lazyPut(() => GetBestMoveUseCase(Get.find<StockfishRepository>()));
+    Get.lazyPut(
+      () => SetEngineUseCase(Get.find<StockfishRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => StartEngineUseCase(Get.find<StockfishRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => StopEngineUseCase(Get.find<StockfishRepository>()),
+      fenix: true,
+    );
+    // Get.lazyPut(() => GetLegalMovesUseCase(Get.find<StockfishRepository>()));
+    // Get.lazyPut(() => MakeMoveUseCase(Get.find<StockfishRepository>()));
+    // Get.lazyPut(() => ResetGameUseCase(Get.find<StockfishRepository>()));
+    // Get.lazyPut(() => GetGameResultUseCase(Get.find<StockfishRepository>()));
+    // Get.lazyPut(() => IsKingInCheckUseCase(Get.find<StockfishRepository>()));
 
-    //   fenix: true, // Make this controller singleton
-    // );
-    // Get.lazyPut(
-    //   () => GetGameResult(Get.find<GameRepository>()),
-    //   fenix: true, // Make this controller singleton
-    // );
-    // Get.lazyPut(
-    //   () => IsKingInCheck(Get.find<GameRepository>()),
-    //   fenix: true, // Make this controller singleton
-    // );
     Get.lazyPut<GetAiMove>(
-      () => GetAiMove(Get.find<SearchEngine>()),
+      () => GetAiMove(Get.find()),
+      fenix: true,
+    ); // تسجيل جديد
+    Get.lazyPut(
+      () => GetAiMoveStockfishUseCase(Get.find<StockfishRepository>()),
       fenix: true,
     ); // تسجيل جديد
     // Get.lazyPut<AudioPlayerService>(
@@ -75,8 +78,11 @@ class GameBinding extends Bindings {
     // // تسجيل المتحكم (GameComputerController)
     Get.lazyPut<GameComputerController>(
       () => GameComputerController(
-        Get.find<GetAiMove>(),
         Get.find<SideChoosingController>(),
+        Get.find<StartEngineUseCase>(),
+        Get.find<GetAiMoveStockfishUseCase>(),
+        Get.find<StopEngineUseCase>(),
+        Get.find<SetEngineUseCase>(),
       ),
       fenix: true, // Make this controller singleton
     );

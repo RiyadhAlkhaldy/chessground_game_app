@@ -19,7 +19,9 @@ int evaluate(Chess pos) {
   }
   // mobility (simplified)
   int mobility = 0;
-  for (final e in pos.legalMoves.entries) mobility += e.value.squares.length;
+  for (final e in pos.legalMoves.entries) {
+    mobility += e.value.squares.length;
+  }
   score += (pos.turn == Side.white ? 1 : -1) * mobility;
   return score;
 }
