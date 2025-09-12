@@ -5,6 +5,7 @@ import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../controllers/game_computer_controller.dart';
 import '../widgets/settings_widgets.dart';
@@ -69,64 +70,68 @@ class GameComputerScreen extends StatelessWidget {
           initState: (_) {},
           builder: (_) {
             return Obx(
-              () => Chessboard(
-                size: min(constraints.maxWidth, constraints.maxHeight),
-                settings: ChessboardSettings(
-                  pieceAssets: controller.pieceSet.value.assets,
-                  colorScheme: controller.boardTheme.value.colors,
-                  border: controller.showBorder.value
-                      ? BoardBorder(
-                          width: 16.0,
-                          color: darken(
-                            controller.boardTheme.value.colors.darkSquare,
-                            0.2,
-                          ),
-                        )
-                      : null,
-                  enableCoordinates: true,
-                  animationDuration: controller.pieceAnimation.value
-                      ? const Duration(milliseconds: 200)
-                      : Duration.zero,
-                  dragFeedbackScale: controller.dragMagnify.value ? 2.0 : 1.0,
-                  dragTargetKind: controller.dragTargetKind.value,
-                  drawShape: DrawShapeOptions(
-                    enable: controller.drawMode,
-                    onCompleteShape: controller.onCompleteShape,
-                    onClearShapes: () {
-                      controller.shapes.value = ISet<Shape>();
-                    },
-                  ),
-                  pieceShiftMethod: controller.pieceShiftMethod.value,
-                  autoQueenPromotionOnPremove: false,
-                  pieceOrientationBehavior:
-                      // controller.playMode == Mode.freePlay
-                      // PieceOrientationBehavior.opponentUpsideDown,
-                      PieceOrientationBehavior.facingUser,
-                ),
-                orientation: controller.orientation.value,
+              () => controller.stockfishState.value == StockfishState.ready
+                  ? Chessboard(
+                      size: min(constraints.maxWidth, constraints.maxHeight),
+                      settings: ChessboardSettings(
+                        pieceAssets: controller.pieceSet.value.assets,
+                        colorScheme: controller.boardTheme.value.colors,
+                        border: controller.showBorder.value
+                            ? BoardBorder(
+                                width: 16.0,
+                                color: darken(
+                                  controller.boardTheme.value.colors.darkSquare,
+                                  0.2,
+                                ),
+                              )
+                            : null,
+                        enableCoordinates: true,
+                        animationDuration: controller.pieceAnimation.value
+                            ? const Duration(milliseconds: 200)
+                            : Duration.zero,
+                        dragFeedbackScale: controller.dragMagnify.value
+                            ? 2.0
+                            : 1.0,
+                        dragTargetKind: controller.dragTargetKind.value,
+                        drawShape: DrawShapeOptions(
+                          enable: controller.drawMode,
+                          onCompleteShape: controller.onCompleteShape,
+                          onClearShapes: () {
+                            controller.shapes.value = ISet<Shape>();
+                          },
+                        ),
+                        pieceShiftMethod: controller.pieceShiftMethod.value,
+                        autoQueenPromotionOnPremove: false,
+                        pieceOrientationBehavior:
+                            // controller.playMode == Mode.freePlay
+                            // PieceOrientationBehavior.opponentUpsideDown,
+                            PieceOrientationBehavior.facingUser,
+                      ),
+                      orientation: controller.orientation.value,
 
-                fen: controller.fen,
-                lastMove: controller.lastMove,
-                game: GameData(
-                  playerSide: controller.position.value.turn == Side.white
-                      ? PlayerSide.white
-                      : PlayerSide.black,
-                  validMoves: controller.validMoves,
-                  sideToMove: controller.position.value.turn,
-                  isCheck: controller.position.value.isCheck,
-                  promotionMove: controller.promotionMove,
-                  onMove: controller.playMove,
-                  onPromotionSelection: controller.onPromotionSelection,
-                  premovable: (
-                    onSetPremove: controller.onSetPremove,
-                    premove: controller.premove.value,
-                  ),
-                ),
+                      fen: controller.fen,
+                      lastMove: controller.lastMove,
+                      game: GameData(
+                        playerSide: controller.position.value.turn == Side.white
+                            ? PlayerSide.white
+                            : PlayerSide.black,
+                        validMoves: controller.validMoves,
+                        sideToMove: controller.position.value.turn,
+                        isCheck: controller.position.value.isCheck,
+                        promotionMove: controller.promotionMove,
+                        onMove: controller.playMove,
+                        onPromotionSelection: controller.onPromotionSelection,
+                        premovable: (
+                          onSetPremove: controller.onSetPremove,
+                          premove: controller.premove.value,
+                        ),
+                      ),
 
-                shapes: controller.shapes.value.isNotEmpty
-                    ? controller.shapes.value
-                    : null,
-              ),
+                      shapes: controller.shapes.value.isNotEmpty
+                          ? controller.shapes.value
+                          : null,
+                    )
+                  : const CircularProgressIndicator(),
             );
           },
         );

@@ -6,6 +6,8 @@ import 'routes/app_pages.dart';
 import 'routes/game_binding.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const MyApp());
 }
 
