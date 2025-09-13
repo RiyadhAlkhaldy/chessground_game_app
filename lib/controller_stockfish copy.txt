@@ -1,0 +1,51 @@
+ممتاز 👌 هذا جدول مختصر ومرتب يحتوي على أهم أوامر التحكم في قوة محرك **Stockfish 17.1** عبر **UCI protocol**:
+
+---
+
+# 📑 جدول أوامر التحكم في قوة Stockfish
+
+| الأمر                                               | الوصف                                                                           | النطاق                  | مثال عملي                                     |
+| --------------------------------------------------- | ------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------- |
+| `setoption name Skill Level value X`                | يحدد مستوى اللعب بشكل عام (0 = أضعف، 20 = أقوى).                                | 0 → 20                  | `setoption name Skill Level value 5`          |
+| `setoption name UCI_LimitStrength value true/false` | تفعيل/إلغاء تحديد قوة المحرك بمقياس Elo.                                        | true / false            | `setoption name UCI_LimitStrength value true` |
+| `setoption name UCI_Elo value N`                    | يحدد مستوى المحرك على مقياس Elo. (يعمل فقط إذا كان `UCI_LimitStrength = true`). | 1320 → 3190             | `setoption name UCI_Elo value 1500`           |
+| `setoption name Threads value N`                    | عدد أنوية المعالج المستخدمة (أكثر = أقوى وأسرع).                                | 1 → عدد الأنوية المتاحة | `setoption name Threads value 1`              |
+| `setoption name Hash value N`                       | حجم ذاكرة Hash Table بالميغابايت (أكثر = أقوى).                                 | 16 → آلاف MB            | `setoption name Hash value 128`               |
+| `setoption name Contempt value N`                   | يحدد موقف المحرك من التعادل (0 = محايد، + = يكره التعادل، − = يقبله).           | −100 → +100             | `setoption name Contempt value 0`             |
+
+---
+
+## 🔹 أمثلة سريعة
+
+### محرك ضعيف (مبتدئ \~1200 Elo)
+
+```uci
+setoption name Skill Level value 0
+setoption name UCI_LimitStrength value true
+setoption name UCI_Elo value 1200
+setoption name Threads value 1
+setoption name Hash value 16
+```
+
+### محرك متوسط (\~1800 Elo)
+
+```uci
+setoption name Skill Level value 10
+setoption name UCI_LimitStrength value true
+setoption name UCI_Elo value 1800
+setoption name Threads value 2
+setoption name Hash value 128
+```
+
+### محرك بأقصى قوة
+
+```uci
+setoption name Skill Level value 20
+setoption name UCI_LimitStrength value false
+setoption name Threads value 8
+setoption name Hash value 1024
+```
+
+---
+
+تحب أعمل لك نسخة **PDF/Word** من هذا الجدول بحيث تستخدمه كـ **مرجع سريع** عند البرمجة والاختبار؟

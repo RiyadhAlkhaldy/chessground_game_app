@@ -16,7 +16,7 @@ class StockfishPage extends StatefulWidget {
 class StockfishPageState extends State<StockfishPage>
     with WidgetsBindingObserver {
   final StockfishController ctrl = Get.put(StockfishController());
-  
+
   @override
   void initState() {
     super.initState();

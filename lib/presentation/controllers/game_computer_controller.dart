@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'dart:async';
 import 'dart:math';
 
@@ -48,11 +50,8 @@ class GameComputerController extends _ChessController
   RxBool showBorder = false.obs;
   // AI settings
   bool aiEnabled = true;
-  int aiDepth = 10;
-  int aiSkill = 20; // optional skill level
   Side humanSide = Side.white;
   final Rx<StockfishState> stockfishState = StockfishState.disposed.obs;
-  //
   // thinking flag
   final RxBool isThinking = false.obs;
   GameComputerController(this.sideChoosingController);
@@ -60,20 +59,21 @@ class GameComputerController extends _ChessController
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
-    engineService.start().then((_) {
+    debugPrint(position.value.fen);
+    debugPrint(_fen);
+    _fen = position.value.fen;
+    validMoves = makeLegalMoves(position.value);
+    skill = sideChoosingController.aiDepth.value;
+    humanSide = sideChoosingController.choseColor.value == SideChoosing.white
+        ? Side.white
+        : Side.black;
+    engineService.start(skill: skill).then((_) {
       engineService.setPosition(fen: fen);
       stockfishState.value = StockfishState.ready;
     });
     engineService.evaluations.listen((ev) {
       debugPrint('EVAL -> $ev');
     });
-    debugPrint(position.value.fen);
-    debugPrint(_fen);
-    validMoves = makeLegalMoves(position.value);
-    aiDepth = sideChoosingController.aiDepth.value;
-    humanSide = sideChoosingController.choseColor.value == SideChoosing.white
-        ? Side.white
-        : Side.black;
     // ever(position, (_) {
     //   _handleAiTurn();
     // });
@@ -358,11 +358,12 @@ class GameComputerController extends _ChessController
 
   EngineService engineService = EngineService();
   final List<String> _moves = [];
+  int skill = 10;
 }
 
 abstract class _ChessController extends GetxController {
-  // Rx<Position> position = Chess.initial.obs;
-  late Rx<Position> position = Chess.fromSetup(Setup.parseFen(fen)).obs;
+  Rx<Position> position = Chess.initial.obs;
+  // late Rx<Position> position = Chess.fromSetup(Setup.parseFen(fen)).obs;
   // String fen = kInitialFEN;
   String _fen =
       'r1bqkbnr/pppp1ppp/2n5/4p3/3P4/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 4';
@@ -455,6 +456,9 @@ class EngineService {
 
   Future<void> start({
     Duration waitBeforeUci = const Duration(milliseconds: 1500),
+    int? skill,
+    bool UCI_LimitStrength = false,
+    int UCI_Elo = 1320,
   }) async {
     _stockfish = Stockfish();
 
@@ -474,8 +478,44 @@ class EngineService {
     await Future.delayed(waitBeforeUci);
 
     _stockfish.stdin = 'uci';
+
     debugPrint(' befor _waitFor...');
     await _waitFor((l) => l.contains('uciok'), Duration(seconds: 2));
+    if (skill != null) {
+      debugPrint('skill = $skill');
+      _stockfish.stdin = 'setoption name Skill Level value $skill';
+      _stockfish.stdin = 'setoption name Hash value 32';
+    }
+
+    if (UCI_LimitStrength) {
+      //المدى: 1320 → 3190 Elo (يعتمد على نسخة Stockfish).
+      // UCI_Elo 1350 = يلعب بمستوى مبتدئ.
+      // UCI_Elo 2000 = مستوى لاعب نادي.
+      // UCI_Elo 2800 = مستوى أبطال العالم.
+      _stockfish.stdin = "setoption name UCI_LimitStrength value true";
+      _stockfish.stdin = "setoption name UCI_Elo value $UCI_Elo";
+    }
+    // عدد الـ CPU threads المستعملة.
+    //     1 = أضعف (يستخدم نواة واحدة فقط).
+    // 4 أو أكثر = أقوى (يستفيد من تعدد الأنوية).
+    // setoption name Threads value 1
+
+    // حجم ذاكرة الـ Hash Table (بالـ MB).
+    //     16 MB = أضعف.
+    // 1024 MB أو أكثر = أقوى.
+    // setoption name Hash value 16
+
+    // خيار يحدد “درجة عداء” المحرك للتعادل.
+    // 0 = محايد.
+    // قيمة موجبة = يفضل الفوز على التعادل.
+    // قيمة سالبة = يقبل التعادلات بسهولة.
+    // setoption name Contempt value 0
+
+    //مثال 3: محرك بأقصى قوة
+    // setoption name Skill Level value 20
+    // setoption name UCI_LimitStrength value false
+    // setoption name Threads value 8
+    // setoption name Hash value 1024
 
     await isReady();
   }
@@ -549,7 +589,7 @@ class EngineService {
     _stdoutSub?.cancel();
     _stockfish.dispose();
     await Future.delayed(const Duration(milliseconds: 1200));
-    if (Get.context!.mounted) return;
+    // if (Get.context!.mounted) return;
   }
 
   String _parseBestmove(String line) {
