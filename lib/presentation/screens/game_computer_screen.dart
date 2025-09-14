@@ -8,7 +8,8 @@ import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../controllers/game_computer_controller.dart';
-import '../widgets/settings_widgets.dart';
+import '../controllers/side_choosing_controller.dart';
+import '../widgets/options_widgets.dart';
 
 const screenPadding = 16.0;
 const screenPortraitSplitter = screenPadding / 2;
@@ -25,7 +26,12 @@ Color darken(Color c, [double amount = .1]) {
 class GameComputerScreen extends StatelessWidget {
   GameComputerScreen({super.key});
 
-  final controller = Get.find<GameComputerController>();
+  final controller = Get.put(
+    GameComputerController(
+      Get.find<SideChoosingController>(),
+      Get.find<EngineService>(),
+    ),
+  );
 
   Widget buildNewRoundButton() => FilledButton.icon(
     icon: const Icon(Icons.refresh_rounded),
@@ -110,7 +116,7 @@ class GameComputerScreen extends StatelessWidget {
                       orientation: controller.orientation.value,
 
                       fen: controller.fen,
-                      lastMove: controller.lastMove,
+                      // lastMove: controller.lastMove,
                       game: GameData(
                         playerSide: controller.position.value.turn == Side.white
                             ? PlayerSide.white
@@ -123,7 +129,7 @@ class GameComputerScreen extends StatelessWidget {
                         onPromotionSelection: controller.onPromotionSelection,
                         premovable: (
                           onSetPremove: controller.onSetPremove,
-                          premove: controller.premove.value,
+                          premove: controller.premove,
                         ),
                       ),
 
@@ -149,7 +155,7 @@ class GameComputerScreen extends StatelessWidget {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: screenPadding),
-            child: SettingsWidgets(controller: controller),
+            child: OptionsWidgets(controller: controller),
           ),
         ),
         const SizedBox(height: screenPortraitSplitter),
@@ -171,7 +177,7 @@ class GameComputerScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(child: SettingsWidgets(controller: controller)),
+              Expanded(child: OptionsWidgets(controller: controller)),
               const SizedBox(height: screenPortraitSplitter),
               buildControlButtons(),
             ],

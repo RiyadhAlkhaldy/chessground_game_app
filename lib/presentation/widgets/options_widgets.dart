@@ -5,15 +5,15 @@ import '../../core/board_theme.dart';
 import '../controllers/game_computer_controller.dart';
 import '../screens/game_computer_screen.dart';
 
-class SettingsWidgets extends StatefulWidget {
-  const SettingsWidgets({super.key, required this.controller});
+class OptionsWidgets extends StatefulWidget {
+  const OptionsWidgets({super.key, required this.controller});
   final GameComputerController controller;
 
   @override
-  State<SettingsWidgets> createState() => _SettingsWidgetsState();
+  State<OptionsWidgets> createState() => _OptionsWidgetsState();
 }
 
-class _SettingsWidgetsState extends State<SettingsWidgets> {
+class _OptionsWidgetsState extends State<OptionsWidgets> {
   Widget buildSettingsButton({
     required String label,
     required String value,

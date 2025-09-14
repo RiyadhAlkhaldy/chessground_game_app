@@ -1,10 +1,7 @@
-// ignore_for_file: non_constant_identifier_names
-
 import 'dart:async';
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/data/engine/engine.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +10,8 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../../core/board_theme.dart';
+import '../../core/helper/helper_methodes.dart';
+import 'abstract_game_controller.dart';
 import 'side_choosing_controller.dart';
 
 String pieceShiftMethodLabel(PieceShiftMethod method) {
@@ -28,15 +27,17 @@ String pieceShiftMethodLabel(PieceShiftMethod method) {
 
 enum Mode { botPlay, freePlay }
 
-class GameComputerController extends _ChessController
+class GameComputerController extends AbstractGameController
     with WidgetsBindingObserver {
-  final SideChoosingController sideChoosingController;
+  final SideChoosingController choosingCtrl;
+  final EngineService engineService;
+  final List<String> _moves = [];
+  int skill = 10;
+  int moveTimeMs = 1000;
 
-  BasicSearch basicSearch = BasicSearch();
   Rx<Side> orientation = Side.white.obs;
-  NormalMove? lastMove;
   NormalMove? promotionMove;
-  Rx<NormalMove?> premove = null.obs;
+  NormalMove? premove;
   Side sideToMove = Side.white;
   Rx<PieceSet> pieceSet = PieceSet.gioco.obs;
   Rx<PieceShiftMethod> pieceShiftMethod = PieceShiftMethod.either.obs;
@@ -45,7 +46,6 @@ class GameComputerController extends _ChessController
   bool drawMode = true;
   RxBool pieceAnimation = true.obs;
   RxBool dragMagnify = true.obs;
-  Position? lastPos;
   Rx<ISet<Shape>> shapes = ISet<Shape>().obs;
   RxBool showBorder = false.obs;
   // AI settings
@@ -54,37 +54,45 @@ class GameComputerController extends _ChessController
   final Rx<StockfishState> stockfishState = StockfishState.disposed.obs;
   // thinking flag
   final RxBool isThinking = false.obs;
-  GameComputerController(this.sideChoosingController);
+  GameComputerController(this.choosingCtrl, this.engineService);
   @override
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
     debugPrint(position.value.fen);
-    debugPrint(_fen);
-    _fen = position.value.fen;
+    debugPrint(fen);
+    fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
-    skill = sideChoosingController.aiDepth.value;
-    humanSide = sideChoosingController.choseColor.value == SideChoosing.white
+    skill = choosingCtrl.aiDepth.value;
+    moveTimeMs = choosingCtrl.timeMs.toInt();
+    humanSide = choosingCtrl.choseColor.value == SideChoosing.white
         ? Side.white
         : Side.black;
-    engineService.start(skill: skill).then((_) {
-      engineService.setPosition(fen: fen);
-      stockfishState.value = StockfishState.ready;
-    });
+    engineService
+        .start(
+          skill: skill,
+          uciLimitStrength: true,
+          uciElo: choosingCtrl.uciElo.toInt(),
+        )
+        .then((_) {
+          engineService.setPosition(fen: fen);
+          stockfishState.value = StockfishState.ready;
+          // _handleAiTurn();
+        });
     engineService.evaluations.listen((ev) {
       debugPrint('EVAL -> $ev');
     });
     // ever(position, (_) {
     //   _handleAiTurn();
+    //   updateTextState();
     // });
   }
 
-  // Future<void> _handleAiTurn() async {
-  //   if (position.value.turn != humanSide) {
-  //     statusText.value = "AI is thinking...";
-  //     playAiMove();
-  //   }
-  // }
+  Future<void> _handleAiTurn() async {
+    if (position.value.turn != humanSide) {
+      playAiMove();
+    }
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -108,10 +116,10 @@ class GameComputerController extends _ChessController
   }
 
   @override
-  void dispose() {
-    engineService.dispose();
+  void onClose() {
     WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
+    engineService.dispose();
+    super.onClose();
   }
 
   ///reset
@@ -121,21 +129,19 @@ class GameComputerController extends _ChessController
     undoEnabled = false;
     redoEnabled = false;
     position.value = Chess.initial;
-    _fen = position.value.fen;
+    fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
-    lastMove = null;
-    lastPos = null;
     _moves.clear();
     engineService.ucinewgame();
     promotionMove = null;
-    debugPrint('reset to $_fen');
+    debugPrint('reset to $fen');
   }
 
-  // void tryPlayPremove() {
-  //   Timer.run(() {
-  //     playMove(premove.value!, isPremove: true);
-  //   });
-  // }
+  void tryPlayPremove() {
+    Timer.run(() {
+      playMove(premove!, isPremove: true);
+    });
+  }
 
   void onCompleteShape(Shape shape) {
     if (shapes.value.any((element) => element == shape)) {
@@ -148,20 +154,22 @@ class GameComputerController extends _ChessController
   }
 
   void onSetPremove(NormalMove? move) {
-    premove.value = move!;
+    premove = move;
+    update();
   }
 
   void onPromotionSelection(Role? role) {
     debugPrint('onPromotionSelection: $role');
     if (role == null) {
       onPromotionCancel();
-    } else {
+    } else if (promotionMove != null) {
       playMove(promotionMove!.withPromotion(role));
     }
   }
 
   void onPromotionCancel() {
     promotionMove = null;
+    update([]);
   }
 
   Future<String> _playerMove(String uciMove, {int aiMoveTimeMs = 1000}) async {
@@ -200,7 +208,6 @@ class GameComputerController extends _ChessController
   void playMove(NormalMove move, {bool? isDrop, bool? isPremove}) {
     undoEnabled = false;
     redoEnabled = false;
-    lastPos = position.value;
 
     if (isPromotionPawnMove(move)) {
       promotionMove = move;
@@ -209,53 +216,60 @@ class GameComputerController extends _ChessController
       past.add(position.value);
       future.clear();
       position.value = position.value.playUnchecked(move);
-      lastMove = move;
-      _fen = position.value.fen;
+      fen = position.value.fen;
       validMoves = makeLegalMoves(position.value);
 
       promotionMove = null;
       if (isPremove == true) {
-        premove.value = null;
+        premove = null;
       }
-      updateTextState();
     }
     _moves.add(move.uci);
     engineService.setPosition(moves: _moves);
+    updateTextState();
     playAiMove();
   }
 
   Future<void> playAiMove() async {
-    final random = Random();
     await Future.delayed(Duration(milliseconds: 100));
     if (position.value.isGameOver) return;
-    final best = await engineService.goMovetime(1300);
-    debugPrint("best move from stockfish: $best");
 
-    var bestMove = NormalMove.fromUci(best);
-    if (position.value.isLegal(bestMove) == false) return;
+    final allMoves = [
+      for (final entry in position.value.legalMoves.entries)
+        for (final dest in entry.value.squares)
+          NormalMove(from: entry.key, to: dest),
+    ];
 
-    if (isPromotionPawnMove(bestMove)) {
-      final potentialRoles = Role.values
-          .where((role) => role != Role.pawn)
-          .toList();
-      final role = potentialRoles[random.nextInt(potentialRoles.length)];
-      bestMove = bestMove.withPromotion(role);
+    ///
+    if (allMoves.isNotEmpty) {
+      final best = await engineService.goMovetime(moveTimeMs);
+      debugPrint("best move from stockfish: $best");
+
+      var bestMove = NormalMove.fromUci(best);
+      if (position.value.isLegal(bestMove) == false) return;
+
+      if (isPromotionPawnMove(bestMove)) {
+        //TODO solve the promotion pawn with stockfish
+        final random = Random();
+        final potentialRoles = Role.values
+            .where((role) => role != Role.pawn)
+            .toList();
+        final role = potentialRoles[random.nextInt(potentialRoles.length)];
+        bestMove = bestMove.withPromotion(role);
+      }
+
+      position.value = position.value.playUnchecked(bestMove);
+      fen = position.value.fen;
+      validMoves = makeLegalMoves(position.value);
+
+      _moves.add(best);
+      engineService.setPosition(moves: _moves);
+
+      undoEnabled = true;
+      // update();
+
+      updateTextState();
     }
-
-    position.value = position.value.playUnchecked(bestMove);
-
-    lastMove = bestMove;
-    _fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
-
-    _moves.add(best);
-    engineService.setPosition(moves: _moves);
-
-    lastPos = position.value;
-    undoEnabled = true;
-    update();
-
-    updateTextState();
   }
 
   bool isPromotionPawnMove(NormalMove move) {
@@ -272,36 +286,12 @@ class GameComputerController extends _ChessController
     required Widget Function(T choice) labelBuilder,
     required void Function(T choice) onSelectedItemChanged,
   }) {
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          contentPadding: const EdgeInsets.only(top: 12),
-          scrollable: true,
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: choices
-                .map((value) {
-                  return RadioListTile<T>(
-                    title: labelBuilder(value),
-                    value: value,
-                    groupValue: selectedItem,
-                    onChanged: (value) {
-                      if (value != null) onSelectedItemChanged(value);
-                      Navigator.of(context).pop();
-                    },
-                  );
-                })
-                .toList(growable: false),
-          ),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        );
-      },
+    makeShowChoicesPicker(
+      context,
+      choices: choices,
+      selectedItem: selectedItem,
+      labelBuilder: labelBuilder,
+      onSelectedItemChanged: onSelectedItemChanged,
     );
   }
 
@@ -355,89 +345,6 @@ class GameComputerController extends _ChessController
       return;
     }
   }
-
-  EngineService engineService = EngineService();
-  final List<String> _moves = [];
-  int skill = 10;
-}
-
-abstract class _ChessController extends GetxController {
-  Rx<Position> position = Chess.initial.obs;
-  // late Rx<Position> position = Chess.fromSetup(Setup.parseFen(fen)).obs;
-  // String fen = kInitialFEN;
-  String _fen =
-      'r1bqkbnr/pppp1ppp/2n5/4p3/3P4/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 4';
-  String get fen => _fen;
-  // 'rnbqkbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 3';
-  ValidMoves validMoves = IMap(const {});
-
-  /// undo/redo
-  bool _undoEnabled = false;
-  bool _redoEnabled = false;
-  set undoEnabled(bool value) {
-    if (past.isEmpty) {
-      _undoEnabled = false;
-      update();
-      return;
-    }
-    _undoEnabled = value;
-    update();
-  }
-
-  set redoEnabled(bool value) {
-    if (future.isEmpty) {
-      _redoEnabled = false;
-      update();
-      return;
-    }
-    _redoEnabled = value;
-    update();
-  }
-
-  bool get undoEnabled {
-    if (past.isEmpty) {
-      _undoEnabled = false;
-      return false;
-    }
-    return _undoEnabled;
-  }
-
-  bool get redoEnabled {
-    if (future.isEmpty) {
-      _redoEnabled = false;
-      return false;
-    }
-    return _redoEnabled;
-  }
-
-  final past = <Position>[];
-  final future = <Position>[];
-
-  bool get isCheckmate => position.value.isCheckmate;
-
-  Side? get winner {
-    return position.value.outcome!.winner;
-  }
-
-  void undo() {
-    if (past.isEmpty) return;
-    debugPrint('undo');
-    future.add(position.value);
-    redoEnabled = true;
-    position.value = past.removeLast();
-    _fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
-  }
-
-  void redo() {
-    if (future.isEmpty) return;
-    past.add(position.value);
-    redoEnabled = true;
-    undoEnabled = true;
-    position.value = future.removeLast();
-    _fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
-  }
 }
 
 /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine
@@ -455,10 +362,10 @@ class EngineService {
   Stream<String> get bestmoves => _bestmove.stream;
 
   Future<void> start({
-    Duration waitBeforeUci = const Duration(milliseconds: 1500),
+    Duration waitBeforeUci = const Duration(milliseconds: 2000),
     int? skill,
-    bool UCI_LimitStrength = false,
-    int UCI_Elo = 1320,
+    bool uciLimitStrength = false,
+    int uciElo = 1320,
   }) async {
     _stockfish = Stockfish();
 
@@ -470,7 +377,7 @@ class EngineService {
     });
 
     _stderrSub = _stockfish.stderr.listen((err) {
-      // debugPrint('*** stderr line $err ***');
+      debugPrint('*** stderr line $err ***');
 
       _raw.add('ERR: $err');
     });
@@ -479,21 +386,21 @@ class EngineService {
 
     _stockfish.stdin = 'uci';
 
-    debugPrint(' befor _waitFor...');
-    await _waitFor((l) => l.contains('uciok'), Duration(seconds: 2));
-    if (skill != null) {
+    await _waitFor((l) => l.contains('uciok'), Duration(seconds: 3));
+    if (skill != null && !uciLimitStrength) {
       debugPrint('skill = $skill');
       _stockfish.stdin = 'setoption name Skill Level value $skill';
       _stockfish.stdin = 'setoption name Hash value 32';
     }
 
-    if (UCI_LimitStrength) {
+    if (uciLimitStrength) {
       //المدى: 1320 → 3190 Elo (يعتمد على نسخة Stockfish).
       // UCI_Elo 1350 = يلعب بمستوى مبتدئ.
       // UCI_Elo 2000 = مستوى لاعب نادي.
       // UCI_Elo 2800 = مستوى أبطال العالم.
       _stockfish.stdin = "setoption name UCI_LimitStrength value true";
-      _stockfish.stdin = "setoption name UCI_Elo value $UCI_Elo";
+      _stockfish.stdin = "setoption name UCI_Elo value $uciElo";
+      debugPrint("uciElo: $uciElo");
     }
     // عدد الـ CPU threads المستعملة.
     //     1 = أضعف (يستخدم نواة واحدة فقط).
@@ -580,18 +487,6 @@ class EngineService {
     _stockfish.stdin = 'stop';
   }
 
-  Future<void> stopStockfish() async {
-    if (_stockfish.state.value == StockfishState.disposed ||
-        _stockfish.state.value == StockfishState.error) {
-      return;
-    }
-    _stderrSub?.cancel();
-    _stdoutSub?.cancel();
-    _stockfish.dispose();
-    await Future.delayed(const Duration(milliseconds: 1200));
-    // if (Get.context!.mounted) return;
-  }
-
   String _parseBestmove(String line) {
     final parts = line.split(RegExp(r"\s+"));
     if (parts.length >= 2) {
@@ -639,14 +534,26 @@ class EngineService {
     }
   }
 
+  Future<void> stopStockfish() async {
+    if (_stockfish.state.value == StockfishState.disposed ||
+        _stockfish.state.value == StockfishState.error) {
+      return;
+    }
+    _stdoutSub?.cancel();
+    _stderrSub?.cancel();
+    _stockfish.dispose();
+    await Future.delayed(const Duration(milliseconds: 1200));
+    // if (Get.context!.mounted) return;
+  }
+
   Future<void> dispose() async {
     _stdoutSub?.cancel();
     _stderrSub?.cancel();
-    try {
-      _stockfish.stdin = 'quit';
-    } catch (e) {
-      debugPrint("error dispose $e");
-    }
+    // try {
+    //   _stockfish.stdin = 'quit';
+    // } catch (e) {
+    //   debugPrint("error dispose $e");
+    // }
     try {
       _stockfish.dispose();
     } catch (e) {

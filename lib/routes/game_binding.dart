@@ -8,8 +8,7 @@ import 'package:get/get.dart';
 // import '../data/usecases/stop_engine_usecase.dart';
 // import '../domain/repositories/stockfish_repository.dart';
 // import '../domain/repositories/stockfish_repository_impl.dart';
-import '../presentation/controllers/game_computer_controller.dart'
-    show GameComputerController;
+import '../presentation/controllers/game_computer_controller.dart';
 import '../presentation/controllers/games_controller.dart';
 import '../presentation/controllers/side_choosing_controller.dart';
 
@@ -19,12 +18,11 @@ import '../presentation/controllers/side_choosing_controller.dart';
 class GameBinding extends Bindings {
   @override
   void dependencies() {
-    // // make this controller singleton
     Get.lazyPut<SideChoosingController>(
       () => SideChoosingController(),
       fenix: true,
     );
-
+    Get.lazyPut<EngineService>(() => EngineService(), fenix: true);
     // Get.lazyPut<Evaluator>(() => Evaluator(), fenix: true);
     // Get.lazyPut<Evaluation>(() => Evaluation(), fenix: true);
     // Get.lazyPut<SearchEngine>(
@@ -86,6 +84,7 @@ class GameBinding extends Bindings {
     Get.lazyPut<GameComputerController>(
       () => GameComputerController(
         Get.find<SideChoosingController>(),
+        Get.find<EngineService>(),
         // Get.find<StartEngineUseCase>(),
         // Get.find<GetAiMoveStockfishUseCase>(),
         // Get.find<StopEngineUseCase>(),
@@ -93,7 +92,7 @@ class GameBinding extends Bindings {
         // Get.find(),
         // Get.find(),
       ),
-      fenix: true, // Make this controller singleton
+      // fenix: true, // Make this controller singleton
     );
     // // تسجيل المتحكم (GameComputerController)
     Get.lazyPut<GamesController>(

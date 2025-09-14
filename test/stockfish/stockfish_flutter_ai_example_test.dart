@@ -180,13 +180,13 @@ class EngineService {
   }
 }
 
-/// GameController باستخدام dartchess
-class GameController {
+/// StockfishChessGameController باستخدام dartchess
+class StockfishChessGameController {
   final EngineService engine;
   Position _pos = Chess.initial;
   final List<String> _moves = [];
 
-  GameController(this.engine);
+  StockfishChessGameController(this.engine);
 
   Future<void> newGame() async {
     _pos = Chess.initial;
@@ -253,7 +253,7 @@ void main() async {
       debugPrint('EVAL -> $ev');
     });
 
-    final game = GameController(engine);
+    final game = StockfishChessGameController(engine);
     await game.newGame();
     debugPrint('New game started. FEN: ${game.fen}');
 

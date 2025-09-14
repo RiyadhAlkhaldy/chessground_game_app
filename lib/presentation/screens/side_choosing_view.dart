@@ -22,95 +22,125 @@ class SideChoosingView extends StatelessWidget {
             color: Colors.blueGrey[900],
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "Choose Options",
-                style: TextStyle(fontSize: 18, color: Colors.white),
-              ),
-              SizedBox(height: 16),
-
-              // Color selector
-              SideChosingWidget(controller: controller),
-              SizedBox(height: 20),
-
-              // ELO info
-              Obx(
-                () => Column(
-                  children: [
-                    Text(
-                      "Beginner ♟♟",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                    Text(
-                      "ELO Level: ${controller.aiDepth}",
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Choose Options",
+                  style: TextStyle(fontSize: 18, color: Colors.white),
                 ),
-              ),
-              SizedBox(height: 10),
-              GetX<SideChoosingController>(
-                builder: (con) {
-                  int aiDepth = con.aiDepth.value;
-                  return Slider(
-                    value: aiDepth.toDouble(),
-                    min: 1,
-                    max: 20,
-                    divisions: 5,
-                    label: 'AI Depth: ${aiDepth.round()}',
-                    onChanged: (double value) {
-                      debugPrint(value.toString());
-                      aiDepth = value.toInt();
-                      debugPrint("aiDepth $aiDepth");
+                SizedBox(height: 16),
 
-                      con.aiDepth.value = aiDepth; // Update reactive variable
-                    },
-                  );
-                },
-              ),
-              const Text('AI Difficulty (Depth)'),
-              // Show move hints toggle
-              Obx(
-                () => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Show move hints",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    Switch(
-                      value: controller.showMoveHints.value,
-                      onChanged: (val) => controller.showMoveHints.value = val,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 10),
+                // Color selector
+                SideChosingWidget(controller: controller),
+                SizedBox(height: 20),
 
-              // Play button
-              ElevatedButton(
-                onPressed: () {
-                  // navigate to game view
-                  controller.changeValuecolorPlayer(
-                    controller.choseColor.value,
-                  );
-                  Get.toNamed('GameComputerScreen');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.lightBlueAccent,
-                  shape: StadiumBorder(),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
+                // ELO info
+                Obx(
+                  () => Column(
+                    children: [
+                      Text(
+                        "Beginner ♟♟",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                      Text(
+                        "ELO Level: ${controller.aiDepth}",
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ],
                   ),
-                  child: Text("Play", style: TextStyle(fontSize: 18)),
                 ),
-              ),
-            ],
+                SizedBox(height: 10),
+                GetX<SideChoosingController>(
+                  builder: (con) {
+                    int aiDepth = con.aiDepth.value;
+                    return Slider(
+                      value: aiDepth.toDouble(),
+                      min: 0,
+                      max: 20,
+                      divisions: 5,
+                      label: 'AI Depth: ${aiDepth.round()}',
+                      onChanged: (double value) {
+                        debugPrint(value.toString());
+                        aiDepth = value.toInt();
+                        debugPrint("aiDepth $aiDepth");
+                        con.aiDepth.value = aiDepth; // Update reactive variable
+                      },
+                    );
+                  },
+                ),
+                const Text('AI Difficulty (Depth)'),
+                GetBuilder<SideChoosingController>(
+                  initState: (_) {},
+                  builder: (_) {
+                    return Column(
+                      children: [
+                        Slider(
+                          value: controller.timeMs,
+                          onChanged: controller.updateThinkingTime,
+                          min: 500,
+                          max: 3000,
+                        ),
+                        Text(
+                          'Thinking time : ${controller.timeMs.toInt()} millis',
+                        ),
+                        Slider(
+                          value: controller.uciElo,
+                          onChanged: controller.updateUciElo,
+                          min: 1320,
+                          max: 3190,
+                        ),
+                        Text(
+                          'UCI LimitStrength : ${controller.uciElo.toInt()} Elo',
+                        ),
+                      ],
+                    );
+                  },
+                ),
+
+                // Show move hints toggle
+                Obx(
+                  () => Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Show move hints",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Switch(
+                        value: controller.showMoveHints.value,
+                        onChanged: (val) =>
+                            controller.showMoveHints.value = val,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
+
+                // Play button
+                ElevatedButton(
+                  onPressed: () {
+                    // navigate to game view
+                    controller.changeValuecolorPlayer(
+                      controller.choseColor.value,
+                    );
+                    Get.toNamed('GameComputerScreen');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.lightBlueAccent,
+                    shape: StadiumBorder(),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                    child: Text("Play", style: TextStyle(fontSize: 18)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
