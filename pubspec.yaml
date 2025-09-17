@@ -75,6 +75,13 @@ flutter:
 
   assets:
     - lib/piece_set/maestro/
+    - assets/sounds/
+  #   - images/a_dot_ham.jpeg
+flutter_assets:
+  assets_path: assets/sounds/
+  output_path: lib/core/constants/
+  filename: app_images_sounds.dart
+  field_prefix: 
     # - assets/piece_sets/alpha/
     # - assets/piece_sets/anarcandy/
     # - assets/piece_sets/california/

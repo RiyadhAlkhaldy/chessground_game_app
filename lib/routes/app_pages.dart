@@ -1,17 +1,14 @@
 import 'package:get/get.dart';
 
 import '../presentation/screens/game_computer_screen.dart';
-import '../presentation/screens/games_screen.dart';
 import '../presentation/screens/home_page.dart';
 import '../presentation/screens/side_choosing_view.dart';
-import '../presentation/screens/stockfish_page.dart';
 
 abstract class RouteNames {
   static String home = '/';
   static String sideChoosingView = '/SideChoosingView';
   static String gameComputerScreen = '/GameComputerScreen';
   static String gamesScreen = '/GamesScreen';
-  static String stockfish = '/Stockfish';
   static String editPosition = '/EditPosition';
 }
 
@@ -23,16 +20,9 @@ class AppPages {
       name: RouteNames.gameComputerScreen,
       page: () => GameComputerScreen(),
     ),
-    GetPage(
-      name: RouteNames.gamesScreen,
-      page: () => GamesScreen(title: 'games'),
-    ),
+
     GetPage(name: RouteNames.sideChoosingView, page: () => SideChoosingView()),
-    GetPage(
-      name: RouteNames.stockfish,
-      page: () => const StockfishPage(),
-      // binding assigned in main initialBinding or here if needed
-    ),
+
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),
     // GetPage(name: '/friends', page: () => const FriendsView()),
     // GetPage(name: '/puzzles', page: () => const PuzzlesView()),

@@ -1,15 +1,14 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
+import '../controllers/chess_board_settings_controller.dart';
 import '../controllers/game_computer_controller.dart';
-import '../controllers/side_choosing_controller.dart';
-import '../widgets/options_widgets.dart';
+import '../widgets/chess_board_settings_widgets.dart';
 
 const screenPadding = 16.0;
 const screenPortraitSplitter = screenPadding / 2;
@@ -26,30 +25,32 @@ Color darken(Color c, [double amount = .1]) {
 class GameComputerScreen extends StatelessWidget {
   GameComputerScreen({super.key});
 
-  final controller = Get.put(
-    GameComputerController(
-      Get.find<SideChoosingController>(),
-      Get.find<EngineService>(),
-    ),
+  final ctrl = Get.put(
+    GameComputerController(Get.find(), Get.find(), Get.find()),
   );
+  final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
 
   Widget buildNewRoundButton() => FilledButton.icon(
     icon: const Icon(Icons.refresh_rounded),
     label: const Text('New Round'),
     onPressed: () {
-      controller.reset();
+      ctrl.reset();
     },
   );
 
-  Widget buildUndoButton() => FilledButton.icon(
-    icon: const Icon(Icons.undo_rounded),
-    label: const Text('Undo'),
-    onPressed: controller.undoEnabled ? controller.undo : null,
+  Widget buildUndoButton() => GetX<GameComputerController>(
+    builder: (controller) => FilledButton.icon(
+      icon: const Icon(Icons.undo_rounded),
+      label: const Text('Undo'),
+      onPressed: controller.canUndo.value ? controller.undoMove : null,
+    ),
   );
-  Widget buildRedoButton() => FilledButton.icon(
-    icon: const Icon(Icons.redo_rounded),
-    label: const Text('Redo'),
-    onPressed: controller.redoEnabled ? controller.redo : null,
+  Widget buildRedoButton() => GetX<GameComputerController>(
+    builder: (controller) => FilledButton.icon(
+      icon: const Icon(Icons.redo_rounded),
+      label: const Text('Redo'),
+      onPressed: controller.canRedo.value ? controller.redoMove : null,
+    ),
   );
   Widget buildControlButtons() => SizedBox(
     height: buttonHeight,
@@ -73,72 +74,81 @@ class GameComputerScreen extends StatelessWidget {
       builder: (context, constraints) {
         debugPrint('rebuild buildChessBoardWidget');
         return GetBuilder<GameComputerController>(
-          initState: (_) {},
           builder: (_) {
-            return Obx(
-              () => controller.stockfishState.value == StockfishState.ready
-                  ? Chessboard(
+            return Obx(() {
+              return ctrl.stockfishState.value != StockfishState.ready
+                  ? const CircularProgressIndicator()
+                  : Chessboard(
                       size: min(constraints.maxWidth, constraints.maxHeight),
                       settings: ChessboardSettings(
-                        pieceAssets: controller.pieceSet.value.assets,
-                        colorScheme: controller.boardTheme.value.colors,
-                        border: controller.showBorder.value
+                        pieceAssets: ctrlBoardSettings.pieceSet.value.assets,
+                        colorScheme: ctrlBoardSettings.boardTheme.value.colors,
+                        border: ctrlBoardSettings.showBorder.value
                             ? BoardBorder(
                                 width: 16.0,
                                 color: darken(
-                                  controller.boardTheme.value.colors.darkSquare,
+                                  ctrlBoardSettings
+                                      .boardTheme
+                                      .value
+                                      .colors
+                                      .darkSquare,
                                   0.2,
                                 ),
                               )
                             : null,
                         enableCoordinates: true,
-                        animationDuration: controller.pieceAnimation.value
+
+                        // showLastMove: true,
+                        // enablePremoveCastling: true,
+                        // showValidMoves: true,
+                        autoQueenPromotion: false,
+                        animationDuration:
+                            ctrlBoardSettings.pieceAnimation.value
                             ? const Duration(milliseconds: 200)
                             : Duration.zero,
-                        dragFeedbackScale: controller.dragMagnify.value
+
+                        dragFeedbackScale: ctrlBoardSettings.dragMagnify.value
                             ? 2.0
                             : 1.0,
-                        dragTargetKind: controller.dragTargetKind.value,
+                        dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
                         drawShape: DrawShapeOptions(
-                          enable: controller.drawMode,
-                          onCompleteShape: controller.onCompleteShape,
+                          enable: ctrlBoardSettings.drawMode,
+                          onCompleteShape: ctrlBoardSettings.onCompleteShape,
                           onClearShapes: () {
-                            controller.shapes.value = ISet<Shape>();
+                            ctrlBoardSettings.shapes.value = ISet<Shape>();
                           },
                         ),
-                        pieceShiftMethod: controller.pieceShiftMethod.value,
+                        pieceShiftMethod:
+                            ctrlBoardSettings.pieceShiftMethod.value,
                         autoQueenPromotionOnPremove: false,
                         pieceOrientationBehavior:
                             // controller.playMode == Mode.freePlay
                             // PieceOrientationBehavior.opponentUpsideDown,
                             PieceOrientationBehavior.facingUser,
                       ),
-                      orientation: controller.orientation.value,
+                      orientation: ctrlBoardSettings.orientation.value,
 
-                      fen: controller.fen,
-                      // lastMove: controller.lastMove,
+                      fen: ctrl.fen,
+                      lastMove: ctrl.lastMove,
                       game: GameData(
-                        playerSide: controller.position.value.turn == Side.white
-                            ? PlayerSide.white
-                            : PlayerSide.black,
-                        validMoves: controller.validMoves,
-                        sideToMove: controller.position.value.turn,
-                        isCheck: controller.position.value.isCheck,
-                        promotionMove: controller.promotionMove,
-                        onMove: controller.playMove,
-                        onPromotionSelection: controller.onPromotionSelection,
+                        playerSide: ctrl.playerSide,
+                        validMoves: ctrl.validMoves,
+                        sideToMove: ctrl.position.value.turn,
+                        isCheck: ctrl.position.value.isCheck,
+                        promotionMove: ctrl.promotionMove.value,
+                        onMove: ctrl.playMove,
+                        onPromotionSelection: ctrl.onPromotionSelection,
                         premovable: (
-                          onSetPremove: controller.onSetPremove,
-                          premove: controller.premove,
+                          onSetPremove: ctrl.onSetPremove,
+                          premove: ctrl.premove?.value,
                         ),
                       ),
 
-                      shapes: controller.shapes.value.isNotEmpty
-                          ? controller.shapes.value
+                      shapes: ctrlBoardSettings.shapes.value.isNotEmpty
+                          ? ctrlBoardSettings.shapes.value
                           : null,
-                    )
-                  : const CircularProgressIndicator(),
-            );
+                    );
+            });
           },
         );
       },
@@ -155,7 +165,7 @@ class GameComputerScreen extends StatelessWidget {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: screenPadding),
-            child: OptionsWidgets(controller: controller),
+            child: ChessBoardSettingsWidgets(controller: ctrlBoardSettings),
           ),
         ),
         const SizedBox(height: screenPortraitSplitter),
@@ -177,7 +187,9 @@ class GameComputerScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(child: OptionsWidgets(controller: controller)),
+              Expanded(
+                child: ChessBoardSettingsWidgets(controller: ctrlBoardSettings),
+              ),
               const SizedBox(height: screenPortraitSplitter),
               buildControlButtons(),
             ],
@@ -193,10 +205,8 @@ class GameComputerScreen extends StatelessWidget {
       primary: MediaQuery.of(context).orientation == Orientation.portrait,
       appBar: AppBar(
         title: GetX<GameComputerController>(
-          // init: GameComputerController(),
-          initState: (_) {},
           builder: (_) {
-            return Text(controller.statusText.value);
+            return Text(ctrl.statusText.value);
           },
         ),
       ),

@@ -5,6 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 abstract class AbstractGameController extends GetxController {
+  NormalMove? lastMove;
+  // Position? lastPos;
+
   Rx<Position> position = Chess.initial.obs;
   // late Rx<Position> position = Chess.fromSetup(Setup.parseFen(fen)).obs;
 
@@ -21,43 +24,8 @@ abstract class AbstractGameController extends GetxController {
   ValidMoves validMoves = IMap(const {});
 
   /// undo/redo
-  bool _undoEnabled = false;
-  bool _redoEnabled = false;
-  set undoEnabled(bool value) {
-    if (past.isEmpty) {
-      _undoEnabled = false;
-      update();
-      return;
-    }
-    _undoEnabled = value;
-    update();
-  }
-
-  set redoEnabled(bool value) {
-    if (future.isEmpty) {
-      _redoEnabled = false;
-      update();
-      return;
-    }
-    _redoEnabled = value;
-    update();
-  }
-
-  bool get undoEnabled {
-    if (past.isEmpty) {
-      _undoEnabled = false;
-      return false;
-    }
-    return _undoEnabled;
-  }
-
-  bool get redoEnabled {
-    if (future.isEmpty) {
-      _redoEnabled = false;
-      return false;
-    }
-    return _redoEnabled;
-  }
+  RxBool get canUndo => (past.length > 1).obs;
+  RxBool get canRedo => future.isNotEmpty.obs;
 
   final past = <Position>[];
   final future = <Position>[];
@@ -68,21 +36,18 @@ abstract class AbstractGameController extends GetxController {
     return position.value.outcome!.winner;
   }
 
-  void undo() {
+  void undoMove() {
     if (past.isEmpty) return;
     debugPrint('undo');
     future.add(position.value);
-    redoEnabled = true;
     position.value = past.removeLast();
     _fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
   }
 
-  void redo() {
+  void redoMove() {
     if (future.isEmpty) return;
     past.add(position.value);
-    redoEnabled = true;
-    undoEnabled = true;
     position.value = future.removeLast();
     _fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);

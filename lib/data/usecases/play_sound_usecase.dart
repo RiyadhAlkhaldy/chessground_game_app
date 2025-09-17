@@ -1,29 +1,30 @@
-import 'package:sound_effect/sound_effect.dart';
+import '../../core/constants/app_images_sounds.dart';
+import '../../domain/services/sound_effect_service.dart';
 
 class PlaySoundUseCase {
-  final SoundEffect _soundEffectPlugin;
+  final SoundEffectService soundEffect;
 
-  PlaySoundUseCase(this._soundEffectPlugin) {
-    _soundEffectPlugin.load('demo', 'assets/sounds/demo.mp3');
+  PlaySoundUseCase(this.soundEffect) {
+    // soundEffect.loadSounds();
   }
 
   Future<void> executeMoveSound() async {
-    await _soundEffectPlugin.play('');
+    await soundEffect.soundEffect.play(Assets.soundsMoveSelf);
   }
 
   Future<void> executeCaptureSound() async {
-    await _soundEffectPlugin.play('');
+    await soundEffect.soundEffect.play(Assets.soundsCapture);
   }
 
   Future<void> executeCheckSound() async {
-    await _soundEffectPlugin.play('');
+    await soundEffect.soundEffect.play(Assets.soundsMoveCheck);
   }
 
-  Future<void> executeResetGameSound() async {
-    await _soundEffectPlugin.play('');
-  }
+  // Future<void> executeResetGameSound() async {
+  //   await soundEffect.soundEffect.play(Assets.soundsMoveSelf);
+  // }
 
   Future<void> executePromoteSound() async {
-    await _soundEffectPlugin.play('');
+    await soundEffect.soundEffect.play(Assets.soundsPromote);
   }
 }
