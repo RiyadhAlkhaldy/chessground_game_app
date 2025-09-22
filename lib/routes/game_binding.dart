@@ -2,7 +2,10 @@ import 'package:chessground_game_app/domain/services/sound_effect_service.dart';
 import 'package:get/get.dart';
 
 import '../data/usecases/play_sound_usecase.dart';
+import '../domain/repositories/i_engine_repository.dart';
+import '../domain/repositories/i_engine_repository_impl.dart';
 import '../domain/services/stockfish_engine_service.dart';
+import '../presentation/controllers/analyises_controller.dart';
 import '../presentation/controllers/chess_board_settings_controller.dart';
 import '../presentation/controllers/game_computer_controller.dart';
 import '../presentation/controllers/side_choosing_controller.dart';
@@ -23,16 +26,30 @@ class GameBinding extends Bindings {
     );
 
     Get.lazyPut(() => ChessBoardSettingsController(), fenix: true);
+    // Get.lazyPut(() => ChessClockService(initialTimeMs: 0), fenix: true);
 
     ///sounds
     Get.lazyPut(() => SoundEffectService(), fenix: true);
     Get.lazyPut(() => PlaySoundUseCase(Get.find()), fenix: true);
+    Get.lazyPut<IEngineRepository>(
+      () => StockfishRepositoryImpl(),
+      fenix: true,
+    );
     // // تسجيل المتحكم (GameComputerController)
     Get.lazyPut<GameComputerController>(
       () => GameComputerController(
         Get.find<SideChoosingController>(),
         Get.find<StockfishEngineService>(),
         Get.find<PlaySoundUseCase>(),
+      ),
+      // fenix: true, // Make this controller singleton
+    );
+    Get.lazyPut<AnalysisController>(
+      () => AnalysisController(
+        Get.find<SideChoosingController>(),
+        Get.find<StockfishEngineService>(),
+        Get.find<PlaySoundUseCase>(),
+        Get.find(),
       ),
       // fenix: true, // Make this controller singleton
     );

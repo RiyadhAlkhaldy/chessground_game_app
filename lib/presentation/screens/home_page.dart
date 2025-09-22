@@ -80,11 +80,19 @@ class HomePage extends StatelessWidget {
                         childAspectRatio: 1.8,
                         children: [
                           _buildButton("العب أونلاين", Icons.public, '/online'),
+
                           _buildButton(
                             "العب مع الكمبيوتر",
                             Icons.smart_toy,
                             onPressed: () =>
                                 Get.toNamed(RouteNames.sideChoosingView),
+                            '',
+                          ),
+                          _buildButton(
+                            "Analyises Screen",
+                            Icons.smart_toy,
+                            onPressed: () =>
+                                Get.toNamed(RouteNames.analysisScreen),
                             '',
                           ),
                           _buildButton(

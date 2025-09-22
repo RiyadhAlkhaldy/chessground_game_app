@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../core/board_theme.dart';
 import '../controllers/chess_board_settings_controller.dart';
 import '../controllers/game_computer_controller.dart';
-import '../screens/game_computer_screen.dart';
+import '../screens/game_computer/game_computer_screen.dart';
 
 class ChessBoardSettingsWidgets extends StatefulWidget {
   const ChessBoardSettingsWidgets({super.key, required this.controller});

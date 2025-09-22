@@ -4,25 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
+import '../entities/extended_evaluation.dart';
+
 /// حالة اللعبة المستخلصة محليًا (نستخدم dartchess للتحقق)
 enum GameResult { ongoing, checkmate, stalemate, draw }
-
-/// كائن يعرض نتيجة تقييم من Stockfish (مقتطف من سطر "info ...")
-class Evaluation {
-  final int depth;
-  final int? cp; // centipawns
-  final int? mate; // mate in N (positive or negative)
-  final String pv; // principal variation (أفضل خط)
-
-  Evaluation({required this.depth, this.cp, this.mate, this.pv = ''});
-
-  @override
-  String toString() {
-    if (mate != null) return 'depth:$depth mate:$mate pv:$pv';
-    if (cp != null) return 'depth:$depth cp:$cp pv:$pv';
-    return 'depth:$depth pv:$pv';
-  }
-}
 
 /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine
 class StockfishEngineService {
@@ -31,11 +16,12 @@ class StockfishEngineService {
   StreamSubscription<String>? _stderrSub;
 
   final StreamController<String> _raw = StreamController.broadcast();
-  final StreamController<Evaluation> _eval = StreamController.broadcast();
+  final StreamController<ExtendedEvaluation> _eval =
+      StreamController.broadcast();
   final StreamController<String> _bestmove = StreamController.broadcast();
 
   Stream<String> get raw => _raw.stream;
-  Stream<Evaluation> get evaluations => _eval.stream;
+  Stream<ExtendedEvaluation?> get evaluations => _eval.stream;
   Stream<String> get bestmoves => _bestmove.stream;
 
   Future<void> start({
@@ -47,14 +33,14 @@ class StockfishEngineService {
     _stockfish = Stockfish();
 
     _stdoutSub = _stockfish.stdout.listen((line) {
-      debugPrint('###stdout line $line ###');
+      // debugPrint('###stdout line $line ###');
 
       _raw.add(line);
       _handleLine(line);
     });
 
     _stderrSub = _stockfish.stderr.listen((err) {
-      debugPrint('*** stderr line $err ***');
+      // debugPrint('*** stderr line $err ***');
 
       _raw.add('ERR: $err');
     });
@@ -63,9 +49,12 @@ class StockfishEngineService {
 
     _stockfish.stdin = 'uci';
 
-    await _waitFor((l) => l.contains('uciok'), Duration(seconds: 3));
+    // await _waitFor((l) => l.contains('uciok'), Duration(seconds: 3));
+
+    // _stockfish.stdin = "setoption name UCI_ShowWDL value true";
+
     if (skill != null && !uciLimitStrength) {
-      debugPrint('skill = $skill');
+      // debugPrint('skill = $skill');
       _stockfish.stdin = 'setoption name Skill Level value $skill';
       _stockfish.stdin = 'setoption name Hash value 32';
     }
@@ -77,7 +66,7 @@ class StockfishEngineService {
       // UCI_Elo 2800 = مستوى أبطال العالم.
       _stockfish.stdin = "setoption name UCI_LimitStrength value true";
       _stockfish.stdin = "setoption name UCI_Elo value $uciElo";
-      debugPrint("uciElo: $uciElo");
+      // debugPrint("uciElo: $uciElo");
     }
     // عدد الـ CPU threads المستعملة.
     //     1 = أضعف (يستخدم نواة واحدة فقط).
@@ -116,8 +105,15 @@ class StockfishEngineService {
     bool Function(String) predicate,
     Duration timeout,
   ) async {
-    debugPrint(' _waitFor...');
-    await raw.firstWhere(predicate).timeout(timeout);
+    // debugPrint(' _waitFor...');
+    await raw
+        .firstWhere(predicate)
+        .timeout(
+          timeout,
+          // onTimeout: () {
+          //   return '';
+          // },
+        );
   }
 
   Future<void> isReady() async {
@@ -133,7 +129,7 @@ class StockfishEngineService {
   void setPosition({String? fen, List<String>? moves}) {
     var cmd = fen != null ? 'position fen $fen' : 'position startpos';
     if (moves != null && moves.isNotEmpty) cmd += ' moves ${moves.join(' ')}';
-    debugPrint("Move: $cmd  ");
+    // debugPrint("Move: $cmd  ");
     _stockfish.stdin = cmd;
   }
 
@@ -148,15 +144,15 @@ class StockfishEngineService {
     return _parseBestmove(line);
   }
 
-  Future<String> goMovetime(
+  void goMovetime(
     int ms, {
     Duration timeout = const Duration(seconds: 2),
   }) async {
     _stockfish.stdin = 'go movetime $ms';
-    final line = await raw
-        .firstWhere((l) => l.startsWith('bestmove'))
-        .timeout(timeout);
-    return _parseBestmove(line);
+    // final line = await raw
+    //     .firstWhere((l) => l.startsWith('bestmove'))
+    //     .timeout(timeout);
+    // return _parseBestmove(line);
   }
 
   Future<void> stop() async {
@@ -174,7 +170,7 @@ class StockfishEngineService {
   }
 
   void _handleLine(String line) {
-    debugPrint('_handleLine: $line');
+    // debugPrint('_handleLine: $line');
 
     if (line.startsWith('info')) {
       final eval = _parseInfoLine(line);
@@ -184,26 +180,49 @@ class StockfishEngineService {
     }
   }
 
-  Evaluation? _parseInfoLine(String line) {
+  ExtendedEvaluation? _parseInfoLine(String line) {
     try {
       final depthMatch = RegExp(r'depth\s+(\d+)').firstMatch(line);
       final depth = depthMatch != null ? int.parse(depthMatch.group(1)!) : 0;
 
       final cpMatch = RegExp(r'score\s+cp\s+(-?\d+)').firstMatch(line);
+
       final mateMatch = RegExp(r'score\s+mate\s+(-?\d+)').firstMatch(line);
 
-      final pvMatch = RegExp(r'pv\s+(.+)\$').firstMatch(line);
-      final pv = pvMatch != null ? pvMatch.group(1)!.trim() : '';
+      final pvMatch = RegExp(r'pv\s+(.+)$').firstMatch(line);
 
-      if (cpMatch != null) {
-        final cp = int.parse(cpMatch.group(1)!);
-        return Evaluation(depth: depth, cp: cp, pv: pv);
-      }
-      if (mateMatch != null) {
-        final mate = int.parse(mateMatch.group(1)!);
-        return Evaluation(depth: depth, mate: mate, pv: pv);
-      }
-      return Evaluation(depth: depth, pv: pv);
+      final String pv = pvMatch != null ? pvMatch.group(1)!.trim() : '';
+
+      final wdlMatch = RegExp(r'wdl\s+(\d+)\s+(\d+)\s+(\d+)').firstMatch(line);
+
+      final int? cp = cpMatch != null ? int.parse(cpMatch.group(1)!) : null;
+      final int? mate = mateMatch != null
+          ? int.parse(mateMatch.group(1)!)
+          : null;
+
+      ///
+      final int? wdlWin = wdlMatch != null
+          ? int.parse(wdlMatch.group(1)!)
+          : null;
+      final int? wdlDraw = wdlMatch != null
+          ? int.parse(wdlMatch.group(2)!)
+          : null;
+      final int? wdlLoss = wdlMatch != null
+          ? int.parse(wdlMatch.group(3)!)
+          : null;
+
+      debugPrint(
+        "pv:$pv , pvMatch:$pvMatch , depth:$depth  , cpMatch:$cp , mateMatch:$mateMatch",
+      );
+      return ExtendedEvaluation(
+        depth: depth,
+        pv: pv,
+        cp: cp,
+        mate: mate,
+        wdlWin: wdlWin,
+        wdlDraw: wdlDraw,
+        wdlLoss: wdlLoss,
+      );
     } catch (e) {
       debugPrint("error _parseInfoLine $e");
       return null;
@@ -225,11 +244,6 @@ class StockfishEngineService {
   Future<void> dispose() async {
     _stdoutSub?.cancel();
     _stderrSub?.cancel();
-    // try {
-    //   _stockfish.stdin = 'quit';
-    // } catch (e) {
-    //   debugPrint("error dispose $e");
-    // }
     try {
       _stockfish.dispose();
     } catch (e) {

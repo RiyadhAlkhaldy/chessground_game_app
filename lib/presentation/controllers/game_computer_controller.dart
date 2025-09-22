@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/domain/services/chess_clock_service.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../../data/usecases/play_sound_usecase.dart';
+import '../../domain/entities/extended_evaluation.dart';
 import '../../domain/services/stockfish_engine_service.dart';
 import 'abstract_game_controller.dart';
 import 'chess_board_settings_controller.dart';
@@ -30,10 +32,10 @@ abstract class GameAiController extends AbstractGameController
     with WidgetsBindingObserver {
   final PlaySoundUseCase plySound;
   final SideChoosingController choosingCtrl;
+  ChessClockService? clockCtrl;
 
   final StockfishEngineService engineService;
-  final List<String> _moves = [];
-  // List<String> get pastMoves => [];
+  final List<String> _pastMoves = [];
   final List<String> _futureMoves = [];
   int skill = 10;
   int moveTimeMs = 1000;
@@ -49,6 +51,18 @@ abstract class GameAiController extends AbstractGameController
   // thinking flag
   // final RxBool isThinking = false.obs;
   final random = Random();
+  RxDouble score = 0.0.obs;
+  Rx<ExtendedEvaluation?> evaluation = null.obs;
+
+  /// get Result
+  GameResult getResult() {
+    if (position.value.isCheckmate) return GameResult.checkmate;
+    if (position.value.isStalemate) return GameResult.stalemate;
+    if (position.value.isInsufficientMaterial || position.value.isVariantEnd) {
+      return GameResult.draw;
+    }
+    return GameResult.ongoing;
+  }
 
   @override
   void undoMove() {
@@ -59,9 +73,12 @@ abstract class GameAiController extends AbstractGameController
     validMoves = makeLegalMoves(position.value);
 
     ///
-    _futureMoves.add(_moves.removeLast());
+    debugPrint('_pastMoves ${_pastMoves.length}');
+    _futureMoves.add(_pastMoves.removeLast());
+    debugPrint('_pastMoves ${_pastMoves.length}');
+
     update();
-    engineService.setPosition(moves: _moves);
+    engineService.setPosition(moves: _pastMoves);
   }
 
   @override
@@ -73,20 +90,18 @@ abstract class GameAiController extends AbstractGameController
     validMoves = makeLegalMoves(position.value);
 
     ///
-    _moves.add(_futureMoves.removeLast());
-    update();
-    engineService.setPosition(moves: _moves);
-  }
+    debugPrint('_pastMoves ${_pastMoves.length}');
+    _pastMoves.add(_futureMoves.removeLast());
+    debugPrint('_pastMoves ${_pastMoves.length}');
 
-  // Future<void> _handleAiTurn() async {
-  //   if (position.value.turn != humanSide) {
-  //     playAiMove();
-  //   }
-  // }
+    update();
+    engineService.setPosition(moves: _pastMoves);
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
+    clockCtrl!.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _startStockfishIfNecessary();
     } else if (state == AppLifecycleState.paused ||
@@ -109,6 +124,7 @@ abstract class GameAiController extends AbstractGameController
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
     engineService.dispose();
+    clockCtrl!.onClose();
     super.onClose();
   }
 
@@ -116,7 +132,7 @@ abstract class GameAiController extends AbstractGameController
   void reset() {
     past.clear();
     future.clear();
-    _moves.clear();
+    _pastMoves.clear();
     _futureMoves.clear();
     position.value = Chess.initial;
     lastMove = null;
@@ -124,6 +140,7 @@ abstract class GameAiController extends AbstractGameController
     validMoves = makeLegalMoves(position.value);
     engineService.ucinewgame();
     promotionMove.value = null;
+    clockCtrl!.reset();
     debugPrint('reset to $fen');
   }
 
@@ -166,26 +183,50 @@ abstract class GameAiController extends AbstractGameController
       }
     }
     updateTextState();
+
     await playAiMove();
   }
 
   // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
   void _makeMove(NormalMove move) {
-    _moves.add(move.uci);
+    _pastMoves.add(move.uci);
     // 2. أضف الوضع الجديد إلى سجل التاريخ
     past.add(position.value);
     // 3. امسح سجل الـ Redo لأننا بدأنا مسارًا جديدًا للحركات
     future.clear();
     // 1. قم بتطبيق النقلة على الوضع الحالي
     position.value = position.value.playUnchecked(move);
+    clockCtrl!.switchTurn(position.value.turn);
     lastMove = move;
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
-    engineService.setPosition(moves: _moves);
+    engineService.setPosition(moves: _pastMoves);
 
     promotionMove.value = null;
 
     // plySound.executeMoveSound();
+  }
+
+  void _makeMoveAi(String best) async {
+    debugPrint("best move from stockfish: $best");
+
+    var bestMove = NormalMove.fromUci(best);
+    if (position.value.isLegal(bestMove) == false) return;
+
+    if (isPromotionPawnMove(bestMove)) {
+      // TODO solve the promotion pawn with stockfish
+      final potentialRoles = Role.values
+          .where((role) => role != Role.pawn)
+          .toList();
+      final role = potentialRoles[random.nextInt(potentialRoles.length)];
+      bestMove = bestMove.withPromotion(role);
+    } else if (position.value.isLegal(bestMove)) {
+      _makeMove(bestMove);
+      update();
+      tryPlayPremove();
+    }
+
+    updateTextState();
   }
 
   Future<void> playAiMove() async {
@@ -198,28 +239,8 @@ abstract class GameAiController extends AbstractGameController
           NormalMove(from: entry.key, to: dest),
     ];
 
-    ///
     if (allMoves.isNotEmpty) {
-      final best = await engineService.goMovetime(moveTimeMs);
-      debugPrint("best move from stockfish: $best");
-
-      var bestMove = NormalMove.fromUci(best);
-      if (position.value.isLegal(bestMove) == false) return;
-
-      if (isPromotionPawnMove(bestMove)) {
-        // TODO solve the promotion pawn with stockfish
-        final potentialRoles = Role.values
-            .where((role) => role != Role.pawn)
-            .toList();
-        final role = potentialRoles[random.nextInt(potentialRoles.length)];
-        bestMove = bestMove.withPromotion(role);
-      } else if (position.value.isLegal(bestMove)) {
-        _makeMove(bestMove);
-        update();
-        tryPlayPremove();
-      }
-
-      updateTextState();
+      engineService.goMovetime(moveTimeMs);
     }
   }
 
@@ -301,6 +322,16 @@ class GameComputerController extends GameAiController {
     validMoves = makeLegalMoves(position.value);
     skill = choosingCtrl.aiDepth.value;
     moveTimeMs = choosingCtrl.timeMs.toInt();
+    clockCtrl = Get.put(
+      ChessClockService(
+        initialTimeMs: (0.5 * 60 * 1000).toInt(),
+        incrementMs: 1000,
+        onTimeout: (player) {
+          print('time over the ${player.opposite.name} player is winner');
+        },
+      ),
+    );
+    clockCtrl!.start();
     engineService
         .start(
           skill: skill,
@@ -314,12 +345,17 @@ class GameComputerController extends GameAiController {
           // _handleAiTurn();
         });
     engineService.evaluations.listen((ev) {
-      debugPrint('EVAL -> $ev');
+      debugPrint(ev.toString());
+      // if (ev != null) {
+      // evaluation.value = ev;
+      // score.value = evaluation.value!.whiteWinPercent();
+      // }
     });
-
+    engineService.bestmoves.listen((event) {
+      debugPrint('bestmoves: $event');
+      _makeMoveAi(event);
+    });
     // ever(position, (_) {
-    //   _handleAiTurn();
-    //   updateTextState();
     // });
   }
 
