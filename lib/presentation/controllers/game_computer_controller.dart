@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/domain/services/chess_clock_service.dart';
 import 'package:dartchess/dartchess.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
@@ -26,8 +27,6 @@ String pieceShiftMethodLabel(PieceShiftMethod method) {
   }
 }
 
-enum Mode { botPlay, freePlay }
-
 abstract class GameAiController extends AbstractGameController
     with WidgetsBindingObserver {
   final PlaySoundUseCase plySound;
@@ -37,14 +36,12 @@ abstract class GameAiController extends AbstractGameController
   final StockfishEngineService engineService;
   final List<String> _pastMoves = [];
   final List<String> _futureMoves = [];
-  int skill = 10;
   int moveTimeMs = 1000;
 
   GameAiController(this.choosingCtrl, this.engineService, this.plySound);
-
-  Rx<NormalMove?> promotionMove = null.obs;
-  Rx<NormalMove>? premove;
-  Mode playMode = Mode.botPlay;
+  bool canPop = false;
+  NormalMove? promotionMove;
+  NormalMove? premove;
   PlayerSide playerSide = PlayerSide.none;
   Side humanSide = Side.white;
   final Rx<StockfishState> stockfishState = StockfishState.disposed.obs;
@@ -54,11 +51,15 @@ abstract class GameAiController extends AbstractGameController
   RxDouble score = 0.0.obs;
   Rx<ExtendedEvaluation?> evaluation = null.obs;
 
-  /// get Result
+  // النسخة المعدلة من getResult
   GameResult getResult() {
     if (position.value.isCheckmate) return GameResult.checkmate;
     if (position.value.isStalemate) return GameResult.stalemate;
-    if (position.value.isInsufficientMaterial || position.value.isVariantEnd) {
+    if (position.value.isInsufficientMaterial || position.value.isVariantEnd
+    // || position.value.isFiftyMoveRule ||     // <-- إضافة جديدة
+    // position.value.isThreefoldRepetition
+    ) {
+      // <-- إضافة جديدة
       return GameResult.draw;
     }
     return GameResult.ongoing;
@@ -77,8 +78,8 @@ abstract class GameAiController extends AbstractGameController
     _futureMoves.add(_pastMoves.removeLast());
     debugPrint('_pastMoves ${_pastMoves.length}');
 
+    engineService.setPosition(fen: position.value.fen);
     update();
-    engineService.setPosition(moves: _pastMoves);
   }
 
   @override
@@ -94,8 +95,8 @@ abstract class GameAiController extends AbstractGameController
     _pastMoves.add(_futureMoves.removeLast());
     debugPrint('_pastMoves ${_pastMoves.length}');
 
+    engineService.setPosition(fen: position.value.fen);
     update();
-    engineService.setPosition(moves: _pastMoves);
   }
 
   @override
@@ -135,11 +136,10 @@ abstract class GameAiController extends AbstractGameController
     _pastMoves.clear();
     _futureMoves.clear();
     position.value = Chess.initial;
-    lastMove = null;
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
     engineService.ucinewgame();
-    promotionMove.value = null;
+    promotionMove = null;
     clockCtrl!.reset();
     debugPrint('reset to $fen');
   }
@@ -147,48 +147,51 @@ abstract class GameAiController extends AbstractGameController
   void tryPlayPremove() {
     if (premove != null) {
       Timer.run(() {
-        playMove(premove!.value, isPremove: true);
+        onUserMoveAgainstAI(premove!, isPremove: true);
       });
     }
   }
 
   void onSetPremove(NormalMove? move) {
     debugPrint("onSetPremove $move");
-    premove?.value = move!;
-    update([]);
+    premove = move;
+    update();
   }
 
   void onPromotionSelection(Role? role) {
     debugPrint('onPromotionSelection: $role');
     if (role == null) {
       onPromotionCancel();
-    } else if (promotionMove.value != null) {
-      playMove(promotionMove.value!.withPromotion(role));
+    } else if (promotionMove != null) {
+      debugPrint('promotionMove != null');
+      onUserMoveAgainstAI(promotionMove!.withPromotion(role));
     }
   }
 
   void onPromotionCancel() {
-    promotionMove.value = null;
-    update([]);
+    update(promotionMove = null);
   }
 
-  void playMove(NormalMove move, {bool? isDrop, bool? isPremove}) async {
+  void onUserMoveAgainstAI(
+    NormalMove move, {
+    bool? isDrop,
+    bool? isPremove,
+  }) async {
     if (isPromotionPawnMove(move)) {
-      promotionMove.value = move;
+      promotionMove = move;
       update();
     } else if (position.value.isLegal(move)) {
-      _makeMove(move);
-      if (isPremove == true) {
-        premove = null;
-      }
+      debugPrint('onUserMoveAgainstAI $move');
+      _applyMove(move);
+      validMoves = IMap(const {});
+      promotionMove = null;
+      update();
+      await playAiMove();
     }
-    updateTextState();
-
-    await playAiMove();
   }
 
   // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
-  void _makeMove(NormalMove move) {
+  void _applyMove(NormalMove move) {
     _pastMoves.add(move.uci);
     // 2. أضف الوضع الجديد إلى سجل التاريخ
     past.add(position.value);
@@ -197,13 +200,9 @@ abstract class GameAiController extends AbstractGameController
     // 1. قم بتطبيق النقلة على الوضع الحالي
     position.value = position.value.playUnchecked(move);
     clockCtrl!.switchTurn(position.value.turn);
-    lastMove = move;
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
-    engineService.setPosition(moves: _pastMoves);
-
-    promotionMove.value = null;
-
+    engineService.setPosition(fen: position.value.fen);
     // plySound.executeMoveSound();
   }
 
@@ -213,19 +212,11 @@ abstract class GameAiController extends AbstractGameController
     var bestMove = NormalMove.fromUci(best);
     if (position.value.isLegal(bestMove) == false) return;
 
-    if (isPromotionPawnMove(bestMove)) {
-      // TODO solve the promotion pawn with stockfish
-      final potentialRoles = Role.values
-          .where((role) => role != Role.pawn)
-          .toList();
-      final role = potentialRoles[random.nextInt(potentialRoles.length)];
-      bestMove = bestMove.withPromotion(role);
-    } else if (position.value.isLegal(bestMove)) {
-      _makeMove(bestMove);
+    if (position.value.isLegal(bestMove)) {
+      _applyMove(bestMove);
       update();
       tryPlayPremove();
     }
-
     updateTextState();
   }
 
@@ -301,6 +292,39 @@ abstract class GameAiController extends AbstractGameController
       return;
     }
   }
+  // أضف هذه الدالة داخل GameComputerController
+
+  void _handleTimeout(Side timedOutPlayer) {
+    // أوقف أي عمليات أخرى في اللعبة
+    engineService.stop(); // إيقاف تفكير المحرك
+    clockCtrl!.stop();
+
+    final winner = timedOutPlayer.opposite;
+
+    // تحديث نص الحالة
+    statusText.value =
+        'انتهى الوقت! الفائز هو: ${winner == Side.white ? 'الأبيض' : 'الأسود'}';
+    update(); // لتحديث الواجهة
+
+    // هنا يمكنك إضافة منطق حفظ اللعبة في قاعدة البيانات
+    // GameHistoryService.saveGame(...)
+  }
+
+  void agreeToDraw() {
+    // تحقق أن اللعبة ما زالت مستمرة
+    if (position.value.isGameOver) return;
+
+    // إيقاف كل شيء
+    engineService.stop();
+    clockCtrl!.stop();
+
+    // تحديث نص الحالة
+    statusText.value = 'تعادل بالاتفاق بين الطرفين.';
+    update();
+
+    // هنا يمكنك إضافة منطق حفظ اللعبة في قاعدة البيانات بنتيجة تعادل
+    // GameHistoryService.saveGame(...)
+  }
 }
 
 class GameComputerController extends GameAiController {
@@ -316,36 +340,30 @@ class GameComputerController extends GameAiController {
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
-    debugPrint(position.value.fen);
-    debugPrint(fen);
+    // debugPrint(position.value.fen);
+    // debugPrint(fen);
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
-    skill = choosingCtrl.aiDepth.value;
-    moveTimeMs = choosingCtrl.timeMs.toInt();
     clockCtrl = Get.put(
       ChessClockService(
         initialTimeMs: (0.5 * 60 * 1000).toInt(),
         incrementMs: 1000,
         onTimeout: (player) {
-          print('time over the ${player.opposite.name} player is winner');
+          debugPrint('time over the ${player.opposite.name} player is winner');
+          _handleTimeout(player);
         },
       ),
     );
-    clockCtrl!.start();
-    engineService
-        .start(
-          skill: skill,
-          uciLimitStrength: true,
-          uciElo: choosingCtrl.uciElo.toInt(),
-        )
-        .then((_) {
-          engineService.setPosition(fen: fen);
-          stockfishState.value = StockfishState.ready;
-          _setPlayerSide();
-          // _handleAiTurn();
-        });
+    engineService.start().then((_) {
+      _applyStockfishSettings();
+      engineService.setPosition(fen: fen);
+      stockfishState.value = StockfishState.ready;
+      clockCtrl!.start();
+      _setPlayerSide();
+    });
+    //
     engineService.evaluations.listen((ev) {
-      debugPrint(ev.toString());
+      // debugPrint(ev.toString());
       // if (ev != null) {
       // evaluation.value = ev;
       // score.value = evaluation.value!.whiteWinPercent();
@@ -368,5 +386,51 @@ class GameComputerController extends GameAiController {
       ctrlBoardSettings.orientation.value = Side.black;
       playAiMove();
     }
+  }
+
+  // Method to apply the settings from SideChoosingController
+  void _applyStockfishSettings() {
+    final skillLevel = choosingCtrl.skillLevel.value;
+    final depth = choosingCtrl.depth.value;
+    final uciLimitStrength = choosingCtrl.uciLimitStrength.value;
+    final uciElo = choosingCtrl.uciElo.value;
+    final moveTime = choosingCtrl.moveTime.value;
+    moveTimeMs = choosingCtrl.moveTime.toInt();
+
+    // Apply UCI_Elo if UCI_LimitStrength is enabled
+    if (uciLimitStrength) {
+      // Apply UCI_LimitStrength option
+      engineService.setOption('UCI_LimitStrength', uciLimitStrength);
+      engineService.setOption('UCI_Elo', uciElo);
+      // Optional: Set depth to a low value as it's not the primary control
+      // when UCI_LimitStrength is true
+      engineService.setOption(
+        'Skill Level',
+        20,
+      ); // Setting a high skill level by default
+    } else {
+      // Use Skill Level and Depth if UCI_LimitStrength is disabled
+      engineService.setOption('Skill Level', skillLevel);
+      engineService.setOption('Depth', depth);
+    }
+
+    // Always apply Move Time
+    engineService.setOption('Move Time', moveTime);
+
+    // Now, let's log the settings to confirm they are applied
+    _logAppliedSettings();
+  }
+
+  // Helper method to log the settings
+  void _logAppliedSettings() {
+    debugPrint('Stockfish Settings Applied:');
+    debugPrint('  UCI_LimitStrength: ${choosingCtrl.uciLimitStrength.value}');
+    if (choosingCtrl.uciLimitStrength.value) {
+      debugPrint('  UCI_Elo: ${choosingCtrl.uciElo.value}');
+    } else {
+      debugPrint('  Skill Level: ${choosingCtrl.skillLevel.value}');
+      debugPrint('  Depth: ${choosingCtrl.depth.value}');
+    }
+    debugPrint('  Move Time: ${choosingCtrl.moveTime.value}');
   }
 }

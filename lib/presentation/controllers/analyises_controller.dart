@@ -74,7 +74,7 @@ class AnalysisController extends GameComputerController {
     position.value = position.value.playUnchecked(move);
 
     // 4. تحديث باقي متغيرات الحالة
-    lastMove = move;
+    // lastMove = move;
     movesUci.add(move.uci);
     moveHistorySan.add({'san': move.uci, 'fen': position.value.fen});
 
@@ -138,7 +138,7 @@ class AnalysisController extends GameComputerController {
     future.clear();
     movesUci.clear();
     moveHistorySan.clear();
-    lastMove = null;
+    // lastMove = null;
     _analyzeCurrentPosition();
   }
 

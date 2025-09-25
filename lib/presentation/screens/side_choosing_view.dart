@@ -1,4 +1,4 @@
-import 'package:chessground_game_app/presentation/widgets/side_choosing_widget.dart';
+import 'package:chessground_game_app/presentation/screens/side_choosing/widgets/side_choosing_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -86,7 +86,7 @@ class SideChoosingView extends StatelessWidget {
                           'Thinking time : ${controller.timeMs.toInt()} millis',
                         ),
                         Slider(
-                          value: controller.uciElo,
+                          value: controller.uciElo.toDouble(),
                           onChanged: controller.updateUciElo,
                           min: 1320,
                           max: 3190,

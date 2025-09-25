@@ -387,8 +387,9 @@ class Evaluation {
         final left = f - 1, right = f + 1;
         final hasLeft = left >= 0 && countsByFile[left] > 0;
         final hasRight = right < 8 && countsByFile[right] > 0;
-        if (!hasLeft && !hasRight)
+        if (!hasLeft && !hasRight) {
           score -= sign * EvalWeights.isolatedPawnPenalty;
+        }
 
         // backward (تقريب): لا يوجد بيدق صديق متقدم على نفس الملف لدعمه
         final friendAhead = pawns.any(
@@ -461,15 +462,16 @@ class Evaluation {
         for (final sq in fileSquares) {
           final p = b.pieceAt(sq);
           if (p != null && p.kind.role == Role.pawn) {
-            if (b.sideAt(sq) == side)
+            if (b.sideAt(sq) == side) {
               hasFriendlyPawn = true;
-            else
+            } else {
               hasEnemyPawn = true;
+            }
           }
         }
-        if (!hasFriendlyPawn && !hasEnemyPawn)
+        if (!hasFriendlyPawn && !hasEnemyPawn) {
           score += sign * EvalWeights.rookOnOpenFile;
-        else if (!hasFriendlyPawn && hasEnemyPawn)
+        } else if (!hasFriendlyPawn && hasEnemyPawn)
           score += sign * EvalWeights.rookOnSemiOpenFile;
 
         // rook on 7th (منظور أبيض وعلى العكس للأسود)

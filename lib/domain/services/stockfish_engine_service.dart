@@ -26,22 +26,15 @@ class StockfishEngineService {
 
   Future<void> start({
     Duration waitBeforeUci = const Duration(milliseconds: 2000),
-    int? skill,
-    bool uciLimitStrength = false,
-    int uciElo = 1320,
   }) async {
     _stockfish = Stockfish();
 
     _stdoutSub = _stockfish.stdout.listen((line) {
-      // debugPrint('###stdout line $line ###');
-
       _raw.add(line);
       _handleLine(line);
     });
 
     _stderrSub = _stockfish.stderr.listen((err) {
-      // debugPrint('*** stderr line $err ***');
-
       _raw.add('ERR: $err');
     });
 
@@ -49,25 +42,25 @@ class StockfishEngineService {
 
     _stockfish.stdin = 'uci';
 
-    // await _waitFor((l) => l.contains('uciok'), Duration(seconds: 3));
+    await _waitFor((l) => l.contains('uciok'), Duration(seconds: 3));
 
     // _stockfish.stdin = "setoption name UCI_ShowWDL value true";
 
-    if (skill != null && !uciLimitStrength) {
-      // debugPrint('skill = $skill');
-      _stockfish.stdin = 'setoption name Skill Level value $skill';
-      _stockfish.stdin = 'setoption name Hash value 32';
-    }
+    // if (skill != null && !uciLimitStrength) {
+    //   // debugPrint('skill = $skill');
+    //   _stockfish.stdin = 'setoption name Skill Level value $skill';
+    //   _stockfish.stdin = 'setoption name Hash value 32';
+    // }
 
-    if (uciLimitStrength) {
-      //المدى: 1320 → 3190 Elo (يعتمد على نسخة Stockfish).
-      // UCI_Elo 1350 = يلعب بمستوى مبتدئ.
-      // UCI_Elo 2000 = مستوى لاعب نادي.
-      // UCI_Elo 2800 = مستوى أبطال العالم.
-      _stockfish.stdin = "setoption name UCI_LimitStrength value true";
-      _stockfish.stdin = "setoption name UCI_Elo value $uciElo";
-      // debugPrint("uciElo: $uciElo");
-    }
+    // if (uciLimitStrength) {
+    //المدى: 1320 → 3190 Elo (يعتمد على نسخة Stockfish).
+    // UCI_Elo 1350 = يلعب بمستوى مبتدئ.
+    // UCI_Elo 2000 = مستوى لاعب نادي.
+    // UCI_Elo 2800 = مستوى أبطال العالم.
+    // _stockfish.stdin = "setoption name UCI_LimitStrength value true";
+    // _stockfish.stdin = "setoption name UCI_Elo value $uciElo";
+    // debugPrint("uciElo: $uciElo");
+    // }
     // عدد الـ CPU threads المستعملة.
     //     1 = أضعف (يستخدم نواة واحدة فقط).
     // 4 أو أكثر = أقوى (يستفيد من تعدد الأنوية).
@@ -126,6 +119,10 @@ class StockfishEngineService {
     await isReady();
   }
 
+  void setOption(String name, dynamic value) =>
+      _stockfish.stdin = 'setoption name $name value $value';
+
+  ///
   void setPosition({String? fen, List<String>? moves}) {
     var cmd = fen != null ? 'position fen $fen' : 'position startpos';
     if (moves != null && moves.isNotEmpty) cmd += ' moves ${moves.join(' ')}';
@@ -229,6 +226,7 @@ class StockfishEngineService {
     }
   }
 
+  ///
   Future<void> stopStockfish() async {
     if (_stockfish.state.value == StockfishState.disposed ||
         _stockfish.state.value == StockfishState.error) {

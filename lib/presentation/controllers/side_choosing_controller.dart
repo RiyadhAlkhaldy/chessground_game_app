@@ -19,7 +19,25 @@ class SideChoosingController extends GetxController {
   // Reactive variable to track the selected game mode
 
   RxInt aiDepth = 4.obs; // AI depth for AI player
+  // Reactive variables for player color and game options
+  // final Rx<Color> choseColor = Rx<Color>(Colors.white);
+  // final showMoveHints = false.obs;
 
+  // New reactive variables for Stockfish engine options
+  final skillLevel = 20.obs; // Default to max skill level
+  final depth = 20.obs; // Default to depth 20
+  final uciElo = 2850.obs; // Default to a high Elo
+  final moveTime = 1000.obs; // Default to 1000 ms (1 second)
+  final uciLimitStrength = false.obs;
+  @override
+  void onInit() {
+    super.onInit();
+    debugPrint("SideChoosingController initialized");
+  }
+
+  // void changeValuecolorPlayer(Color value) {
+  //   choseColor.value = value;
+  // }
   void changeValuecolorPlayer(SideChoosing playerColor) {
     if (playerColor == SideChoosing.white) {
       meColor.value = playerColor;
@@ -45,9 +63,9 @@ class SideChoosingController extends GetxController {
     update();
   }
 
-  var uciElo = 1320.0;
+  // var uciElo = 1320.0;
   void updateUciElo(double newValue) {
-    uciElo = newValue;
+    uciElo.value = newValue.toInt();
     update();
   }
 }

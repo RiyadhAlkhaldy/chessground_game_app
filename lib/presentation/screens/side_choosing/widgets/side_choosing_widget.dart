@@ -2,7 +2,7 @@ import 'package:chess_vectors_flutter/chess_vectors_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/side_choosing_controller.dart';
+import '../../../controllers/side_choosing_controller.dart';
 
 class SideChosingWidget extends StatelessWidget {
   final SideChoosingController controller;

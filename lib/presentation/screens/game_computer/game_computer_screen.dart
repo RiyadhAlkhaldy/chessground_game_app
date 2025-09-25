@@ -2,6 +2,7 @@ import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../domain/services/stockfish_engine_service.dart';
 import '../../controllers/chess_board_settings_controller.dart';
 import '../../controllers/game_computer_controller.dart';
 import '../../widgets/chess_board_settings_widgets.dart';
@@ -131,21 +132,144 @@ class GameComputerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      primary: MediaQuery.of(context).orientation == Orientation.portrait,
-      appBar: AppBar(
-        title: GetX<GameComputerController>(
-          builder: (_) {
-            return Text(ctrl.statusText.value);
-          },
-        ),
-      ),
+    return PopScope(
+      canPop: false, // Prevents automatic exit
 
-      body: OrientationBuilder(
-        builder: (context, orientation) => orientation == Orientation.portrait
-            ? buildPortrait()
-            : buildLandscape(),
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          return;
+        }
+        if (ctrl.getResult() != GameResult.ongoing) {
+          Get.back();
+        } else {
+          final shouldExit = await _showExitConfirmationDialog(context);
+
+          if (shouldExit == true) {
+            if (context.mounted) {
+              // If the user confirms, show the second dialog
+              await _showGameOverDialog(context);
+              // And then, after closing the second dialog, navigate back
+              if (context.mounted) {
+                Get.back();
+              }
+            }
+          }
+        }
+      },
+      child: Scaffold(
+        primary: MediaQuery.of(context).orientation == Orientation.portrait,
+        appBar: AppBar(
+          title: GetX<GameComputerController>(
+            builder: (_) {
+              return Text(ctrl.statusText.value);
+            },
+          ),
+        ),
+
+        body: OrientationBuilder(
+          builder: (context, orientation) => orientation == Orientation.portrait
+              ? buildPortrait()
+              : buildLandscape(),
+        ),
       ),
     );
   }
+} // هذه الدالة تعرض نافذة التأكيد
+
+// Future<bool?> _showExitConfirmationDialog(BuildContext context) {
+//   return showDialog<bool>(
+//     context: context,
+//     builder: (context) {
+//       return AlertDialog(
+//         title: Text('إنهاء اللعبة؟'),
+//         content: Text('هل أنت متأكد أنك تريد الاستسلام وإنهاء اللعبة؟'),
+//         actions: <Widget>[
+//           TextButton(
+//             onPressed: () {
+//               Navigator.of(context).pop(false); // لا تسمح بالخروج
+//             },
+//             child: Text('إلغاء'),
+//           ),
+//           TextButton(
+//             onPressed: () {
+//               Navigator.of(context).pop(true); // تسمح بالخروج
+//             },
+//             child: Text('استسلام'),
+//           ),
+//         ],
+//       );
+//     },
+//   );
+// }
+
+Future<bool> _confirmExit(BuildContext context) async {
+  final res = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('إنهاء اللعبة؟'),
+      content: const Text('هل تريد الخروج من المباراة الحالية؟'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('إلغاء'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('خروج'),
+        ),
+      ],
+    ),
+  );
+  return res ?? false;
+}
+
+// هذه الدالة تعرض نافذة تأكيد الاستسلام
+Future<bool?> _showExitConfirmationDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('إنهاء اللعبة؟'),
+        content: Text('هل أنت متأكد أنك تريد الاستسلام وإنهاء اللعبة؟'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false); // لا تسمح بالخروج
+            },
+            child: Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true); // تسمح بالخروج
+            },
+            child: Text('استسلام'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+// هذه الدالة الجديدة تعرض نافذة "نهاية اللعبة"
+Future<void> _showGameOverDialog(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // يمنع إغلاقها بالضغط خارجها
+    builder: (context) {
+      return AlertDialog(
+        title: Text('انتهت اللعبة!'),
+        content: Text(
+          'لقد خسرت هذه اللعبة. يمكنك الآن العودة إلى الصفحة الرئيسية.',
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // إغلاق النافذة المنبثقة
+            },
+            child: Text('حسناً'),
+          ),
+        ],
+      );
+    },
+  );
 }
