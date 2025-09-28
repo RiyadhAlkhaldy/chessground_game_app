@@ -3,6 +3,8 @@ import 'package:chessground_game_app/presentation/screens/side_choosing/widgets/
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../routes/app_pages.dart';
+
 class SideChoosingView extends StatelessWidget {
   final controller = Get.put(SideChoosingController());
 
@@ -33,6 +35,36 @@ class SideChoosingView extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                /// to play with time and computer
+                controller.withTime.value
+                    ? Obx(
+                        () => Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Determine Playing Time (Minute): ${controller.playTime.value}',
+                            ),
+
+                            Slider(
+                              value: controller.playTime.value.toDouble(),
+                              min: 1,
+                              max: 10,
+                              divisions: 10,
+                              label: controller.playTime.value.toString(),
+                              onChanged: (double value) {
+                                controller.playTime.value = value.toInt();
+                              },
+                              activeColor: Colors.cyanAccent,
+                              inactiveColor: Colors.cyan.shade200.withOpacity(
+                                0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Container(),
+
                 const Text(
                   "اختر خيارات اللعب",
                   textAlign: TextAlign.center,
@@ -90,21 +122,6 @@ class SideChoosingView extends StatelessWidget {
                               0.3,
                             ),
                           ),
-                          // Depth Slider
-                          Text('Depth: ${controller.depth.value}'),
-                          Slider(
-                            value: controller.depth.value.toDouble(),
-                            min: 1,
-                            max: 30,
-                            divisions: 29,
-                            label: controller.depth.value.toString(),
-                            onChanged: (double value) {
-                              controller.depth.value = value.toInt();
-                            },
-                            activeColor: Colors.deepPurpleAccent,
-                            inactiveColor: Colors.deepPurple.shade200
-                                .withOpacity(0.3),
-                          ),
                         ],
                       ),
                     ),
@@ -141,36 +158,26 @@ class SideChoosingView extends StatelessWidget {
                 ),
                 sizedBox,
 
-                // AI UCI Elo
-                // Obx(
-                //   () => Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //       Text(
-                //         "قوة Elo: ${controller.uciElo.value.toInt()}",
-                //         style: const TextStyle(color: Colors.white),
-                //       ),
-                //       Slider(
-                //         value: controller.uciElo.value.toDouble(),
-                //         min: 1320,
-                //         max: 3190,
-                //         divisions:
-                //             (3190 - 1320) ~/
-                //             100, // Adjust divisions for a smoother slider
-                //         label: 'Elo: ${controller.uciElo.value.toInt()}',
-                //         onChanged: (value) =>
-                //             controller.uciElo.value = value.toInt(),
-                //         activeColor: Colors.orangeAccent,
-                //         inactiveColor: Colors.orange.shade200.withOpacity(0.3),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-
                 // Move Time Slider (always available)
                 Obx(
                   () => Column(
                     children: [
+                      // Depth Slider
+                      Text('Depth: ${controller.depth.value}'),
+                      Slider(
+                        value: controller.depth.value.toDouble(),
+                        min: 1,
+                        max: 100,
+                        divisions: 29,
+                        label: controller.depth.value.toString(),
+                        onChanged: (double value) {
+                          controller.depth.value = value.toInt();
+                        },
+                        activeColor: Colors.deepPurpleAccent,
+                        inactiveColor: Colors.deepPurple.shade200.withOpacity(
+                          0.3,
+                        ),
+                      ),
                       Text('Move Time (ms): ${controller.moveTime.value}'),
                       Slider(
                         value: controller.moveTime.value.toDouble(),
@@ -213,7 +220,11 @@ class SideChoosingView extends StatelessWidget {
                     controller.changeValuecolorPlayer(
                       controller.choseColor.value,
                     );
-                    Get.toNamed('GameComputerScreen');
+
+                    /// to play with time and computer or just with computer
+                    controller.withTime.value
+                        ? Get.toNamed(RouteNames.gameComputerWithTimeScreen)
+                        : Get.toNamed(RouteNames.gameComputerScreen);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,

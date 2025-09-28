@@ -6,9 +6,9 @@ import 'package:get/get.dart';
 enum SideChoosing { white, black, random }
 
 class SideChoosingController extends GetxController {
-  var difficultyLevel = 0.obs; // 0 = Beginner, up to 9 or more
-  var showMoveHints = true.obs;
-
+  final difficultyLevel = 0.obs; // 0 = Beginner, up to 9 or more
+  final showMoveHints = true.obs;
+  final withTime = false.obs;
   // int get elo => 200 + difficultyLevel.value * 100;
 
   // Define any necessary properties and methods for the main menu
@@ -29,9 +29,11 @@ class SideChoosingController extends GetxController {
   final uciElo = 2850.obs; // Default to a high Elo
   final moveTime = 1000.obs; // Default to 1000 ms (1 second)
   final uciLimitStrength = false.obs;
+  final playTime = 1.obs;
   @override
   void onInit() {
     super.onInit();
+    withTime.value = Get.arguments['withTime'] as bool;
     debugPrint("SideChoosingController initialized");
   }
 

@@ -1,15 +1,18 @@
 import 'package:chessground/chessground.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../../domain/services/stockfish_engine_service.dart';
 
 abstract class AbstractGameController extends GetxController {
   // Rx<Position> position = Chess.initial.obs;
   late Rx<Position> position = Chess.fromSetup(Setup.parseFen(fen)).obs;
 
-  // String _fen = kInitialFEN;
+  String _fen = kInitialFEN;
 
-  String _fen = '2b1k3/p4p2/7P/4p3/3p4/8/P1P2P1P/R2QK1NR w - - 0 4';
+  // String _fen = '2b1k3/p4p2/7P/4p3/3p4/8/P1P2P1P/R2QK1NR w - - 0 4';
   // 'k7/8/8/8/8/8/p7/K7 b - - 0 1';
   // "8/P7/8/k7/8/8/8/K7 w - - 0 1";
 
@@ -27,6 +30,11 @@ abstract class AbstractGameController extends GetxController {
 
   final past = <Position>[];
   final future = <Position>[];
+  final List<String> pastMoves = [];
+  final List<String> futureMoves = [];
+
+  final StockfishEngineService engineService =
+      Get.find<StockfishEngineService>();
 
   bool get isCheckmate => position.value.isCheckmate;
 
@@ -34,22 +42,35 @@ abstract class AbstractGameController extends GetxController {
     return position.value.outcome!.winner;
   }
 
-  void undoMove();
-  //  {
-  //   if (past.isEmpty) return;
-  //   debugPrint('undo');
-  //   future.add(position.value);
-  //   position.value = past.removeLast();
-  //   _fen = position.value.fen;
-  //   validMoves = makeLegalMoves(position.value);
-  // }
+  void undoMove() {
+    if (past.isEmpty) return;
+    future.add(position.value);
+    position.value = past.removeLast();
+    fen = position.value.fen;
+    validMoves = makeLegalMoves(position.value);
 
-  void redoMove();
-  // {
-  //   if (future.isEmpty) return;
-  //   past.add(position.value);
-  //   position.value = future.removeLast();
-  //   _fen = position.value.fen;
-  //   validMoves = makeLegalMoves(position.value);
-  // }
+    ///
+    debugPrint('_pastMoves ${pastMoves.length}');
+    futureMoves.add(pastMoves.removeLast());
+    debugPrint('_pastMoves ${pastMoves.length}');
+
+    engineService.setPosition(fen: position.value.fen);
+    update();
+  }
+
+  void redoMove() {
+    if (future.isEmpty) return;
+    past.add(position.value);
+    position.value = future.removeLast();
+    fen = position.value.fen;
+    validMoves = makeLegalMoves(position.value);
+
+    ///
+    debugPrint('_pastMoves ${pastMoves.length}');
+    pastMoves.add(futureMoves.removeLast());
+    debugPrint('_pastMoves ${pastMoves.length}');
+
+    engineService.setPosition(fen: position.value.fen);
+    update();
+  }
 }

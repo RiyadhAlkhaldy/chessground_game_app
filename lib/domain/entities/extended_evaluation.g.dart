@@ -6,8 +6,9 @@ part of 'extended_evaluation.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_ExtendedEvaluation _$ExtendedEvaluationFromJson(Map<String, dynamic> json) =>
-    _ExtendedEvaluation(
+_$ExtendedEvaluationImpl _$$ExtendedEvaluationImplFromJson(
+        Map<String, dynamic> json) =>
+    _$ExtendedEvaluationImpl(
       depth: (json['depth'] as num).toInt(),
       cp: (json['cp'] as num?)?.toInt(),
       mate: (json['mate'] as num?)?.toInt(),
@@ -17,7 +18,8 @@ _ExtendedEvaluation _$ExtendedEvaluationFromJson(Map<String, dynamic> json) =>
       wdlLoss: (json['wdlLoss'] as num?)?.toInt(),
     );
 
-Map<String, dynamic> _$ExtendedEvaluationToJson(_ExtendedEvaluation instance) =>
+Map<String, dynamic> _$$ExtendedEvaluationImplToJson(
+        _$ExtendedEvaluationImpl instance) =>
     <String, dynamic>{
       'depth': instance.depth,
       'cp': instance.cp,

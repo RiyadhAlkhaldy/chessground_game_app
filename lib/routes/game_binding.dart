@@ -39,7 +39,15 @@ class GameBinding extends Bindings {
     Get.lazyPut<GameComputerController>(
       () => GameComputerController(
         Get.find<SideChoosingController>(),
-        Get.find<StockfishEngineService>(),
+        Get.find<PlaySoundUseCase>(),
+      ),
+      // fenix: true, // Make this controller singleton
+    );
+
+    // // تسجيل المتحكم (GameComputerWithTimeController)
+    Get.lazyPut<GameComputerWithTimeController>(
+      () => GameComputerWithTimeController(
+        Get.find<SideChoosingController>(),
         Get.find<PlaySoundUseCase>(),
       ),
       // fenix: true, // Make this controller singleton
@@ -47,7 +55,6 @@ class GameBinding extends Bindings {
     Get.lazyPut<AnalysisController>(
       () => AnalysisController(
         Get.find<SideChoosingController>(),
-        Get.find<StockfishEngineService>(),
         Get.find<PlaySoundUseCase>(),
         Get.find(),
       ),

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/domain/services/chess_clock_service.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -11,34 +10,25 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/entities/extended_evaluation.dart';
+import '../../domain/models/move.dart';
+import '../../domain/services/chess_clock_service.dart';
+import '../../domain/services/game_storage_service.dart';
 import '../../domain/services/stockfish_engine_service.dart';
 import 'abstract_game_controller.dart';
 import 'chess_board_settings_controller.dart';
 import 'side_choosing_controller.dart';
 
-String pieceShiftMethodLabel(PieceShiftMethod method) {
-  switch (method) {
-    case PieceShiftMethod.drag:
-      return 'Drag';
-    case PieceShiftMethod.tapTwoSquares:
-      return 'Tap two squares';
-    case PieceShiftMethod.either:
-      return 'Either';
-  }
-}
+part 'game_computer_with_time_controller.dart';
 
 abstract class GameAiController extends AbstractGameController
     with WidgetsBindingObserver {
   final PlaySoundUseCase plySound;
   final SideChoosingController choosingCtrl;
-  ChessClockService? clockCtrl;
+  final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
 
-  final StockfishEngineService engineService;
-  final List<String> _pastMoves = [];
-  final List<String> _futureMoves = [];
   int moveTimeMs = 1000;
 
-  GameAiController(this.choosingCtrl, this.engineService, this.plySound);
+  GameAiController(this.choosingCtrl, this.plySound);
   bool canPop = false;
   NormalMove? promotionMove;
   NormalMove? premove;
@@ -50,8 +40,15 @@ abstract class GameAiController extends AbstractGameController
   final random = Random();
   RxDouble score = 0.0.obs;
   Rx<ExtendedEvaluation?> evaluation = null.obs;
-
-  // النسخة المعدلة من getResult
+  String? playersWhiteName;
+  String? playersBlackName;
+  DateTime? _gameStartAt;
+  //
+  DateTime? get gameStartedAt => _gameStartAt;
+  //
+  set gameStartedAt(DateTime? startAt) =>
+      _gameStartAt = startAt ?? DateTime.now();
+  // // النسخة المعدلة من getResult
   GameResult getResult() {
     if (position.value.isCheckmate) return GameResult.checkmate;
     if (position.value.isStalemate) return GameResult.stalemate;
@@ -65,44 +62,39 @@ abstract class GameAiController extends AbstractGameController
     return GameResult.ongoing;
   }
 
-  @override
-  void undoMove() {
-    if (past.isEmpty) return;
-    future.add(position.value);
-    position.value = past.removeLast();
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
+  // GameResult getResult() {
+  //   // إذا كانت الـ Position (من dartchess) تعطي هذه القيم — نستخدمها مباشرة
+  //   final pos = position.value;
 
-    ///
-    debugPrint('_pastMoves ${_pastMoves.length}');
-    _futureMoves.add(_pastMoves.removeLast());
-    debugPrint('_pastMoves ${_pastMoves.length}');
+  //   if (pos.isCheckmate) return GameResult.checkmate;
+  //   if (pos.isStalemate) return GameResult.stalemate;
 
-    engineService.setPosition(fen: position.value.fen);
-    update();
-  }
+  //   // insufficient material و variant end
+  //   if (pos.isInsufficientMaterial || pos.isVariantEnd) {
+  //     return GameResult.draw;
+  //   }
 
-  @override
-  void redoMove() {
-    if (future.isEmpty) return;
-    past.add(position.value);
-    position.value = future.removeLast();
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
+  //   // fifty-move rule (إذا دعمتها المكتبة)
+  //   // في dartchess عادة يوجد عداد halfmoveClock ضمن FEN أو property مثل pos.halfMoveClock
+  //   try {
+  //     // إذا كانت مكتبة dartchess توفر isFiftyMoveRule أو halfmove clock:
+  //     if (pos.halfmoveClock != null && pos.halfmoveClock >= 100) {
+  //       // 100 half-moves == 50 full moves
+  //       return GameResult.draw;
+  //     }
+  //   } catch (_) {}
 
-    ///
-    debugPrint('_pastMoves ${_pastMoves.length}');
-    _pastMoves.add(_futureMoves.removeLast());
-    debugPrint('_pastMoves ${_pastMoves.length}');
+  //   // threefold repetition: بعض إصدارات المكتبة توفر isThreefoldRepetition/outcome
+  //   if (pos.isThreefoldRepetition) return GameResult.draw;
 
-    engineService.setPosition(fen: position.value.fen);
-    update();
-  }
+  //   // حالة انتهاء الوقت تتمّ عبر ChessClockService وليس عبر Position
+
+  //   return GameResult.ongoing;
+  // }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    clockCtrl!.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _startStockfishIfNecessary();
     } else if (state == AppLifecycleState.paused ||
@@ -125,7 +117,6 @@ abstract class GameAiController extends AbstractGameController
   void onClose() {
     WidgetsBinding.instance.removeObserver(this);
     engineService.dispose();
-    clockCtrl!.onClose();
     super.onClose();
   }
 
@@ -133,14 +124,13 @@ abstract class GameAiController extends AbstractGameController
   void reset() {
     past.clear();
     future.clear();
-    _pastMoves.clear();
-    _futureMoves.clear();
+    pastMoves.clear();
+    futureMoves.clear();
     position.value = Chess.initial;
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
     engineService.ucinewgame();
     promotionMove = null;
-    clockCtrl!.reset();
     debugPrint('reset to $fen');
   }
 
@@ -192,14 +182,14 @@ abstract class GameAiController extends AbstractGameController
 
   // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
   void _applyMove(NormalMove move) {
-    _pastMoves.add(move.uci);
+    debugPrint("fen: $fen");
+    pastMoves.add(move.uci);
     // 2. أضف الوضع الجديد إلى سجل التاريخ
     past.add(position.value);
     // 3. امسح سجل الـ Redo لأننا بدأنا مسارًا جديدًا للحركات
     future.clear();
     // 1. قم بتطبيق النقلة على الوضع الحالي
     position.value = position.value.playUnchecked(move);
-    clockCtrl!.switchTurn(position.value.turn);
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
     engineService.setPosition(fen: position.value.fen);
@@ -294,89 +284,6 @@ abstract class GameAiController extends AbstractGameController
   }
   // أضف هذه الدالة داخل GameComputerController
 
-  void _handleTimeout(Side timedOutPlayer) {
-    // أوقف أي عمليات أخرى في اللعبة
-    engineService.stop(); // إيقاف تفكير المحرك
-    clockCtrl!.stop();
-
-    final winner = timedOutPlayer.opposite;
-
-    // تحديث نص الحالة
-    statusText.value =
-        'انتهى الوقت! الفائز هو: ${winner == Side.white ? 'الأبيض' : 'الأسود'}';
-    update(); // لتحديث الواجهة
-
-    // هنا يمكنك إضافة منطق حفظ اللعبة في قاعدة البيانات
-    // GameHistoryService.saveGame(...)
-  }
-
-  void agreeToDraw() {
-    // تحقق أن اللعبة ما زالت مستمرة
-    if (position.value.isGameOver) return;
-
-    // إيقاف كل شيء
-    engineService.stop();
-    clockCtrl!.stop();
-
-    // تحديث نص الحالة
-    statusText.value = 'تعادل بالاتفاق بين الطرفين.';
-    update();
-
-    // هنا يمكنك إضافة منطق حفظ اللعبة في قاعدة البيانات بنتيجة تعادل
-    // GameHistoryService.saveGame(...)
-  }
-}
-
-class GameComputerController extends GameAiController {
-  final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
-
-  GameComputerController(
-    super.choosingCtrl,
-    super.engineService,
-    super.plySound,
-  );
-
-  @override
-  void onInit() {
-    super.onInit();
-    WidgetsBinding.instance.addObserver(this);
-    // debugPrint(position.value.fen);
-    // debugPrint(fen);
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
-    clockCtrl = Get.put(
-      ChessClockService(
-        initialTimeMs: (0.5 * 60 * 1000).toInt(),
-        incrementMs: 1000,
-        onTimeout: (player) {
-          debugPrint('time over the ${player.opposite.name} player is winner');
-          _handleTimeout(player);
-        },
-      ),
-    );
-    engineService.start().then((_) {
-      _applyStockfishSettings();
-      engineService.setPosition(fen: fen);
-      stockfishState.value = StockfishState.ready;
-      clockCtrl!.start();
-      _setPlayerSide();
-    });
-    //
-    engineService.evaluations.listen((ev) {
-      // debugPrint(ev.toString());
-      // if (ev != null) {
-      // evaluation.value = ev;
-      // score.value = evaluation.value!.whiteWinPercent();
-      // }
-    });
-    engineService.bestmoves.listen((event) {
-      debugPrint('bestmoves: $event');
-      _makeMoveAi(event);
-    });
-    // ever(position, (_) {
-    // });
-  }
-
   void _setPlayerSide() {
     if (choosingCtrl.choseColor.value == SideChoosing.white) {
       playerSide = PlayerSide.white;
@@ -432,5 +339,40 @@ class GameComputerController extends GameAiController {
       debugPrint('  Depth: ${choosingCtrl.depth.value}');
     }
     debugPrint('  Move Time: ${choosingCtrl.moveTime.value}');
+  }
+}
+
+class GameComputerController extends GameAiController {
+  ///constructer
+  GameComputerController(super.choosingCtrl, super.plySound);
+  @override
+  void onInit() {
+    super.onInit();
+    WidgetsBinding.instance.addObserver(this);
+    // debugPrint(position.value.fen);
+    // debugPrint(fen);
+    fen = position.value.fen;
+    validMoves = makeLegalMoves(position.value);
+
+    engineService.start().then((_) {
+      _applyStockfishSettings();
+      engineService.setPosition(fen: fen);
+      stockfishState.value = StockfishState.ready;
+      _setPlayerSide();
+    });
+    //
+    engineService.evaluations.listen((ev) {
+      // debugPrint(ev.toString());
+      // if (ev != null) {
+      // evaluation.value = ev;
+      // score.value = evaluation.value!.whiteWinPercent();
+      // }
+    });
+    engineService.bestmoves.listen((event) {
+      debugPrint('bestmoves: $event');
+      _makeMoveAi(event);
+    });
+    // ever(position, (_) {
+    // });
   }
 }

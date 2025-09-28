@@ -79,15 +79,27 @@ class HomePage extends StatelessWidget {
                         crossAxisSpacing: 15,
                         childAspectRatio: 1.8,
                         children: [
-                          _buildButton("العب أونلاين", Icons.public, '/online'),
-
+                          _buildButton(
+                            "العب مع الكمبيوتر والوقت",
+                            Icons.smart_toy,
+                            onPressed: () => Get.toNamed(
+                              RouteNames.sideChoosingView,
+                              arguments: {"withTime": true},
+                            ),
+                            '',
+                            light: true,
+                          ),
                           _buildButton(
                             "العب مع الكمبيوتر",
                             Icons.smart_toy,
-                            onPressed: () =>
-                                Get.toNamed(RouteNames.sideChoosingView),
+                            onPressed: () => Get.toNamed(
+                              RouteNames.sideChoosingView,
+                              arguments: {"withTime": false},
+                            ),
                             '',
                           ),
+                          _buildButton("العب أونلاين", Icons.public, '/online'),
+
                           _buildButton(
                             "Analyises Screen",
                             Icons.smart_toy,

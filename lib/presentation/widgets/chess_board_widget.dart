@@ -14,15 +14,10 @@ Color darken(Color c, [double amount = .1]) {
   return Color.lerp(c, const Color(0xFF000000), amount) ?? c;
 }
 
-class ChessBoardWidget extends StatelessWidget {
-  const ChessBoardWidget({
-    super.key,
-    required this.ctrlBoardSettings,
-    required this.controller,
-  });
+class ChessBoardWidget extends GetView<GameComputerController> {
+  const ChessBoardWidget({super.key, required this.ctrlBoardSettings});
 
   final ChessBoardSettingsController ctrlBoardSettings;
-  final GameComputerController controller;
 
   @override
   Widget build(BuildContext context) {

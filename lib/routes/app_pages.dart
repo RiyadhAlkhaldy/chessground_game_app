@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../presentation/screens/game_computer/game_computer_screen.dart';
+import '../presentation/screens/game_computer/game_computer_with_time_screen.dart';
 import '../presentation/screens/home_page.dart';
 import '../presentation/screens/side_choosing/side_choosing_view.dart';
 
@@ -8,6 +9,7 @@ abstract class RouteNames {
   static String home = '/';
   static String sideChoosingView = '/SideChoosingView';
   static String gameComputerScreen = '/GameComputerScreen';
+  static String gameComputerWithTimeScreen = '/GameComputerWithTimeScreen';
   static String gamesScreen = '/GamesScreen';
   static String editPosition = '/EditPosition';
   static String analysisScreen = '/AnalysisScreen';
@@ -21,7 +23,10 @@ class AppPages {
       name: RouteNames.gameComputerScreen,
       page: () => GameComputerScreen(),
     ),
-
+    GetPage(
+      name: RouteNames.gameComputerWithTimeScreen,
+      page: () => GameComputerWithTimeScreen(),
+    ),
     GetPage(name: RouteNames.sideChoosingView, page: () => SideChoosingView()),
 
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),

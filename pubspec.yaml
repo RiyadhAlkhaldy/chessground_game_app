@@ -19,7 +19,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.8.1
+  sdk: ^3.7.2
+  # sdk: ^3.8.1 
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -46,19 +47,23 @@ dependencies:
   # window_manager: ^0.5.1
   simple_chess_board: ^1.7.1
   material_design_icons_flutter: ^7.0.7296
-  freezed_annotation: ^3.1.0
-  json_annotation: ^4.9.0
+  freezed_annotation: any
+  json_annotation: any
   # stockfish: ^1.7.1
-  # source_gen: ^1.2.2
-  # isar_generator: ^3.1.0+1
-  isar: ^3.1.0+1
-  # isar_flutter_libs: ^3.1.0+1
-  path_provider: ^2.1.5
-  # isar: ^3.1.0+1
-  # isar_flutter_libs: ^3.1.0+1 # Needed for Flutter apps
-  # path_provider: ^2.0.11
+  isar: any
+  # isar_flutter_libs: any
+  isar_flutter_libs:
+    git: 
+      url: https://github.com/MrLittleWhite/isar_flutter_libs.git
 
- 
+  path_provider: ^2.1.5
+  uuid: ^4.5.1
+  # isar_flutter_libs: ^3.1.0+1 # Needed for Flutter apps
+
+# distributionUrl=https\://services.gradle.org/distributions/gradle-8.12-all.zip
+#      id("com.android.application") version "8.7.3" apply false
+    # id("org.jetbrains.kotlin.android") version "2.1.0" apply false
+
 
 dev_dependencies:
   flutter_test:
@@ -66,10 +71,10 @@ dev_dependencies:
   lint: ^2.6.1
   mocktail: ^1.0.4
   flutter_lints: ^6.0.0
-  build_runner: ^2.3.3
-  json_serializable: ^6.11.1
-  freezed: ^3.2.3
-  # source_gen: ^1.2.2
+  build_runner: any
+  json_serializable: any
+  freezed: any
+  isar_generator: any
 
 # dependency_overrides:
 #   source_gen: ^1.2.2
@@ -96,44 +101,7 @@ flutter_assets:
   output_path: lib/core/constants/
   filename: app_images_sounds.dart
   field_prefix: 
-    # - assets/piece_sets/alpha/
-    # - assets/piece_sets/anarcandy/
-    # - assets/piece_sets/california/
-    # - assets/piece_sets/caliente/
-    # - assets/piece_sets/cardinal/
-    # - assets/piece_sets/cburnett/
-    # - assets/piece_sets/celtic/
-    # - assets/piece_sets/chess7/
-    # - assets/piece_sets/chessnut/
-    # - assets/piece_sets/cooke/
-    # - assets/piece_sets/companion/
-    # - assets/piece_sets/disguised/
-    # - assets/piece_sets/dubrovny/
-    # - assets/piece_sets/fantasy/
-    # - assets/piece_sets/fresca/
-    # - assets/piece_sets/gioco/
-    # - assets/piece_sets/governor/
-    # - assets/piece_sets/horsey/
-    # - assets/piece_sets/icpieces/
-    # - assets/piece_sets/kiwen-suwi/
-    # - assets/piece_sets/kosal/
-    # - assets/piece_sets/leipzig/
-    # - assets/piece_sets/letter/
-    # - assets/piece_sets/maestro/
-    # - assets/piece_sets/merida/
-    # - assets/piece_sets/monarchy/
-    # - assets/piece_sets/mono/
-    # - assets/piece_sets/mpchess/
-    # - assets/piece_sets/pirouetti/
-    # - assets/piece_sets/pixel/
-    # - assets/piece_sets/reillycraig/
-    # - assets/piece_sets/riohacha/
-    # - assets/piece_sets/shapes/
-    # - assets/piece_sets/spatial/
-    # - assets/piece_sets/staunty/
-    # - assets/piece_sets/symmetric/
-    # - assets/piece_sets/tatiana/
-    # - assets/boards/
+  
 
 
 

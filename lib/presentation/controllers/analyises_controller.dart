@@ -13,7 +13,6 @@ class AnalysisController extends GameComputerController {
   AnalysisController(
     super.choosingCtrl,
     super.engineService,
-    super.plySound,
     this.engineRepository,
   );
 

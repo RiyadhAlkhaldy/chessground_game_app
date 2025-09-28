@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 
 import '../../core/board_theme.dart';
 import '../controllers/chess_board_settings_controller.dart';
-import '../controllers/game_computer_controller.dart';
-import '../screens/game_computer/game_computer_screen.dart';
+
+const screenPadding = 16.0;
+const screenPortraitSplitter = screenPadding / 2;
+const screenLandscapeSplitter = screenPadding;
+const buttonHeight = 50.0;
+const buttonsSplitter = screenPadding;
+const smallButtonsSplitter = screenPadding / 2;
 
 class ChessBoardSettingsWidgets extends StatefulWidget {
   const ChessBoardSettingsWidgets({super.key, required this.controller});
@@ -32,6 +37,16 @@ class _ChessBoardSettingsWidgetsState extends State<ChessBoardSettingsWidgets> {
       ],
     ),
   );
+  String pieceShiftMethodLabel(PieceShiftMethod method) {
+    switch (method) {
+      case PieceShiftMethod.drag:
+        return 'Drag';
+      case PieceShiftMethod.tapTwoSquares:
+        return 'Tap two squares';
+      case PieceShiftMethod.either:
+        return 'Either';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

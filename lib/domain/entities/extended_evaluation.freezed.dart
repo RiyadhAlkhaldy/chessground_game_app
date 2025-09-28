@@ -1,5 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,293 +9,275 @@ part of 'extended_evaluation.dart';
 // FreezedGenerator
 // **************************************************************************
 
-// dart format off
 T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+
+ExtendedEvaluation _$ExtendedEvaluationFromJson(Map<String, dynamic> json) {
+  return _ExtendedEvaluation.fromJson(json);
+}
 
 /// @nodoc
 mixin _$ExtendedEvaluation {
+  int get depth => throw _privateConstructorUsedError;
+  int? get cp =>
+      throw _privateConstructorUsedError; // centipawns (من منظور white عادةً)
+  int? get mate => throw _privateConstructorUsedError; // mate in N (±)
+  String get pv => throw _privateConstructorUsedError;
+  int? get wdlWin =>
+      throw _privateConstructorUsedError; // permille: 500 => 50.0%
+  int? get wdlDraw => throw _privateConstructorUsedError;
+  int? get wdlLoss => throw _privateConstructorUsedError;
 
- int get depth; int? get cp;// centipawns (من منظور white عادةً)
- int? get mate;// mate in N (±)
- String get pv; int? get wdlWin;// permille: 500 => 50.0%
- int? get wdlDraw; int? get wdlLoss;
-/// Create a copy of ExtendedEvaluation
-/// with the given fields replaced by the non-null parameter values.
-@JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-$ExtendedEvaluationCopyWith<ExtendedEvaluation> get copyWith => _$ExtendedEvaluationCopyWithImpl<ExtendedEvaluation>(this as ExtendedEvaluation, _$identity);
-
-  /// Serializes this ExtendedEvaluation to a JSON map.
-  Map<String, dynamic> toJson();
-
-
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ExtendedEvaluation&&(identical(other.depth, depth) || other.depth == depth)&&(identical(other.cp, cp) || other.cp == cp)&&(identical(other.mate, mate) || other.mate == mate)&&(identical(other.pv, pv) || other.pv == pv)&&(identical(other.wdlWin, wdlWin) || other.wdlWin == wdlWin)&&(identical(other.wdlDraw, wdlDraw) || other.wdlDraw == wdlDraw)&&(identical(other.wdlLoss, wdlLoss) || other.wdlLoss == wdlLoss));
-}
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode => Object.hash(runtimeType,depth,cp,mate,pv,wdlWin,wdlDraw,wdlLoss);
-
-@override
-String toString() {
-  return 'ExtendedEvaluation(depth: $depth, cp: $cp, mate: $mate, pv: $pv, wdlWin: $wdlWin, wdlDraw: $wdlDraw, wdlLoss: $wdlLoss)';
-}
-
-
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $ExtendedEvaluationCopyWith<ExtendedEvaluation> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract mixin class $ExtendedEvaluationCopyWith<$Res>  {
-  factory $ExtendedEvaluationCopyWith(ExtendedEvaluation value, $Res Function(ExtendedEvaluation) _then) = _$ExtendedEvaluationCopyWithImpl;
-@useResult
-$Res call({
- int depth, int? cp, int? mate, String pv, int? wdlWin, int? wdlDraw, int? wdlLoss
-});
-
-
-
-
+abstract class $ExtendedEvaluationCopyWith<$Res> {
+  factory $ExtendedEvaluationCopyWith(
+          ExtendedEvaluation value, $Res Function(ExtendedEvaluation) then) =
+      _$ExtendedEvaluationCopyWithImpl<$Res, ExtendedEvaluation>;
+  @useResult
+  $Res call(
+      {int depth,
+      int? cp,
+      int? mate,
+      String pv,
+      int? wdlWin,
+      int? wdlDraw,
+      int? wdlLoss});
 }
+
 /// @nodoc
-class _$ExtendedEvaluationCopyWithImpl<$Res>
+class _$ExtendedEvaluationCopyWithImpl<$Res, $Val extends ExtendedEvaluation>
     implements $ExtendedEvaluationCopyWith<$Res> {
-  _$ExtendedEvaluationCopyWithImpl(this._self, this._then);
+  _$ExtendedEvaluationCopyWithImpl(this._value, this._then);
 
-  final ExtendedEvaluation _self;
-  final $Res Function(ExtendedEvaluation) _then;
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
-/// Create a copy of ExtendedEvaluation
-/// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? depth = null,Object? cp = freezed,Object? mate = freezed,Object? pv = null,Object? wdlWin = freezed,Object? wdlDraw = freezed,Object? wdlLoss = freezed,}) {
-  return _then(_self.copyWith(
-depth: null == depth ? _self.depth : depth // ignore: cast_nullable_to_non_nullable
-as int,cp: freezed == cp ? _self.cp : cp // ignore: cast_nullable_to_non_nullable
-as int?,mate: freezed == mate ? _self.mate : mate // ignore: cast_nullable_to_non_nullable
-as int?,pv: null == pv ? _self.pv : pv // ignore: cast_nullable_to_non_nullable
-as String,wdlWin: freezed == wdlWin ? _self.wdlWin : wdlWin // ignore: cast_nullable_to_non_nullable
-as int?,wdlDraw: freezed == wdlDraw ? _self.wdlDraw : wdlDraw // ignore: cast_nullable_to_non_nullable
-as int?,wdlLoss: freezed == wdlLoss ? _self.wdlLoss : wdlLoss // ignore: cast_nullable_to_non_nullable
-as int?,
-  ));
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? depth = null,
+    Object? cp = freezed,
+    Object? mate = freezed,
+    Object? pv = null,
+    Object? wdlWin = freezed,
+    Object? wdlDraw = freezed,
+    Object? wdlLoss = freezed,
+  }) {
+    return _then(_value.copyWith(
+      depth: null == depth
+          ? _value.depth
+          : depth // ignore: cast_nullable_to_non_nullable
+              as int,
+      cp: freezed == cp
+          ? _value.cp
+          : cp // ignore: cast_nullable_to_non_nullable
+              as int?,
+      mate: freezed == mate
+          ? _value.mate
+          : mate // ignore: cast_nullable_to_non_nullable
+              as int?,
+      pv: null == pv
+          ? _value.pv
+          : pv // ignore: cast_nullable_to_non_nullable
+              as String,
+      wdlWin: freezed == wdlWin
+          ? _value.wdlWin
+          : wdlWin // ignore: cast_nullable_to_non_nullable
+              as int?,
+      wdlDraw: freezed == wdlDraw
+          ? _value.wdlDraw
+          : wdlDraw // ignore: cast_nullable_to_non_nullable
+              as int?,
+      wdlLoss: freezed == wdlLoss
+          ? _value.wdlLoss
+          : wdlLoss // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ) as $Val);
+  }
 }
 
+/// @nodoc
+abstract class _$$ExtendedEvaluationImplCopyWith<$Res>
+    implements $ExtendedEvaluationCopyWith<$Res> {
+  factory _$$ExtendedEvaluationImplCopyWith(_$ExtendedEvaluationImpl value,
+          $Res Function(_$ExtendedEvaluationImpl) then) =
+      __$$ExtendedEvaluationImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {int depth,
+      int? cp,
+      int? mate,
+      String pv,
+      int? wdlWin,
+      int? wdlDraw,
+      int? wdlLoss});
 }
 
+/// @nodoc
+class __$$ExtendedEvaluationImplCopyWithImpl<$Res>
+    extends _$ExtendedEvaluationCopyWithImpl<$Res, _$ExtendedEvaluationImpl>
+    implements _$$ExtendedEvaluationImplCopyWith<$Res> {
+  __$$ExtendedEvaluationImplCopyWithImpl(_$ExtendedEvaluationImpl _value,
+      $Res Function(_$ExtendedEvaluationImpl) _then)
+      : super(_value, _then);
 
-/// Adds pattern-matching-related methods to [ExtendedEvaluation].
-extension ExtendedEvaluationPatterns on ExtendedEvaluation {
-/// A variant of `map` that fallback to returning `orElse`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ExtendedEvaluation value)?  $default,{required TResult orElse(),}){
-final _that = this;
-switch (_that) {
-case _ExtendedEvaluation() when $default != null:
-return $default(_that);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// Callbacks receives the raw object, upcasted.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case final Subclass2 value:
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ExtendedEvaluation value)  $default,){
-final _that = this;
-switch (_that) {
-case _ExtendedEvaluation():
-return $default(_that);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `map` that fallback to returning `null`.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case final Subclass value:
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ExtendedEvaluation value)?  $default,){
-final _that = this;
-switch (_that) {
-case _ExtendedEvaluation() when $default != null:
-return $default(_that);case _:
-  return null;
-
-}
-}
-/// A variant of `when` that fallback to an `orElse` callback.
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return orElse();
-/// }
-/// ```
-
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int depth,  int? cp,  int? mate,  String pv,  int? wdlWin,  int? wdlDraw,  int? wdlLoss)?  $default,{required TResult orElse(),}) {final _that = this;
-switch (_that) {
-case _ExtendedEvaluation() when $default != null:
-return $default(_that.depth,_that.cp,_that.mate,_that.pv,_that.wdlWin,_that.wdlDraw,_that.wdlLoss);case _:
-  return orElse();
-
-}
-}
-/// A `switch`-like method, using callbacks.
-///
-/// As opposed to `map`, this offers destructuring.
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case Subclass2(:final field2):
-///     return ...;
-/// }
-/// ```
-
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int depth,  int? cp,  int? mate,  String pv,  int? wdlWin,  int? wdlDraw,  int? wdlLoss)  $default,) {final _that = this;
-switch (_that) {
-case _ExtendedEvaluation():
-return $default(_that.depth,_that.cp,_that.mate,_that.pv,_that.wdlWin,_that.wdlDraw,_that.wdlLoss);case _:
-  throw StateError('Unexpected subclass');
-
-}
-}
-/// A variant of `when` that fallback to returning `null`
-///
-/// It is equivalent to doing:
-/// ```dart
-/// switch (sealedClass) {
-///   case Subclass(:final field):
-///     return ...;
-///   case _:
-///     return null;
-/// }
-/// ```
-
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int depth,  int? cp,  int? mate,  String pv,  int? wdlWin,  int? wdlDraw,  int? wdlLoss)?  $default,) {final _that = this;
-switch (_that) {
-case _ExtendedEvaluation() when $default != null:
-return $default(_that.depth,_that.cp,_that.mate,_that.pv,_that.wdlWin,_that.wdlDraw,_that.wdlLoss);case _:
-  return null;
-
-}
-}
-
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? depth = null,
+    Object? cp = freezed,
+    Object? mate = freezed,
+    Object? pv = null,
+    Object? wdlWin = freezed,
+    Object? wdlDraw = freezed,
+    Object? wdlLoss = freezed,
+  }) {
+    return _then(_$ExtendedEvaluationImpl(
+      depth: null == depth
+          ? _value.depth
+          : depth // ignore: cast_nullable_to_non_nullable
+              as int,
+      cp: freezed == cp
+          ? _value.cp
+          : cp // ignore: cast_nullable_to_non_nullable
+              as int?,
+      mate: freezed == mate
+          ? _value.mate
+          : mate // ignore: cast_nullable_to_non_nullable
+              as int?,
+      pv: null == pv
+          ? _value.pv
+          : pv // ignore: cast_nullable_to_non_nullable
+              as String,
+      wdlWin: freezed == wdlWin
+          ? _value.wdlWin
+          : wdlWin // ignore: cast_nullable_to_non_nullable
+              as int?,
+      wdlDraw: freezed == wdlDraw
+          ? _value.wdlDraw
+          : wdlDraw // ignore: cast_nullable_to_non_nullable
+              as int?,
+      wdlLoss: freezed == wdlLoss
+          ? _value.wdlLoss
+          : wdlLoss // ignore: cast_nullable_to_non_nullable
+              as int?,
+    ));
+  }
 }
 
 /// @nodoc
 @JsonSerializable()
+class _$ExtendedEvaluationImpl implements _ExtendedEvaluation {
+  const _$ExtendedEvaluationImpl(
+      {required this.depth,
+      this.cp,
+      this.mate,
+      this.pv = '',
+      this.wdlWin,
+      this.wdlDraw,
+      this.wdlLoss});
 
-class _ExtendedEvaluation implements ExtendedEvaluation {
-  const _ExtendedEvaluation({required this.depth, this.cp, this.mate, this.pv = '', this.wdlWin, this.wdlDraw, this.wdlLoss});
-  factory _ExtendedEvaluation.fromJson(Map<String, dynamic> json) => _$ExtendedEvaluationFromJson(json);
+  factory _$ExtendedEvaluationImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ExtendedEvaluationImplFromJson(json);
 
-@override final  int depth;
-@override final  int? cp;
+  @override
+  final int depth;
+  @override
+  final int? cp;
 // centipawns (من منظور white عادةً)
-@override final  int? mate;
+  @override
+  final int? mate;
 // mate in N (±)
-@override@JsonKey() final  String pv;
-@override final  int? wdlWin;
+  @override
+  @JsonKey()
+  final String pv;
+  @override
+  final int? wdlWin;
 // permille: 500 => 50.0%
-@override final  int? wdlDraw;
-@override final  int? wdlLoss;
+  @override
+  final int? wdlDraw;
+  @override
+  final int? wdlLoss;
 
-/// Create a copy of ExtendedEvaluation
-/// with the given fields replaced by the non-null parameter values.
-@override @JsonKey(includeFromJson: false, includeToJson: false)
-@pragma('vm:prefer-inline')
-_$ExtendedEvaluationCopyWith<_ExtendedEvaluation> get copyWith => __$ExtendedEvaluationCopyWithImpl<_ExtendedEvaluation>(this, _$identity);
+  @override
+  String toString() {
+    return 'ExtendedEvaluation(depth: $depth, cp: $cp, mate: $mate, pv: $pv, wdlWin: $wdlWin, wdlDraw: $wdlDraw, wdlLoss: $wdlLoss)';
+  }
 
-@override
-Map<String, dynamic> toJson() {
-  return _$ExtendedEvaluationToJson(this, );
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ExtendedEvaluationImpl &&
+            (identical(other.depth, depth) || other.depth == depth) &&
+            (identical(other.cp, cp) || other.cp == cp) &&
+            (identical(other.mate, mate) || other.mate == mate) &&
+            (identical(other.pv, pv) || other.pv == pv) &&
+            (identical(other.wdlWin, wdlWin) || other.wdlWin == wdlWin) &&
+            (identical(other.wdlDraw, wdlDraw) || other.wdlDraw == wdlDraw) &&
+            (identical(other.wdlLoss, wdlLoss) || other.wdlLoss == wdlLoss));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, depth, cp, mate, pv, wdlWin, wdlDraw, wdlLoss);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ExtendedEvaluationImplCopyWith<_$ExtendedEvaluationImpl> get copyWith =>
+      __$$ExtendedEvaluationImplCopyWithImpl<_$ExtendedEvaluationImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ExtendedEvaluationImplToJson(
+      this,
+    );
+  }
 }
 
-@override
-bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ExtendedEvaluation&&(identical(other.depth, depth) || other.depth == depth)&&(identical(other.cp, cp) || other.cp == cp)&&(identical(other.mate, mate) || other.mate == mate)&&(identical(other.pv, pv) || other.pv == pv)&&(identical(other.wdlWin, wdlWin) || other.wdlWin == wdlWin)&&(identical(other.wdlDraw, wdlDraw) || other.wdlDraw == wdlDraw)&&(identical(other.wdlLoss, wdlLoss) || other.wdlLoss == wdlLoss));
+abstract class _ExtendedEvaluation implements ExtendedEvaluation {
+  const factory _ExtendedEvaluation(
+      {required final int depth,
+      final int? cp,
+      final int? mate,
+      final String pv,
+      final int? wdlWin,
+      final int? wdlDraw,
+      final int? wdlLoss}) = _$ExtendedEvaluationImpl;
+
+  factory _ExtendedEvaluation.fromJson(Map<String, dynamic> json) =
+      _$ExtendedEvaluationImpl.fromJson;
+
+  @override
+  int get depth;
+  @override
+  int? get cp;
+  @override // centipawns (من منظور white عادةً)
+  int? get mate;
+  @override // mate in N (±)
+  String get pv;
+  @override
+  int? get wdlWin;
+  @override // permille: 500 => 50.0%
+  int? get wdlDraw;
+  @override
+  int? get wdlLoss;
+  @override
+  @JsonKey(ignore: true)
+  _$$ExtendedEvaluationImplCopyWith<_$ExtendedEvaluationImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
-
-@JsonKey(includeFromJson: false, includeToJson: false)
-@override
-int get hashCode => Object.hash(runtimeType,depth,cp,mate,pv,wdlWin,wdlDraw,wdlLoss);
-
-@override
-String toString() {
-  return 'ExtendedEvaluation(depth: $depth, cp: $cp, mate: $mate, pv: $pv, wdlWin: $wdlWin, wdlDraw: $wdlDraw, wdlLoss: $wdlLoss)';
-}
-
-
-}
-
-/// @nodoc
-abstract mixin class _$ExtendedEvaluationCopyWith<$Res> implements $ExtendedEvaluationCopyWith<$Res> {
-  factory _$ExtendedEvaluationCopyWith(_ExtendedEvaluation value, $Res Function(_ExtendedEvaluation) _then) = __$ExtendedEvaluationCopyWithImpl;
-@override @useResult
-$Res call({
- int depth, int? cp, int? mate, String pv, int? wdlWin, int? wdlDraw, int? wdlLoss
-});
-
-
-
-
-}
-/// @nodoc
-class __$ExtendedEvaluationCopyWithImpl<$Res>
-    implements _$ExtendedEvaluationCopyWith<$Res> {
-  __$ExtendedEvaluationCopyWithImpl(this._self, this._then);
-
-  final _ExtendedEvaluation _self;
-  final $Res Function(_ExtendedEvaluation) _then;
-
-/// Create a copy of ExtendedEvaluation
-/// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? depth = null,Object? cp = freezed,Object? mate = freezed,Object? pv = null,Object? wdlWin = freezed,Object? wdlDraw = freezed,Object? wdlLoss = freezed,}) {
-  return _then(_ExtendedEvaluation(
-depth: null == depth ? _self.depth : depth // ignore: cast_nullable_to_non_nullable
-as int,cp: freezed == cp ? _self.cp : cp // ignore: cast_nullable_to_non_nullable
-as int?,mate: freezed == mate ? _self.mate : mate // ignore: cast_nullable_to_non_nullable
-as int?,pv: null == pv ? _self.pv : pv // ignore: cast_nullable_to_non_nullable
-as String,wdlWin: freezed == wdlWin ? _self.wdlWin : wdlWin // ignore: cast_nullable_to_non_nullable
-as int?,wdlDraw: freezed == wdlDraw ? _self.wdlDraw : wdlDraw // ignore: cast_nullable_to_non_nullable
-as int?,wdlLoss: freezed == wdlLoss ? _self.wdlLoss : wdlLoss // ignore: cast_nullable_to_non_nullable
-as int?,
-  ));
-}
-
-
-}
-
-// dart format on
