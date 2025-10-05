@@ -1,8 +1,10 @@
-// file: chess_clock_widget.dart
 import 'package:chessground_game_app/domain/services/chess_clock_service.dart';
+// import 'package:chessground_game_app/presentation/controllers/game_computer_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+// import '../../../../core/constants/assets_images.dart';
 
 String formatMsToClock(int ms) {
   final Duration d = Duration(milliseconds: ms);
@@ -11,9 +13,9 @@ String formatMsToClock(int ms) {
   return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
 }
 
-class ChessClockWhiteWidget extends StatelessWidget {
+class ChessClockBlackWidget extends StatelessWidget {
   final ChessClockService chessClock;
-  const ChessClockWhiteWidget({super.key, required this.chessClock});
+  const ChessClockBlackWidget({super.key, required this.chessClock});
 
   @override
   Widget build(BuildContext context) {
@@ -31,27 +33,46 @@ class ChessClockWhiteWidget extends StatelessWidget {
   }
 }
 
-class ChessClockBlackWidget extends StatelessWidget {
-  final ChessClockService chessClock;
-  const ChessClockBlackWidget({super.key, required this.chessClock});
+// class ChessClockBlackWidget extends StatelessWidget {
+//   final ChessClockService chessClock;
+//   ChessClockBlackWidget({super.key, required this.chessClock});
+//   final userModel = Get.find<GameComputerWithTimeController>();
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Obx(
-          () => _clockRow(
-            label: 'Black',
-            timeText: formatMsToClock(chessClock.blackTimeMs.value),
-            active: chessClock.currentTurn.value == Side.black,
-          ),
-        ),
-        // const SizedBox(height: 16),
-        // _controls(),
-      ],
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Column(
+//       children: [
+//         Obx(
+//           () => // our data
+//               ListTile(
+//             leading:
+//                 userModel.currentGame?.whitePlayer.value?.image == null
+//                     ? CircleAvatar(
+//                       radius: 25,
+//                       backgroundImage: AssetImage(AssetsImages.userIcon),
+//                     )
+//                     : CircleAvatar(
+//                       radius: 25,
+//                       backgroundImage: NetworkImage(
+//                         userModel.currentGame!.whitePlayer.value!.image!,
+//                       ),
+//                     ),
+//             title: Text(userModel.currentGame!.whitePlayer.value!.name),
+//             subtitle: Text(
+//               'Rating: ${userModel.currentGame!.whitePlayer.value!.playerRating}',
+//             ),
+//             trailing: Text(
+//               userModel.currentGame!.whitesTime!,
+//               style: const TextStyle(fontSize: 16),
+//             ),
+//           ),
+//         ),
+//         // const SizedBox(height: 16),
+//         // _controls(),
+//       ],
+//     );
+//   }
+// }
 
 Widget _clockRow({
   required String label,
@@ -94,8 +115,8 @@ Widget _controls(ChessClockService chessClock) {
       ),
       const SizedBox(width: 8),
       ElevatedButton(
-        onPressed: () =>
-            chessClock.reset(newInitialMs: chessClock.initialTimeMs),
+        onPressed:
+            () => chessClock.reset(newInitialMs: chessClock.initialTimeMs),
         child: const Text('Reset'),
       ),
     ],

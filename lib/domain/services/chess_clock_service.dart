@@ -35,6 +35,15 @@ class ChessClockService {
     blackTimeMs.value = initialTimeMs;
   }
 
+  int _incrementalValue = 0;
+  int get incrementalValue => _incrementalValue;
+  // int get whiteTimeSeconds => (whiteTimeMs.value / 1000).ceil();
+  // int get blackTimeSeconds => (blackTimeMs.value / 1000).ceil();
+  // set incremental value
+  void setIncrementalValue({required int value}) {
+    _incrementalValue = value;
+  }
+
   /// Start the clock for the currentTurn
   void start() {
     if (isRunning.value) return;
@@ -53,10 +62,16 @@ class ChessClockService {
 
     final int delta = tickInterval.inMilliseconds;
     if (currentTurn.value == Side.white) {
-      whiteTimeMs.value = (whiteTimeMs.value - delta).clamp(0, initialTimeMs);
+      whiteTimeMs.value = (whiteTimeMs.value - delta).clamp(
+        0,
+        initialTimeMs + incrementMs,
+      );
       if (whiteTimeMs.value <= 0) _handleTimeout(Side.white);
     } else {
-      blackTimeMs.value = (blackTimeMs.value - delta).clamp(0, initialTimeMs);
+      blackTimeMs.value = (blackTimeMs.value - delta).clamp(
+        0,
+        initialTimeMs + incrementMs,
+      );
       if (blackTimeMs.value <= 0) _handleTimeout(Side.black);
     }
   }

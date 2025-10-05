@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'domain/services/game_storage_service.dart';
-import 'domain/services/todo_service.dart';
-import 'domain/services/user_service.dart';
+import 'domain/services/chess_game_storage_service.dart';
 import 'presentation/screens/home_page.dart';
 import 'routes/app_pages.dart';
 import 'routes/game_binding.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // final userService = UserService();
-  // await userService.init();
-  await GameStorageService().init();
-  // await _setup();
-  // TodoService.adds();
-  // TodoService.gets();
+  // تأكد أن تُنشئ الـ Guest مبكراً
+  await ChessGameStorageService.init();
   runApp(const MyApp());
 }
 
-Future<void> _setup() async {
-  await TodoService.setup();
-}
+// Future<void> _setup() async {
+//   await TodoService.setup();
+// }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

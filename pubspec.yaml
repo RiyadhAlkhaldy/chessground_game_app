@@ -58,6 +58,8 @@ dependencies:
 
   path_provider: ^2.1.5
   uuid: ^4.5.1
+  image_picker: ^1.2.0
+  intl: ^0.20.2
   # isar_flutter_libs: ^3.1.0+1 # Needed for Flutter apps
 
 # distributionUrl=https\://services.gradle.org/distributions/gradle-8.12-all.zip
@@ -95,6 +97,7 @@ flutter:
   assets:
     - lib/piece_set/maestro/
     - assets/sounds/
+    - assets/images/
   #   - images/a_dot_ham.jpeg
 flutter_assets:
   assets_path: assets/sounds/

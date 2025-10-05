@@ -5,9 +5,9 @@ import '../data/usecases/play_sound_usecase.dart';
 import '../domain/repositories/i_engine_repository.dart';
 import '../domain/repositories/i_engine_repository_impl.dart';
 import '../domain/services/stockfish_engine_service.dart';
-import '../presentation/controllers/analyises_controller.dart';
 import '../presentation/controllers/chess_board_settings_controller.dart';
 import '../presentation/controllers/game_computer_controller.dart';
+import '../presentation/controllers/game_controller.dart';
 import '../presentation/controllers/side_choosing_controller.dart';
 
 /// [GameBinding]
@@ -44,19 +44,12 @@ class GameBinding extends Bindings {
       // fenix: true, // Make this controller singleton
     );
 
+    Get.lazyPut(() => GameController(), fenix: true);
     // // تسجيل المتحكم (GameComputerWithTimeController)
     Get.lazyPut<GameComputerWithTimeController>(
       () => GameComputerWithTimeController(
         Get.find<SideChoosingController>(),
         Get.find<PlaySoundUseCase>(),
-      ),
-      // fenix: true, // Make this controller singleton
-    );
-    Get.lazyPut<AnalysisController>(
-      () => AnalysisController(
-        Get.find<SideChoosingController>(),
-        Get.find<PlaySoundUseCase>(),
-        Get.find(),
       ),
       // fenix: true, // Make this controller singleton
     );

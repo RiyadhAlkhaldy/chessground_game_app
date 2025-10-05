@@ -17,34 +17,65 @@ const GameModelSchema = CollectionSchema(
   name: r'GameModel',
   id: 5060082259723093958,
   properties: {
-    r'endedAt': PropertySchema(
+    r'blacksTime': PropertySchema(
       id: 0,
+      name: r'blacksTime',
+      type: IsarType.string,
+    ),
+    r'endedAt': PropertySchema(
+      id: 1,
       name: r'endedAt',
       type: IsarType.dateTime,
     ),
-    r'metadata': PropertySchema(
-      id: 1,
-      name: r'metadata',
+    r'fens': PropertySchema(
+      id: 2,
+      name: r'fens',
+      type: IsarType.stringList,
+    ),
+    r'isGameOver': PropertySchema(
+      id: 3,
+      name: r'isGameOver',
+      type: IsarType.bool,
+    ),
+    r'moves': PropertySchema(
+      id: 4,
+      name: r'moves',
+      type: IsarType.stringList,
+    ),
+    r'movesUci': PropertySchema(
+      id: 5,
+      name: r'movesUci',
+      type: IsarType.stringList,
+    ),
+    r'ownerIsWhite': PropertySchema(
+      id: 6,
+      name: r'ownerIsWhite',
+      type: IsarType.bool,
+    ),
+    r'ownerUuid': PropertySchema(
+      id: 7,
+      name: r'ownerUuid',
       type: IsarType.string,
     ),
     r'pgn': PropertySchema(
-      id: 2,
+      id: 8,
       name: r'pgn',
       type: IsarType.string,
     ),
     r'result': PropertySchema(
-      id: 3,
+      id: 9,
       name: r'result',
-      type: IsarType.string,
+      type: IsarType.byte,
+      enumMap: _GameModelresultEnumValueMap,
     ),
     r'startedAt': PropertySchema(
-      id: 4,
+      id: 10,
       name: r'startedAt',
       type: IsarType.dateTime,
     ),
-    r'timeControl': PropertySchema(
-      id: 5,
-      name: r'timeControl',
+    r'whitesTime': PropertySchema(
+      id: 11,
+      name: r'whitesTime',
       type: IsarType.string,
     )
   },
@@ -62,7 +93,7 @@ const GameModelSchema = CollectionSchema(
       properties: [
         IndexPropertySchema(
           name: r'result',
-          type: IndexType.hash,
+          type: IndexType.value,
           caseSensitive: false,
         )
       ],
@@ -80,13 +111,6 @@ const GameModelSchema = CollectionSchema(
       name: r'blackPlayer',
       target: r'Player',
       single: true,
-    ),
-    r'moves': LinkSchema(
-      id: -8731891318683033722,
-      name: r'moves',
-      target: r'MoveModel',
-      single: false,
-      linkName: r'game',
     )
   },
   embeddedSchemas: {},
@@ -103,15 +127,46 @@ int _gameModelEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
-    final value = object.metadata;
+    final value = object.blacksTime;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
   }
-  bytesCount += 3 + object.pgn.length * 3;
-  bytesCount += 3 + object.result.length * 3;
+  bytesCount += 3 + object.fens.length * 3;
   {
-    final value = object.timeControl;
+    for (var i = 0; i < object.fens.length; i++) {
+      final value = object.fens[i];
+      bytesCount += value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.moves.length * 3;
+  {
+    for (var i = 0; i < object.moves.length; i++) {
+      final value = object.moves[i];
+      bytesCount += value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.movesUci.length * 3;
+  {
+    for (var i = 0; i < object.movesUci.length; i++) {
+      final value = object.movesUci[i];
+      bytesCount += value.length * 3;
+    }
+  }
+  {
+    final value = object.ownerUuid;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.pgn;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.whitesTime;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -125,12 +180,18 @@ void _gameModelSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeDateTime(offsets[0], object.endedAt);
-  writer.writeString(offsets[1], object.metadata);
-  writer.writeString(offsets[2], object.pgn);
-  writer.writeString(offsets[3], object.result);
-  writer.writeDateTime(offsets[4], object.startedAt);
-  writer.writeString(offsets[5], object.timeControl);
+  writer.writeString(offsets[0], object.blacksTime);
+  writer.writeDateTime(offsets[1], object.endedAt);
+  writer.writeStringList(offsets[2], object.fens);
+  writer.writeBool(offsets[3], object.isGameOver);
+  writer.writeStringList(offsets[4], object.moves);
+  writer.writeStringList(offsets[5], object.movesUci);
+  writer.writeBool(offsets[6], object.ownerIsWhite);
+  writer.writeString(offsets[7], object.ownerUuid);
+  writer.writeString(offsets[8], object.pgn);
+  writer.writeByte(offsets[9], object.result.index);
+  writer.writeDateTime(offsets[10], object.startedAt);
+  writer.writeString(offsets[11], object.whitesTime);
 }
 
 GameModel _gameModelDeserialize(
@@ -139,15 +200,22 @@ GameModel _gameModelDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = GameModel(
-    metadata: reader.readStringOrNull(offsets[1]),
-    pgn: reader.readString(offsets[2]),
-    result: reader.readString(offsets[3]),
-    timeControl: reader.readStringOrNull(offsets[5]),
-  );
-  object.endedAt = reader.readDateTimeOrNull(offsets[0]);
+  final object = GameModel();
+  object.blacksTime = reader.readStringOrNull(offsets[0]);
+  object.endedAt = reader.readDateTimeOrNull(offsets[1]);
+  object.fens = reader.readStringList(offsets[2]) ?? [];
   object.id = id;
-  object.startedAt = reader.readDateTime(offsets[4]);
+  object.isGameOver = reader.readBool(offsets[3]);
+  object.moves = reader.readStringList(offsets[4]) ?? [];
+  object.movesUci = reader.readStringList(offsets[5]) ?? [];
+  object.ownerIsWhite = reader.readBool(offsets[6]);
+  object.ownerUuid = reader.readStringOrNull(offsets[7]);
+  object.pgn = reader.readStringOrNull(offsets[8]);
+  object.result =
+      _GameModelresultValueEnumMap[reader.readByteOrNull(offsets[9])] ??
+          GameResult.ongoing;
+  object.startedAt = reader.readDateTime(offsets[10]);
+  object.whitesTime = reader.readStringOrNull(offsets[11]);
   return object;
 }
 
@@ -159,28 +227,60 @@ P _gameModelDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 1:
       return (reader.readStringOrNull(offset)) as P;
+    case 1:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringList(offset) ?? []) as P;
     case 3:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readStringList(offset) ?? []) as P;
     case 5:
+      return (reader.readStringList(offset) ?? []) as P;
+    case 6:
+      return (reader.readBool(offset)) as P;
+    case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
+      return (reader.readStringOrNull(offset)) as P;
+    case 9:
+      return (_GameModelresultValueEnumMap[reader.readByteOrNull(offset)] ??
+          GameResult.ongoing) as P;
+    case 10:
+      return (reader.readDateTime(offset)) as P;
+    case 11:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
+const _GameModelresultEnumValueMap = {
+  'ongoing': 0,
+  'checkmate': 1,
+  'stalemate': 2,
+  'draw': 3,
+  'timeout': 4,
+  'whiteWon': 5,
+  'blackWon': 6,
+};
+const _GameModelresultValueEnumMap = {
+  0: GameResult.ongoing,
+  1: GameResult.checkmate,
+  2: GameResult.stalemate,
+  3: GameResult.draw,
+  4: GameResult.timeout,
+  5: GameResult.whiteWon,
+  6: GameResult.blackWon,
+};
+
 Id _gameModelGetId(GameModel object) {
   return object.id;
 }
 
 List<IsarLinkBase<dynamic>> _gameModelGetLinks(GameModel object) {
-  return [object.whitePlayer, object.blackPlayer, object.moves];
+  return [object.whitePlayer, object.blackPlayer];
 }
 
 void _gameModelAttach(IsarCollection<dynamic> col, Id id, GameModel object) {
@@ -189,7 +289,6 @@ void _gameModelAttach(IsarCollection<dynamic> col, Id id, GameModel object) {
       .attach(col, col.isar.collection<Player>(), r'whitePlayer', id);
   object.blackPlayer
       .attach(col, col.isar.collection<Player>(), r'blackPlayer', id);
-  object.moves.attach(col, col.isar.collection<MoveModel>(), r'moves', id);
 }
 
 extension GameModelQueryWhereSort
@@ -197,6 +296,14 @@ extension GameModelQueryWhereSort
   QueryBuilder<GameModel, GameModel, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterWhere> anyResult() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'result'),
+      );
     });
   }
 }
@@ -269,7 +376,7 @@ extension GameModelQueryWhere
   }
 
   QueryBuilder<GameModel, GameModel, QAfterWhereClause> resultEqualTo(
-      String result) {
+      GameResult result) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'result',
@@ -279,7 +386,7 @@ extension GameModelQueryWhere
   }
 
   QueryBuilder<GameModel, GameModel, QAfterWhereClause> resultNotEqualTo(
-      String result) {
+      GameResult result) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -312,10 +419,206 @@ extension GameModelQueryWhere
       }
     });
   }
+
+  QueryBuilder<GameModel, GameModel, QAfterWhereClause> resultGreaterThan(
+    GameResult result, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'result',
+        lower: [result],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterWhereClause> resultLessThan(
+    GameResult result, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'result',
+        lower: [],
+        upper: [result],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterWhereClause> resultBetween(
+    GameResult lowerResult,
+    GameResult upperResult, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'result',
+        lower: [lowerResult],
+        includeLower: includeLower,
+        upper: [upperResult],
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension GameModelQueryFilter
     on QueryBuilder<GameModel, GameModel, QFilterCondition> {
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> blacksTimeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'blacksTime',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      blacksTimeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'blacksTime',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> blacksTimeEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'blacksTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      blacksTimeGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'blacksTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> blacksTimeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'blacksTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> blacksTimeBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'blacksTime',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      blacksTimeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'blacksTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> blacksTimeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'blacksTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> blacksTimeContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'blacksTime',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> blacksTimeMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'blacksTime',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      blacksTimeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'blacksTime',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      blacksTimeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'blacksTime',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition> endedAtIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -385,6 +688,225 @@ extension GameModelQueryFilter
     });
   }
 
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fens',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      fensElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fens',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fens',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fens',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      fensElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'fens',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'fens',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensElementContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'fens',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensElementMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'fens',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      fensElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fens',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      fensElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'fens',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'fens',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'fens',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'fens',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'fens',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      fensLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'fens',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> fensLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'fens',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -438,76 +960,71 @@ extension GameModelQueryFilter
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataIsNull() {
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> isGameOverEqualTo(
+      bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'metadata',
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isGameOver',
+        value: value,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
-      metadataIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'metadata',
-      ));
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataEqualTo(
-    String? value, {
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesElementEqualTo(
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'metadata',
+        property: r'moves',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataGreaterThan(
-    String? value, {
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesElementGreaterThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'metadata',
+        property: r'moves',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataLessThan(
-    String? value, {
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesElementLessThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'metadata',
+        property: r'moves',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesElementBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'metadata',
+        property: r'moves',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -517,77 +1034,563 @@ extension GameModelQueryFilter
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataStartsWith(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'metadata',
+        property: r'moves',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataEndsWith(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'metadata',
+        property: r'moves',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'metadata',
+        property: r'moves',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataMatches(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesElementMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'metadata',
+        property: r'moves',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> metadataIsEmpty() {
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'metadata',
+        property: r'moves',
         value: '',
       ));
     });
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
-      metadataIsNotEmpty() {
+      movesElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'metadata',
+        property: r'moves',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> pgnEqualTo(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moves',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moves',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moves',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moves',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moves',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'moves',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementEqualTo(
     String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'movesUci',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'movesUci',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'movesUci',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'movesUci',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'movesUci',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'movesUci',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'movesUci',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'movesUci',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'movesUci',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'movesUci',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'movesUci',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesUciIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'movesUci',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'movesUci',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'movesUci',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'movesUci',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      movesUciLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'movesUci',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerIsWhiteEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'ownerIsWhite',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerUuidIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'ownerUuid',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      ownerUuidIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'ownerUuid',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerUuidEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'ownerUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      ownerUuidGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'ownerUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerUuidLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'ownerUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerUuidBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'ownerUuid',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerUuidStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'ownerUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerUuidEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'ownerUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerUuidContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'ownerUuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerUuidMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'ownerUuid',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> ownerUuidIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'ownerUuid',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
+      ownerUuidIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'ownerUuid',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> pgnIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'pgn',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> pgnIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'pgn',
+      ));
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> pgnEqualTo(
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -600,7 +1603,7 @@ extension GameModelQueryFilter
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition> pgnGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -615,7 +1618,7 @@ extension GameModelQueryFilter
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition> pgnLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -630,8 +1633,8 @@ extension GameModelQueryFilter
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition> pgnBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -717,54 +1720,46 @@ extension GameModelQueryFilter
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      GameResult value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'result',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultGreaterThan(
-    String value, {
+    GameResult value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'result',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultLessThan(
-    String value, {
+    GameResult value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'result',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultBetween(
-    String lower,
-    String upper, {
+    GameResult lower,
+    GameResult upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -773,75 +1768,6 @@ extension GameModelQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'result',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'result',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'result',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'result',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'result',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> resultIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'result',
-        value: '',
       ));
     });
   }
@@ -900,31 +1826,30 @@ extension GameModelQueryFilter
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
-      timeControlIsNull() {
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> whitesTimeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'timeControl',
+        property: r'whitesTime',
       ));
     });
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
-      timeControlIsNotNull() {
+      whitesTimeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'timeControl',
+        property: r'whitesTime',
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> timeControlEqualTo(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> whitesTimeEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'timeControl',
+        property: r'whitesTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -932,7 +1857,7 @@ extension GameModelQueryFilter
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
-      timeControlGreaterThan(
+      whitesTimeGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -940,14 +1865,14 @@ extension GameModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'timeControl',
+        property: r'whitesTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> timeControlLessThan(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> whitesTimeLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -955,14 +1880,14 @@ extension GameModelQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'timeControl',
+        property: r'whitesTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> timeControlBetween(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> whitesTimeBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -971,7 +1896,7 @@ extension GameModelQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'timeControl',
+        property: r'whitesTime',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -982,50 +1907,50 @@ extension GameModelQueryFilter
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
-      timeControlStartsWith(
+      whitesTimeStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'timeControl',
+        property: r'whitesTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> timeControlEndsWith(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> whitesTimeEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'timeControl',
+        property: r'whitesTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> timeControlContains(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> whitesTimeContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'timeControl',
+        property: r'whitesTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> timeControlMatches(
+  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> whitesTimeMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'timeControl',
+        property: r'whitesTime',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
@@ -1033,20 +1958,20 @@ extension GameModelQueryFilter
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
-      timeControlIsEmpty() {
+      whitesTimeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'timeControl',
+        property: r'whitesTime',
         value: '',
       ));
     });
   }
 
   QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
-      timeControlIsNotEmpty() {
+      whitesTimeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'timeControl',
+        property: r'whitesTime',
         value: '',
       ));
     });
@@ -1085,66 +2010,21 @@ extension GameModelQueryLinks
       return query.linkLength(r'blackPlayer', 0, true, 0, true);
     });
   }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> moves(
-      FilterQuery<MoveModel> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'moves');
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesLengthEqualTo(
-      int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'moves', length, true, length, true);
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'moves', 0, true, 0, true);
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'moves', 0, false, 999999, true);
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'moves', 0, true, length, include);
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition>
-      movesLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'moves', length, include, 999999, true);
-    });
-  }
-
-  QueryBuilder<GameModel, GameModel, QAfterFilterCondition> movesLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(
-          r'moves', lower, includeLower, upper, includeUpper);
-    });
-  }
 }
 
 extension GameModelQuerySortBy on QueryBuilder<GameModel, GameModel, QSortBy> {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByBlacksTime() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'blacksTime', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByBlacksTimeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'blacksTime', Sort.desc);
+    });
+  }
+
   QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByEndedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endedAt', Sort.asc);
@@ -1157,15 +2037,39 @@ extension GameModelQuerySortBy on QueryBuilder<GameModel, GameModel, QSortBy> {
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByMetadata() {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByIsGameOver() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadata', Sort.asc);
+      return query.addSortBy(r'isGameOver', Sort.asc);
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByMetadataDesc() {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByIsGameOverDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadata', Sort.desc);
+      return query.addSortBy(r'isGameOver', Sort.desc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByOwnerIsWhite() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ownerIsWhite', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByOwnerIsWhiteDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ownerIsWhite', Sort.desc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByOwnerUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ownerUuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByOwnerUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ownerUuid', Sort.desc);
     });
   }
 
@@ -1205,21 +2109,33 @@ extension GameModelQuerySortBy on QueryBuilder<GameModel, GameModel, QSortBy> {
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByTimeControl() {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByWhitesTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timeControl', Sort.asc);
+      return query.addSortBy(r'whitesTime', Sort.asc);
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByTimeControlDesc() {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> sortByWhitesTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timeControl', Sort.desc);
+      return query.addSortBy(r'whitesTime', Sort.desc);
     });
   }
 }
 
 extension GameModelQuerySortThenBy
     on QueryBuilder<GameModel, GameModel, QSortThenBy> {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByBlacksTime() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'blacksTime', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByBlacksTimeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'blacksTime', Sort.desc);
+    });
+  }
+
   QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByEndedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endedAt', Sort.asc);
@@ -1244,15 +2160,39 @@ extension GameModelQuerySortThenBy
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByMetadata() {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByIsGameOver() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadata', Sort.asc);
+      return query.addSortBy(r'isGameOver', Sort.asc);
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByMetadataDesc() {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByIsGameOverDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadata', Sort.desc);
+      return query.addSortBy(r'isGameOver', Sort.desc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByOwnerIsWhite() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ownerIsWhite', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByOwnerIsWhiteDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ownerIsWhite', Sort.desc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByOwnerUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ownerUuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByOwnerUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'ownerUuid', Sort.desc);
     });
   }
 
@@ -1292,31 +2232,68 @@ extension GameModelQuerySortThenBy
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByTimeControl() {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByWhitesTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timeControl', Sort.asc);
+      return query.addSortBy(r'whitesTime', Sort.asc);
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByTimeControlDesc() {
+  QueryBuilder<GameModel, GameModel, QAfterSortBy> thenByWhitesTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timeControl', Sort.desc);
+      return query.addSortBy(r'whitesTime', Sort.desc);
     });
   }
 }
 
 extension GameModelQueryWhereDistinct
     on QueryBuilder<GameModel, GameModel, QDistinct> {
+  QueryBuilder<GameModel, GameModel, QDistinct> distinctByBlacksTime(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'blacksTime', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<GameModel, GameModel, QDistinct> distinctByEndedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'endedAt');
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QDistinct> distinctByMetadata(
+  QueryBuilder<GameModel, GameModel, QDistinct> distinctByFens() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fens');
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QDistinct> distinctByIsGameOver() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isGameOver');
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QDistinct> distinctByMoves() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'moves');
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QDistinct> distinctByMovesUci() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'movesUci');
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QDistinct> distinctByOwnerIsWhite() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'ownerIsWhite');
+    });
+  }
+
+  QueryBuilder<GameModel, GameModel, QDistinct> distinctByOwnerUuid(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'metadata', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'ownerUuid', caseSensitive: caseSensitive);
     });
   }
 
@@ -1327,10 +2304,9 @@ extension GameModelQueryWhereDistinct
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QDistinct> distinctByResult(
-      {bool caseSensitive = true}) {
+  QueryBuilder<GameModel, GameModel, QDistinct> distinctByResult() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'result', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'result');
     });
   }
 
@@ -1340,10 +2316,10 @@ extension GameModelQueryWhereDistinct
     });
   }
 
-  QueryBuilder<GameModel, GameModel, QDistinct> distinctByTimeControl(
+  QueryBuilder<GameModel, GameModel, QDistinct> distinctByWhitesTime(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'timeControl', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'whitesTime', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1356,25 +2332,61 @@ extension GameModelQueryProperty
     });
   }
 
+  QueryBuilder<GameModel, String?, QQueryOperations> blacksTimeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'blacksTime');
+    });
+  }
+
   QueryBuilder<GameModel, DateTime?, QQueryOperations> endedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'endedAt');
     });
   }
 
-  QueryBuilder<GameModel, String?, QQueryOperations> metadataProperty() {
+  QueryBuilder<GameModel, List<String>, QQueryOperations> fensProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'metadata');
+      return query.addPropertyName(r'fens');
     });
   }
 
-  QueryBuilder<GameModel, String, QQueryOperations> pgnProperty() {
+  QueryBuilder<GameModel, bool, QQueryOperations> isGameOverProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isGameOver');
+    });
+  }
+
+  QueryBuilder<GameModel, List<String>, QQueryOperations> movesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'moves');
+    });
+  }
+
+  QueryBuilder<GameModel, List<String>, QQueryOperations> movesUciProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'movesUci');
+    });
+  }
+
+  QueryBuilder<GameModel, bool, QQueryOperations> ownerIsWhiteProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'ownerIsWhite');
+    });
+  }
+
+  QueryBuilder<GameModel, String?, QQueryOperations> ownerUuidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'ownerUuid');
+    });
+  }
+
+  QueryBuilder<GameModel, String?, QQueryOperations> pgnProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'pgn');
     });
   }
 
-  QueryBuilder<GameModel, String, QQueryOperations> resultProperty() {
+  QueryBuilder<GameModel, GameResult, QQueryOperations> resultProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'result');
     });
@@ -1386,9 +2398,9 @@ extension GameModelQueryProperty
     });
   }
 
-  QueryBuilder<GameModel, String?, QQueryOperations> timeControlProperty() {
+  QueryBuilder<GameModel, String?, QQueryOperations> whitesTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'timeControl');
+      return query.addPropertyName(r'whitesTime');
     });
   }
 }

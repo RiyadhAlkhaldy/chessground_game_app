@@ -1,35 +1,54 @@
 part of 'game_computer_controller.dart';
 
-// part '';
 class GameComputerWithTimeController extends GameAiController {
   ChessClockService? clockCtrl;
+  GameController? gameCtrl;
 
   ///constructer
   GameComputerWithTimeController(super.choosingCtrl, super.plySound);
+
+  @override
+  Future<void> onstartVsEngine() async {}
+
+  /// حفظ اللعبة الحالية في Isar
+  @override
+  Future<void> saveCurrentGame(Player white, Player black) async {
+    _headers['TimeControl'] =
+        "${gameCtrl!.whitesTime.inMinutes}+${gameCtrl!.incrementalValue}";
+    super.saveCurrentGame(white, black);
+  }
+
+  ///
   @override
   void onInit() {
     super.onInit();
+    gameCtrl = Get.find<GameController>();
     WidgetsBinding.instance.addObserver(this);
     // debugPrint(position.value.fen);
     // debugPrint(fen);
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
+    debugPrint("whitesTime ${gameCtrl!.whitesTime.inSeconds}");
     clockCtrl = Get.put(
       ChessClockService(
-        initialTimeMs: (choosingCtrl.playTime.value * 60 * 1000).toInt(),
-        incrementMs: 1000,
+        initialTimeMs: (gameCtrl!.whitesTime.inMinutes * 60 * 1000).toInt(),
+        incrementMs: gameCtrl!.incrementalValue * 1000,
         onTimeout: (player) {
           debugPrint('time over the ${player.opposite.name} player is winner');
           _handleTimeout(player);
         },
       ),
     );
-    engineService.start().then((_) {
+    clockCtrl!.setIncrementalValue(value: gameCtrl!.incrementalValue);
+    engineService.start().then((_) async {
       _applyStockfishSettings();
       engineService.setPosition(fen: fen);
       stockfishState.value = StockfishState.ready;
       clockCtrl!.start();
       _setPlayerSide();
+
+      ///
+      await onstartVsEngine();
     });
     //
     engineService.evaluations.listen((ev) {
@@ -71,39 +90,6 @@ class GameComputerWithTimeController extends GameAiController {
     super._applyMove(move);
   }
 
-  // void _handleTimeout(Side timedOutPlayer) {
-  //   // أوقف أي عمليات أخرى في اللعبة
-  //   engineService.stop(); // إيقاف تفكير المحرك
-  //   clockCtrl!.stop();
-
-  //   final winner = timedOutPlayer.opposite;
-
-  //   // تحديث نص الحالة
-  //   statusText.value =
-  //       'انتهى الوقت! الفائز هو: ${winner == Side.white ? 'الأبيض' : 'الأسود'}';
-  //   update(); // لتحديث الواجهة
-
-  //   // هنا يمكنك إضافة منطق حفظ اللعبة في قاعدة البيانات
-  //   // GameHistoryService.saveGame(...)
-  // }
-  String? pgn;
-  String? generatePgnFromPosition() {
-    return position.value.fen;
-  }
-
-  List<MoveModel> buildMoveModelsFromHistory() {
-    final out = <MoveModel>[];
-    int mvNum = 1;
-    Position pos = past.first;
-    for (final move in pastMoves) {
-      pos = pos.playUnchecked(NormalMove.fromUci(move));
-      // افترض أن لديك pos.lastMoveUci و pos.fen
-      out.add(MoveModel(uci: move, fen: pos.fen, moveNumber: mvNum++));
-      mvNum++;
-    }
-    return out;
-  }
-
   /// عند انتهاء الوقت — نفعل هذه الدالة (clockService يجب أن يمرّر الجانب الذي انتهى الوقت له)
   void _handleTimeout(Side timedOutSide) async {
     // من انتهى وقته يخسر، والآخر يفوز (ما لم تكن الحالة تمنع ذلك)
@@ -119,55 +105,11 @@ class GameComputerWithTimeController extends GameAiController {
     update();
 
     // احفظ اللعبة في الـ DB عبر GameStorageService
-    try {
-      final storage = GameStorageService();
-      // افترض أن لديك PGN مُكوّن أو يمكن استخراجه من dartchess
-      final pgnText =
-          pgn ?? generatePgnFromPosition(); // إذا كان لديك وظيفة للتوليد
-      await storage.saveFinishedGame(
-        pgn: pgnText ?? '',
-        result: resultText,
-        startedAt: gameStartedAt ?? DateTime.now(),
-        endedAt: DateTime.now(),
-        timeControl: clockCtrl?.initialTimeMs.toString(),
-        whiteName: playersWhiteName ?? 'White',
-        blackName: playersBlackName ?? 'Black',
-        moves: buildMoveModelsFromHistory(), // حوِّل history إلى MoveModel list
-      );
-    } catch (e) {
+    try {} catch (e) {
       debugPrint('Error saving game on timeout: $e');
     }
 
     // حدث واجهة المستخدم إن لزم
     update();
-  }
-
-  Future<void> agreeToDraw() async {
-    if (position.value.isGameOver) return;
-
-    engineService.stop();
-    clockCtrl?.stop();
-
-    statusText.value = 'تعادل بالاتفاق بين الطرفين.';
-    update();
-
-    // حفظ اللعبة كتساوي
-    try {
-      final storage = GameStorageService();
-      final pgnText = pgn ?? generatePgnFromPosition();
-      await storage.saveFinishedGame(
-        pgn: pgnText ?? '',
-        result: '1/2-1/2',
-        startedAt: gameStartedAt ?? DateTime.now(),
-        endedAt: DateTime.now(),
-        timeControl: clockCtrl?.initialTimeMs.toString(),
-
-        whiteName: playersWhiteName ?? 'White',
-        blackName: playersBlackName ?? 'Black',
-        moves: buildMoveModelsFromHistory(),
-      );
-    } catch (e) {
-      debugPrint('Error saving game on agreeToDraw: $e');
-    }
   }
 }
