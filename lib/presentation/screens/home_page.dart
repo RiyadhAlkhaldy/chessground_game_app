@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 
 import '../../core/helper/helper_methods.dart';
 import '../../routes/app_pages.dart';
-import '../widgets/animated_background.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -18,7 +17,7 @@ class HomePage extends StatelessWidget {
       child: Scaffold(
         body: Stack(
           children: [
-            AnimatedBackground(),
+            // AnimatedBackground(),
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -27,7 +26,7 @@ class HomePage extends StatelessWidget {
                   crossAxisCount: 2,
                   children: [
                     buildGameType(
-                      lable: 'Play vs Computer',
+                      lable: 'Play vs Computer with Time',
                       icon: Icons.computer,
                       onTap: () {
                         controller.setVsComputer(value: true);
@@ -50,6 +49,19 @@ class HomePage extends StatelessWidget {
                         );
                       },
                     ),
+                    buildGameType(
+                      lable: 'Play vs Computer',
+                      icon: Icons.computer,
+                      onTap: () {
+                        controller.setVsComputer(value: true);
+                        // navigate to setup game time screen
+                        Get.toNamed(
+                          RouteNames.sideChoosingView,
+                          arguments: {"withTime": false},
+                        );
+                      },
+                    ),
+
                     buildGameType(
                       lable: 'Settings',
                       icon: Icons.settings,

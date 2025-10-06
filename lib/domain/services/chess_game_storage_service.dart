@@ -12,11 +12,11 @@ class ChessGameStorageService {
   // ChessGameStorageService._internal();
 
   // static late Isar db;
-  static late final Isar db;
+  static Isar? db;
 
   /// ✅ فتح قاعدة البيانات لمرة واحدة فقط
   static Future<void> init() async {
-    // if (_isar != null) return;
+    if (db != null) return;
     final dir = await getApplicationSupportDirectory();
 
     db = await Isar.open(
@@ -27,7 +27,11 @@ class ChessGameStorageService {
   }
 
   Isar get isar {
-    return db;
+    if (db == null) {
+      throw Exception('Isar database is not initialized. Call init() first.');
+    } else {
+      return db!;
+    }
   }
 
   // 🧩 حفظ أو تحديث لاعب
@@ -101,5 +105,262 @@ class ChessGameStorageService {
       await isar.chessGames.clear();
       await isar.players.clear();
     });
+  }
+
+  /// دالة مساعدة لتوليد PGN بسيط من قائمة SAN و headers
+  /// مخصصة للـ mainline فقط (بدون تعقيدات التعليقات/variations)
+  String _manualPgnFromSanList(
+    Map<String, String> headers,
+    List<String> sanMoves,
+    String result,
+  ) {
+    final buffer = StringBuffer();
+
+    // رؤوس PGN
+    headers.forEach((k, v) {
+      buffer.writeln('[$k "${v.replaceAll('"', '\\"')}"]');
+    });
+    buffer.writeln();
+
+    // ترقيم الحركات
+    for (int i = 0; i < sanMoves.length; i += 2) {
+      final moveNumber = (i ~/ 2) + 1;
+      buffer.write('$moveNumber. ${sanMoves[i]}');
+      if (i + 1 < sanMoves.length) buffer.write(' ${sanMoves[i + 1]}');
+      if (i + 2 < sanMoves.length) buffer.write(' ');
+    }
+
+    buffer.write(' $result');
+    return buffer.toString();
+  }
+
+  // ----------------------------
+  // Player management (بدون تكرار)
+  // ----------------------------
+
+  /// إنشاء لاعب إذا لم يوجد، أو تحديث بياناته في حال وجوده (avoid duplication).
+  /// يعيد الكائن الموجود أو الجديد.
+  Future<Player> createOrGetPlayerByUuid(
+    String uuid, {
+    String? name,
+    int? rating,
+    String? type,
+  }) async {
+    // حاول الحصول على اللاعب الحالي
+    final existing = await getPlayerByUuid(uuid);
+    if (existing != null) {
+      // حدث الحقول البسيطة إذا تغيّرت (اختياري)
+      bool changed = false;
+      if (name != null && existing.name != name) {
+        existing.name = name;
+        changed = true;
+      }
+      if (rating != null && existing.playerRating != rating) {
+        existing.playerRating = rating;
+        changed = true;
+      }
+
+      if (changed) {
+        await isar.writeTxn(() async {
+          await isar.players.put(existing);
+        });
+      }
+      return existing;
+    } else {
+      // أنشئ لاعبًا جديدًا وخزن
+      final player =
+          Player(uuid: uuid, name: name ?? uuid, type: type ?? '')
+            ..playerRating = rating!
+            ..createdAt = DateTime.now();
+
+      await isar.writeTxn(() async {
+        await isar.players.put(player);
+      });
+      return player;
+    }
+  }
+
+  // ----------------------------
+  // Game lifecycle (بدء، إضافة حركة، نهاية)
+  // ----------------------------
+
+  /// بدء لعبة جديدة: ينشئ كائن Game ويخزنه مع روابط اللاعبين.
+  /// يعيد الـGame المخزّن (محتوياته مع id).
+  Future<ChessGame> startNewGame({
+    String? startFEN,
+    required Player white,
+    required Player black,
+    String? event,
+    String? site,
+    String? round,
+    DateTime? date,
+  }) async {
+    // تأكد من حفظ اللاعبين وعدم تكرارهم
+    final savedWhite = await createOrGetPlayerByUuid(
+      white.uuid,
+      name: white.name,
+      rating: white.playerRating,
+    );
+    final savedBlack = await createOrGetPlayerByUuid(
+      black.uuid,
+      name: black.name,
+      rating: black.playerRating,
+    );
+
+    final game =
+        ChessGame()
+          ..fullPgn =
+              '' // سنملأه تدريجيًا
+          ..movesCount = 0
+          ..moves = []
+          ..event = event
+          ..site = site
+          ..round = round
+          ..date = date ?? DateTime.now()
+          ..result =
+              '*' // لم تنتهِ بعد
+          // ..status = 'ongoing'
+          ..startingFen =
+              startFEN ??
+              '' // ضع FEN البداية أو فراغ
+          ..date = DateTime.now()
+          ..whitePlayer.value = savedWhite
+          ..blackPlayer.value = savedBlack
+          ..whitePlayer.value = savedWhite
+          ..blackPlayer.value = savedBlack;
+
+    await isar.writeTxn(() async {
+      await isar.chessGames.put(game);
+      // حفظ روابط IsarLink
+      await game.whitePlayer.save();
+      await game.blackPlayer.save();
+    });
+
+    return game;
+  }
+
+  /// إضافة حركة (SAN) للعبة موجودة وتحديث PGN و movesCount.
+  /// يعيد الـGame بعد التحديث.
+  Future<ChessGame> addMoveToGame(int gameId, MoveData moveData) async {
+    late ChessGame game;
+    await isar.writeTxn(() async {
+      final g = await isar.chessGames.get(gameId);
+      if (g == null) throw Exception('Game not found: $gameId');
+
+      // تحميل اللاعبين لقراءة أسمائهم (مطلوب لبناء رؤوس PGN)
+      await g.whitePlayer.load();
+      await g.blackPlayer.load();
+
+      // أضف الحركة
+      g.moves.add(moveData);
+      g.movesCount = g.moves.length;
+
+      // بناء رؤوس PGN الحالية لاستخدامها في النص
+      final headers = <String, String>{
+        'Event': g.event ?? 'Casual Game',
+        'Site': g.site ?? 'Local',
+        'Date':
+            (g.date != null)
+                ? g.date!.toIso8601String().split('T').first
+                : DateTime.now().toIso8601String().split('T').first,
+        'Round': g.round ?? '1',
+        'White': g.whitePlayer.value?.name ?? 'White',
+        'Black': g.blackPlayer.value?.name ?? 'Black',
+        'Result': g.result ?? '*',
+      };
+      final sanMoves = g.moves.map((s) => s.san!).toList();
+
+      // أعِد توليد PGN اعتمادًا على moves الحالية
+      g.fullPgn = _manualPgnFromSanList(headers, sanMoves, g.result ?? '*');
+
+      // خزّن التغييرات
+      await isar.chessGames.put(g);
+
+      game = g;
+    });
+
+    return game;
+  }
+
+  /// إنهاء اللعبة: تحديث النتيجة، endFEN، endTime، الحالة، وإعادة بناء PGN متضمنًا النتيجة النهائية.
+  Future<ChessGame> endGame(
+    int gameId, {
+    required String result, // "1-0", "0-1", "1/2-1/2"
+    String? endFEN,
+    String? termination, // سبب النهاية (e.g., "checkmate", "resign", "timeout")
+  }) async {
+    late ChessGame game;
+    await isar.writeTxn(() async {
+      final g = await isar.chessGames.get(gameId);
+      if (g == null) throw Exception('Game not found: $gameId');
+
+      // تحميل اللاعبين للحصول على أسمائهم (لرؤوس PGN)
+      await g.whitePlayer.load();
+      await g.blackPlayer.load();
+
+      // تحديث الحالة
+      g.result = result;
+      // g.endFEN = endFEN;
+      // g.endTime = DateTime.now();
+      // g.status = 'finished';
+
+      // تحضير الرؤوس مع النتيجة النهائية
+      final headers = <String, String>{
+        'Event': g.event ?? 'Casual Game',
+        'Site': g.site ?? 'Local',
+        'Date':
+            (g.date != null)
+                ? g.date!.toIso8601String().split('T').first
+                : DateTime.now().toIso8601String().split('T').first,
+        'Round': g.round ?? '1',
+        'White': g.whitePlayer.value?.name ?? 'White',
+        'Black': g.blackPlayer.value?.name ?? 'Black',
+        'Result': g.result ?? result,
+      };
+      final sanMoves = g.moves.map((s) => s.san!).toList();
+      // إعادة توليد PGN مع النتيجة النهائية
+      g.fullPgn = _manualPgnFromSanList(headers, sanMoves, g.result ?? result);
+
+      await isar.chessGames.put(g);
+      game = g;
+    });
+
+    return game;
+  }
+
+  // ----------------------------
+  // Queries (استرجاع)
+  // ----------------------------
+
+  /// جلب لعبة مع تحميل روابط اللاعبين
+  Future<ChessGame?> getGameWithPlayers(int gameId) async {
+    final g = await isar.chessGames.get(gameId);
+    if (g == null) return null;
+    await g.whitePlayer.load();
+    await g.blackPlayer.load();
+    return g;
+  }
+
+  /// جلب ألعاب لاعب حسب uuid (يستخدم الحقول whitePlayerId / blackPlayerId لسرعة الاستعلام)
+  Future<List<ChessGame>> getGamesByPlayerUuid(String uuid) async {
+    final player = await getPlayerByUuid(uuid);
+    if (player == null) return [];
+
+    final games =
+        await isar.chessGames
+            .filter()
+            .group(
+              (q) => q
+                  .whitePlayer((w) => w.idEqualTo(player.id))
+                  .or()
+                  .blackPlayer((b) => b.idEqualTo(player.id)),
+            )
+            .findAll();
+
+    for (final g in games) {
+      await g.whitePlayer.load();
+      await g.blackPlayer.load();
+    }
+    return games;
   }
 }

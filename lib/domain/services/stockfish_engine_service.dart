@@ -19,7 +19,7 @@ enum GameResult {
 
 /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine
 class StockfishEngineService {
-  late Stockfish _stockfish;
+  static Stockfish? _stockfish;
   StreamSubscription<String>? _stdoutSub;
   StreamSubscription<String>? _stderrSub;
 
@@ -35,20 +35,23 @@ class StockfishEngineService {
   Future<void> start({
     Duration waitBeforeUci = const Duration(milliseconds: 2000),
   }) async {
+    if (_stockfish != null && !startStockfishIfNecessary) {
+      return;
+    }
     _stockfish = Stockfish();
 
-    _stdoutSub = _stockfish.stdout.listen((line) {
+    _stdoutSub = _stockfish?.stdout.listen((line) {
       _raw.add(line);
       _handleLine(line);
     });
 
-    _stderrSub = _stockfish.stderr.listen((err) {
+    _stderrSub = _stockfish?.stderr.listen((err) {
       _raw.add('ERR: $err');
     });
 
     await Future.delayed(waitBeforeUci);
 
-    _stockfish.stdin = 'uci';
+    _stockfish?.stdin = 'uci';
 
     await _waitFor((l) => l.contains('uciok'), Duration(seconds: 3));
 
@@ -95,8 +98,8 @@ class StockfishEngineService {
   }
 
   bool get startStockfishIfNecessary {
-    if (_stockfish.state.value == StockfishState.ready ||
-        _stockfish.state.value == StockfishState.starting) {
+    if (_stockfish?.state.value == StockfishState.ready ||
+        _stockfish?.state.value == StockfishState.starting) {
       return false;
     }
     return true;
@@ -118,31 +121,31 @@ class StockfishEngineService {
   }
 
   Future<void> isReady() async {
-    _stockfish.stdin = 'isready';
+    _stockfish?.stdin = 'isready';
     await _waitFor((l) => l.contains('readyok'), Duration(seconds: 1));
   }
 
   Future<void> ucinewgame() async {
-    _stockfish.stdin = 'ucinewgame';
+    _stockfish?.stdin = 'ucinewgame';
     await isReady();
   }
 
   void setOption(String name, dynamic value) =>
-      _stockfish.stdin = 'setoption name $name value $value';
+      _stockfish?.stdin = 'setoption name $name value $value';
 
   ///
   void setPosition({String? fen, List<String>? moves}) {
     var cmd = fen != null ? 'position fen $fen' : 'position startpos';
     if (moves != null && moves.isNotEmpty) cmd += ' moves ${moves.join(' ')}';
     // debugPrint("Move: $cmd  ");
-    _stockfish.stdin = cmd;
+    _stockfish?.stdin = cmd;
   }
 
   Future<String> goDepth(
     int depth, {
     Duration timeout = const Duration(seconds: 2),
   }) async {
-    _stockfish.stdin = 'go depth $depth';
+    _stockfish?.stdin = 'go depth $depth';
     final line = await raw
         .firstWhere((l) => l.startsWith('bestmove'))
         .timeout(timeout);
@@ -153,7 +156,7 @@ class StockfishEngineService {
     int ms, {
     Duration timeout = const Duration(seconds: 2),
   }) async {
-    _stockfish.stdin = 'go movetime $ms';
+    _stockfish?.stdin = 'go movetime $ms';
     // final line = await raw
     //     .firstWhere((l) => l.startsWith('bestmove'))
     //     .timeout(timeout);
@@ -161,7 +164,7 @@ class StockfishEngineService {
   }
 
   Future<void> stop() async {
-    _stockfish.stdin = 'stop';
+    _stockfish?.stdin = 'stop';
   }
 
   String _parseBestmove(String line) {
@@ -232,13 +235,13 @@ class StockfishEngineService {
 
   ///
   Future<void> stopStockfish() async {
-    if (_stockfish.state.value == StockfishState.disposed ||
-        _stockfish.state.value == StockfishState.error) {
+    if (_stockfish?.state.value == StockfishState.disposed ||
+        _stockfish?.state.value == StockfishState.error) {
       return;
     }
     _stdoutSub?.cancel();
     _stderrSub?.cancel();
-    _stockfish.dispose();
+    _stockfish?.dispose();
     await Future.delayed(const Duration(milliseconds: 1200));
     // if (Get.context!.mounted) return;
   }
@@ -247,7 +250,7 @@ class StockfishEngineService {
     _stdoutSub?.cancel();
     _stderrSub?.cancel();
     try {
-      _stockfish.dispose();
+      _stockfish?.dispose();
     } catch (e) {
       debugPrint("error dispose $e");
     }

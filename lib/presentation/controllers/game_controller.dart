@@ -13,8 +13,12 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
 import '../../core/helper/constants.dart';
 
 class GameController extends GetxController {
+  final skillLevel = 20.obs; // Default to max skill level
+  final uciElo = 2850.obs; // Default to a high Elo
+  final uciLimitStrength = true.obs;
+
   // late bishop.Game _game = bishop.Game(variant: bishop.Variant.standard());
-  late Position _game = Chess.fromSetup(Setup.parseFen(fen));
+  late Position position = Chess.fromSetup(Setup.parseFen(fen));
 
   String _fen = kInitialFEN;
   String get fen => _fen;
@@ -56,7 +60,7 @@ class GameController extends GetxController {
   Timer? get whitesTimer => _whitesTimer;
   Timer? get blacksTimer => _blacksTimer;
 
-  Position get game => _game;
+  Position get game => position;
   // SquaresState get state => _state;
   bool get aiThinking => _aiThinking;
   bool get flipBoard => _flipBoard;
@@ -110,7 +114,7 @@ class GameController extends GetxController {
       }
     }
     // reset game
-    _game = Chess.initial;
+    position = Chess.initial;
     // _state = game.squaresState(_player);
     update();
   }

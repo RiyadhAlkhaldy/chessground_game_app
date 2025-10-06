@@ -152,51 +152,38 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
                         ),
                   ],
                 ),
+                const SizedBox(height: 20),
 
                 controller.vsComputer
-                    ? Column(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: Text(
-                            'Game Difficult',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
+                    ? Obx(
+                      () => Opacity(
+                        opacity: controller.uciLimitStrength.value ? 1.0 : 0.5,
+                        child: AbsorbPointer(
+                          absorbing: !controller.uciLimitStrength.value,
+                          child: Column(
+                            children: [
+                              // UCI_Elo Slider
+                              Text(
+                                'UCI Elo: ${controller.uciElo.value}',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              Slider(
+                                value: controller.uciElo.value.toDouble(),
+                                min: 1350,
+                                max: 2850,
+                                divisions: 300,
+                                label: controller.uciElo.value.toString(),
+                                onChanged: (double value) {
+                                  controller.uciElo.value = value.toInt();
+                                },
+                                activeColor: Colors.orangeAccent,
+                                inactiveColor: Colors.orange.shade200
+                                    .withOpacity(0.3),
+                              ),
+                            ],
                           ),
                         ),
-                        Row(
-                          children: [
-                            GameLevelRadioButton(
-                              title: GameDifficulty.easy.name,
-                              value: GameDifficulty.easy,
-                              groupValue: controller.gameDifficulty,
-                              onChanged: (value) {
-                                controller.setGameDifficulty(level: 1);
-                              },
-                            ),
-                            const SizedBox(width: 10),
-                            GameLevelRadioButton(
-                              title: GameDifficulty.medium.name,
-                              value: GameDifficulty.medium,
-                              groupValue: controller.gameDifficulty,
-                              onChanged: (value) {
-                                controller.setGameDifficulty(level: 2);
-                              },
-                            ),
-                            const SizedBox(width: 10),
-                            GameLevelRadioButton(
-                              title: GameDifficulty.hard.name,
-                              value: GameDifficulty.hard,
-                              groupValue: controller.gameDifficulty,
-                              onChanged: (value) {
-                                controller.setGameDifficulty(level: 3);
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
+                      ),
                     )
                     : const SizedBox.shrink(),
                 const SizedBox(height: 20),

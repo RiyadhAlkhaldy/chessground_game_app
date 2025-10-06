@@ -5,7 +5,11 @@ class GameComputerWithTimeController extends GameAiController {
   GameController? gameCtrl;
 
   ///constructer
-  GameComputerWithTimeController(super.choosingCtrl, super.plySound);
+  GameComputerWithTimeController(
+    super.gameCtrl,
+    super.engineService,
+    super.plySound,
+  );
 
   @override
   Future<void> onstartVsEngine() async {}
@@ -24,8 +28,6 @@ class GameComputerWithTimeController extends GameAiController {
     super.onInit();
     gameCtrl = Get.find<GameController>();
     WidgetsBinding.instance.addObserver(this);
-    // debugPrint(position.value.fen);
-    // debugPrint(fen);
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
     debugPrint("whitesTime ${gameCtrl!.whitesTime.inSeconds}");
@@ -111,5 +113,45 @@ class GameComputerWithTimeController extends GameAiController {
 
     // حدث واجهة المستخدم إن لزم
     update();
+  }
+
+  /// ضبط إعدادات المحرك وفق اختيار المستخدم
+
+  void _setPlayerSide() {
+    if (gameCtrl!.playerColor == Side.white) {
+      playerSide = PlayerSide.white;
+      ctrlBoardSettings.orientation.value = Side.white;
+    } else if (gameCtrl!.playerColor == Side.black) {
+      playerSide = PlayerSide.black;
+      ctrlBoardSettings.orientation.value = Side.black;
+      playAiMove();
+    }
+  }
+
+  // Method to apply the settings from SideChoosingController
+  void _applyStockfishSettings() {
+    final skillLevel = gameCtrl!.skillLevel.value;
+    // final depth = gameCtrl.depth.value;
+    final uciLimitStrength = gameCtrl!.uciLimitStrength.value;
+    final uciElo = gameCtrl!.uciElo.value;
+    // final moveTime = gameCtrl!.moveTime.value;
+    debugPrint("uciElo $uciElo");
+
+    // Apply UCI_Elo if UCI_LimitStrength is enabled
+    if (uciLimitStrength) {
+      // Apply UCI_LimitStrength option
+      engineService.setOption('UCI_LimitStrength', uciLimitStrength);
+      engineService.setOption('UCI_Elo', uciElo);
+      // Optional: Set depth to a low value as it's not the primary control
+      // when UCI_LimitStrength is true
+      engineService.setOption(
+        'Skill Level',
+        20,
+      ); // Setting a high skill level by default
+    } else {
+      // Use Skill Level and Depth if UCI_LimitStrength is disabled
+      engineService.setOption('Skill Level', skillLevel);
+      // engineService.setOption('Depth', depth);
+    }
   }
 }

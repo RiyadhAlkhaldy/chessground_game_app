@@ -13,9 +13,9 @@ String formatMsToClock(int ms) {
   return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
 }
 
-class ChessClockBlackWidget extends StatelessWidget {
+class ChessClockWhiteWidget extends StatelessWidget {
   final ChessClockService chessClock;
-  const ChessClockBlackWidget({super.key, required this.chessClock});
+  const ChessClockWhiteWidget({super.key, required this.chessClock});
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +33,25 @@ class ChessClockBlackWidget extends StatelessWidget {
   }
 }
 
+class ChessClockBlackWidget extends StatelessWidget {
+  final ChessClockService chessClock;
+  const ChessClockBlackWidget({super.key, required this.chessClock});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Obx(
+          () => _clockRow(
+            label: 'Black',
+            timeText: formatMsToClock(chessClock.blackTimeMs.value),
+            active: chessClock.currentTurn.value == Side.black,
+          ),
+        ),
+      ],
+    );
+  }
+}
 // class ChessClockBlackWidget extends StatelessWidget {
 //   final ChessClockService chessClock;
 //   ChessClockBlackWidget({super.key, required this.chessClock});

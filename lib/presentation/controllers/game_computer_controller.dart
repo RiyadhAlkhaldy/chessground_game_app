@@ -7,36 +7,36 @@ import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/entities/extended_evaluation.dart';
 import '../../domain/models/chess_game.dart';
-import '../../domain/models/game.dart';
 import '../../domain/models/player.dart';
 import '../../domain/services/chess_clock_service.dart';
 import '../../domain/services/chess_game_storage_service.dart';
 import '../../domain/services/stockfish_engine_service.dart';
 import 'abstract_game_controller.dart';
 import 'chess_board_settings_controller.dart';
+import 'get_storage_controller.dart';
 import 'side_choosing_controller.dart';
 
 part 'game_computer_with_time_controller.dart';
 
 abstract class GameAiController extends AbstractGameController
     with WidgetsBindingObserver {
+  final storage = Get.find<GetStorageController>();
   final PlaySoundUseCase plySound;
   final SideChoosingController choosingCtrl;
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
-
-  GameAiController(this.choosingCtrl, this.plySound);
+  final Rx<StockfishState> stockfishState = StockfishState.disposed.obs;
+  final StockfishEngineService engineService;
+  GameAiController(this.choosingCtrl, this.engineService, this.plySound);
   bool canPop = false;
   NormalMove? promotionMove;
   NormalMove? premove;
   PlayerSide playerSide = PlayerSide.none;
   Side humanSide = Side.white;
-  final Rx<StockfishState> stockfishState = StockfishState.disposed.obs;
   // thinking flag
   // final RxBool isThinking = false.obs;
   final random = Random();
@@ -115,6 +115,32 @@ abstract class GameAiController extends AbstractGameController
       return GameResult.draw;
     }
     return GameResult.ongoing;
+  }
+
+  @override
+  void undoMove() {
+    super.undoMove();
+    engineService.setPosition(fen: fen);
+  }
+
+  @override
+  void redoMove() {
+    super.redoMove();
+    engineService.setPosition(fen: fen);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    engineService.stopStockfish();
+
+    super.dispose();
+  }
+
+  @override
+  void onClose() {
+    engineService.stopStockfish();
+    super.onClose();
   }
 
   // GameResult getResult() {
@@ -270,7 +296,7 @@ abstract class GameAiController extends AbstractGameController
   }
 
   Future<void> playAiMove() async {
-    await Future.delayed(Duration(milliseconds: 200));
+    await Future.delayed(Duration(milliseconds: 100));
     if (position.value.isGameOver) return;
 
     final allMoves = [
@@ -341,13 +367,57 @@ abstract class GameAiController extends AbstractGameController
       return;
     }
   }
+
   // أضف هذه الدالة داخل GameComputerController
+}
+
+class GameComputerController extends GameAiController {
+  ///constructer
+  GameComputerController(
+    super.choosingCtrl,
+    super.engineService,
+    super.plySound,
+  );
+
+  @override
+  Future<void> onstartVsEngine() async {}
+
+  @override
+  void onInit() {
+    super.onInit();
+    WidgetsBinding.instance.addObserver(this);
+    // debugPrint(position.value.fen);
+    // debugPrint(fen);
+    fen = position.value.fen;
+    validMoves = makeLegalMoves(position.value);
+
+    engineService.start().then((_) {
+      _applyStockfishSettings();
+      engineService.setPosition(fen: fen);
+      stockfishState.value = StockfishState.ready;
+      _setPlayerSide();
+    });
+    //
+    engineService.evaluations.listen((ev) {
+      // debugPrint(ev.toString());
+      // if (ev != null) {
+      // evaluation.value = ev;
+      // score.value = evaluation.value!.whiteWinPercent();
+      // }
+    });
+    engineService.bestmoves.listen((event) {
+      debugPrint('bestmoves: $event');
+      _makeMoveAi(event);
+    });
+    // ever(position, (_) {
+    // });
+  }
 
   void _setPlayerSide() {
-    if (choosingCtrl.choseColor.value == SideChoosing.white) {
+    if (choosingCtrl.playerColor.value == SideChoosing.white) {
       playerSide = PlayerSide.white;
       ctrlBoardSettings.orientation.value = Side.white;
-    } else if (choosingCtrl.choseColor.value == SideChoosing.black) {
+    } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
       playerSide = PlayerSide.black;
       ctrlBoardSettings.orientation.value = Side.black;
       playAiMove();
@@ -400,91 +470,52 @@ abstract class GameAiController extends AbstractGameController
   }
 }
 
-class GameComputerController extends GameAiController {
-  ///constructer
-  GameComputerController(super.choosingCtrl, super.plySound);
+// class PGNService {
+//   /// توليد PGN من GameModel
+//   static String generatePGN(GameModel game) {
+//     final buffer = StringBuffer();
 
-  @override
-  Future<void> onstartVsEngine() async {}
+//     // 1. Header metadata
+//     buffer.writeln('[Event "Casual Game"]');
+//     buffer.writeln('[Site "MyChessApp"]');
+//     buffer.writeln(
+//       '[Date "${DateFormat("yyyy.MM.dd").format(game.startedAt)}"]',
+//     );
+//     buffer.writeln('[Round "-"]');
+//     buffer.writeln('[White "${game.whitePlayer.value?.name ?? "Unknown"}"]');
+//     buffer.writeln('[Black "${game.blackPlayer.value?.name ?? "Unknown"}"]');
+//     buffer.writeln('[Result "${_mapResult(game.result)}"]');
+//     buffer.writeln('');
 
-  @override
-  void onInit() {
-    super.onInit();
-    WidgetsBinding.instance.addObserver(this);
-    // debugPrint(position.value.fen);
-    // debugPrint(fen);
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
+//     // 2. Moves
+//     for (int i = 0; i < game.moves.length; i++) {
+//       // اللاعب الأبيض
+//       if (i % 2 == 0) {
+//         buffer.write('${(i ~/ 2) + 1}. ${game.moves[i]} ');
+//       } else {
+//         // اللاعب الأسود
+//         buffer.write('${game.moves[i]} ');
+//       }
+//     }
 
-    engineService.start().then((_) {
-      _applyStockfishSettings();
-      engineService.setPosition(fen: fen);
-      stockfishState.value = StockfishState.ready;
-      _setPlayerSide();
-    });
-    //
-    engineService.evaluations.listen((ev) {
-      // debugPrint(ev.toString());
-      // if (ev != null) {
-      // evaluation.value = ev;
-      // score.value = evaluation.value!.whiteWinPercent();
-      // }
-    });
-    engineService.bestmoves.listen((event) {
-      debugPrint('bestmoves: $event');
-      _makeMoveAi(event);
-    });
-    // ever(position, (_) {
-    // });
-  }
-}
+//     // 3. النتيجة النهائية
+//     buffer.write(_mapResult(game.result));
 
-class PGNService {
-  /// توليد PGN من GameModel
-  static String generatePGN(GameModel game) {
-    final buffer = StringBuffer();
+//     return buffer.toString();
+//   }
 
-    // 1. Header metadata
-    buffer.writeln('[Event "Casual Game"]');
-    buffer.writeln('[Site "MyChessApp"]');
-    buffer.writeln(
-      '[Date "${DateFormat("yyyy.MM.dd").format(game.startedAt)}"]',
-    );
-    buffer.writeln('[Round "-"]');
-    buffer.writeln('[White "${game.whitePlayer.value?.name ?? "Unknown"}"]');
-    buffer.writeln('[Black "${game.blackPlayer.value?.name ?? "Unknown"}"]');
-    buffer.writeln('[Result "${_mapResult(game.result)}"]');
-    buffer.writeln('');
-
-    // 2. Moves
-    for (int i = 0; i < game.moves.length; i++) {
-      // اللاعب الأبيض
-      if (i % 2 == 0) {
-        buffer.write('${(i ~/ 2) + 1}. ${game.moves[i]} ');
-      } else {
-        // اللاعب الأسود
-        buffer.write('${game.moves[i]} ');
-      }
-    }
-
-    // 3. النتيجة النهائية
-    buffer.write(_mapResult(game.result));
-
-    return buffer.toString();
-  }
-
-  /// تحويل GameResult إلى صيغة PGN
-  static String _mapResult(GameResult result) {
-    switch (result) {
-      case GameResult.whiteWon:
-        return "1-0";
-      case GameResult.blackWon:
-        return "0-1";
-      case GameResult.draw:
-        return "1/2-1/2";
-      case GameResult.ongoing:
-      default:
-        return "*";
-    }
-  }
-}
+//   /// تحويل GameResult إلى صيغة PGN
+//   static String _mapResult(GameResult result) {
+//     switch (result) {
+//       case GameResult.whiteWon:
+//         return "1-0";
+//       case GameResult.blackWon:
+//         return "0-1";
+//       case GameResult.draw:
+//         return "1/2-1/2";
+//       case GameResult.ongoing:
+//       default:
+//         return "*";
+//     }
+//   }
+// }

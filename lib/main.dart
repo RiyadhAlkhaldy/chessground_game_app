@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 import 'domain/services/chess_game_storage_service.dart';
 import 'presentation/screens/home_page.dart';
@@ -8,6 +9,8 @@ import 'routes/game_binding.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
+
   // تأكد أن تُنشئ الـ Guest مبكراً
   await ChessGameStorageService.init();
   runApp(const MyApp());

@@ -1,9 +1,11 @@
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 // import 'package:flutter_chess/providers/game_provider.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../presentation/controllers/game_controller.dart';
+import 'constants.dart';
 // import 'package:squares/squares.dart';
 
 Widget buildGameType({
@@ -17,12 +19,17 @@ Widget buildGameType({
     child: Card(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+
         children: [
           icon != null
               ? Icon(icon)
               : gameTime! == '60+0'
               ? const SizedBox.shrink()
-              : Text(gameTime),
+              : Text(
+                gameTime,
+                style: Theme.of(Get.context!).textTheme.bodyMedium!.copyWith(),
+                textAlign: TextAlign.center,
+              ),
           const SizedBox(height: 10),
           Text(lable, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
@@ -72,7 +79,7 @@ final List<String> gameTimes = [
   'Rapid 15+10',
   'Classical 30+0',
   'Classical 30+20',
-  'Custom 60+0',
+  Constants.custom,
 ];
 
 var textFormDecoration = InputDecoration(

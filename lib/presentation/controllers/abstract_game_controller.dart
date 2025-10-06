@@ -4,8 +4,6 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../domain/services/stockfish_engine_service.dart';
-
 abstract class AbstractGameController extends GetxController {
   // Rx<Position> position = Chess.initial.obs;
   late Rx<Position> position = Chess.fromSetup(Setup.parseFen(fen)).obs;
@@ -33,9 +31,6 @@ abstract class AbstractGameController extends GetxController {
   final List<String> pastMoves = [];
   final List<String> futureMoves = [];
 
-  final StockfishEngineService engineService =
-      Get.find<StockfishEngineService>();
-
   bool get isCheckmate => position.value.isCheckmate;
 
   Side? get winner {
@@ -54,7 +49,6 @@ abstract class AbstractGameController extends GetxController {
     futureMoves.add(pastMoves.removeLast());
     debugPrint('_pastMoves ${pastMoves.length}');
 
-    engineService.setPosition(fen: position.value.fen);
     update();
   }
 
@@ -70,7 +64,6 @@ abstract class AbstractGameController extends GetxController {
     pastMoves.add(futureMoves.removeLast());
     debugPrint('_pastMoves ${pastMoves.length}');
 
-    engineService.setPosition(fen: position.value.fen);
     update();
   }
 }

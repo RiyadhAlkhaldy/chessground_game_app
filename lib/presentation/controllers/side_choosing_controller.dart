@@ -12,9 +12,8 @@ class SideChoosingController extends GetxController {
   // int get elo => 200 + difficultyLevel.value * 100;
 
   // Define any necessary properties and methods for the main menu
-  Rx<SideChoosing> meColor =
-      SideChoosing.white.obs; // Reactive variable for the player's color
-  Rx<SideChoosing> choseColor =
+  // Reactive variable for the player's color
+  Rx<SideChoosing> playerColor =
       SideChoosing.white.obs; // Reactive variable for the player's color
   // Reactive variable to track the selected game mode
 
@@ -27,7 +26,7 @@ class SideChoosingController extends GetxController {
   final skillLevel = 20.obs; // Default to max skill level
   final depth = 20.obs; // Default to depth 20
   final uciElo = 2850.obs; // Default to a high Elo
-  final moveTime = 1000.obs; // Default to 1000 ms (1 second)
+  final moveTime = 2000.obs; // Default to 2000 ms (2 seconds)
   final uciLimitStrength = false.obs;
   final playTime = 1.obs;
   @override
@@ -37,26 +36,19 @@ class SideChoosingController extends GetxController {
     debugPrint("SideChoosingController initialized");
   }
 
-  // void changeValuecolorPlayer(Color value) {
-  //   choseColor.value = value;
-  // }
-  void changeValuecolorPlayer(SideChoosing playerColor) {
-    if (playerColor == SideChoosing.white) {
-      meColor.value = playerColor;
-    } else if (playerColor == SideChoosing.black) {
-      meColor.value = playerColor;
-    } else {
-      // make random between SideChoosing.white and SideChoosing.black
-      var x = Random();
-      int nextNumber = x.nextInt(13);
-      debugPrint('nextNumber $nextNumber');
-      if (nextNumber % 2 == 0) {
-        changeValuecolorPlayer(SideChoosing.white);
-      } else {
-        changeValuecolorPlayer(SideChoosing.black);
-      }
-    }
-  }
+  final _random = Random();
+  // Method to change the player's color
+  void changeValuecolorPlayer(SideChoosing plyrClor) =>
+      plyrClor != SideChoosing.white && plyrClor != SideChoosing.black
+          ? () {
+            // make random between SideChoosing.white and SideChoosing.black
+            if (_random.nextInt(13) % 2 == 0) {
+              changeValuecolorPlayer(SideChoosing.white);
+            } else {
+              changeValuecolorPlayer(SideChoosing.black);
+            }
+          }
+          : playerColor.value = plyrClor;
 
   var timeMs = 1000.0;
 

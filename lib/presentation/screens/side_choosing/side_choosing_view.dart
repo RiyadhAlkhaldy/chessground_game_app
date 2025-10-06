@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import '../../../routes/app_pages.dart';
 
 class SideChoosingView extends StatelessWidget {
-  final controller = Get.put(SideChoosingController());
+  final controller = Get.find<SideChoosingController>();
 
   SideChoosingView({super.key});
   final sizedBox = SizedBox(height: 15);
@@ -38,31 +38,31 @@ class SideChoosingView extends StatelessWidget {
                 /// to play with time and computer
                 controller.withTime.value
                     ? Obx(
-                        () => Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              'Determine Playing Time (Minute): ${controller.playTime.value}',
-                            ),
+                      () => Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Determine Playing Time (Minute): ${controller.playTime.value}',
+                          ),
 
-                            Slider(
-                              value: controller.playTime.value.toDouble(),
-                              min: 1,
-                              max: 10,
-                              divisions: 10,
-                              label: controller.playTime.value.toString(),
-                              onChanged: (double value) {
-                                controller.playTime.value = value.toInt();
-                              },
-                              activeColor: Colors.cyanAccent,
-                              inactiveColor: Colors.cyan.shade200.withOpacity(
-                                0.3,
-                              ),
+                          Slider(
+                            value: controller.playTime.value.toDouble(),
+                            min: 1,
+                            max: 10,
+                            divisions: 10,
+                            label: controller.playTime.value.toString(),
+                            onChanged: (double value) {
+                              controller.playTime.value = value.toInt();
+                            },
+                            activeColor: Colors.cyanAccent,
+                            inactiveColor: Colors.cyan.shade200.withOpacity(
+                              0.3,
                             ),
-                          ],
-                        ),
-                      )
+                          ),
+                        ],
+                      ),
+                    )
                     : Container(),
 
                 const Text(
@@ -205,8 +205,8 @@ class SideChoosingView extends StatelessWidget {
                       ),
                       Switch(
                         value: controller.showMoveHints.value,
-                        onChanged: (val) =>
-                            controller.showMoveHints.value = val,
+                        onChanged:
+                            (val) => controller.showMoveHints.value = val,
                         activeThumbColor: Colors.green,
                       ),
                     ],
@@ -218,7 +218,7 @@ class SideChoosingView extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     controller.changeValuecolorPlayer(
-                      controller.choseColor.value,
+                      controller.playerColor.value,
                     );
 
                     /// to play with time and computer or just with computer

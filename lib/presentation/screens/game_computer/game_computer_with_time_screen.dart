@@ -17,7 +17,7 @@ import 'widgets/chess_clock_widget.dart';
 class GameComputerWithTimeScreen extends StatelessWidget {
   GameComputerWithTimeScreen({super.key});
 
-  final ctrl = Get.put(GameComputerWithTimeController(Get.find(), Get.find()));
+  final ctrl = Get.find<GameComputerWithTimeController>();
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -79,8 +79,8 @@ class BuildPortrait extends StatelessWidget {
         children: [
           // EvaluationBarWidget(),
           ctrlBoardSettings.orientation.value == Side.white
-              ? ChessClockBlackWidget(chessClock: ctrl.clockCtrl!)
-              : ChessClockBlackWidget(chessClock: ctrl.clockCtrl!),
+              ? ChessClockWhiteWidget(chessClock: ctrl.clockCtrl!)
+              : ChessClockWhiteWidget(chessClock: ctrl.clockCtrl!),
 
           ChessBoardWidget(ctrlBoardSettings: ctrlBoardSettings),
           ctrlBoardSettings.orientation.value == Side.white

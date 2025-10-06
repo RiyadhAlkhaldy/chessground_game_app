@@ -11,7 +11,7 @@ import '../../widgets/chess_board_widget.dart';
 class GameComputerScreen extends StatelessWidget {
   GameComputerScreen({super.key});
 
-  final ctrl = Get.put(GameComputerController(Get.find(), Get.find()));
+  final ctrl = Get.find<GameComputerController>();
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -49,9 +49,11 @@ class GameComputerScreen extends StatelessWidget {
         ),
 
         body: OrientationBuilder(
-          builder: (context, orientation) => orientation == Orientation.portrait
-              ? BuildPortrait()
-              : BuildLandScape(),
+          builder:
+              (context, orientation) =>
+                  orientation == Orientation.portrait
+                      ? BuildPortrait()
+                      : BuildLandScape(),
         ),
       ),
     );
@@ -159,17 +161,18 @@ Widget buildNewRoundButton(GameComputerController ctrl) => FilledButton.icon(
 );
 
 Widget buildUndoButton() => GetX<GameComputerController>(
-  builder: (controller) => FilledButton.icon(
-    icon: const Icon(Icons.undo_rounded),
-    label: const Text('Undo'),
-    onPressed: controller.canUndo.value ? controller.undoMove : null,
-  ),
+  builder:
+      (controller) => FilledButton.icon(
+        icon: const Icon(Icons.undo_rounded),
+        label: const Text('Undo'),
+        onPressed: controller.canUndo.value ? controller.undoMove : null,
+      ),
 );
 Widget buildRedoButton() => GetX<GameComputerController>(
-  builder: (controller) => FilledButton.icon(
-    icon: const Icon(Icons.redo_rounded),
-    label: const Text('Redo'),
-    onPressed: controller.canRedo.value ? controller.redoMove : null,
-  ),
+  builder:
+      (controller) => FilledButton.icon(
+        icon: const Icon(Icons.redo_rounded),
+        label: const Text('Redo'),
+        onPressed: controller.canRedo.value ? controller.redoMove : null,
+      ),
 );
-
