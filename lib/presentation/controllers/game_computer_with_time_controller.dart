@@ -19,15 +19,9 @@ class GameComputerWithTimeController extends GameAiController {
     super.saveCurrentGame();
   }
 
-  ///
   @override
   void onInit() {
-    super.onInit();
-    WidgetsBinding.instance.addObserver(this);
     gameCtrl = Get.find<GameController>();
-    _setPlayerSide();
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
     debugPrint("whitesTime ${gameCtrl!.whitesTime.inSeconds}");
     clockCtrl = Get.put(
       ChessClockService(
@@ -40,34 +34,37 @@ class GameComputerWithTimeController extends GameAiController {
       ),
     );
     clockCtrl!.setIncrementalValue(value: gameCtrl!.incrementalValue);
-    engineService.start().then((_) async {
-      _applyStockfishSettings();
-      engineService.setPosition(fen: fen);
-      stockfishState.value = StockfishState.ready;
-      // clockCtrl!.start();
-      // if the player is black, let the AI play the first move
-      playerSide == PlayerSide.black ? playAiMove() : null;
+    super.onInit();
 
-      ///
-      await onstartVsEngine();
-    });
-    //
-    engineService.evaluations.listen((ev) {
-      // debugPrint(ev.toString());
-      // if (ev != null) {
-      // evaluation.value = ev;
-      // score.value = evaluation.value!.whiteWinPercent();
-      // }
-    });
-    engineService.bestmoves.listen((event) {
-      debugPrint('bestmoves: $event');
-      _makeMoveAi(event);
-    });
     ever(position, (_) {
       clockCtrl!.stop();
       clockCtrl!.switchTurn(position.value.turn);
       clockCtrl!.start();
     });
+  }
+
+  @override
+  Future<void> _initPlayers() async {
+    if (gameCtrl?.playerColor.value == Side.white) {
+      playerSide = PlayerSide.white;
+      ctrlBoardSettings.orientation.value = Side.white;
+      await createPlayerIfNotExists(
+        storage,
+      ).then((value) => whitePlayer.value = value!);
+      await createAIPlayerIfNotExists(
+        storage,
+      ).then((value) => blackPlayer.value = value!);
+    } else if (gameCtrl?.playerColor.value == Side.black) {
+      playerSide = PlayerSide.black;
+      ctrlBoardSettings.orientation.value = Side.black;
+      await createAIPlayerIfNotExists(
+        storage,
+      ).then((value) => whitePlayer.value = value!);
+
+      await createPlayerIfNotExists(
+        storage,
+      ).then((value) => blackPlayer.value = value!);
+    }
   }
 
   @override
@@ -86,20 +83,6 @@ class GameComputerWithTimeController extends GameAiController {
   void reset() {
     clockCtrl!.reset();
     super.reset();
-  }
-
-  @override
-  void _setPlayerSide() {
-    if (gameCtrl?.playerColor.value == Side.white) {
-      playerSide = PlayerSide.white;
-      ctrlBoardSettings.orientation.value = Side.white;
-    } else if (gameCtrl?.playerColor.value == Side.black) {
-      playerSide = PlayerSide.black;
-      ctrlBoardSettings.orientation.value = Side.black;
-      debugPrint(
-        'Player chose black side ${ctrlBoardSettings.orientation.value}',
-      );
-    }
   }
 
   /// عند انتهاء الوقت — نفعل هذه الدالة (clockService يجب أن يمرّر الجانب الذي انتهى الوقت له)
@@ -129,6 +112,7 @@ class GameComputerWithTimeController extends GameAiController {
   /// ضبط إعدادات المحرك وفق اختيار المستخدم
 
   // Method to apply the settings from SideChoosingController
+  @override
   void _applyStockfishSettings() {
     // thinkingTimeForAI = gameCtrl!.thinkingTimeForAI;
     thinkingTimeForAI = 5000;

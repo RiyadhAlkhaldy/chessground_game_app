@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:uuid/uuid.dart';
 
 import 'player.dart';
 
@@ -14,11 +15,13 @@ enum GameTermination {
   threefoldRepetition,
   fiftyMoveRule,
   insufficientMaterial,
+  ongoing,
 }
 
 @Collection()
 class ChessGame {
   Id id = Isar.autoIncrement;
+  String uuid = Uuid().v4();
 
   // Seven Tag Roster + إضافات
   @Index(type: IndexType.value)
@@ -34,7 +37,7 @@ class ChessGame {
   @Index()
   String? result; // "1-0", "0-1", "1/2-1/2", "*"
   @enumerated
-  late GameTermination termination;
+  GameTermination termination = GameTermination.ongoing;
   // إضافات تحليلية ووصفية
   String? eco;
   int? whiteElo;
@@ -51,6 +54,10 @@ class ChessGame {
 
   // تتبع المستخدم/المصدر
   String? userId;
+
+  @override
+  String toString() =>
+      "ChessGame{id:$id, uuid:$uuid, whitePlayer:$whitePlayer, blackPlayer:$blackPlayer, result:$result, termination:$termination, moves:$moves, fullPgn:$fullPgn }";
 }
 
 @Embedded()
@@ -62,6 +69,10 @@ class MoveData {
   String? fenAfter; // FEN بعد تنفيذ الحركة
   List<String>?
   variations; // نص المتغيرات (يمكن أن نخزنها كنصوص خام أو تبني هيكل شجري)
+
+  @override
+  String toString() =>
+      "MoveData{san:$san, lan:$lan, nag:$nag, comment:$comment, fenAfter:$fenAfter }";
 }
 
 // @collection

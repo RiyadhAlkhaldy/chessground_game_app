@@ -89,8 +89,13 @@ const ChessGameSchema = CollectionSchema(
       name: r'userId',
       type: IsarType.string,
     ),
-    r'whiteElo': PropertySchema(
+    r'uuid': PropertySchema(
       id: 14,
+      name: r'uuid',
+      type: IsarType.string,
+    ),
+    r'whiteElo': PropertySchema(
+      id: 15,
       name: r'whiteElo',
       type: IsarType.long,
     )
@@ -217,6 +222,7 @@ int _chessGameEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.uuid.length * 3;
   return bytesCount;
 }
 
@@ -245,7 +251,8 @@ void _chessGameSerialize(
   writer.writeByte(offsets[11], object.termination.index);
   writer.writeString(offsets[12], object.timeControl);
   writer.writeString(offsets[13], object.userId);
-  writer.writeLong(offsets[14], object.whiteElo);
+  writer.writeString(offsets[14], object.uuid);
+  writer.writeLong(offsets[15], object.whiteElo);
 }
 
 ChessGame _chessGameDeserialize(
@@ -278,7 +285,8 @@ ChessGame _chessGameDeserialize(
           GameTermination.checkmate;
   object.timeControl = reader.readStringOrNull(offsets[12]);
   object.userId = reader.readStringOrNull(offsets[13]);
-  object.whiteElo = reader.readLongOrNull(offsets[14]);
+  object.uuid = reader.readString(offsets[14]);
+  object.whiteElo = reader.readLongOrNull(offsets[15]);
   return object;
 }
 
@@ -326,6 +334,8 @@ P _chessGameDeserializeProp<P>(
     case 13:
       return (reader.readStringOrNull(offset)) as P;
     case 14:
+      return (reader.readString(offset)) as P;
+    case 15:
       return (reader.readLongOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -341,6 +351,7 @@ const _ChessGameterminationEnumValueMap = {
   'threefoldRepetition': 5,
   'fiftyMoveRule': 6,
   'insufficientMaterial': 7,
+  'ongoing': 8,
 };
 const _ChessGameterminationValueEnumMap = {
   0: GameTermination.checkmate,
@@ -351,6 +362,7 @@ const _ChessGameterminationValueEnumMap = {
   5: GameTermination.threefoldRepetition,
   6: GameTermination.fiftyMoveRule,
   7: GameTermination.insufficientMaterial,
+  8: GameTermination.ongoing,
 };
 
 Id _chessGameGetId(ChessGame object) {
@@ -2389,6 +2401,136 @@ extension ChessGameQueryFilter
     });
   }
 
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'uuid',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'uuid',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'uuid',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> whiteEloIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -2658,6 +2800,18 @@ extension ChessGameQuerySortBy on QueryBuilder<ChessGame, ChessGame, QSortBy> {
     });
   }
 
+  QueryBuilder<ChessGame, ChessGame, QAfterSortBy> sortByUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterSortBy> sortByUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.desc);
+    });
+  }
+
   QueryBuilder<ChessGame, ChessGame, QAfterSortBy> sortByWhiteElo() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'whiteElo', Sort.asc);
@@ -2841,6 +2995,18 @@ extension ChessGameQuerySortThenBy
     });
   }
 
+  QueryBuilder<ChessGame, ChessGame, QAfterSortBy> thenByUuid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ChessGame, ChessGame, QAfterSortBy> thenByUuidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uuid', Sort.desc);
+    });
+  }
+
   QueryBuilder<ChessGame, ChessGame, QAfterSortBy> thenByWhiteElo() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'whiteElo', Sort.asc);
@@ -2943,6 +3109,13 @@ extension ChessGameQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByUuid(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'uuid', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByWhiteElo() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'whiteElo');
@@ -3040,6 +3213,12 @@ extension ChessGameQueryProperty
   QueryBuilder<ChessGame, String?, QQueryOperations> userIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'userId');
+    });
+  }
+
+  QueryBuilder<ChessGame, String, QQueryOperations> uuidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'uuid');
     });
   }
 

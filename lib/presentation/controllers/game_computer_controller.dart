@@ -46,17 +46,63 @@ abstract class GameAiController extends AbstractGameController
   RxDouble score = 0.0.obs;
   Rx<ExtendedEvaluation?> evaluation = null.obs;
 
-  Future<void> onstartVsEngine() async {
-    if (playerSide == PlayerSide.white) {
-      await createPlayerIfNotExists(storage).then((value) {
-        debugPrint("createPlayerIfNotExists");
-        debugPrint(value.toString());
-        whitePlayer.value = value!;
+  @override
+  void onInit() {
+    super.onInit();
+    WidgetsBinding.instance.addObserver(this);
+    fen = position.value.fen;
+    validMoves = makeLegalMoves(position.value);
+    onstartVsEngine().then((_) {
+      engineService.start().then((_) {
+        _applyStockfishSettings();
+        engineService.setPosition(fen: fen);
+        stockfishState.value = StockfishState.ready;
+        // if the player is black, let the AI play the first move
+        playerSide == PlayerSide.black ? playAiMove() : null;
       });
+    });
+    //
+    engineService.evaluations.listen((ev) {
+      // if (ev != null) {
+      // evaluation.value = ev;
+      // score.value = evaluation.value!.whiteWinPercent();
+      // }
+    });
+    engineService.bestmoves.listen((event) {
+      debugPrint('bestmoves: $event');
+      _makeMoveAi(event);
+    });
+    ever(position, (_) {
+      if (position.value.isGameOver) {
+        _gameStorageService.endGame(
+          chessGame,
+          result: position.value.turn == Side.white ? '1-0' : '0-1',
+          movesData: pastMoves,
+          headers: _headers,
+        );
+      }
+    });
+  }
+
+  Future<void> onstartVsEngine() async {
+    await _initPlayers();
+    // storage new game
+    await _storageStartNewGame();
+  }
+
+  Future<void> _initPlayers() async {
+    if (choosingCtrl.playerColor.value == SideChoosing.white) {
+      playerSide = PlayerSide.white;
+      ctrlBoardSettings.orientation.value = Side.white;
+      await createPlayerIfNotExists(
+        storage,
+      ).then((value) => whitePlayer.value = value!);
       await createAIPlayerIfNotExists(
         storage,
       ).then((value) => blackPlayer.value = value!);
-    } else {
+    } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
+      playerSide = PlayerSide.black;
+      ctrlBoardSettings.orientation.value = Side.black;
       await createAIPlayerIfNotExists(
         storage,
       ).then((value) => whitePlayer.value = value!);
@@ -76,7 +122,7 @@ abstract class GameAiController extends AbstractGameController
   final PgnHeaders _headers = PgnGame.defaultHeaders();
 
   ///
-  void _storageStartNewGame() {
+  Future<void> _storageStartNewGame() async {
     _headers['Event'] = 'Casual Game';
     _headers['Site'] = 'FlutterApp';
     _headers['Date'] = DateTime.now().toIso8601String().split('T').first;
@@ -95,6 +141,7 @@ abstract class GameAiController extends AbstractGameController
     _headers['Annotator'] = "ChessGround Game App";
     _headers['Source'] = "ChessGround Game App";
     _headers['SourceDate'] = DateTime.now().toIso8601String();
+    debugPrint(chessGame.toString());
     _gameStorageService.startNewGame(
       chessGame: chessGame,
       startFEN: fen,
@@ -408,67 +455,6 @@ abstract class GameAiController extends AbstractGameController
     }
   }
 
-  void _setPlayerSide() {
-    if (choosingCtrl.playerColor.value == SideChoosing.white) {
-      playerSide = PlayerSide.white;
-      ctrlBoardSettings.orientation.value = Side.white;
-    } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
-      playerSide = PlayerSide.black;
-      ctrlBoardSettings.orientation.value = Side.black;
-    }
-  }
-}
-
-class GameComputerController extends GameAiController {
-  ///constructer
-  GameComputerController(
-    super.choosingCtrl,
-    super.engineService,
-    super.plySound,
-  );
-
-  @override
-  void onInit() {
-    super.onInit();
-    WidgetsBinding.instance.addObserver(this);
-    // debugPrint(position.value.fen);
-    // debugPrint(fen);
-    _setPlayerSide();
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
-    // storage new game
-    _storageStartNewGame();
-    engineService.start().then((_) {
-      _applyStockfishSettings();
-      engineService.setPosition(fen: fen);
-      stockfishState.value = StockfishState.ready;
-      // if the player is black, let the AI play the first move
-      playerSide == PlayerSide.black ? playAiMove() : null;
-    });
-    //
-    engineService.evaluations.listen((ev) {
-      // debugPrint(ev.toString());
-      // if (ev != null) {
-      // evaluation.value = ev;
-      // score.value = evaluation.value!.whiteWinPercent();
-      // }
-    });
-    engineService.bestmoves.listen((event) {
-      debugPrint('bestmoves: $event');
-      _makeMoveAi(event);
-    });
-    ever(position, (_) {
-      if (position.value.isGameOver) {
-        _gameStorageService.endGame(
-          chessGame,
-          result: position.value.turn == Side.white ? '1-0' : '0-1',
-          movesData: pastMoves,
-          headers: _headers,
-        );
-      }
-    });
-  }
-
   // Method to apply the settings from SideChoosingController
   void _applyStockfishSettings() {
     final skillLevel = choosingCtrl.skillLevel.value;
@@ -515,4 +501,13 @@ class GameComputerController extends GameAiController {
       'Thinking Time for AI (ms): ${choosingCtrl.thinkingTimeForAI.value}',
     );
   }
+}
+
+class GameComputerController extends GameAiController {
+  ///constructer
+  GameComputerController(
+    super.choosingCtrl,
+    super.engineService,
+    super.plySound,
+  );
 }
