@@ -87,10 +87,10 @@ class ChessClockService {
     // apply increment to the player who just moved (Fischer)
     if (currentTurn.value == Side.white) {
       // white just moved, so add increment to white
-      whiteTimeMs.value = (whiteTimeMs.value + incrementMs);
+      whiteTimeMs.value = (whiteTimeMs.value);
       currentTurn.value = Side.black;
     } else {
-      blackTimeMs.value = (blackTimeMs.value + incrementMs);
+      blackTimeMs.value = (blackTimeMs.value);
       currentTurn.value = Side.white;
     }
     if (isRunning.value && _ticker == null) _startTicker();

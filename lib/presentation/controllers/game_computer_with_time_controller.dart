@@ -11,23 +11,21 @@ class GameComputerWithTimeController extends GameAiController {
     super.plySound,
   );
 
-  @override
-  Future<void> onstartVsEngine() async {}
-
   /// حفظ اللعبة الحالية في Isar
   @override
-  Future<void> saveCurrentGame(Player white, Player black) async {
+  Future<void> saveCurrentGame() async {
     _headers['TimeControl'] =
         "${gameCtrl!.whitesTime.inMinutes}+${gameCtrl!.incrementalValue}";
-    super.saveCurrentGame(white, black);
+    super.saveCurrentGame();
   }
 
   ///
   @override
   void onInit() {
     super.onInit();
-    gameCtrl = Get.find<GameController>();
     WidgetsBinding.instance.addObserver(this);
+    gameCtrl = Get.find<GameController>();
+    _setPlayerSide();
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
     debugPrint("whitesTime ${gameCtrl!.whitesTime.inSeconds}");
@@ -46,8 +44,9 @@ class GameComputerWithTimeController extends GameAiController {
       _applyStockfishSettings();
       engineService.setPosition(fen: fen);
       stockfishState.value = StockfishState.ready;
-      clockCtrl!.start();
-      _setPlayerSide();
+      // clockCtrl!.start();
+      // if the player is black, let the AI play the first move
+      playerSide == PlayerSide.black ? playAiMove() : null;
 
       ///
       await onstartVsEngine();
@@ -64,8 +63,11 @@ class GameComputerWithTimeController extends GameAiController {
       debugPrint('bestmoves: $event');
       _makeMoveAi(event);
     });
-    // ever(position, (_) {
-    // });
+    ever(position, (_) {
+      clockCtrl!.stop();
+      clockCtrl!.switchTurn(position.value.turn);
+      clockCtrl!.start();
+    });
   }
 
   @override
@@ -76,8 +78,8 @@ class GameComputerWithTimeController extends GameAiController {
 
   @override
   void onClose() {
-    clockCtrl!.onClose();
     super.onClose();
+    clockCtrl!.onClose();
   }
 
   @override
@@ -87,17 +89,26 @@ class GameComputerWithTimeController extends GameAiController {
   }
 
   @override
-  void _applyMove(NormalMove move) {
-    clockCtrl!.switchTurn(position.value.turn);
-    super._applyMove(move);
+  void _setPlayerSide() {
+    if (gameCtrl?.playerColor.value == Side.white) {
+      playerSide = PlayerSide.white;
+      ctrlBoardSettings.orientation.value = Side.white;
+    } else if (gameCtrl?.playerColor.value == Side.black) {
+      playerSide = PlayerSide.black;
+      ctrlBoardSettings.orientation.value = Side.black;
+      debugPrint(
+        'Player chose black side ${ctrlBoardSettings.orientation.value}',
+      );
+    }
   }
 
   /// عند انتهاء الوقت — نفعل هذه الدالة (clockService يجب أن يمرّر الجانب الذي انتهى الوقت له)
   void _handleTimeout(Side timedOutSide) async {
+    debugPrint('Handling timeout for side: $timedOutSide');
     // من انتهى وقته يخسر، والآخر يفوز (ما لم تكن الحالة تمنع ذلك)
     final winnerSide = timedOutSide == Side.white ? Side.black : Side.white;
     final resultText = winnerSide == Side.white ? '1-0' : '0-1';
-
+    debugPrint('Game over by timeout, result: $resultText');
     // نوقف المحرك والساعة
     engineService.stop();
     clockCtrl?.stop();
@@ -117,41 +128,16 @@ class GameComputerWithTimeController extends GameAiController {
 
   /// ضبط إعدادات المحرك وفق اختيار المستخدم
 
-  void _setPlayerSide() {
-    if (gameCtrl!.playerColor == Side.white) {
-      playerSide = PlayerSide.white;
-      ctrlBoardSettings.orientation.value = Side.white;
-    } else if (gameCtrl!.playerColor == Side.black) {
-      playerSide = PlayerSide.black;
-      ctrlBoardSettings.orientation.value = Side.black;
-      playAiMove();
-    }
-  }
-
   // Method to apply the settings from SideChoosingController
   void _applyStockfishSettings() {
-    final skillLevel = gameCtrl!.skillLevel.value;
-    // final depth = gameCtrl.depth.value;
-    final uciLimitStrength = gameCtrl!.uciLimitStrength.value;
-    final uciElo = gameCtrl!.uciElo.value;
-    // final moveTime = gameCtrl!.moveTime.value;
-    debugPrint("uciElo $uciElo");
+    // thinkingTimeForAI = gameCtrl!.thinkingTimeForAI;
+    thinkingTimeForAI = 5000;
 
-    // Apply UCI_Elo if UCI_LimitStrength is enabled
-    if (uciLimitStrength) {
-      // Apply UCI_LimitStrength option
-      engineService.setOption('UCI_LimitStrength', uciLimitStrength);
-      engineService.setOption('UCI_Elo', uciElo);
-      // Optional: Set depth to a low value as it's not the primary control
-      // when UCI_LimitStrength is true
-      engineService.setOption(
-        'Skill Level',
-        20,
-      ); // Setting a high skill level by default
-    } else {
-      // Use Skill Level and Depth if UCI_LimitStrength is disabled
-      engineService.setOption('Skill Level', skillLevel);
-      // engineService.setOption('Depth', depth);
-    }
+    // final skillLevel = gameCtrl!.skillLevel.value;
+    // final uciElo = gameCtrl!.uciElo.value;
+
+    // Use Skill Level and Depth if UCI_LimitStrength is disabled
+    // engineService.setOption('Skill Level', skillLevel);
+    // engineService.setOption('Depth', depth);
   }
 }

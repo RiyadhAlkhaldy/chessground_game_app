@@ -14,9 +14,9 @@ import '../../core/helper/constants.dart';
 
 class GameController extends GetxController {
   final skillLevel = 20.obs; // Default to max skill level
-  final uciElo = 2850.obs; // Default to a high Elo
+  final uciElo = 3190.obs; // Default to a high Elo
   final uciLimitStrength = true.obs;
-
+  int thinkingTimeForAI = 2000; // default 2 seconds
   // late bishop.Game _game = bishop.Game(variant: bishop.Variant.standard());
   late Position position = Chess.fromSetup(Setup.parseFen(fen));
 
@@ -38,7 +38,6 @@ class GameController extends GetxController {
   Timer? _blacksTimer;
   final int _whitesScore = 0;
   final int _blacksSCore = 0;
-  Side _playerColor = Side.white;
   GameDifficulty _gameDifficulty = GameDifficulty.easy;
   final String _gameId = '';
 
@@ -70,7 +69,7 @@ class GameController extends GetxController {
 
   int get incrementalValue => _incrementalValue;
   Side get player => _player;
-  Side get playerColor => _playerColor;
+  Rx<Side> playerColor = Side.white.obs;
 
   Duration get whitesTime => _whitesTime;
   Duration get blacksTime => _blacksTime;
@@ -202,7 +201,7 @@ class GameController extends GetxController {
   // set playerColor
   void setPlayerColor({required Side player}) {
     _player = player;
-    _playerColor = player == Side.white ? Side.white : Side.black;
+    playerColor.value = player;
     update();
   }
 

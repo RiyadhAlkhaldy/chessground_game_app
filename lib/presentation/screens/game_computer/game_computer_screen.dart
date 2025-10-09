@@ -21,7 +21,7 @@ class GameComputerScreen extends StatelessWidget {
         if (didPop) {
           return;
         }
-        if (ctrl.getResult() != GameResult.ongoing) {
+        if (ctrl.getResult != GameResult.ongoing) {
           Get.back();
         } else {
           final shouldExit = await showExitConfirmationDialog(context);

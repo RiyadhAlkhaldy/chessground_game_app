@@ -1,11 +1,12 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
-import '../../domain/models/player.dart';
-
 abstract class GetStorageController extends GetxController {
-  Player? getPlayer(String key);
+  String? getPlayer(String key);
+  String? getUUid(String key);
   bool hasData(String key);
+  void saveUUid(String key, String value);
+
   late GetStorage instance;
 }
 
@@ -17,20 +18,11 @@ class GetStorageControllerImp extends GetStorageController {
   }
 
   @override
-  Player? getPlayer(String key) {
+  String? getPlayer(String key) {
     var hasData = instance.hasData(key);
     final player = instance.read(key);
 
-    return hasData
-        ? Player(
-          name: player['name'],
-          uuid: player['uuid'],
-          type: player['type'],
-          email: player['email'],
-          image: player['image'],
-          playerRating: int.parse(player['playerRating']),
-        )
-        : null;
+    return hasData ? player as String : null;
   }
 
   // ! Authorization Bearer
@@ -39,6 +31,19 @@ class GetStorageControllerImp extends GetStorageController {
     //     ? {'Authorization': 'Bearer ${getHumanPlayer('user')!.token}'}
     //     : null;
     return null;
+  }
+
+  @override
+  String? getUUid(String key) {
+    var hasData = instance.hasData(key);
+    final uuid = instance.read(key);
+
+    return hasData ? uuid as String : null;
+  }
+
+  @override
+  void saveUUid(String key, String value) {
+    instance.write(key, value);
   }
 
   @override

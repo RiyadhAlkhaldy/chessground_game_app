@@ -76,8 +76,8 @@ class _ChessBoardSettingsWidgetsState extends State<ChessBoardSettingsWidgets> {
                 buildSettingsButton(
                   label: 'Drag target',
                   value: widget.controller.dragTargetKind.value.name,
-                  onPressed: () =>
-                      widget.controller.showChoicesPicker<DragTargetKind>(
+                  onPressed:
+                      () => widget.controller.showChoicesPicker<DragTargetKind>(
                         context,
                         choices: DragTargetKind.values,
                         selectedItem: widget.controller.dragTargetKind.value,
@@ -112,8 +112,8 @@ class _ChessBoardSettingsWidgetsState extends State<ChessBoardSettingsWidgets> {
                 buildSettingsButton(
                   label: 'Piece set',
                   value: widget.controller.pieceSet.value.label,
-                  onPressed: () =>
-                      widget.controller.showChoicesPicker<PieceSet>(
+                  onPressed:
+                      () => widget.controller.showChoicesPicker<PieceSet>(
                         context,
                         choices: PieceSet.values,
                         selectedItem: widget.controller.pieceSet.value,
@@ -130,8 +130,8 @@ class _ChessBoardSettingsWidgetsState extends State<ChessBoardSettingsWidgets> {
                 buildSettingsButton(
                   label: 'Board theme',
                   value: widget.controller.boardTheme.value.label,
-                  onPressed: () =>
-                      widget.controller.showChoicesPicker<BoardTheme>(
+                  onPressed:
+                      () => widget.controller.showChoicesPicker<BoardTheme>(
                         context,
                         choices: BoardTheme.values,
                         selectedItem: widget.controller.boardTheme.value,
@@ -160,20 +160,23 @@ class _ChessBoardSettingsWidgetsState extends State<ChessBoardSettingsWidgets> {
                   value: pieceShiftMethodLabel(
                     widget.controller.pieceShiftMethod.value,
                   ),
-                  onPressed: () =>
-                      widget.controller.showChoicesPicker<PieceShiftMethod>(
-                        context,
-                        choices: PieceShiftMethod.values,
-                        selectedItem: widget.controller.pieceShiftMethod.value,
-                        labelBuilder: (t) => Text(pieceShiftMethodLabel(t)),
-                        onSelectedItemChanged: (PieceShiftMethod? value) {
-                          setState(() {
-                            if (value != null) {
-                              widget.controller.pieceShiftMethod.value = value;
-                            }
-                          });
-                        },
-                      ),
+                  onPressed:
+                      () =>
+                          widget.controller.showChoicesPicker<PieceShiftMethod>(
+                            context,
+                            choices: PieceShiftMethod.values,
+                            selectedItem:
+                                widget.controller.pieceShiftMethod.value,
+                            labelBuilder: (t) => Text(pieceShiftMethodLabel(t)),
+                            onSelectedItemChanged: (PieceShiftMethod? value) {
+                              setState(() {
+                                if (value != null) {
+                                  widget.controller.pieceShiftMethod.value =
+                                      value;
+                                }
+                              });
+                            },
+                          ),
                 ),
               ],
             ),

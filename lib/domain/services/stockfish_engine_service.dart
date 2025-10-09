@@ -11,10 +11,13 @@ enum GameResult {
   ongoing,
   checkmate,
   stalemate,
-  draw,
   timeout,
-  whiteWon,
-  blackWon,
+  draw,
+  resignation,
+  agreement,
+  threefoldRepetition,
+  fiftyMoveRule,
+  insufficientMaterial,
 }
 
 /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine

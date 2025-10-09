@@ -4,6 +4,8 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../domain/models/chess_game.dart';
+
 abstract class AbstractGameController extends GetxController {
   // Rx<Position> position = Chess.initial.obs;
   late Rx<Position> position = Chess.fromSetup(Setup.parseFen(fen)).obs;
@@ -28,8 +30,8 @@ abstract class AbstractGameController extends GetxController {
 
   final past = <Position>[];
   final future = <Position>[];
-  final List<String> pastMoves = [];
-  final List<String> futureMoves = [];
+  final List<MoveData> pastMoves = [];
+  final List<MoveData> futureMoves = [];
 
   bool get isCheckmate => position.value.isCheckmate;
 

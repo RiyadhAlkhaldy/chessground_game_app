@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
+import '../../core/helper/helper_methodes.dart';
 import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/entities/extended_evaluation.dart';
 import '../../domain/models/chess_game.dart';
@@ -25,7 +26,9 @@ part 'game_computer_with_time_controller.dart';
 
 abstract class GameAiController extends AbstractGameController
     with WidgetsBindingObserver {
-  final storage = Get.find<GetStorageController>();
+  final GetStorageControllerImp storage = Get.find<GetStorageControllerImp>();
+  Rx<Player> whitePlayer = Player(uuid: '', name: '', type: '').obs;
+  Rx<Player> blackPlayer = Player(uuid: '', name: '', type: '').obs;
   final PlaySoundUseCase plySound;
   final SideChoosingController choosingCtrl;
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
@@ -37,46 +40,81 @@ abstract class GameAiController extends AbstractGameController
   NormalMove? premove;
   PlayerSide playerSide = PlayerSide.none;
   Side humanSide = Side.white;
-  // thinking flag
-  // final RxBool isThinking = false.obs;
+  int thinkingTimeForAI = 2000; // default 2 seconds
+
   final random = Random();
   RxDouble score = 0.0.obs;
   Rx<ExtendedEvaluation?> evaluation = null.obs;
 
-  Future<void> onstartVsEngine();
+  Future<void> onstartVsEngine() async {
+    if (playerSide == PlayerSide.white) {
+      await createPlayerIfNotExists(storage).then((value) {
+        debugPrint("createPlayerIfNotExists");
+        debugPrint(value.toString());
+        whitePlayer.value = value!;
+      });
+      await createAIPlayerIfNotExists(
+        storage,
+      ).then((value) => blackPlayer.value = value!);
+    } else {
+      await createAIPlayerIfNotExists(
+        storage,
+      ).then((value) => whitePlayer.value = value!);
+
+      await createPlayerIfNotExists(
+        storage,
+      ).then((value) => blackPlayer.value = value!);
+    }
+  }
 
   /// save game to isar
   ChessGame chessGame = ChessGame();
 
   final ChessGameStorageService _gameStorageService = ChessGameStorageService();
 
-  final List<MoveData> movesData = [];
   //the header of the pgn
   final PgnHeaders _headers = PgnGame.defaultHeaders();
 
-  /// حفظ اللعبة الحالية في Isar
-  Future<void> saveCurrentGame(Player white, Player black) async {
+  ///
+  void _storageStartNewGame() {
     _headers['Event'] = 'Casual Game';
     _headers['Site'] = 'FlutterApp';
     _headers['Date'] = DateTime.now().toIso8601String().split('T').first;
     _headers['Round'] = '1';
     _headers['Result'] = '*';
     _headers['EventDate'] = DateTime.now().toIso8601String().split('T').first;
-    _headers['White'] = white.name;
-    _headers['Black'] = black.name;
+    _headers['White'] = whitePlayer.value.name;
+    _headers['Black'] = blackPlayer.value.name;
     _headers['ECO'] = 'C77';
-    _headers['WhiteElo'] = white.playerRating.toString();
-    _headers['BlackElo'] = black.playerRating.toString();
-    _headers['PlyCount'] = movesData.length.toString();
+    _headers['WhiteElo'] = whitePlayer.value.playerRating.toString();
+    _headers['BlackElo'] = blackPlayer.value.playerRating.toString();
+    _headers['PlyCount'] = pastMoves.length.toString();
     _headers['Termination'] = 'Normal';
     _headers['Opening'] = "Ruy Lopez, Closed, Breyer Defense";
     _headers['Variant'] = "Standard";
     _headers['Annotator'] = "ChessGround Game App";
     _headers['Source'] = "ChessGround Game App";
     _headers['SourceDate'] = DateTime.now().toIso8601String();
+    _gameStorageService.startNewGame(
+      chessGame: chessGame,
+      startFEN: fen,
+      white: whitePlayer.value,
+      black: blackPlayer.value,
+      headers: _headers,
+    );
+  }
+
+  /// حفظ اللعبة الحالية في Isar
+  Future<void> saveCurrentGame() async {
+    _headers['Result'] = getResult.name;
+    _headers['EventDate'] = DateTime.now().toIso8601String().split('T').first;
+    _headers['WhiteElo'] = whitePlayer.value.playerRating.toString();
+    _headers['BlackElo'] = blackPlayer.value.playerRating.toString();
+    _headers['PlyCount'] = pastMoves.length.toString();
+    _headers['Termination'] = gameTermination.name;
 
     final root = PgnNode<PgnNodeData>();
-    for (final move in movesData) {
+    for (final move in pastMoves) {
       root.children.add(PgnChildNode<PgnNodeData>(PgnNodeData(san: move.san!)));
     }
     final pgnGame = PgnGame<PgnNodeData>(
@@ -89,22 +127,26 @@ abstract class GameAiController extends AbstractGameController
     chessGame =
         chessGame
           ..fullPgn = pgnText
-          ..movesCount = movesData.length
+          ..movesCount = pastMoves.length
           ..event = _headers['Event']
           ..site = _headers['Site']
           ..date = DateTime.now()
           ..round = _headers['Round']
           ..result = _headers['Result']
-          ..whitePlayer.value = white
-          ..blackPlayer.value = black
+          ..whitePlayer.value = whitePlayer.value
+          ..blackPlayer.value = blackPlayer.value
           ..moves;
 
-    await _gameStorageService.saveGame(chessGame, white, black);
+    await _gameStorageService.saveGame(
+      chessGame,
+      whitePlayer.value,
+      blackPlayer.value,
+    );
   }
 
   ///
   // // النسخة المعدلة من getResult
-  GameResult getResult() {
+  GameResult get getResult {
     if (position.value.isCheckmate) return GameResult.checkmate;
     if (position.value.isStalemate) return GameResult.stalemate;
     if (position.value.isInsufficientMaterial || position.value.isVariantEnd
@@ -143,35 +185,35 @@ abstract class GameAiController extends AbstractGameController
     super.onClose();
   }
 
-  // GameResult getResult() {
-  //   // إذا كانت الـ Position (من dartchess) تعطي هذه القيم — نستخدمها مباشرة
-  //   final pos = position.value;
+  GameTermination get gameTermination {
+    // إذا كانت الـ Position (من dartchess) تعطي هذه القيم — نستخدمها مباشرة
+    final pos = position.value;
 
-  //   if (pos.isCheckmate) return GameResult.checkmate;
-  //   if (pos.isStalemate) return GameResult.stalemate;
+    if (pos.isCheckmate) return GameTermination.checkmate;
+    if (pos.isStalemate) return GameTermination.stalemate;
 
-  //   // insufficient material و variant end
-  //   if (pos.isInsufficientMaterial || pos.isVariantEnd) {
-  //     return GameResult.draw;
-  //   }
+    // insufficient material و variant end
+    if (pos.isInsufficientMaterial) {
+      return GameTermination.insufficientMaterial;
+    }
 
-  //   // fifty-move rule (إذا دعمتها المكتبة)
-  //   // في dartchess عادة يوجد عداد halfmoveClock ضمن FEN أو property مثل pos.halfMoveClock
-  //   try {
-  //     // إذا كانت مكتبة dartchess توفر isFiftyMoveRule أو halfmove clock:
-  //     if (pos.halfmoveClock != null && pos.halfmoveClock >= 100) {
-  //       // 100 half-moves == 50 full moves
-  //       return GameResult.draw;
-  //     }
-  //   } catch (_) {}
+    // fifty-move rule (إذا دعمتها المكتبة)
+    // في dartchess عادة يوجد عداد halfmoveClock ضمن FEN أو property مثل pos.halfMoveClock
+    // try {
+    //   // إذا كانت مكتبة dartchess توفر isFiftyMoveRule أو halfmove clock:
+    //   if (pos.halfmoveClock != null && pos.halfmoveClock >= 100) {
+    //     // 100 half-moves == 50 full moves
+    // return GameTermination.halfmoveClock;
+    //   }
+    // } catch (_) {}
 
-  //   // threefold repetition: بعض إصدارات المكتبة توفر isThreefoldRepetition/outcome
-  //   if (pos.isThreefoldRepetition) return GameResult.draw;
+    // threefold repetition: بعض إصدارات المكتبة توفر isThreefoldRepetition/outcome
+    // if (pos.isThreefoldRepetition) return GameResult.threefoldRepetition;
 
-  //   // حالة انتهاء الوقت تتمّ عبر ChessClockService وليس عبر Position
+    // حالة انتهاء الوقت تتمّ عبر ChessClockService وليس عبر Position
 
-  //   return GameResult.ongoing;
-  // }
+    return GameTermination.agreement;
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -186,11 +228,10 @@ abstract class GameAiController extends AbstractGameController
 
   void _startStockfishIfNecessary() {
     engineService.startStockfishIfNecessary
-        ? update([
-          engineService.start().then((_) {
-            stockfishState.value = StockfishState.ready;
-          }),
-        ])
+        ? engineService.start().then((_) {
+          stockfishState.value = StockfishState.ready;
+          update();
+        })
         : null;
   }
 
@@ -233,7 +274,8 @@ abstract class GameAiController extends AbstractGameController
   }
 
   void onPromotionCancel() {
-    update(promotionMove = null);
+    promotionMove = null;
+    update();
   }
 
   void onUserMoveAgainstAI(
@@ -245,7 +287,6 @@ abstract class GameAiController extends AbstractGameController
       promotionMove = move;
       update();
     } else if (position.value.isLegal(move)) {
-      debugPrint('onUserMoveAgainstAI $move');
       _applyMove(move);
       validMoves = IMap(const {});
       promotionMove = null;
@@ -258,7 +299,6 @@ abstract class GameAiController extends AbstractGameController
   void _applyMove(NormalMove move) {
     debugPrint("fen: $fen");
     debugPrint("move.uci: ${move.uci}");
-    pastMoves.add(move.uci);
     // 2. أضف الوضع الجديد إلى سجل التاريخ
     past.add(position.value);
     // 3. امسح سجل الـ Redo لأننا بدأنا مسارًا جديدًا للحركات
@@ -269,14 +309,14 @@ abstract class GameAiController extends AbstractGameController
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
     engineService.setPosition(fen: position.value.fen);
-    movesData.add(
+    pastMoves.add(
       MoveData()
         ..san = res.$2
         ..fenAfter = res.$1.fen
         ..lan = move.uci,
     );
     debugPrint(
-      'SAN Move: ${res.$2} ${movesData[movesData.length - 1].fenAfter} ${movesData[movesData.length - 1].lan}',
+      'SAN Move: ${res.$2} ${pastMoves[pastMoves.length - 1].fenAfter} ${pastMoves[pastMoves.length - 1].lan}',
     );
     // plySound.executeMoveSound();
   }
@@ -306,7 +346,7 @@ abstract class GameAiController extends AbstractGameController
     ];
 
     if (allMoves.isNotEmpty) {
-      engineService.goMovetime(choosingCtrl.moveTime.toInt());
+      engineService.goMovetime(thinkingTimeForAI);
     }
   }
 
@@ -368,7 +408,15 @@ abstract class GameAiController extends AbstractGameController
     }
   }
 
-  // أضف هذه الدالة داخل GameComputerController
+  void _setPlayerSide() {
+    if (choosingCtrl.playerColor.value == SideChoosing.white) {
+      playerSide = PlayerSide.white;
+      ctrlBoardSettings.orientation.value = Side.white;
+    } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
+      playerSide = PlayerSide.black;
+      ctrlBoardSettings.orientation.value = Side.black;
+    }
+  }
 }
 
 class GameComputerController extends GameAiController {
@@ -380,22 +428,22 @@ class GameComputerController extends GameAiController {
   );
 
   @override
-  Future<void> onstartVsEngine() async {}
-
-  @override
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
     // debugPrint(position.value.fen);
     // debugPrint(fen);
+    _setPlayerSide();
     fen = position.value.fen;
     validMoves = makeLegalMoves(position.value);
-
+    // storage new game
+    _storageStartNewGame();
     engineService.start().then((_) {
       _applyStockfishSettings();
       engineService.setPosition(fen: fen);
       stockfishState.value = StockfishState.ready;
-      _setPlayerSide();
+      // if the player is black, let the AI play the first move
+      playerSide == PlayerSide.black ? playAiMove() : null;
     });
     //
     engineService.evaluations.listen((ev) {
@@ -409,19 +457,16 @@ class GameComputerController extends GameAiController {
       debugPrint('bestmoves: $event');
       _makeMoveAi(event);
     });
-    // ever(position, (_) {
-    // });
-  }
-
-  void _setPlayerSide() {
-    if (choosingCtrl.playerColor.value == SideChoosing.white) {
-      playerSide = PlayerSide.white;
-      ctrlBoardSettings.orientation.value = Side.white;
-    } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
-      playerSide = PlayerSide.black;
-      ctrlBoardSettings.orientation.value = Side.black;
-      playAiMove();
-    }
+    ever(position, (_) {
+      if (position.value.isGameOver) {
+        _gameStorageService.endGame(
+          chessGame,
+          result: position.value.turn == Side.white ? '1-0' : '0-1',
+          movesData: pastMoves,
+          headers: _headers,
+        );
+      }
+    });
   }
 
   // Method to apply the settings from SideChoosingController
@@ -430,7 +475,7 @@ class GameComputerController extends GameAiController {
     final depth = choosingCtrl.depth.value;
     final uciLimitStrength = choosingCtrl.uciLimitStrength.value;
     final uciElo = choosingCtrl.uciElo.value;
-    final moveTime = choosingCtrl.moveTime.value;
+    thinkingTimeForAI = choosingCtrl.thinkingTimeForAI.value;
 
     // Apply UCI_Elo if UCI_LimitStrength is enabled
     if (uciLimitStrength) {
@@ -450,7 +495,7 @@ class GameComputerController extends GameAiController {
     }
 
     // Always apply Move Time
-    engineService.setOption('Move Time', moveTime);
+    engineService.setOption('Move Time', thinkingTimeForAI);
 
     // Now, let's log the settings to confirm they are applied
     _logAppliedSettings();
@@ -466,56 +511,8 @@ class GameComputerController extends GameAiController {
       debugPrint('  Skill Level: ${choosingCtrl.skillLevel.value}');
       debugPrint('  Depth: ${choosingCtrl.depth.value}');
     }
-    debugPrint('  Move Time: ${choosingCtrl.moveTime.value}');
+    debugPrint(
+      'Thinking Time for AI (ms): ${choosingCtrl.thinkingTimeForAI.value}',
+    );
   }
 }
-
-// class PGNService {
-//   /// توليد PGN من GameModel
-//   static String generatePGN(GameModel game) {
-//     final buffer = StringBuffer();
-
-//     // 1. Header metadata
-//     buffer.writeln('[Event "Casual Game"]');
-//     buffer.writeln('[Site "MyChessApp"]');
-//     buffer.writeln(
-//       '[Date "${DateFormat("yyyy.MM.dd").format(game.startedAt)}"]',
-//     );
-//     buffer.writeln('[Round "-"]');
-//     buffer.writeln('[White "${game.whitePlayer.value?.name ?? "Unknown"}"]');
-//     buffer.writeln('[Black "${game.blackPlayer.value?.name ?? "Unknown"}"]');
-//     buffer.writeln('[Result "${_mapResult(game.result)}"]');
-//     buffer.writeln('');
-
-//     // 2. Moves
-//     for (int i = 0; i < game.moves.length; i++) {
-//       // اللاعب الأبيض
-//       if (i % 2 == 0) {
-//         buffer.write('${(i ~/ 2) + 1}. ${game.moves[i]} ');
-//       } else {
-//         // اللاعب الأسود
-//         buffer.write('${game.moves[i]} ');
-//       }
-//     }
-
-//     // 3. النتيجة النهائية
-//     buffer.write(_mapResult(game.result));
-
-//     return buffer.toString();
-//   }
-
-//   /// تحويل GameResult إلى صيغة PGN
-//   static String _mapResult(GameResult result) {
-//     switch (result) {
-//       case GameResult.whiteWon:
-//         return "1-0";
-//       case GameResult.blackWon:
-//         return "0-1";
-//       case GameResult.draw:
-//         return "1/2-1/2";
-//       case GameResult.ongoing:
-//       default:
-//         return "*";
-//     }
-//   }
-// }

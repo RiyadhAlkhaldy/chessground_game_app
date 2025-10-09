@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -27,7 +26,7 @@ class GameComputerWithTimeScreen extends StatelessWidget {
         if (didPop) {
           return;
         }
-        if (ctrl.getResult() != GameResult.ongoing) {
+        if (ctrl.getResult != GameResult.ongoing) {
           Get.back();
         } else {
           final shouldExit = await showExitConfirmationDialog(context);
@@ -78,15 +77,11 @@ class BuildPortrait extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // EvaluationBarWidget(),
-          ctrlBoardSettings.orientation.value == Side.white
-              ? ChessClockWhiteWidget(chessClock: ctrl.clockCtrl!)
-              : ChessClockWhiteWidget(chessClock: ctrl.clockCtrl!),
-
+          ShowCircleAvatarAndTimerInUp(),
           ChessBoardWidget(ctrlBoardSettings: ctrlBoardSettings),
-          ctrlBoardSettings.orientation.value == Side.white
-              ? ChessClockBlackWidget(chessClock: ctrl.clockCtrl!)
-              : ChessClockBlackWidget(chessClock: ctrl.clockCtrl!),
-          //   const SizedBox(height: screenPortraitSplitter),
+          ShowCircleAvatarAndTimerInDown(),
+
+          const SizedBox(height: screenPortraitSplitter),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: screenPadding),
@@ -115,15 +110,15 @@ class BuildLandScape extends StatelessWidget {
       child: Row(
         children: [
           // EvaluationBarWidget(),
-          ctrlBoardSettings.orientation.value == Side.white
-              ? ChessClockBlackWidget(chessClock: ctrl.clockCtrl!)
-              : ChessClockBlackWidget(chessClock: ctrl.clockCtrl!),
+          // ctrlBoardSettings.orientation.value == Side.white
+          //     ? ChessClockBlackWidget(chessClock: ctrl.clockCtrl!)
+          //     : ChessClockBlackWidget(chessClock: ctrl.clockCtrl!),
           Expanded(
             child: ChessBoardWidget(ctrlBoardSettings: ctrlBoardSettings),
           ),
-          ctrlBoardSettings.orientation.value == Side.white
-              ? ChessClockBlackWidget(chessClock: ctrl.clockCtrl!)
-              : ChessClockBlackWidget(chessClock: ctrl.clockCtrl!),
+          // ctrlBoardSettings.orientation.value == Side.white
+          //     ? ChessClockBlackWidget(chessClock: ctrl.clockCtrl!)
+          //     : ChessClockBlackWidget(chessClock: ctrl.clockCtrl!),
           const SizedBox(width: screenLandscapeSplitter),
           Expanded(
             child: Column(

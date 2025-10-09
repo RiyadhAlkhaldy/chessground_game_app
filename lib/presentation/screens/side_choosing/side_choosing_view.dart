@@ -20,7 +20,7 @@ class SideChoosingView extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           margin: const EdgeInsets.symmetric(horizontal: 20),
           decoration: BoxDecoration(
-            color: Colors.blueGrey[900],
+            color: Colors.blueGrey,
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
@@ -35,36 +35,6 @@ class SideChoosingView extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                /// to play with time and computer
-                controller.withTime.value
-                    ? Obx(
-                      () => Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Determine Playing Time (Minute): ${controller.playTime.value}',
-                          ),
-
-                          Slider(
-                            value: controller.playTime.value.toDouble(),
-                            min: 1,
-                            max: 10,
-                            divisions: 10,
-                            label: controller.playTime.value.toString(),
-                            onChanged: (double value) {
-                              controller.playTime.value = value.toInt();
-                            },
-                            activeColor: Colors.cyanAccent,
-                            inactiveColor: Colors.cyan.shade200.withOpacity(
-                              0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                    : Container(),
-
                 const Text(
                   "اختر خيارات اللعب",
                   textAlign: TextAlign.center,
@@ -89,7 +59,7 @@ class SideChoosingView extends StatelessWidget {
                 Obx(
                   () => CheckboxListTile(
                     title: const Text(
-                      'Limit Engine Strength (UCI_LimitStrength)',
+                      'Limit Engine Strength UCI_LimitStrength',
                     ),
                     value: controller.uciLimitStrength.value,
                     onChanged: (bool? value) {
@@ -98,7 +68,37 @@ class SideChoosingView extends StatelessWidget {
                   ),
                 ),
                 sizedBox,
+
                 // Sliders for engine options
+                Obx(
+                  () => Opacity(
+                    opacity: controller.uciLimitStrength.value ? 1.0 : 0.5,
+                    child: AbsorbPointer(
+                      absorbing: !controller.uciLimitStrength.value,
+                      child: Column(
+                        children: [
+                          // UCI_Elo Slider
+                          Text('UCI Elo: ${controller.uciElo.value}'),
+                          Slider(
+                            value: controller.uciElo.value.toDouble(),
+                            min: 1320,
+                            max: 3190,
+                            divisions: 300,
+                            label: controller.uciElo.value.toString(),
+                            onChanged: (double value) {
+                              controller.uciElo.value = value.toInt();
+                            },
+                            activeColor: Colors.orangeAccent,
+                            inactiveColor: Colors.orange.shade200.withOpacity(
+                              0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                sizedBox,
                 Obx(
                   () => Opacity(
                     opacity: controller.uciLimitStrength.value ? 0.5 : 1.0,
@@ -127,37 +127,6 @@ class SideChoosingView extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                Obx(
-                  () => Opacity(
-                    opacity: controller.uciLimitStrength.value ? 1.0 : 0.5,
-                    child: AbsorbPointer(
-                      absorbing: !controller.uciLimitStrength.value,
-                      child: Column(
-                        children: [
-                          // UCI_Elo Slider
-                          Text('UCI Elo: ${controller.uciElo.value}'),
-                          Slider(
-                            value: controller.uciElo.value.toDouble(),
-                            min: 1350,
-                            max: 2850,
-                            divisions: 300,
-                            label: controller.uciElo.value.toString(),
-                            onChanged: (double value) {
-                              controller.uciElo.value = value.toInt();
-                            },
-                            activeColor: Colors.orangeAccent,
-                            inactiveColor: Colors.orange.shade200.withOpacity(
-                              0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                sizedBox,
-
                 // Move Time Slider (always available)
                 Obx(
                   () => Column(
@@ -178,15 +147,17 @@ class SideChoosingView extends StatelessWidget {
                           0.3,
                         ),
                       ),
-                      Text('Move Time (ms): ${controller.moveTime.value}'),
+                      Text(
+                        'Thinking Time for AI (ms): ${controller.thinkingTimeForAI.value}',
+                      ),
                       Slider(
-                        value: controller.moveTime.value.toDouble(),
+                        value: controller.thinkingTimeForAI.value.toDouble(),
                         min: 100,
                         max: 5000,
                         divisions: 49,
-                        label: controller.moveTime.value.toString(),
+                        label: controller.thinkingTimeForAI.value.toString(),
                         onChanged: (double value) {
-                          controller.moveTime.value = value.toInt();
+                          controller.thinkingTimeForAI.value = value.toInt();
                         },
                         activeColor: Colors.cyanAccent,
                         inactiveColor: Colors.cyan.shade200.withOpacity(0.3),
@@ -220,11 +191,7 @@ class SideChoosingView extends StatelessWidget {
                     controller.changeValuecolorPlayer(
                       controller.playerColor.value,
                     );
-
-                    /// to play with time and computer or just with computer
-                    controller.withTime.value
-                        ? Get.toNamed(RouteNames.gameComputerWithTimeScreen)
-                        : Get.toNamed(RouteNames.gameComputerScreen);
+                    Get.toNamed(RouteNames.gameComputerScreen);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,

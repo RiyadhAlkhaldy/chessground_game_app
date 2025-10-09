@@ -1,3 +1,4 @@
+import 'package:dartchess/dartchess.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -107,36 +108,152 @@ class ChessGameStorageService {
     });
   }
 
-  /// دالة مساعدة لتوليد PGN بسيط من قائمة SAN و headers
-  /// مخصصة للـ mainline فقط (بدون تعقيدات التعليقات/variations)
+  /// يبني نص PGN بسيط من رؤوس PGN و قائمة MoveData (يدعم SAN, NAG, comment, variations).
   String _manualPgnFromSanList(
-    Map<String, String> headers,
-    List<String> sanMoves,
-    String result,
+    PgnHeaders headers, // PgnHeaders من حزمة dartchess (خريطة رؤوس)
+    List<MoveData> movesData, // قائمة الحركات بصيغة MoveData (كما عرّفتها)
+    String result, // نتيجة اللعبة "1-0" / "0-1" / "1/2-1/2" / "*"
   ) {
     final buffer = StringBuffer();
 
-    // رؤوس PGN
-    headers.forEach((k, v) {
-      buffer.writeln('[$k "${v.replaceAll('"', '\\"')}"]');
-    });
-    buffer.writeln();
+    // 1) ترتيب الرؤوس المراد طباعتها أولاً (ترتيب شائع للـPGN)
+    final primaryOrder = [
+      'Event',
+      'Site',
+      'Date',
+      'Round',
+      'White',
+      'Black',
+      'Result',
+    ];
 
-    // ترقيم الحركات
-    for (int i = 0; i < sanMoves.length; i += 2) {
-      final moveNumber = (i ~/ 2) + 1;
-      buffer.write('$moveNumber. ${sanMoves[i]}');
-      if (i + 1 < sanMoves.length) buffer.write(' ${sanMoves[i + 1]}');
-      if (i + 2 < sanMoves.length) buffer.write(' ');
+    // نتأكد أن header 'Result' يعكس النتيجة الممررة
+    headers['Result'] = result;
+
+    // أكتب الرؤوس الأساسية بالأولوية إن وُجدت
+    for (final key in primaryOrder) {
+      if (headers.containsKey(key) &&
+          headers[key] != null &&
+          headers[key]!.isNotEmpty) {
+        final safeValue = headers[key]!.replaceAll(
+          '"',
+          '\\"',
+        ); // اهروب علامات الاقتباس
+        buffer.writeln('[$key "$safeValue"]');
+      }
     }
 
+    // أكتب أي رؤوس إضافية غير المدرجة في primaryOrder
+    final remainderKeys =
+        headers.keys.where((k) => !primaryOrder.contains(k)).toList()..sort();
+    for (final key in remainderKeys) {
+      final val = headers[key];
+      if (val == null) continue;
+      final safeValue = val.replaceAll('"', '\\"');
+      buffer.writeln('[$key "$safeValue"]');
+    }
+
+    // سطر فارغ يفصل الرؤوس عن الحركات
+    buffer.writeln();
+
+    // 2) كتابة الحركات مع الترميز المناسب
+    for (int i = 0; i < movesData.length; i++) {
+      final MoveData md = movesData[i];
+
+      // SAN مطلوب ـ إن لم يوجد نتخطى هذه الوحدة
+      final san = (md.san ?? '').trim();
+      if (san.isEmpty) {
+        // نتخطى الحركات الفارغة - يمكنك تغيير السلوك لرمي استثناء
+        continue;
+      }
+
+      // لو كانت حركة الأبيض (even index) نكتب رقم الحركة قبلها
+      if (i % 2 == 0) {
+        final moveNumber = (i ~/ 2) + 1;
+        buffer.write('$moveNumber. $san');
+      } else {
+        // حركة الأسود (لا نكرر رقم الحركة)
+        buffer.write(' $san');
+      }
+
+      // 2.a) NAG (Numeric Annotation Glyph)
+      if (md.nag != null && md.nag!.trim().isNotEmpty) {
+        String nagText = md.nag!.trim();
+        // إذا كان رقمًا فقط، حوّله لصيغة $n
+        if (!nagText.startsWith('\$')) {
+          final maybeNum = int.tryParse(nagText);
+          if (maybeNum != null) {
+            nagText = '\$$maybeNum';
+          }
+        }
+        buffer.write(' $nagText');
+      }
+
+      // 2.b) تعليق (comment) يوضع بين { }
+      if (md.comment != null && md.comment!.trim().isNotEmpty) {
+        // نزيل أو نحل المشكلات الصغيرة (لا تُسمح '}' داخل تعليق PGN عادة)
+        var safeComment = md.comment!.replaceAll('}', ''); // أبسط معالجة
+        safeComment = safeComment.trim();
+        buffer.write(' {$safeComment}');
+      }
+
+      // 2.c) المتغيرات (variations) — نتوقع قائمة نصوص صغيرة لتمثيل كل متغير
+      if (md.variations != null && md.variations!.isNotEmpty) {
+        for (final rawVar in md.variations!) {
+          final varText = rawVar.trim();
+          if (varText.isEmpty) continue;
+          // إذا كان النص يبدأ بالفعل بقوسين استخدمه كما هو، وإلا أغلفه بقوسين
+          if (varText.startsWith('(') && varText.endsWith(')')) {
+            buffer.write(' $varText');
+          } else {
+            buffer.write(' ($varText)');
+          }
+        }
+      }
+
+      // أضف مسافة فاصلة بين الحركات (ما عدا بعد آخر حركة سنضيف النتيجة لاحقاً)
+      if (i != movesData.length - 1) buffer.write(' ');
+    }
+
+    // 3) أضف النتيجة النهائية في النهاية (مع مسافة فاصلة)
     buffer.write(' $result');
+
     return buffer.toString();
   }
+
+  /// دالة مساعدة لتوليد PGN بسيط من قائمة SAN و headers
+  /// مخصصة للـ mainline فقط (بدون تعقيدات التعليقات/variations)
+  // String _manualPgnFromSanList(
+  //   Map<String, String> headers,
+  //   List<String> sanMoves,
+  //   String result,
+  // ) {
+  //   final buffer = StringBuffer();
+
+  //   // رؤوس PGN
+  //   headers.forEach((k, v) {
+  //     buffer.writeln('[$k "${v.replaceAll('"', '\\"')}"]');
+  //   });
+  //   buffer.writeln();
+
+  //   // ترقيم الحركات
+  //   for (int i = 0; i < sanMoves.length; i += 2) {
+  //     final moveNumber = (i ~/ 2) + 1;
+  //     buffer.write('$moveNumber. ${sanMoves[i]}');
+  //     if (i + 1 < sanMoves.length) buffer.write(' ${sanMoves[i + 1]}');
+  //     if (i + 2 < sanMoves.length) buffer.write(' ');
+  //   }
+
+  //   buffer.write(' $result');
+  //   return buffer.toString();
+  // }
 
   // ----------------------------
   // Player management (بدون تكرار)
   // ----------------------------
+  Future<Player> createPlayer(Player newPlayer) async {
+    return upsertPlayer(newPlayer);
+  }
 
   /// إنشاء لاعب إذا لم يوجد، أو تحديث بياناته في حال وجوده (avoid duplication).
   /// يعيد الكائن الموجود أو الجديد.
@@ -187,9 +304,12 @@ class ChessGameStorageService {
   /// بدء لعبة جديدة: ينشئ كائن Game ويخزنه مع روابط اللاعبين.
   /// يعيد الـGame المخزّن (محتوياته مع id).
   Future<ChessGame> startNewGame({
+    required ChessGame chessGame,
     String? startFEN,
     required Player white,
     required Player black,
+    required PgnHeaders headers,
+    String result = '*',
     String? event,
     String? site,
     String? round,
@@ -208,9 +328,9 @@ class ChessGameStorageService {
     );
 
     final game =
-        ChessGame()
-          ..fullPgn =
-              '' // سنملأه تدريجيًا
+        chessGame
+          ..fullPgn = _manualPgnFromSanList(headers, chessGame.moves, result)
+          // سنملأه تدريجيًا
           ..movesCount = 0
           ..moves = []
           ..event = event
@@ -268,10 +388,9 @@ class ChessGameStorageService {
         'Black': g.blackPlayer.value?.name ?? 'Black',
         'Result': g.result ?? '*',
       };
-      final sanMoves = g.moves.map((s) => s.san!).toList();
 
       // أعِد توليد PGN اعتمادًا على moves الحالية
-      g.fullPgn = _manualPgnFromSanList(headers, sanMoves, g.result ?? '*');
+      g.fullPgn = _manualPgnFromSanList(headers, game.moves, g.result ?? '*');
 
       // خزّن التغييرات
       await isar.chessGames.put(g);
@@ -284,48 +403,28 @@ class ChessGameStorageService {
 
   /// إنهاء اللعبة: تحديث النتيجة، endFEN، endTime، الحالة، وإعادة بناء PGN متضمنًا النتيجة النهائية.
   Future<ChessGame> endGame(
-    int gameId, {
+    ChessGame chessGame, {
     required String result, // "1-0", "0-1", "1/2-1/2"
-    String? endFEN,
+    required List<MoveData> movesData,
     String? termination, // سبب النهاية (e.g., "checkmate", "resign", "timeout")
+    required PgnHeaders headers,
   }) async {
-    late ChessGame game;
     await isar.writeTxn(() async {
-      final g = await isar.chessGames.get(gameId);
-      if (g == null) throw Exception('Game not found: $gameId');
-
-      // تحميل اللاعبين للحصول على أسمائهم (لرؤوس PGN)
-      await g.whitePlayer.load();
-      await g.blackPlayer.load();
-
       // تحديث الحالة
-      g.result = result;
-      // g.endFEN = endFEN;
-      // g.endTime = DateTime.now();
-      // g.status = 'finished';
-
+      chessGame.result = result;
       // تحضير الرؤوس مع النتيجة النهائية
-      final headers = <String, String>{
-        'Event': g.event ?? 'Casual Game',
-        'Site': g.site ?? 'Local',
-        'Date':
-            (g.date != null)
-                ? g.date!.toIso8601String().split('T').first
-                : DateTime.now().toIso8601String().split('T').first,
-        'Round': g.round ?? '1',
-        'White': g.whitePlayer.value?.name ?? 'White',
-        'Black': g.blackPlayer.value?.name ?? 'Black',
-        'Result': g.result ?? result,
-      };
-      final sanMoves = g.moves.map((s) => s.san!).toList();
-      // إعادة توليد PGN مع النتيجة النهائية
-      g.fullPgn = _manualPgnFromSanList(headers, sanMoves, g.result ?? result);
 
-      await isar.chessGames.put(g);
-      game = g;
+      // إعادة توليد PGN مع النتيجة النهائية
+      chessGame.fullPgn = _manualPgnFromSanList(
+        headers,
+        chessGame.moves,
+        result,
+      );
+
+      await isar.chessGames.put(chessGame);
     });
 
-    return game;
+    return chessGame;
   }
 
   // ----------------------------

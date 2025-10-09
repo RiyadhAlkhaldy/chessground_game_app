@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
+import 'core/helper/helper_methodes.dart';
 import 'domain/services/chess_game_storage_service.dart';
+import 'presentation/controllers/get_storage_controller.dart';
 import 'presentation/screens/home_page.dart';
 import 'routes/app_pages.dart';
 import 'routes/game_binding.dart';
@@ -12,13 +14,12 @@ void main() async {
   await GetStorage.init();
 
   // تأكد أن تُنشئ الـ Guest مبكراً
+  final storage = Get.put(GetStorageControllerImp());
   await ChessGameStorageService.init();
+  await createPlayerIfNotExists(storage);
+
   runApp(const MyApp());
 }
-
-// Future<void> _setup() async {
-//   await TodoService.setup();
-// }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

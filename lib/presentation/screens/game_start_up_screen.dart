@@ -56,7 +56,7 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
                       child: PlayerColorRadioButton(
                         title: 'Play as ${Side.white.name}',
                         value: Side.white,
-                        groupValue: controller.playerColor,
+                        groupValue: controller.playerColor.value,
                         onChanged: (value) {
                           controller.setPlayerColor(player: Side.white);
                         },
@@ -110,7 +110,7 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
                       child: PlayerColorRadioButton(
                         title: 'Play as ${Side.black.name}',
                         value: Side.black,
-                        groupValue: controller.playerColor,
+                        groupValue: controller.playerColor.value,
                         onChanged: (value) {
                           controller.setPlayerColor(player: Side.black);
                         },
@@ -169,8 +169,8 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
                               ),
                               Slider(
                                 value: controller.uciElo.value.toDouble(),
-                                min: 1350,
-                                max: 2850,
+                                min: 1320,
+                                max: 3190,
                                 divisions: 300,
                                 label: controller.uciElo.value.toString(),
                                 onChanged: (double value) {
