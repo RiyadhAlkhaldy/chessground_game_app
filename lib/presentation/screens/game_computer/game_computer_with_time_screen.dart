@@ -26,7 +26,7 @@ class GameComputerWithTimeScreen extends StatelessWidget {
         if (didPop) {
           return;
         }
-        if (ctrl.getResult != GameResult.ongoing) {
+        if (ctrl.getResult != GameStatus.ongoing) {
           Get.back();
         } else {
           final shouldExit = await showExitConfirmationDialog(context);
@@ -34,7 +34,7 @@ class GameComputerWithTimeScreen extends StatelessWidget {
           if (shouldExit == true) {
             if (context.mounted) {
               // If the user confirms, show the second dialog
-              await showGameOverDialog(context);
+              await showGameOverDialog(context, ctrl.position.value.outcome!);
               // And then, after closing the second dialog, navigate back
               if (context.mounted) {
                 Get.back();

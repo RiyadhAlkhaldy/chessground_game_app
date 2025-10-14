@@ -193,17 +193,17 @@ abstract class GameAiController extends AbstractGameController
 
   ///
   // // النسخة المعدلة من getResult
-  GameResult get getResult {
-    if (position.value.isCheckmate) return GameResult.checkmate;
-    if (position.value.isStalemate) return GameResult.stalemate;
+  GameStatus get getResult {
+    if (position.value.isCheckmate) return GameStatus.checkmate;
+    if (position.value.isStalemate) return GameStatus.stalemate;
     if (position.value.isInsufficientMaterial || position.value.isVariantEnd
     // || position.value.isFiftyMoveRule ||     // <-- إضافة جديدة
     // position.value.isThreefoldRepetition
     ) {
       // <-- إضافة جديدة
-      return GameResult.draw;
+      return GameStatus.insufficientMaterial;
     }
-    return GameResult.ongoing;
+    return GameStatus.ongoing;
   }
 
   @override

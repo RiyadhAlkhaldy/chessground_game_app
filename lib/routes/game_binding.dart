@@ -6,6 +6,7 @@ import '../domain/repositories/i_engine_repository.dart';
 import '../domain/repositories/i_engine_repository_impl.dart';
 import '../domain/services/stockfish_engine_service.dart';
 import '../presentation/controllers/chess_board_settings_controller.dart';
+import '../presentation/controllers/freee_game_controller.dart';
 import '../presentation/controllers/game_computer_controller.dart';
 import '../presentation/controllers/game_controller.dart';
 import '../presentation/controllers/get_storage_controller.dart';
@@ -61,5 +62,10 @@ class GameBinding extends Bindings {
       ),
       fenix: true,
     );
+
+    ///
+    Get.lazyPut(() => FreeGameController(Get.find()), fenix: true);
+
+    ///
   }
 }

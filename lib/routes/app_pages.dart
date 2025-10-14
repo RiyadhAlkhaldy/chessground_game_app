@@ -1,3 +1,4 @@
+import 'package:chessground_game_app/presentation/screens/game_computer/free_game_screen.dart';
 import 'package:get/get.dart';
 
 import '../presentation/screens/about_screen.dart';
@@ -14,6 +15,7 @@ abstract class RouteNames {
   static String sideChoosingView = '/SideChoosingView';
   static String gameComputerScreen = '/GameComputerScreen';
   static String gameComputerWithTimeScreen = '/GameComputerWithTimeScreen';
+  static String freeGameScreen = '/FreeGameScreen';
   static String gamesScreen = '/GamesScreen';
   static String editPosition = '/EditPosition';
   static String analysisScreen = '/AnalysisScreen';
@@ -52,6 +54,7 @@ class AppPages {
       name: RouteNames.gameStartUpScreen,
       page: () => GameStartUpScreen(isCustomTime: false, gameTime: '5'),
     ),
+    GetPage(name: RouteNames.freeGameScreen, page: () => FreeGameScreen()),
     // GetPage(name: RouteNames.gamesScreen, page: () => const GameScreen()),
 
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),

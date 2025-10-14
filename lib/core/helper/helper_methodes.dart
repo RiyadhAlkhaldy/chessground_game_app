@@ -1,3 +1,4 @@
+import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -120,7 +121,7 @@ Future<bool?> showExitConfirmationDialog(BuildContext context) {
 }
 
 // هذه الدالة الجديدة تعرض نافذة "نهاية اللعبة"
-Future<void> showGameOverDialog(BuildContext context) {
+Future<void> showGameOverDialog(BuildContext context, Outcome? outcome) {
   return showDialog<void>(
     context: context,
     barrierDismissible: false, // يمنع إغلاقها بالضغط خارجها
@@ -128,7 +129,7 @@ Future<void> showGameOverDialog(BuildContext context) {
       return AlertDialog(
         title: Text('انتهت اللعبة!'),
         content: Text(
-          'لقد خسرت هذه اللعبة. يمكنك الآن العودة إلى الصفحة الرئيسية.',
+          '${outcome != null ? "الفائز هو :${outcome.winner == Side.white ? 'الأبيض' : 'الأسود'}" : ""} لقد خسرت هذه اللعبة. يمكنك الآن العودة إلى الصفحة الرئيسية.',
         ),
         actions: <Widget>[
           TextButton(

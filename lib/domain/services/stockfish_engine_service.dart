@@ -7,13 +7,13 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 import '../entities/extended_evaluation.dart';
 
 /// حالة اللعبة المستخلصة محليًا (نستخدم dartchess للتحقق)
-enum GameResult {
+enum GameStatus {
   ongoing,
   checkmate,
-  stalemate,
   timeout,
-  draw,
   resignation,
+  stalemate,
+  // draw,
   agreement,
   threefoldRepetition,
   fiftyMoveRule,

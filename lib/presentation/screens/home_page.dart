@@ -61,7 +61,15 @@ class HomePage extends StatelessWidget {
                         );
                       },
                     ),
-
+                    buildGameType(
+                      lable: 'free Game',
+                      icon: Icons.gamepad_outlined,
+                      onTap: () {
+                        controller.setVsComputer(value: true);
+                        // navigate to setup game time screen
+                        Get.toNamed(RouteNames.freeGameScreen);
+                      },
+                    ),
                     buildGameType(
                       lable: 'Settings',
                       icon: Icons.settings,
