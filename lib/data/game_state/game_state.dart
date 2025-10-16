@@ -154,9 +154,23 @@ class GameState {
 
   bool get isCheck => _pos.isCheck;
 
-  bool get isGameOver => _pos.isGameOver; //
-
   bool get isCheckmate => _pos.isCheckmate; // 8. EndGame  isCheckmate
+
+  bool get isGameOver => _pos.isGameOver;
+
+  ///
+  bool get isGameOverExtended => isMate || isDraw;
+
+  ///
+  bool get isDraw =>
+      isFiftyMoveRule() ||
+      isThreefoldRepetition() ||
+      isAgreedDraw() ||
+      isStalemate ||
+      isInsufficientMaterial;
+
+  ///
+  bool get isMate => isCheckmate || isResigned() || isTimeout();
 
   // bool hasInsufficientMaterial(Side side) {
   //   return _pos.hasInsufficientMaterial(side);

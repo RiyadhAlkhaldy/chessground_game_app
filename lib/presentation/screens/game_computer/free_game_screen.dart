@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/domain/services/stockfish_engine_service.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -148,16 +147,17 @@ class ChessBoardWidget extends GetView<FreeGameController> {
         builder: (context, constraints) {
           return GetBuilder<FreeGameController>(
             builder: (controller) {
-              debugPrint("gameStatus: ${controller.gameStatus}");
-              debugPrint("getResult: ${controller.getResult}");
-              debugPrint(
-                "getResult:: ${controller.gameState.position.outcome}",
-              );
+              // debugPrint("gameStatus: ${controller.gameStatus}");
+              // debugPrint("getResult: ${controller.getResult}");
+              // debugPrint(
+              //   "getResult:: ${controller.gameState.position.outcome}",
+              // );
 
               return PopScope(
                 canPop:
-                    controller.gameStatus !=
-                    GameStatus.ongoing, // Prevents automatic exit
+                    controller
+                        .gameState
+                        .isGameOverExtended, // Prevents automatic exit
 
                 onPopInvokedWithResult: (didPop, result) async {
                   if (didPop) {
@@ -240,7 +240,7 @@ class ChessBoardWidget extends GetView<FreeGameController> {
                   // lastMove: controller.lastMove,
                   game: GameData(
                     playerSide:
-                        controller.gameStatus != GameStatus.ongoing
+                        controller.gameState.isGameOverExtended
                             ? PlayerSide.none
                             : PlayerSide.both,
                     validMoves: controller.validMoves,

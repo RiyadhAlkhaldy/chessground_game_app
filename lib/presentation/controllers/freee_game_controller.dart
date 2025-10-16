@@ -22,9 +22,10 @@ class FreeGameController extends GetxController {
   // '1nbqkbn1/8/8/8/8/8/8/1NB1KBN1 w KQkq - 96 96'
   // 'rnbqkbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 3';
 
+  // ignore: unnecessary_getters_setters
   String get fen => _fen;
 
-  set fen(String value) => {_fen = value};
+  set fen(String value) => _fen = value;
 
   ValidMoves validMoves = IMap(const {});
 
@@ -60,23 +61,78 @@ class FreeGameController extends GetxController {
   }
 
   GameStatus get gameStatus {
-    if (gameState.isCheckmate) {
-      return GameStatus.checkmate;
-    }
-    if (gameState.isResigned()) return GameStatus.resignation;
-    if (gameState.isAgreedDraw()) return GameStatus.agreement;
-    if (gameState.isFiftyMoveRule()) return GameStatus.fiftyMoveRule;
-    if (gameState.isStalemate) return GameStatus.stalemate;
-    if (gameState.isInsufficientMaterial) {
-      return GameStatus.insufficientMaterial;
-    }
-    if (gameState.isThreefoldRepetition()) {
-      return GameStatus.threefoldRepetition;
-    }
-    if (gameState.isTimeout()) return GameStatus.timeout;
+    if (gameState.isMate) {
+      statusText.value = "the owner is ${gameState.result?.winner}";
+      if (gameState.isCheckmate) {
+        statusText.value = "checkmate ${statusText.value}";
+        return GameStatus.checkmate;
+      }
+      if (gameState.isTimeout()) {
+        statusText.value = "timeout ${statusText.value}";
+        return GameStatus.timeout;
+      }
+      if (gameState.isResigned()) {
+        statusText.value =
+            "the ${gameState.result?.winner?.opposite}resigned, the owner is ${gameState.result?.winner}";
+        return GameStatus.resignation;
+      }
+    } else if (gameState.isDraw) {
+      statusText.value = "the result is Draw,";
 
+      if (gameState.isFiftyMoveRule()) {
+        statusText.value = "${statusText.value} cause fifty move rule";
+        return GameStatus.fiftyMoveRule;
+      }
+      if (gameState.isStalemate) {
+        statusText.value = "${statusText.value} cause stalemate";
+        return GameStatus.stalemate;
+      }
+      if (gameState.isInsufficientMaterial) {
+        statusText.value = "${statusText.value} cause insufficient Material";
+        return GameStatus.insufficientMaterial;
+      }
+      if (gameState.isThreefoldRepetition()) {
+        statusText.value = "${statusText.value} cause is threefold Repetition";
+        return GameStatus.threefoldRepetition;
+      }
+      if (gameState.isAgreedDraw()) {
+        statusText.value = "${statusText.value} cause is Agreed Draw";
+        return GameStatus.agreement;
+      }
+    }
+
+    ///
+    if (gameState.turn == Side.white) {
+      statusText.value = "دور الأبيض";
+    } else if (gameState.turn == Side.black) {
+      statusText.value = "دور الأسود";
+    }
+    if (gameState.isCheck) {
+      statusText.value += '(كش)';
+    }
+
+    ///
     return GameStatus.ongoing;
   }
+
+  // GameStatus get gameStatus {
+  //   if (gameState.isCheckmate) {
+  //     return GameStatus.checkmate;
+  //   }
+  //   if (gameState.isResigned()) return GameStatus.resignation;
+  //   if (gameState.isAgreedDraw()) return GameStatus.agreement;
+  //   if (gameState.isFiftyMoveRule()) return GameStatus.fiftyMoveRule;
+  //   if (gameState.isStalemate) return GameStatus.stalemate;
+  //   if (gameState.isInsufficientMaterial) {
+  //     return GameStatus.insufficientMaterial;
+  //   }
+  //   if (gameState.isThreefoldRepetition()) {
+  //     return GameStatus.threefoldRepetition;
+  //   }
+  //   if (gameState.isTimeout()) return GameStatus.timeout;
+
+  //   return GameStatus.ongoing;
+  // }
 
   ///reset
   void reset() {
@@ -132,7 +188,7 @@ class FreeGameController extends GetxController {
       promotionMove = null;
       debugPrint("gameState.position.fen: ${gameState.position.fen}");
 
-      updateTextState();
+      gameStatus;
       update();
     }
   }
@@ -154,60 +210,60 @@ class FreeGameController extends GetxController {
   }
 
   RxString statusText = "free Play".obs;
-  void updateTextState() {
-    statusText.value = "";
-    switch (gameStatus) {
-      case GameStatus.checkmate:
-      case GameStatus.resignation:
-      case GameStatus.timeout:
-        if (gameState.result == Outcome.blackWins) {
-          _updateGameEnd();
-          statusText.value += 'الفائز: لابيض';
-        }
-        if (gameState.result == Outcome.blackWins) {
-          _updateGameEnd();
-          statusText.value += 'الفائز: لأسود';
-        }
-        return;
-      case GameStatus.ongoing:
-        if (gameState.isCheck) {
-          statusText.value = '(كش)';
-          return;
-        }
-        if (gameState.turn == Side.white) {
-          statusText.value = "دور الأبيض";
-          return;
-        } else if (gameState.turn == Side.black) {
-          statusText.value = "دور الأسود";
-          return;
-        }
-      case GameStatus.stalemate:
-        statusText.value += 'طريق مسدود!';
-        return;
-      case GameStatus.agreement:
-        statusText.value += 'بالإتفاق';
-        return;
-      case GameStatus.threefoldRepetition:
-        statusText.value += 'تكرار الوضعية ثلاث مرات';
-        return;
-      case GameStatus.fiftyMoveRule:
-        statusText.value += 'خمسون نقلة متتالية';
-        return;
-      case GameStatus.insufficientMaterial:
-        statusText.value += "الموارد غير كافية";
-        return;
-    }
-  }
+  // void updateTextState() {
+  //   statusText.value = "";
+  //   switch (gameStatus) {
+  //     case GameStatus.checkmate:
+  //     case GameStatus.resignation:
+  //     case GameStatus.timeout:
+  //       if (gameState.result == Outcome.blackWins) {
+  //         _updateGameEnd();
+  //         statusText.value += 'الفائز: لابيض';
+  //       }
+  //       if (gameState.result == Outcome.blackWins) {
+  //         _updateGameEnd();
+  //         statusText.value += 'الفائز: لأسود';
+  //       }
+  //       return;
+  //     case GameStatus.ongoing:
+  //       if (gameState.isCheck) {
+  //         statusText.value = '(كش)';
+  //         return;
+  //       }
+  //       if (gameState.turn == Side.white) {
+  //         statusText.value = "دور الأبيض";
+  //         return;
+  //       } else if (gameState.turn == Side.black) {
+  //         statusText.value = "دور الأسود";
+  //         return;
+  //       }
+  //     case GameStatus.stalemate:
+  //       statusText.value += 'طريق مسدود!';
+  //       return;
+  //     case GameStatus.agreement:
+  //       statusText.value += 'بالإتفاق';
+  //       return;
+  //     case GameStatus.threefoldRepetition:
+  //       statusText.value += 'تكرار الوضعية ثلاث مرات';
+  //       return;
+  //     case GameStatus.fiftyMoveRule:
+  //       statusText.value += 'خمسون نقلة متتالية';
+  //       return;
+  //     case GameStatus.insufficientMaterial:
+  //       statusText.value += "الموارد غير كافية";
+  //       return;
+  //   }
+  // }
 
-  void _updateGameEnd() {
-    if (gameState.isCheckmate) {
-      statusText.value = "كش موت:";
-    } else if (gameState.isResigned()) {
-      statusText.value = "غارد اللعب:";
-    } else if (gameState.isTimeout()) {
-      statusText.value = "أنتهاء الوقت:";
-    }
-  }
+  // void _updateGameEnd() {
+  //   if (gameState.isCheckmate) {
+  //     statusText.value = "كش موت:";
+  //   } else if (gameState.isResigned()) {
+  //     statusText.value = "غارد اللعب:";
+  //   } else if (gameState.isTimeout()) {
+  //     statusText.value = "أنتهاء الوقت:";
+  //   }
+  // }
 
   void resign(Side side) {
     gameState.resign(side);
