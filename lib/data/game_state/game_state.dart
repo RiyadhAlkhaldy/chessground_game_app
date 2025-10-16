@@ -5,6 +5,7 @@
 // Depends on package:dartchess
 // Add to package exports if you want it public: `export 'src/game_state/game_state.dart';`
 
+import 'package:chessground/chessground.dart';
 import 'package:dartchess/dartchess.dart';
 
 import '../../domain/models/chess_game.dart';
@@ -100,6 +101,17 @@ class GameState {
         ..comment = comment
         ..nags = nags,
     );
+    if (_pos.isGameOver) {
+      result = _pos.outcome;
+    }
+    // if (isCheckmate) {
+    //   result = Outcome(
+    //     winner: _pos.turn == Side.white ? Side.black : Side.white,
+    //   );
+    // } else if (isDraw) {
+    //   result = Outcome.draw;
+    // }
+
     // pgnRoot.children.add(PgnChildNode<PgnNodeData>(PgnNodeData(san: san)));
   }
 

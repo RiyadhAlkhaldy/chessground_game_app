@@ -6,6 +6,7 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/helper/helper_methodes.dart';
 import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/services/stockfish_engine_service.dart';
@@ -15,10 +16,10 @@ class FreeGameController extends GetxController {
   GameState gameState = GameState();
 
   Position get initail => Chess.fromSetup(Setup.parseFen(fen));
-  String _fen = kInitialFEN;
+  // String _fen = kInitialFEN;
   // String _fen = '2b1k3/p4p2/7P/4p3/3p4/8/P1P2P1P/R2QK1NR w - - 0 4';
   // String _fen = 'k7/8/8/8/8/8/p7/K7 b - - 0 1';
-  // "8/P7/8/k7/8/8/8/K7 w - - 0 1";
+  String _fen = "8/P7/8/k7/8/8/8/K7 w - - 0 1";
   // '1nbqkbn1/8/8/8/8/8/8/1NB1KBN1 w KQkq - 96 96'
   // 'rnbqkbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 3';
 
@@ -60,44 +61,55 @@ class FreeGameController extends GetxController {
     return gameState.result;
   }
 
-  GameStatus get gameStatus {
-    if (gameState.isMate) {
-      statusText.value = "the owner is ${gameState.result?.winner}";
-      if (gameState.isCheckmate) {
-        statusText.value = "checkmate ${statusText.value}";
-        return GameStatus.checkmate;
-      }
-      if (gameState.isTimeout()) {
-        statusText.value = "timeout ${statusText.value}";
-        return GameStatus.timeout;
-      }
-      if (gameState.isResigned()) {
-        statusText.value =
-            "the ${gameState.result?.winner?.opposite}resigned, the owner is ${gameState.result?.winner}";
-        return GameStatus.resignation;
-      }
-    } else if (gameState.isDraw) {
-      statusText.value = "the result is Draw,";
+  Future<GameStatus> get gameStatus async {
+    if (gameState.isGameOverExtended) {
+      if (gameState.isMate) {
+        statusText.value = "the owner is ${gameState.result?.winner}";
+        if (gameState.isCheckmate) {
+          statusText.value = "checkmate ${statusText.value}";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.checkmate;
+        }
+        if (gameState.isTimeout()) {
+          statusText.value = "timeout ${statusText.value}";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.timeout;
+        }
+        if (gameState.isResigned()) {
+          statusText.value =
+              "the ${gameState.result?.winner?.opposite}resigned, the owner is ${gameState.result?.winner}";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.resignation;
+        }
+      } else if (gameState.isDraw) {
+        statusText.value = "the result is Draw,";
 
-      if (gameState.isFiftyMoveRule()) {
-        statusText.value = "${statusText.value} cause fifty move rule";
-        return GameStatus.fiftyMoveRule;
-      }
-      if (gameState.isStalemate) {
-        statusText.value = "${statusText.value} cause stalemate";
-        return GameStatus.stalemate;
-      }
-      if (gameState.isInsufficientMaterial) {
-        statusText.value = "${statusText.value} cause insufficient Material";
-        return GameStatus.insufficientMaterial;
-      }
-      if (gameState.isThreefoldRepetition()) {
-        statusText.value = "${statusText.value} cause is threefold Repetition";
-        return GameStatus.threefoldRepetition;
-      }
-      if (gameState.isAgreedDraw()) {
-        statusText.value = "${statusText.value} cause is Agreed Draw";
-        return GameStatus.agreement;
+        if (gameState.isFiftyMoveRule()) {
+          statusText.value = "${statusText.value} cause fifty move rule";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.fiftyMoveRule;
+        }
+        if (gameState.isStalemate) {
+          statusText.value = "${statusText.value} cause stalemate";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.stalemate;
+        }
+        if (gameState.isInsufficientMaterial) {
+          statusText.value = "${statusText.value} cause insufficient Material";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.insufficientMaterial;
+        }
+        if (gameState.isThreefoldRepetition()) {
+          statusText.value =
+              "${statusText.value} cause is threefold Repetition";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.threefoldRepetition;
+        }
+        if (gameState.isAgreedDraw()) {
+          statusText.value = "${statusText.value} cause is Agreed Draw";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.agreement;
+        }
       }
     }
 
@@ -114,6 +126,12 @@ class FreeGameController extends GetxController {
     ///
     return GameStatus.ongoing;
   }
+
+  /// Agreement draw: set result to draw.
+  void setAgreementDraw() => gameState.setAgreementDraw();
+
+  /// Resign: if side resigns, winner is the other side.
+  void resign(Side side) => gameState.resign(side);
 
   // GameStatus get gameStatus {
   //   if (gameState.isCheckmate) {
@@ -264,10 +282,4 @@ class FreeGameController extends GetxController {
   //     statusText.value = "أنتهاء الوقت:";
   //   }
   // }
-
-  void resign(Side side) {
-    gameState.resign(side);
-    // resignCallback?.call(side);
-    update();
-  }
 }

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
+import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -177,8 +178,18 @@ class ChessBoardWidget extends GetView<FreeGameController> {
 
                     if (shouldExit == true) {
                       if (context.mounted) {
-                        // If the user confirms, show the second dialog
-                        await showGameOverDialog(context, controller.getResult);
+                        // controller.gameStatus;
+                        controller.resign(
+                          controller.playerSide == PlayerSide.white
+                              ? Side.white
+                              : Side.black,
+                        );
+                        await controller.gameStatus;
+                        // var outcome = controller.getResult;
+                        // var outcomeText =
+                        //     '${outcome != null ? "الفائز هو :${outcome.winner == Side.white ? 'الأبيض' : 'الأسود'}" : ""} لقد خسرت هذه اللعبة. يمكنك الآن العودة إلى الصفحة الرئيسية.';
+                        // // If the user confirms, show the second dialog
+                        // await showGameOverDialog(context, outcomeText);
                         // And then, after closing the second dialog, navigate back
                         if (context.mounted) {
                           Get.back();

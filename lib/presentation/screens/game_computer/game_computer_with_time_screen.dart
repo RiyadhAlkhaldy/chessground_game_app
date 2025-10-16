@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
+import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -33,8 +34,12 @@ class GameComputerWithTimeScreen extends StatelessWidget {
 
           if (shouldExit == true) {
             if (context.mounted) {
+              //TODO Fix outcome
+              var outcome = ctrl.position.value.outcome;
+              var outcomeText =
+                  '${"الفائز هو :${outcome?.winner == Side.white ? 'الأبيض' : 'الأسود'}"} لقد خسرت هذه اللعبة. يمكنك الآن العودة إلى الصفحة الرئيسية.';
               // If the user confirms, show the second dialog
-              await showGameOverDialog(context, ctrl.position.value.outcome!);
+              await showGameOverDialog(context, outcomeText);
               // And then, after closing the second dialog, navigate back
               if (context.mounted) {
                 Get.back();
