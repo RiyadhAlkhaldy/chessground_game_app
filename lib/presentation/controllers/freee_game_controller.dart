@@ -15,8 +15,8 @@ class FreeGameController extends GetxController {
   GameState gameState = GameState();
 
   Position get initail => Chess.fromSetup(Setup.parseFen(fen));
-  // String _fen = kInitialFEN;
-  String _fen = '2b1k3/p4p2/7P/4p3/3p4/8/P1P2P1P/R2QK1NR w - - 0 4';
+  String _fen = kInitialFEN;
+  // String _fen = '2b1k3/p4p2/7P/4p3/3p4/8/P1P2P1P/R2QK1NR w - - 0 4';
   // String _fen = 'k7/8/8/8/8/8/p7/K7 b - - 0 1';
   // "8/P7/8/k7/8/8/8/K7 w - - 0 1";
   // '1nbqkbn1/8/8/8/8/8/8/1NB1KBN1 w KQkq - 96 96'

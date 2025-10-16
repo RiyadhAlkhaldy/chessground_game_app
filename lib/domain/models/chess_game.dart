@@ -65,14 +65,15 @@ class MoveData {
   String? san; // e.g. "Nf3", "exd5", "O-O"
   String? lan; // e.g. "g1f3", "e4d5"
   String? comment; // نص التعليق من { ... }
-  String? nag; // نمط "$2" الخ
+  // String? nag; // نمط "$2" الخ
+  List<int>? nags;
   String? fenAfter; // FEN بعد تنفيذ الحركة
   List<String>?
   variations; // نص المتغيرات (يمكن أن نخزنها كنصوص خام أو تبني هيكل شجري)
 
   @override
   String toString() =>
-      "MoveData{san:$san, lan:$lan, nag:$nag, comment:$comment, fenAfter:$fenAfter }";
+      "MoveData{san:$san, lan:$lan, nags:$nags, comment:$comment, fenAfter:$fenAfter }";
 }
 
 // @collection

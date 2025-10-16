@@ -3255,10 +3255,10 @@ const MoveDataSchema = Schema(
       name: r'lan',
       type: IsarType.string,
     ),
-    r'nag': PropertySchema(
+    r'nags': PropertySchema(
       id: 3,
-      name: r'nag',
-      type: IsarType.string,
+      name: r'nags',
+      type: IsarType.longList,
     ),
     r'san': PropertySchema(
       id: 4,
@@ -3302,9 +3302,9 @@ int _moveDataEstimateSize(
     }
   }
   {
-    final value = object.nag;
+    final value = object.nags;
     if (value != null) {
-      bytesCount += 3 + value.length * 3;
+      bytesCount += 3 + value.length * 8;
     }
   }
   {
@@ -3337,7 +3337,7 @@ void _moveDataSerialize(
   writer.writeString(offsets[0], object.comment);
   writer.writeString(offsets[1], object.fenAfter);
   writer.writeString(offsets[2], object.lan);
-  writer.writeString(offsets[3], object.nag);
+  writer.writeLongList(offsets[3], object.nags);
   writer.writeString(offsets[4], object.san);
   writer.writeStringList(offsets[5], object.variations);
 }
@@ -3352,7 +3352,7 @@ MoveData _moveDataDeserialize(
   object.comment = reader.readStringOrNull(offsets[0]);
   object.fenAfter = reader.readStringOrNull(offsets[1]);
   object.lan = reader.readStringOrNull(offsets[2]);
-  object.nag = reader.readStringOrNull(offsets[3]);
+  object.nags = reader.readLongList(offsets[3]);
   object.san = reader.readStringOrNull(offsets[4]);
   object.variations = reader.readStringList(offsets[5]);
   return object;
@@ -3372,7 +3372,7 @@ P _moveDataDeserializeProp<P>(
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongList(offset)) as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
@@ -3822,149 +3822,157 @@ extension MoveDataQueryFilter
     });
   }
 
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagIsNull() {
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'nag',
+        property: r'nags',
       ));
     });
   }
 
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagIsNotNull() {
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'nag',
+        property: r'nags',
       ));
     });
   }
 
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsElementEqualTo(
+      int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'nag',
+        property: r'nags',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagGreaterThan(
-    String? value, {
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition>
+      nagsElementGreaterThan(
+    int value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'nag',
+        property: r'nags',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagLessThan(
-    String? value, {
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsElementLessThan(
+    int value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'nag',
+        property: r'nags',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsElementBetween(
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'nag',
+        property: r'nags',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagStartsWith(
-    String value, {
-    bool caseSensitive = true,
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsLengthEqualTo(
+      int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'nags',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'nags',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'nags',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsLengthLessThan(
+    int length, {
+    bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'nag',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.listLength(
+        r'nags',
+        0,
+        true,
+        length,
+        include,
+      );
     });
   }
 
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagEndsWith(
-    String value, {
-    bool caseSensitive = true,
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsLengthGreaterThan(
+    int length, {
+    bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'nag',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.listLength(
+        r'nags',
+        length,
+        include,
+        999999,
+        true,
+      );
     });
   }
 
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'nag',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'nag',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'nag',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> nagIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'nag',
-        value: '',
-      ));
+      return query.listLength(
+        r'nags',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 

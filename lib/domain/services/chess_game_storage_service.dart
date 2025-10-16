@@ -177,8 +177,12 @@ class ChessGameStorageService {
       }
 
       // 2.a) NAG (Numeric Annotation Glyph)
-      if (md.nag != null && md.nag!.trim().isNotEmpty) {
-        String nagText = md.nag!.trim();
+      //TODO fix list nags to add to pgn
+      // if (md.nag != null && md.nag!.trim().isNotEmpty) {
+      if (md.nags != null && md.nags!.join('').isNotEmpty) {
+        String nagText = md.nags!.join('').trim();
+        //TODO fix list nags to add to pgn
+        // String nagText = md.nag!.trim();
         // إذا كان رقمًا فقط، حوّله لصيغة $n
         if (!nagText.startsWith('\$')) {
           final maybeNum = int.tryParse(nagText);
