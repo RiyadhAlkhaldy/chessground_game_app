@@ -22,7 +22,10 @@ class FreeGameScreen extends StatelessWidget {
       appBar: AppBar(
         title: GetX<FreeGameController>(
           builder: (_) {
-            return Text(ctrl.statusText.value);
+            return Text(
+              ctrl.statusText.value,
+              style: Theme.of(context).textTheme.titleMedium,
+            );
           },
         ),
       ),
@@ -49,19 +52,18 @@ class BuildPortrait extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ChessBoardWidget(ctrlBoardSettings: ctrlBoardSettings),
-
-          const SizedBox(height: 40),
+          ChessBoardWidget(),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: screenPadding),
+              child: ChessBoardSettingsWidgets(),
+            ),
+          ),
           const SizedBox(height: screenPortraitSplitter),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: screenPadding),
             child: BuildControlButtons(),
           ),
-          // const SizedBox(height: screenPortraitSplitter),
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(horizontal: screenPadding),
-          //   child: BuildControlButtons(),
-          // ),
         ],
       ),
     );
@@ -78,20 +80,14 @@ class BuildLandScape extends StatelessWidget {
       padding: const EdgeInsets.all(screenPadding),
       child: Row(
         children: [
-          Expanded(
-            child: ChessBoardWidget(ctrlBoardSettings: ctrlBoardSettings),
-          ),
+          Expanded(child: ChessBoardWidget()),
 
           const SizedBox(width: screenLandscapeSplitter),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: ChessBoardSettingsWidgets(
-                    controller: ctrlBoardSettings,
-                  ),
-                ),
+                Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),
                 BuildControlButtons(),
               ],
@@ -115,7 +111,11 @@ class BuildControlButtons extends StatelessWidget {
         builder: (ctrl) {
           return Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [Expanded(child: buildNewRoundButton(ctrl))],
+            children: [
+              Expanded(child: buildNewRoundButton(ctrl)),
+              Expanded(child: buildUndoButton()),
+              Expanded(child: buildRedoButton()),
+            ],
           );
         },
       ),
@@ -126,9 +126,10 @@ class BuildControlButtons extends StatelessWidget {
 Widget buildNewRoundButton(FreeGameController ctrl) => FilledButton.icon(
   icon: const Icon(Icons.refresh_rounded),
   label: const Text('New Round'),
-  onPressed: () {
-    ctrl.reset();
-  },
+  onPressed:
+      ctrl.gameState.isGameOverExtended || !ctrl.canUndo.value
+          ? null
+          : ctrl.reset,
 );
 
 Color darken(Color c, [double amount = .1]) {
@@ -137,9 +138,7 @@ Color darken(Color c, [double amount = .1]) {
 }
 
 class ChessBoardWidget extends GetView<FreeGameController> {
-  const ChessBoardWidget({super.key, required this.ctrlBoardSettings});
-
-  final ChessBoardSettingsController ctrlBoardSettings;
+  const ChessBoardWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -191,85 +190,94 @@ class ChessBoardWidget extends GetView<FreeGameController> {
                         // // If the user confirms, show the second dialog
                         // await showGameOverDialog(context, outcomeText);
                         // And then, after closing the second dialog, navigate back
-                        if (context.mounted) {
-                          Get.back();
-                        }
+                        // if (context.mounted) {
+                        //   Get.back();
+                        // }
                       }
                     }
                   }
                 },
-                child: Chessboard(
-                  size: min(constraints.maxWidth, constraints.maxHeight),
-                  settings: ChessboardSettings(
-                    pieceAssets: ctrlBoardSettings.pieceSet.value.assets,
-                    colorScheme: ctrlBoardSettings.boardTheme.value.colors,
-                    border:
-                        ctrlBoardSettings.showBorder.value
-                            ? BoardBorder(
-                              width: 16.0,
-                              color: darken(
-                                ctrlBoardSettings
-                                    .boardTheme
-                                    .value
-                                    .colors
-                                    .darkSquare,
-                                0.2,
-                              ),
-                            )
-                            : null,
-                    enableCoordinates: true,
+                child: GetX<ChessBoardSettingsController>(
+                  builder:
+                      (ctrlBoardSettings) => Chessboard(
+                        size: min(constraints.maxWidth, constraints.maxHeight),
+                        settings: ChessboardSettings(
+                          pieceAssets: ctrlBoardSettings.pieceSet.value.assets,
+                          colorScheme:
+                              ctrlBoardSettings.boardTheme.value.colors,
+                          border:
+                              ctrlBoardSettings.showBorder.value
+                                  ? BoardBorder(
+                                    width: 10.0,
+                                    color: darken(
+                                      ctrlBoardSettings
+                                          .boardTheme
+                                          .value
+                                          .colors
+                                          .darkSquare,
+                                      0.2,
+                                    ),
+                                  )
+                                  : null,
+                          enableCoordinates: true,
 
-                    // showLastMove: true,
-                    // enablePremoveCastling: true,
-                    // showValidMoves: true,
-                    autoQueenPromotion: false,
-                    animationDuration:
-                        ctrlBoardSettings.pieceAnimation.value
-                            ? const Duration(milliseconds: 200)
-                            : Duration.zero,
+                          // showLastMove: true,
+                          // enablePremoveCastling: true,
+                          // showValidMoves: true,
+                          autoQueenPromotion: false,
+                          animationDuration:
+                              ctrlBoardSettings.pieceAnimation.value
+                                  ? const Duration(milliseconds: 200)
+                                  : Duration.zero,
 
-                    dragFeedbackScale:
-                        ctrlBoardSettings.dragMagnify.value ? 2.0 : 1.0,
-                    dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
-                    drawShape: DrawShapeOptions(
-                      enable: ctrlBoardSettings.drawMode,
-                      onCompleteShape: ctrlBoardSettings.onCompleteShape,
-                      onClearShapes: () {
-                        ctrlBoardSettings.shapes.value = ISet<Shape>();
-                      },
-                    ),
-                    pieceShiftMethod: ctrlBoardSettings.pieceShiftMethod.value,
-                    autoQueenPromotionOnPremove: false,
-                    pieceOrientationBehavior:
-                        // controller.playMode == Mode.freePlay
-                        // PieceOrientationBehavior.opponentUpsideDown,
-                        PieceOrientationBehavior.facingUser,
-                  ),
-                  orientation: ctrlBoardSettings.orientation.value,
+                          dragFeedbackScale:
+                              ctrlBoardSettings.dragMagnify.value ? 2.0 : 1.0,
+                          dragTargetKind:
+                              ctrlBoardSettings.dragTargetKind.value,
+                          drawShape: DrawShapeOptions(
+                            enable: ctrlBoardSettings.drawMode,
+                            onCompleteShape: ctrlBoardSettings.onCompleteShape,
+                            onClearShapes: () {
+                              ctrlBoardSettings.shapes.value = ISet<Shape>();
+                            },
+                          ),
+                          pieceShiftMethod:
+                              ctrlBoardSettings.pieceShiftMethod.value,
+                          autoQueenPromotionOnPremove: false,
+                          pieceOrientationBehavior:
+                              // controller.playMode == Mode.freePlay
+                              // PieceOrientationBehavior.opponentUpsideDown,
+                              PieceOrientationBehavior.facingUser,
+                        ),
+                        orientation: ctrlBoardSettings.orientation.value,
 
-                  fen: controller.fen,
-                  // lastMove: controller.lastMove,
-                  game: GameData(
-                    playerSide:
-                        controller.gameState.isGameOverExtended
-                            ? PlayerSide.none
-                            : PlayerSide.both,
-                    validMoves: controller.validMoves,
-                    sideToMove: controller.gameState.position.turn,
-                    isCheck: controller.gameState.position.isCheck,
-                    promotionMove: controller.promotionMove,
-                    onMove: controller.onUserMoveAgainstAI,
-                    onPromotionSelection: controller.onPromotionSelection,
-                    premovable: (
-                      onSetPremove: controller.onSetPremove,
-                      premove: controller.premove,
-                    ),
-                  ),
+                        fen: controller.fen,
+                        // lastMove: controller.lastMove,
+                        game: GameData(
+                          playerSide:
+                              controller.gameState.isGameOverExtended
+                                  ? PlayerSide.none
+                                  : controller.gameState.position.turn ==
+                                      Side.white
+                                  ? PlayerSide.white
+                                  : PlayerSide.black,
+                          validMoves: controller.validMoves,
+                          sideToMove: controller.gameState.position.turn,
+                          isCheck: controller.gameState.position.isCheck,
+                          promotionMove: controller.promotionMove,
+                          onMove: controller.onUserMoveAgainstAI,
+                          onPromotionSelection: controller.onPromotionSelection,
+                          premovable: (
+                            onSetPremove: controller.onSetPremove,
+                            premove: controller.premove,
+                          ),
+                        ),
 
-                  shapes:
-                      ctrlBoardSettings.shapes.value.isNotEmpty
-                          ? ctrlBoardSettings.shapes.value
-                          : null,
+                        shapes:
+                            ctrlBoardSettings.shapes.value.isNotEmpty
+                                ? ctrlBoardSettings.shapes.value
+                                : null,
+                      ),
                 ),
               );
             },
@@ -279,3 +287,20 @@ class ChessBoardWidget extends GetView<FreeGameController> {
     );
   }
 }
+
+Widget buildUndoButton() => GetX<FreeGameController>(
+  builder:
+      (controller) => FilledButton.icon(
+        icon: const Icon(Icons.undo_rounded),
+        label: const Text('Undo'),
+        onPressed: controller.canUndo.value ? controller.undoMove : null,
+      ),
+);
+Widget buildRedoButton() => GetX<FreeGameController>(
+  builder:
+      (controller) => FilledButton.icon(
+        icon: const Icon(Icons.redo_rounded),
+        label: const Text('Redo'),
+        onPressed: controller.canRedo.value ? controller.redoMove : null,
+      ),
+);

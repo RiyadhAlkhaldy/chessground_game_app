@@ -5,8 +5,10 @@
 // Depends on package:dartchess
 // Add to package exports if you want it public: `export 'src/game_state/game_state.dart';`
 
-import 'package:chessground/chessground.dart';
+import 'dart:math';
+
 import 'package:dartchess/dartchess.dart';
+import 'package:flutter/material.dart';
 
 import '../../domain/models/chess_game.dart';
 
@@ -28,6 +30,10 @@ class GameState {
   final PgnNode<PgnNodeData> pgnRoot = PgnNode<PgnNodeData>();
   // Linear move list (no variations). Each entry stores SAN, optional comment and NAGs.
   final List<MoveData> _moves = [];
+
+  // redo stacks
+  final List<String> _redoFenStack = [];
+  final List<MoveData> _redoMoveStack = [];
 
   /// Result/outcome of the game (null if not finished).
   Outcome? result;
@@ -71,7 +77,9 @@ class GameState {
       output = output.replaceAll(re, '');
     }
     // Collapse multiple spaces produced by removals, then trim.
-    output = output.replaceAll(RegExp(r'\s'), ' ').trim();
+    //TODO
+    // output = output.replaceAll(RegExp(r'\s'), ' ').trim();
+    output = output.replaceAll(RegExp(r'\s+'), ' ').trim();
     return output;
   }
 
@@ -79,7 +87,20 @@ class GameState {
     final fen = pos.fen;
     fenHistory.add(fen);
     final key = GameState.normalizeFen(fen);
+    debugPrint("normalizeFen: $key");
     fenCounts[key] = (fenCounts[key] ?? 0) + 1;
+  }
+
+  void _popPosition(Position pos) {
+    final fen = pos.fen;
+    final key = GameState.normalizeFen(fen);
+    // decrement fenCounts for removed fen
+    final prevCount = (fenCounts[key] ?? 1) - 1;
+    if (prevCount <= 0) {
+      fenCounts.remove(key);
+    } else {
+      fenCounts[key] = prevCount;
+    }
   }
 
   /// Play a move and optionally attach a comment and NAGs.
@@ -93,6 +114,13 @@ class GameState {
     final record = _pos.makeSan(move);
     final Position newPos = record.$1;
     final String san = record.$2;
+
+    // when playing a new move after undo, clear redo stacks
+    if (_redoFenStack.isNotEmpty || _redoMoveStack.isNotEmpty) {
+      _redoFenStack.clear();
+      _redoMoveStack.clear();
+    }
+
     _pos = newPos;
     _pushPosition(_pos);
     _moves.add(
@@ -111,8 +139,6 @@ class GameState {
     // } else if (isDraw) {
     //   result = Outcome.draw;
     // }
-
-    // pgnRoot.children.add(PgnChildNode<PgnNodeData>(PgnNodeData(san: san)));
   }
 
   /// Return true if current position has occurred 3 or more times.
@@ -188,12 +214,13 @@ class GameState {
   //   return _pos.hasInsufficientMaterial(side);
   // }
 
+  // ----------------------------
   /// Returns map of pieces captured *by* [side] (i.e., opponent lost these).
-  /// Map<Role,int> where Role is the dartchess Role enum.
+  // Captures / material evaluation
+  // ----------------------------
   Map<Role, int> getCapturedPieces(Side side) {
     final opposite = side == Side.white ? Side.black : Side.white;
     final opponentCounts = _pos.board.materialCount(opposite);
-    // initial counts for a standard chess side
     final Map<Role, int> initial = {
       Role.pawn: 8,
       Role.knight: 2,
@@ -241,25 +268,12 @@ class GameState {
     return wsum - bsum;
   }
 
-  /// Build PGN string using PgnGame and the recorded moves.
-  /// You can pass custom headers (Event, White, Black, Date, ...).
-  // String pgnString({Map<String, String>? headers}) {
-  //   final baseHeaders = PgnGame.defaultHeaders();
-  //   if (headers != null) baseHeaders.addAll(headers);
-  //   // update Result in headers if we have a result
-  //   baseHeaders['Result'] = Outcome.toPgnString(result);
-  //   final game = PgnGame<PgnNodeData>(
-  //     headers: baseHeaders,
-  //     moves: pgnRoot,
-  //     comments: [],
-  //   );
-  //   return game.makePgn();
-  // }
-
+  // ----------------------------
+  // PGN building
   /// Build PGN string manually (linear moves), including NAGs and comments.
-  ///
   /// headers: map of PGN headers (Event, Site, Date, White, Black, Result, ...).
   /// The Result header is filled from current result if present.
+  // ----------------------------
   String pgnString({Map<String, String>? headers}) {
     final Map<String, String> baseHeaders = {
       'Event': 'Casual Game',
@@ -268,11 +282,9 @@ class GameState {
       'Round': '?',
       'White': 'White',
       'Black': 'Black',
-      'Result': Outcome.toPgnString(result),
+      'Result': _resultToPgnString(result),
     };
-    if (headers != null) {
-      baseHeaders.addAll(headers);
-    }
+    if (headers != null) baseHeaders.addAll(headers);
 
     final sb = StringBuffer();
     baseHeaders.forEach((k, v) {
@@ -317,5 +329,139 @@ class GameState {
   String _escapeComment(String c) {
     // minimal escaping: replace '}' with '\}' to avoid closing comment early.
     return c.replaceAll('}', '\\}');
+  }
+
+  /// material score in pawns (centipawns / 100) as double (positive = White advantage).
+  double materialScore() => materialEvaluationCentipawns() / 100.0;
+
+  String _resultToPgnString(Outcome? r) {
+    if (r == null) return '*';
+
+    if (r == Outcome.draw) return '1/2-1/2';
+    final w = r.winner;
+    if (w == Side.white) return '1-0';
+    if (w == Side.black) return '0-1';
+    return '*';
+  }
+
+  bool get canUndo => _moves.isNotEmpty || !(fenHistory.length <= 1);
+
+  // ----------------------------
+  // Undo / Redo
+  // ----------------------------
+  /// Undo the last move. Returns true if undone.
+  bool undoMove() {
+    if (!canUndo) return false;
+    // pop last move and fen
+    final lastFen = fenHistory.removeLast(); // current position fen removed
+    final lastMove = _moves.removeLast();
+
+    // push to redo stacks so we can redo later
+    _redoFenStack.add(lastFen);
+    _redoMoveStack.add(lastMove);
+
+    _popPosition(_pos);
+    // set position to new last fen (previous position)
+    final prevFen = fenHistory.last;
+    _pos = Chess.fromSetup(Setup.parseFen(prevFen));
+
+    // clear result/resignation/timeout if any (because we rolled back)
+    result = null;
+    resignationSide = null;
+    timeoutSide = null;
+    agreementFlag = false;
+
+    return true;
+  }
+
+  bool get canRedo => _redoFenStack.isNotEmpty || _redoMoveStack.isNotEmpty;
+
+  /// Redo previously undone move. Returns true if redone.
+  bool redoMove() {
+    if (!canRedo) return false;
+    final fen = _redoFenStack.removeLast();
+    final move = _redoMoveStack.removeLast();
+    // apply fen and move into history
+    
+    // restore position
+    _pos = Chess.fromSetup(Setup.parseFen(fen));
+    _pushPosition(_pos);
+
+    _moves.add(move);
+
+    // if position is terminal, set result
+    if (_pos.isGameOver) {
+      result = _pos.outcome;
+    }
+
+    return true;
+  }
+}
+
+/// Main GameState controller.
+extension GameStatee on GameState {
+  /// Simple positional evaluation: material + mobility + bishop pair + small center control.
+  /// Returns centipawns (positive means White advantage).
+  int evaluateCentipawns() {
+    final material = materialEvaluationCentipawns();
+
+    // mobility: number of legal moves difference * factor
+    final movesLength = _pos.legalMoves.length;
+    final whiteMoves = _pos.turn == Side.white ? movesLength : 0;
+    final blackMoves = _pos.turn == Side.black ? movesLength : 0;
+    final mobilityDiff = (whiteMoves - blackMoves);
+    final mobilityScore = mobilityDiff * 5; // 5 cp per legal move advantage
+
+    // bishop pair bonus
+    final whiteCounts = _pos.board.materialCount(Side.white);
+    final blackCounts = _pos.board.materialCount(Side.black);
+    int bishopPair = 0;
+    if ((whiteCounts[Role.bishop] ?? 0) >= 2) bishopPair += 50;
+    if ((blackCounts[Role.bishop] ?? 0) >= 2) bishopPair -= 50;
+
+    // small center pawns bonus: count pawns on d/e files
+    int centerPawnScore = 0;
+    centerPawnScore += _countPawnsOnFiles(Side.white, ['d', 'e']) * 10;
+    centerPawnScore -= _countPawnsOnFiles(Side.black, ['d', 'e']) * 10;
+
+    return material + mobilityScore + bishopPair + centerPawnScore;
+  }
+
+  int _countPawnsOnFiles(Side side, List<String> files) {
+    var count = 0;
+    // iterate over board squares A1..H8; use roleAt to detect pawns
+    for (final sq in Square.values) {
+      final role = _pos.board.roleAt(sq);
+      final s = _pos.board.sideAt(sq);
+      if (role == Role.pawn && s == side) {
+        final fileChar = sq.toString().toLowerCase(); // depends on enum naming
+        // Fallback: we can compute file by sq.index % 8 but this depends on library
+        // To be robust, match by algebraic notation if available:
+        final alg = sq.toString(); // adjust if needed
+        for (final f in files) {
+          if (alg.contains(f)) count++;
+        }
+      }
+    }
+    return count;
+  }
+
+  /// Return approximate win probability for White from centipawn advantage.
+  /// Uses logistic-like mapping (approximation).
+  double centipawnToWinProbability(int cp) {
+    final exponent = -cp / 400.0;
+    return 1.0 / (1.0 + pow(10, exponent));
+  }
+
+  /// ELO helper: expected score for player A against B.
+  static double eloExpected(int ratingA, int ratingB) {
+    return 1.0 / (1.0 + pow(10.0, (ratingB - ratingA) / 400.0));
+  }
+
+  /// Update rating for player A. score = 1, 0.5, 0
+  static int eloUpdate(int ratingA, int ratingB, double score, {int k = 20}) {
+    final expect = eloExpected(ratingA, ratingB);
+    final newRating = ratingA + (score - expect) * k;
+    return newRating.round();
   }
 }

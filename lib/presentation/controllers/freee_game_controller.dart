@@ -15,13 +15,10 @@ import 'chess_board_settings_controller.dart';
 class FreeGameController extends GetxController {
   GameState gameState = GameState();
 
-  Position get initail => Chess.fromSetup(Setup.parseFen(fen));
-  // String _fen = kInitialFEN;
-  // String _fen = '2b1k3/p4p2/7P/4p3/3p4/8/P1P2P1P/R2QK1NR w - - 0 4';
-  // String _fen = 'k7/8/8/8/8/8/p7/K7 b - - 0 1';
-  String _fen = "8/P7/8/k7/8/8/8/K7 w - - 0 1";
-  // '1nbqkbn1/8/8/8/8/8/8/1NB1KBN1 w KQkq - 96 96'
-  // 'rnbqkbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 0 3';
+  Position get initail => Chess.fromSetup(Setup.parseFen(_initailLocalFen));
+  String get _initailLocalFen => Chess.initial.fen;
+  // String get _initailLocalFen => "8/P7/8/k7/8/8/8/K7 w - - 0 1";
+  late String _fen;
 
   // ignore: unnecessary_getters_setters
   String get fen => _fen;
@@ -50,7 +47,7 @@ class FreeGameController extends GetxController {
     gameState = GameState(initial: initail);
     fen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
-
+    update();
     // ever(gameState, (_) {
     //   if (gameState.position.isGameOver) {}
     // });
@@ -60,6 +57,8 @@ class FreeGameController extends GetxController {
   Outcome? get getResult {
     return gameState.result;
   }
+
+  RxString statusText = "free Play".obs;
 
   Future<GameStatus> get gameStatus async {
     if (gameState.isGameOverExtended) {
@@ -77,7 +76,7 @@ class FreeGameController extends GetxController {
         }
         if (gameState.isResigned()) {
           statusText.value =
-              "the ${gameState.result?.winner?.opposite}resigned, the owner is ${gameState.result?.winner}";
+              "the ${gameState.result?.winner?.opposite.name} resigned, the owner is ${gameState.result?.winner!.name}";
           await showGameOverDialog(Get.context!, statusText.value);
           return GameStatus.resignation;
         }
@@ -128,29 +127,10 @@ class FreeGameController extends GetxController {
   }
 
   /// Agreement draw: set result to draw.
-  void setAgreementDraw() => gameState.setAgreementDraw();
+  void setAgreementDraw() => {gameState.setAgreementDraw(), update()};
 
   /// Resign: if side resigns, winner is the other side.
-  void resign(Side side) => gameState.resign(side);
-
-  // GameStatus get gameStatus {
-  //   if (gameState.isCheckmate) {
-  //     return GameStatus.checkmate;
-  //   }
-  //   if (gameState.isResigned()) return GameStatus.resignation;
-  //   if (gameState.isAgreedDraw()) return GameStatus.agreement;
-  //   if (gameState.isFiftyMoveRule()) return GameStatus.fiftyMoveRule;
-  //   if (gameState.isStalemate) return GameStatus.stalemate;
-  //   if (gameState.isInsufficientMaterial) {
-  //     return GameStatus.insufficientMaterial;
-  //   }
-  //   if (gameState.isThreefoldRepetition()) {
-  //     return GameStatus.threefoldRepetition;
-  //   }
-  //   if (gameState.isTimeout()) return GameStatus.timeout;
-
-  //   return GameStatus.ongoing;
-  // }
+  void resign(Side side) => {gameState.resign(side), update()};
 
   ///reset
   void reset() {
@@ -205,10 +185,33 @@ class FreeGameController extends GetxController {
       // validMoves = IMap(const {});
       promotionMove = null;
       debugPrint("gameState.position.fen: ${gameState.position.fen}");
-
+      _capturedPiecesResult();
       gameStatus;
       update();
     }
+    tryPlayPremove();
+  }
+
+  void _capturedPiecesResult() {
+    final capturedWhite = gameState.getCapturedPieces(Side.white);
+    final capturedBlack = gameState.getCapturedPieces(Side.black);
+    List<Role> whiteRoles = [];
+    List<Role> blackRoles = [];
+    int whitePoints = 0;
+    int blackPoints = 0;
+    capturedWhite.forEach((key, value) {
+      whitePoints += value;
+      whiteRoles.add(key);
+    });
+    capturedBlack.forEach((key, value) {
+      blackPoints += value;
+      blackRoles.add(key);
+    });
+    debugPrint("Side.white $whitePoints $whiteRoles");
+    debugPrint(
+      "Side.black $blackPoints $blackRoles ${blackRoles.first.name.codeUnits}",
+    );
+    debugPrint("result = ${(whitePoints - blackPoints)}");
   }
 
   // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
@@ -227,59 +230,25 @@ class FreeGameController extends GetxController {
                 gameState.position.turn == Side.white));
   }
 
-  RxString statusText = "free Play".obs;
-  // void updateTextState() {
-  //   statusText.value = "";
-  //   switch (gameStatus) {
-  //     case GameStatus.checkmate:
-  //     case GameStatus.resignation:
-  //     case GameStatus.timeout:
-  //       if (gameState.result == Outcome.blackWins) {
-  //         _updateGameEnd();
-  //         statusText.value += 'الفائز: لابيض';
-  //       }
-  //       if (gameState.result == Outcome.blackWins) {
-  //         _updateGameEnd();
-  //         statusText.value += 'الفائز: لأسود';
-  //       }
-  //       return;
-  //     case GameStatus.ongoing:
-  //       if (gameState.isCheck) {
-  //         statusText.value = '(كش)';
-  //         return;
-  //       }
-  //       if (gameState.turn == Side.white) {
-  //         statusText.value = "دور الأبيض";
-  //         return;
-  //       } else if (gameState.turn == Side.black) {
-  //         statusText.value = "دور الأسود";
-  //         return;
-  //       }
-  //     case GameStatus.stalemate:
-  //       statusText.value += 'طريق مسدود!';
-  //       return;
-  //     case GameStatus.agreement:
-  //       statusText.value += 'بالإتفاق';
-  //       return;
-  //     case GameStatus.threefoldRepetition:
-  //       statusText.value += 'تكرار الوضعية ثلاث مرات';
-  //       return;
-  //     case GameStatus.fiftyMoveRule:
-  //       statusText.value += 'خمسون نقلة متتالية';
-  //       return;
-  //     case GameStatus.insufficientMaterial:
-  //       statusText.value += "الموارد غير كافية";
-  //       return;
-  //   }
-  // }
+  // if can undo return true , if can redo return true
+  RxBool get canUndo =>
+      (!gameState.isGameOverExtended && gameState.canUndo).obs;
+  RxBool get canRedo =>
+      (!gameState.isGameOverExtended && gameState.canRedo).obs;
 
-  // void _updateGameEnd() {
-  //   if (gameState.isCheckmate) {
-  //     statusText.value = "كش موت:";
-  //   } else if (gameState.isResigned()) {
-  //     statusText.value = "غارد اللعب:";
-  //   } else if (gameState.isTimeout()) {
-  //     statusText.value = "أنتهاء الوقت:";
-  //   }
-  // }
+  void undoMove() {
+    gameState.undoMove();
+    fen = gameState.position.fen;
+    validMoves = makeLegalMoves(gameState.position);
+    gameStatus;
+    update();
+  }
+
+  void redoMove() {
+    gameState.redoMove();
+    fen = gameState.position.fen;
+    validMoves = makeLegalMoves(gameState.position);
+    gameStatus;
+    update();
+  }
 }

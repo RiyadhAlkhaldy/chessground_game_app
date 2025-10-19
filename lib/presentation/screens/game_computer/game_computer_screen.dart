@@ -83,7 +83,7 @@ class BuildPortrait extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: screenPadding),
-              child: ChessBoardSettingsWidgets(controller: ctrlBoardSettings),
+              child: ChessBoardSettingsWidgets(),
             ),
           ),
           const SizedBox(height: screenPortraitSplitter),
@@ -117,11 +117,7 @@ class BuildLandScape extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: ChessBoardSettingsWidgets(
-                    controller: ctrlBoardSettings,
-                  ),
-                ),
+                Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),
                 BuildControlButtons(),
               ],
