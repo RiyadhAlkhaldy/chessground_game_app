@@ -10,6 +10,7 @@ class SoundEffectService {
   String? loadError;
 
   Future<void> loadSounds() async {
+    if (soundLoaded) return;
     try {
       await soundEffect.initialize();
       await soundEffect.load(Assets.soundsMoveSelf, Assets.soundsMoveSelf);
@@ -26,7 +27,6 @@ class SoundEffectService {
       await soundEffect.load(Assets.soundsPremove, Assets.soundsPremove);
       await soundEffect.load(Assets.soundsPromote, Assets.soundsPromote);
       await soundEffect.load(Assets.soundsTenseconds, Assets.soundsTenseconds);
-
       soundLoaded = true;
     } catch (e) {
       debugPrint("loadError: $e");
@@ -36,5 +36,6 @@ class SoundEffectService {
 
   Future<void> releaseSounds() async {
     await soundEffect.release();
+    soundLoaded = false;
   }
 }

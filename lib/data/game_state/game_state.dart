@@ -5,8 +5,6 @@
 // Depends on package:dartchess
 // Add to package exports if you want it public: `export 'src/game_state/game_state.dart';`
 
-import 'dart:math';
-
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 
@@ -34,6 +32,12 @@ class GameState {
   // redo stacks
   final List<String> _redoFenStack = [];
   final List<MoveData> _redoMoveStack = [];
+
+  /// last move metadata (used by controller to decide which sound to play, UI badges, etc.)
+  MoveData? _lastMoveMeta;
+  MoveData? get lastMoveMeta => _lastMoveMeta;
+  final List<Move> _moveObjects = [];
+  final List<Move> _redoMoveObjStack = [];
 
   /// Result/outcome of the game (null if not finished).
   Outcome? result;
@@ -111,14 +115,21 @@ class GameState {
   ///
   /// Note: uses Position.makeSan(move) -> (Position, String) record to compute SAN and new position.
   void play(Move move, {String? comment, List<int>? nags}) {
+    // material counts before
+    final beforeCounts = _pos.board.materialCount(Side.white);
+    final beforeBlackCounts = _pos.board.materialCount(Side.black);
+
     final record = _pos.makeSan(move);
     final Position newPos = record.$1;
     final String san = record.$2;
 
     // when playing a new move after undo, clear redo stacks
-    if (_redoFenStack.isNotEmpty || _redoMoveStack.isNotEmpty) {
+    if (_redoFenStack.isNotEmpty ||
+        _redoMoveStack.isNotEmpty ||
+        _redoMoveObjStack.isNotEmpty) {
       _redoFenStack.clear();
       _redoMoveStack.clear();
+      _redoMoveObjStack.clear();
     }
 
     _pos = newPos;
@@ -132,13 +143,53 @@ class GameState {
     if (_pos.isGameOver) {
       result = _pos.outcome;
     }
-    // if (isCheckmate) {
-    //   result = Outcome(
-    //     winner: _pos.turn == Side.white ? Side.black : Side.white,
-    //   );
-    // } else if (isDraw) {
-    //   result = Outcome.draw;
-    // }
+    // compute metadata about move
+    final afterWhiteCounts = _pos.board.materialCount(Side.white);
+    final afterBlackCounts = _pos.board.materialCount(Side.black);
+
+    bool wasCapture = false;
+    // simple detection: any role count decreased for the side that lost material
+    // determine which side lost material by comparing totals
+    for (final r in [
+      Role.pawn,
+      Role.knight,
+      Role.bishop,
+      Role.rook,
+      Role.queen,
+    ]) {
+      final beforeW = beforeCounts[r] ?? 0;
+      final afterW = afterWhiteCounts[r] ?? 0;
+      final beforeB = beforeBlackCounts[r] ?? 0;
+      final afterB = afterBlackCounts[r] ?? 0;
+      if (afterW < beforeW || afterB < beforeB) {
+        wasCapture = true;
+        break;
+      }
+    }
+
+    final wasPromotion =
+        (move as NormalMove).promotion != null ||
+        (_pos.board.roleAt((move).to) != Role.pawn && (move).promotion != null);
+
+    final wasCheck = _pos.isCheck;
+    final wasCheckmate = _pos.isCheckmate;
+
+    final halfmoveIndex = _moveObjects.length - 1;
+
+    /// last move metadata (used by controller to decide which sound to play, UI badges, etc.)
+    _lastMoveMeta =
+        MoveData()
+          ..wasCapture = wasCapture
+          ..wasCheck = wasCheck
+          ..wasCheckmate = wasCheckmate
+          ..wasPromotion = wasPromotion
+          ..halfmoveIndex = halfmoveIndex
+          ..san = san
+          ..comment = comment
+          ..nags = nags
+          ..fenAfter = _pos.fen
+          ..moveNumber = null
+          ..isWhiteMove = null;
   }
 
   /// Return true if current position has occurred 3 or more times.
@@ -355,10 +406,12 @@ class GameState {
     // pop last move and fen
     final lastFen = fenHistory.removeLast(); // current position fen removed
     final lastMove = _moves.removeLast();
+    final lastMoveObj = _moveObjects.removeLast();
 
     // push to redo stacks so we can redo later
     _redoFenStack.add(lastFen);
     _redoMoveStack.add(lastMove);
+    _redoMoveObjStack.add(lastMoveObj);
 
     _popPosition(_pos);
     // set position to new last fen (previous position)
@@ -370,6 +423,7 @@ class GameState {
     resignationSide = null;
     timeoutSide = null;
     agreementFlag = false;
+    _lastMoveMeta = null;
 
     return true;
   }
@@ -381,87 +435,160 @@ class GameState {
     if (!canRedo) return false;
     final fen = _redoFenStack.removeLast();
     final move = _redoMoveStack.removeLast();
+    final moveObj = _redoMoveObjStack.removeLast();
+
     // apply fen and move into history
-    
+
     // restore position
     _pos = Chess.fromSetup(Setup.parseFen(fen));
     _pushPosition(_pos);
 
     _moves.add(move);
+    _moveObjects.add(moveObj);
 
     // if position is terminal, set result
     if (_pos.isGameOver) {
       result = _pos.outcome;
     }
-
+    // lastMoveMeta not reconstructed here — caller can inspect position if needed
+    _lastMoveMeta = null;
     return true;
   }
-}
 
-/// Main GameState controller.
-extension GameStatee on GameState {
-  /// Simple positional evaluation: material + mobility + bishop pair + small center control.
-  /// Returns centipawns (positive means White advantage).
-  int evaluateCentipawns() {
-    final material = materialEvaluationCentipawns();
+  /// Rebuild state up to given halfmove index (inclusive). If index == -1 -> initial position.
+  /// This method resets current game state and replays moves up to index.
+  void replayToHalfmove(int halfmoveIndex, {Position? initial}) {
+    final start = initial ?? Chess.initial;
+    // reset everything
+    _pos = start;
+    fenHistory.clear();
+    fenCounts.clear();
+    _pushPosition(_pos);
+    _moves.clear();
+    _moveObjects.clear();
+    _redoFenStack.clear();
+    _redoMoveStack.clear();
+    _redoMoveObjStack.clear();
+    result = null;
+    resignationSide = null;
+    timeoutSide = null;
+    agreementFlag = false;
+    _lastMoveMeta = null;
 
-    // mobility: number of legal moves difference * factor
-    final movesLength = _pos.legalMoves.length;
-    final whiteMoves = _pos.turn == Side.white ? movesLength : 0;
-    final blackMoves = _pos.turn == Side.black ? movesLength : 0;
-    final mobilityDiff = (whiteMoves - blackMoves);
-    final mobilityScore = mobilityDiff * 5; // 5 cp per legal move advantage
-
-    // bishop pair bonus
-    final whiteCounts = _pos.board.materialCount(Side.white);
-    final blackCounts = _pos.board.materialCount(Side.black);
-    int bishopPair = 0;
-    if ((whiteCounts[Role.bishop] ?? 0) >= 2) bishopPair += 50;
-    if ((blackCounts[Role.bishop] ?? 0) >= 2) bishopPair -= 50;
-
-    // small center pawns bonus: count pawns on d/e files
-    int centerPawnScore = 0;
-    centerPawnScore += _countPawnsOnFiles(Side.white, ['d', 'e']) * 10;
-    centerPawnScore -= _countPawnsOnFiles(Side.black, ['d', 'e']) * 10;
-
-    return material + mobilityScore + bishopPair + centerPawnScore;
-  }
-
-  int _countPawnsOnFiles(Side side, List<String> files) {
-    var count = 0;
-    // iterate over board squares A1..H8; use roleAt to detect pawns
-    for (final sq in Square.values) {
-      final role = _pos.board.roleAt(sq);
-      final s = _pos.board.sideAt(sq);
-      if (role == Role.pawn && s == side) {
-        final fileChar = sq.toString().toLowerCase(); // depends on enum naming
-        // Fallback: we can compute file by sq.index % 8 but this depends on library
-        // To be robust, match by algebraic notation if available:
-        final alg = sq.toString(); // adjust if needed
-        for (final f in files) {
-          if (alg.contains(f)) count++;
-        }
-      }
+    if (halfmoveIndex < 0) {
+      return;
     }
-    return count;
+    // ensure we don't exceed available moves
+    final upto =
+        (halfmoveIndex < _moveObjects.length)
+            ? halfmoveIndex
+            : _moveObjects.length - 1;
+
+    // But because we cleared _moveObjects earlier, we need source moves — so this method expects caller to
+    // pass a copy of moves or the GameState itself maintains _moveObjects; to support rebuild we will assume
+    // caller saved a copy before clearing. For safety, this method will not replay if there are no saved moves.
+    // We'll instead provide a separate method getMoveObjectsCopy() so controller can rebuild by doing:
+    // new GameState(); then for i in 0..index: newGameState.play(moveObjects[i]);
+    // So keep this method minimal — we leave full rebuild to controller using getMoveObjectsCopy().
+
+    // (Method kept for compatibility but not used in controller.)
   }
 
-  /// Return approximate win probability for White from centipawn advantage.
-  /// Uses logistic-like mapping (approximation).
-  double centipawnToWinProbability(int cp) {
-    final exponent = -cp / 400.0;
-    return 1.0 / (1.0 + pow(10, exponent));
+  /// Return a copy of the internal Move objects (for replay).
+  List<Move> getMoveObjectsCopy() => List<Move>.from(_moveObjects);
+
+  /// Provide tokens for PGN horizontal display. Each token corresponds to a half-move.
+  List<MoveData> getMoveTokens() {
+    final List<MoveData> tokens = [];
+    for (int i = 0; i < _moves.length; i++) {
+      final md = _moves[i];
+      final fenAfter =
+          (i < fenHistory.length - 0) ? fenHistory[i + 1] : _pos.fen;
+      final moveNumber = (i ~/ 2) + 1;
+      final isWhite = (i % 2 == 0);
+      tokens.add(
+        MoveData()
+          ..halfmoveIndex = i
+          ..san = md.san
+          ..comment = md.comment
+          ..nags = md.nags
+          ..fenAfter = fenAfter
+          ..moveNumber = moveNumber
+          ..isWhiteMove = isWhite,
+      );
+    }
+    return tokens;
   }
 
-  /// ELO helper: expected score for player A against B.
-  static double eloExpected(int ratingA, int ratingB) {
-    return 1.0 / (1.0 + pow(10.0, (ratingB - ratingA) / 400.0));
-  }
+  int get currentHalfmoveIndex => _moveObjects.length - 1;
 
-  /// Update rating for player A. score = 1, 0.5, 0
-  static int eloUpdate(int ratingA, int ratingB, double score, {int k = 20}) {
-    final expect = eloExpected(ratingA, ratingB);
-    final newRating = ratingA + (score - expect) * k;
-    return newRating.round();
-  }
+  bool get hasMoves => _moveObjects.isNotEmpty;
 }
+
+// /// Main GameState controller.
+// extension GameStatee on GameState {
+//   /// Simple positional evaluation: material + mobility + bishop pair + small center control.
+//   /// Returns centipawns (positive means White advantage).
+//   int evaluateCentipawns() {
+//     final material = materialEvaluationCentipawns();
+
+//     // mobility: number of legal moves difference * factor
+//     final movesLength = _pos.legalMoves.length;
+//     final whiteMoves = _pos.turn == Side.white ? movesLength : 0;
+//     final blackMoves = _pos.turn == Side.black ? movesLength : 0;
+//     final mobilityDiff = (whiteMoves - blackMoves);
+//     final mobilityScore = mobilityDiff * 5; // 5 cp per legal move advantage
+
+//     // bishop pair bonus
+//     final whiteCounts = _pos.board.materialCount(Side.white);
+//     final blackCounts = _pos.board.materialCount(Side.black);
+//     int bishopPair = 0;
+//     if ((whiteCounts[Role.bishop] ?? 0) >= 2) bishopPair += 50;
+//     if ((blackCounts[Role.bishop] ?? 0) >= 2) bishopPair -= 50;
+
+//     // small center pawns bonus: count pawns on d/e files
+//     int centerPawnScore = 0;
+//     centerPawnScore += _countPawnsOnFiles(Side.white, ['d', 'e']) * 10;
+//     centerPawnScore -= _countPawnsOnFiles(Side.black, ['d', 'e']) * 10;
+
+//     return material + mobilityScore + bishopPair + centerPawnScore;
+//   }
+
+//   int _countPawnsOnFiles(Side side, List<String> files) {
+//     var count = 0;
+//     // iterate over board squares A1..H8; use roleAt to detect pawns
+//     for (final sq in Square.values) {
+//       final role = _pos.board.roleAt(sq);
+//       final s = _pos.board.sideAt(sq);
+//       if (role == Role.pawn && s == side) {
+//         final fileChar = sq.toString().toLowerCase(); // depends on enum naming
+//         // Fallback: we can compute file by sq.index % 8 but this depends on library
+//         // To be robust, match by algebraic notation if available:
+//         final alg = sq.toString(); // adjust if needed
+//         for (final f in files) {
+//           if (alg.contains(f)) count++;
+//         }
+//       }
+//     }
+//     return count;
+//   }
+
+//   /// Return approximate win probability for White from centipawn advantage.
+//   /// Uses logistic-like mapping (approximation).
+//   double centipawnToWinProbability(int cp) {
+//     final exponent = -cp / 400.0;
+//     return 1.0 / (1.0 + pow(10, exponent));
+//   }
+
+//   /// ELO helper: expected score for player A against B.
+//   static double eloExpected(int ratingA, int ratingB) {
+//     return 1.0 / (1.0 + pow(10.0, (ratingB - ratingA) / 400.0));
+//   }
+
+//   /// Update rating for player A. score = 1, 0.5, 0
+//   static int eloUpdate(int ratingA, int ratingB, double score, {int k = 20}) {
+//     final expect = eloExpected(ratingA, ratingB);
+//     final newRating = ratingA + (score - expect) * k;
+//     return newRating.round();
+//   }
+// }

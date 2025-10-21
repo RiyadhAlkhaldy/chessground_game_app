@@ -3250,25 +3250,60 @@ const MoveDataSchema = Schema(
       name: r'fenAfter',
       type: IsarType.string,
     ),
-    r'lan': PropertySchema(
+    r'halfmoveIndex': PropertySchema(
       id: 2,
+      name: r'halfmoveIndex',
+      type: IsarType.long,
+    ),
+    r'isWhiteMove': PropertySchema(
+      id: 3,
+      name: r'isWhiteMove',
+      type: IsarType.bool,
+    ),
+    r'lan': PropertySchema(
+      id: 4,
       name: r'lan',
       type: IsarType.string,
     ),
+    r'moveNumber': PropertySchema(
+      id: 5,
+      name: r'moveNumber',
+      type: IsarType.long,
+    ),
     r'nags': PropertySchema(
-      id: 3,
+      id: 6,
       name: r'nags',
       type: IsarType.longList,
     ),
     r'san': PropertySchema(
-      id: 4,
+      id: 7,
       name: r'san',
       type: IsarType.string,
     ),
     r'variations': PropertySchema(
-      id: 5,
+      id: 8,
       name: r'variations',
       type: IsarType.stringList,
+    ),
+    r'wasCapture': PropertySchema(
+      id: 9,
+      name: r'wasCapture',
+      type: IsarType.bool,
+    ),
+    r'wasCheck': PropertySchema(
+      id: 10,
+      name: r'wasCheck',
+      type: IsarType.bool,
+    ),
+    r'wasCheckmate': PropertySchema(
+      id: 11,
+      name: r'wasCheckmate',
+      type: IsarType.bool,
+    ),
+    r'wasPromotion': PropertySchema(
+      id: 12,
+      name: r'wasPromotion',
+      type: IsarType.bool,
     )
   },
   estimateSize: _moveDataEstimateSize,
@@ -3336,10 +3371,17 @@ void _moveDataSerialize(
 ) {
   writer.writeString(offsets[0], object.comment);
   writer.writeString(offsets[1], object.fenAfter);
-  writer.writeString(offsets[2], object.lan);
-  writer.writeLongList(offsets[3], object.nags);
-  writer.writeString(offsets[4], object.san);
-  writer.writeStringList(offsets[5], object.variations);
+  writer.writeLong(offsets[2], object.halfmoveIndex);
+  writer.writeBool(offsets[3], object.isWhiteMove);
+  writer.writeString(offsets[4], object.lan);
+  writer.writeLong(offsets[5], object.moveNumber);
+  writer.writeLongList(offsets[6], object.nags);
+  writer.writeString(offsets[7], object.san);
+  writer.writeStringList(offsets[8], object.variations);
+  writer.writeBool(offsets[9], object.wasCapture);
+  writer.writeBool(offsets[10], object.wasCheck);
+  writer.writeBool(offsets[11], object.wasCheckmate);
+  writer.writeBool(offsets[12], object.wasPromotion);
 }
 
 MoveData _moveDataDeserialize(
@@ -3351,10 +3393,17 @@ MoveData _moveDataDeserialize(
   final object = MoveData();
   object.comment = reader.readStringOrNull(offsets[0]);
   object.fenAfter = reader.readStringOrNull(offsets[1]);
-  object.lan = reader.readStringOrNull(offsets[2]);
-  object.nags = reader.readLongList(offsets[3]);
-  object.san = reader.readStringOrNull(offsets[4]);
-  object.variations = reader.readStringList(offsets[5]);
+  object.halfmoveIndex = reader.readLongOrNull(offsets[2]);
+  object.isWhiteMove = reader.readBoolOrNull(offsets[3]);
+  object.lan = reader.readStringOrNull(offsets[4]);
+  object.moveNumber = reader.readLongOrNull(offsets[5]);
+  object.nags = reader.readLongList(offsets[6]);
+  object.san = reader.readStringOrNull(offsets[7]);
+  object.variations = reader.readStringList(offsets[8]);
+  object.wasCapture = reader.readBool(offsets[9]);
+  object.wasCheck = reader.readBool(offsets[10]);
+  object.wasCheckmate = reader.readBool(offsets[11]);
+  object.wasPromotion = reader.readBool(offsets[12]);
   return object;
 }
 
@@ -3370,13 +3419,27 @@ P _moveDataDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 3:
-      return (reader.readLongList(offset)) as P;
+      return (reader.readBoolOrNull(offset)) as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
+      return (reader.readLongOrNull(offset)) as P;
+    case 6:
+      return (reader.readLongList(offset)) as P;
+    case 7:
+      return (reader.readStringOrNull(offset)) as P;
+    case 8:
       return (reader.readStringList(offset)) as P;
+    case 9:
+      return (reader.readBool(offset)) as P;
+    case 10:
+      return (reader.readBool(offset)) as P;
+    case 11:
+      return (reader.readBool(offset)) as P;
+    case 12:
+      return (reader.readBool(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -3676,6 +3739,105 @@ extension MoveDataQueryFilter
     });
   }
 
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition>
+      halfmoveIndexIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'halfmoveIndex',
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition>
+      halfmoveIndexIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'halfmoveIndex',
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> halfmoveIndexEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'halfmoveIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition>
+      halfmoveIndexGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'halfmoveIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> halfmoveIndexLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'halfmoveIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> halfmoveIndexBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'halfmoveIndex',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> isWhiteMoveIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'isWhiteMove',
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition>
+      isWhiteMoveIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'isWhiteMove',
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> isWhiteMoveEqualTo(
+      bool? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isWhiteMove',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<MoveData, MoveData, QAfterFilterCondition> lanIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -3818,6 +3980,76 @@ extension MoveDataQueryFilter
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'lan',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> moveNumberIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'moveNumber',
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition>
+      moveNumberIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'moveNumber',
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> moveNumberEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'moveNumber',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> moveNumberGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'moveNumber',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> moveNumberLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'moveNumber',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> moveNumberBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'moveNumber',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -4360,6 +4592,46 @@ extension MoveDataQueryFilter
         upper,
         includeUpper,
       );
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> wasCaptureEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'wasCapture',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> wasCheckEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'wasCheck',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> wasCheckmateEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'wasCheckmate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<MoveData, MoveData, QAfterFilterCondition> wasPromotionEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'wasPromotion',
+        value: value,
+      ));
     });
   }
 }

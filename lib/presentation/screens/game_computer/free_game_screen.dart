@@ -10,6 +10,7 @@ import '../../../core/helper/helper_methodes.dart';
 import '../../controllers/chess_board_settings_controller.dart';
 import '../../controllers/freee_game_controller.dart';
 import '../../widgets/chess_board_settings_widgets.dart';
+import '../../widgets/pgn_horizontal_row.dart';
 
 class FreeGameScreen extends StatelessWidget {
   FreeGameScreen({super.key});
@@ -52,6 +53,16 @@ class BuildPortrait extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          GetBuilder<FreeGameController>(
+            builder: (controller) {
+              return PgnHorizontalRow(
+                tokens: ctrl.pgnTokens,
+                currentHalfmoveIndex: ctrl.currentHalfmoveIndex,
+                onJumpTo: (idx) => ctrl.jumpToHalfmove(idx),
+              );
+            },
+          ),
+
           ChessBoardWidget(),
           Expanded(
             child: Padding(

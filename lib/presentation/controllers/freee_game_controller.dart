@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import '../../core/helper/helper_methodes.dart';
 import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
+import '../../domain/models/chess_game.dart';
 import '../../domain/services/stockfish_engine_service.dart';
 import 'chess_board_settings_controller.dart';
 
@@ -141,6 +142,8 @@ class FreeGameController extends GetxController {
     promotionMove = null;
     debugPrint('reset to $fen');
     update();
+    // play reset sound if wanted
+    // plySound.executeMoveSound();
   }
 
   void tryPlayPremove() {
@@ -219,6 +222,28 @@ class FreeGameController extends GetxController {
     gameState.play(move);
     fen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
+
+    // decide which sound to play based on metadata
+    final meta = gameState.lastMoveMeta;
+    if (meta != null) {
+      // capture has priority (play capture instead of plain move)
+      if (meta.wasCapture) {
+        plySound.executeCaptureSound();
+      } else {
+        plySound.executeMoveSound();
+      }
+      if (meta.wasPromotion) {
+        plySound.executePromoteSound();
+      }
+      if (meta.wasCheckmate) {
+        plySound.executeCheckmateSound();
+      } else if (meta.wasCheck) {
+        plySound.executeCheckSound();
+      }
+    } else {
+      // fallback
+      plySound.executeMoveSound();
+    }
   }
 
   bool isPromotionPawnMove(NormalMove move) {
@@ -237,18 +262,43 @@ class FreeGameController extends GetxController {
       (!gameState.isGameOverExtended && gameState.canRedo).obs;
 
   void undoMove() {
-    gameState.undoMove();
-    fen = gameState.position.fen;
-    validMoves = makeLegalMoves(gameState.position);
-    gameStatus;
-    update();
+    if (canUndo.value) {
+      gameState.undoMove();
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
+      // play a feedback sound (optional)
+      plySound.executeMoveSound();
+      update();
+    }
   }
 
   void redoMove() {
-    gameState.redoMove();
+    if (canRedo.value) {
+      gameState.redoMove();
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
+      plySound.executeMoveSound();
+      update();
+    }
+  }
+
+  /// expose PGN tokens for the UI
+  List<MoveData> get pgnTokens => gameState.getMoveTokens();
+
+  int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
+
+  /// jump to a halfmove index (0-based). This will rebuild the game state up to that halfmove.
+  /// Implementation: get a copy of move objects from gameState, construct a fresh GameState
+  /// and replay moves up to `index` then replace controller.gameState with rebuilt one.
+  void jumpToHalfmove(int index) {
+    final allMoves = gameState.getMoveObjectsCopy();
+    final newState = GameState(initial: initail);
+    for (int i = 0; i <= index && i < allMoves.length; i++) {
+      newState.play(allMoves[i]);
+    }
+    gameState = newState;
     fen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
-    gameStatus;
     update();
   }
 }
