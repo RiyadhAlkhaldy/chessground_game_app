@@ -98,6 +98,15 @@ class BuildLandScape extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                GetBuilder<FreeGameController>(
+                  builder: (controller) {
+                    return PgnHorizontalRow(
+                      tokens: ctrl.pgnTokens,
+                      currentHalfmoveIndex: ctrl.currentHalfmoveIndex,
+                      onJumpTo: (idx) => ctrl.jumpToHalfmove(idx),
+                    );
+                  },
+                ),
                 Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),
                 BuildControlButtons(),
@@ -189,17 +198,13 @@ class ChessBoardWidget extends GetView<FreeGameController> {
                     if (shouldExit == true) {
                       if (context.mounted) {
                         // controller.gameStatus;
+                        // controller.plySound.executeResignSound();
                         controller.resign(
                           controller.playerSide == PlayerSide.white
                               ? Side.white
                               : Side.black,
                         );
                         await controller.gameStatus;
-                        // var outcome = controller.getResult;
-                        // var outcomeText =
-                        //     '${outcome != null ? "الفائز هو :${outcome.winner == Side.white ? 'الأبيض' : 'الأسود'}" : ""} لقد خسرت هذه اللعبة. يمكنك الآن العودة إلى الصفحة الرئيسية.';
-                        // // If the user confirms, show the second dialog
-                        // await showGameOverDialog(context, outcomeText);
                         // And then, after closing the second dialog, navigate back
                         // if (context.mounted) {
                         //   Get.back();

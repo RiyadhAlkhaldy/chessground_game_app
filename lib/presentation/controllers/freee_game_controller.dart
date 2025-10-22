@@ -49,6 +49,7 @@ class FreeGameController extends GetxController {
     fen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
     update();
+    plySound.executeDongSound();
     // ever(gameState, (_) {
     //   if (gameState.position.isGameOver) {}
     // });
@@ -72,6 +73,7 @@ class FreeGameController extends GetxController {
         }
         if (gameState.isTimeout()) {
           statusText.value = "timeout ${statusText.value}";
+          await plySound.executeLowTimeSound();
           await showGameOverDialog(Get.context!, statusText.value);
           return GameStatus.timeout;
         }
@@ -83,6 +85,7 @@ class FreeGameController extends GetxController {
         }
       } else if (gameState.isDraw) {
         statusText.value = "the result is Draw,";
+        await plySound.executeLowTimeSound();
 
         if (gameState.isFiftyMoveRule()) {
           statusText.value = "${statusText.value} cause fifty move rule";
@@ -131,7 +134,11 @@ class FreeGameController extends GetxController {
   void setAgreementDraw() => {gameState.setAgreementDraw(), update()};
 
   /// Resign: if side resigns, winner is the other side.
-  void resign(Side side) => {gameState.resign(side), update()};
+  void resign(Side side) => {
+    gameState.resign(side),
+    plySound.executeResignSound(),
+    update(),
+  };
 
   ///reset
   void reset() {
@@ -144,6 +151,7 @@ class FreeGameController extends GetxController {
     update();
     // play reset sound if wanted
     // plySound.executeMoveSound();
+    plySound.executeDongSound();
   }
 
   void tryPlayPremove() {

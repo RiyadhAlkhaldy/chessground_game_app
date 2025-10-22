@@ -1,119 +1,125 @@
 // ignore_for_file: prefer_single_quotes
 class Assets {
   Assets._();
+  
+  /// Assets for soundsFuturisticCapture
+  /// assets/sounds/futuristic/capture
+  static const String soundsFuturisticCapture = "assets/sounds/futuristic/capture";
 
-  /// Assets for sounds58595905RummagingSoundsAccompanyChessPiecesGoingIntoACaseByVadisoundlibraryPreview
-  /// assets/sounds/58595905_rummaging-sounds-accompany-chess-pieces-going-into-a-case_by_vadisoundlibrary_preview.mp3
-  static const String
-  sounds58595905RummagingSoundsAccompanyChessPiecesGoingIntoACaseByVadisoundlibraryPreview =
-      "assets/sounds/58595905_rummaging-sounds-accompany-chess-pieces-going-into-a-case_by_vadisoundlibrary_preview.mp3";
+  /// Assets for soundsFuturisticDong
+  /// assets/sounds/futuristic/dong
+  static const String soundsFuturisticDong = "assets/sounds/futuristic/dong";
 
-  /// Assets for soundsAchievement
-  /// assets/sounds/achievement.mp3
-  static const String soundsAchievement = "assets/sounds/achievement.mp3";
+  /// Assets for soundsFuturisticLowTime
+  /// assets/sounds/futuristic/lowTime
+  static const String soundsFuturisticLowTime = "assets/sounds/futuristic/lowTime";
 
-  /// Assets for soundsBoom
-  /// assets/sounds/boom.mp3
-  static const String soundsBoom = "assets/sounds/boom.mp3";
+  /// Assets for soundsFuturisticMove
+  /// assets/sounds/futuristic/move
+  static const String soundsFuturisticMove = "assets/sounds/futuristic/move";
 
-  /// Assets for soundsCaballoAjedrez95114
-  /// assets/sounds/caballo-ajedrez-95114.mp3
-  static const String soundsCaballoAjedrez95114 =
-      "assets/sounds/caballo-ajedrez-95114.mp3";
+  /// Assets for soundsLispCapture
+  /// assets/sounds/lisp/capture
+  static const String soundsLispCapture = "assets/sounds/lisp/capture";
 
-  /// Assets for soundsCapture
-  /// assets/sounds/capture.mp3
-  static const String soundsCapture = "assets/sounds/capture.mp3";
+  /// Assets for soundsLispConfirmation
+  /// assets/sounds/lisp/confirmation
+  static const String soundsLispConfirmation = "assets/sounds/lisp/confirmation";
 
-  /// Assets for soundsCastle
-  /// assets/sounds/castle.mp3
-  static const String soundsCastle = "assets/sounds/castle.mp3";
+  /// Assets for soundsLispDong
+  /// assets/sounds/lisp/dong
+  static const String soundsLispDong = "assets/sounds/lisp/dong";
 
-  /// Assets for soundsChessPiecesHittingWoodenBoard99336
-  /// assets/sounds/chess-pieces-hitting-wooden-board-99336.mp3
-  static const String soundsChessPiecesHittingWoodenBoard99336 =
-      "assets/sounds/chess-pieces-hitting-wooden-board-99336.mp3";
+  /// Assets for soundsLispError
+  /// assets/sounds/lisp/error
+  static const String soundsLispError = "assets/sounds/lisp/error";
 
-  /// Assets for soundsClick
-  /// assets/sounds/click.mp3
-  static const String soundsClick = "assets/sounds/click.mp3";
+  /// Assets for soundsLispLowTime
+  /// assets/sounds/lisp/lowTime
+  static const String soundsLispLowTime = "assets/sounds/lisp/lowTime";
 
-  /// Assets for soundsEventStart
-  /// assets/sounds/event-start.mp3
-  static const String soundsEventStart = "assets/sounds/event-start.mp3";
+  /// Assets for soundsLispMove
+  /// assets/sounds/lisp/move
+  static const String soundsLispMove = "assets/sounds/lisp/move";
 
-  /// Assets for soundsEventWarning
-  /// assets/sounds/event-warning.mp3
-  static const String soundsEventWarning = "assets/sounds/event-warning.mp3";
+  /// Assets for soundsNesCapture
+  /// assets/sounds/nes/capture
+  static const String soundsNesCapture = "assets/sounds/nes/capture";
 
-  /// Assets for soundsFichaDeAjedrez34722
-  /// assets/sounds/ficha-de-ajedrez-34722.mp3
-  static const String soundsFichaDeAjedrez34722 =
-      "assets/sounds/ficha-de-ajedrez-34722.mp3";
+  /// Assets for soundsNesDong
+  /// assets/sounds/nes/dong
+  static const String soundsNesDong = "assets/sounds/nes/dong";
 
-  /// Assets for soundsGameLose
-  /// assets/sounds/game-lose.mp3
-  static const String soundsGameLose = "assets/sounds/game-lose.mp3";
+  /// Assets for soundsNesLowTime
+  /// assets/sounds/nes/lowTime
+  static const String soundsNesLowTime = "assets/sounds/nes/lowTime";
 
-  /// Assets for soundsGameWinLong
-  /// assets/sounds/game-win-long.mp3
-  static const String soundsGameWinLong = "assets/sounds/game-win-long.mp3";
+  /// Assets for soundsNesMove
+  /// assets/sounds/nes/move
+  static const String soundsNesMove = "assets/sounds/nes/move";
 
-  /// Assets for soundsIllegal
-  /// assets/sounds/illegal.mp3
-  static const String soundsIllegal = "assets/sounds/illegal.mp3";
+  /// Assets for soundsPianoCapture
+  /// assets/sounds/piano/capture
+  static const String soundsPianoCapture = "assets/sounds/piano/capture";
 
-  /// Assets for soundsIncorrect
-  /// assets/sounds/incorrect.mp3
-  static const String soundsIncorrect = "assets/sounds/incorrect.mp3";
+  /// Assets for soundsPianoDong
+  /// assets/sounds/piano/dong
+  static const String soundsPianoDong = "assets/sounds/piano/dong";
 
-  /// Assets for soundsLessonFail
-  /// assets/sounds/lesson-fail.mp3
-  static const String soundsLessonFail = "assets/sounds/lesson-fail.mp3";
+  /// Assets for soundsPianoLowTime
+  /// assets/sounds/piano/lowTime
+  static const String soundsPianoLowTime = "assets/sounds/piano/lowTime";
 
-  /// Assets for soundsMoveCheck
-  /// assets/sounds/move-check.mp3
-  static const String soundsMoveCheck = "assets/sounds/move-check.mp3";
+  /// Assets for soundsPianoMove
+  /// assets/sounds/piano/move
+  static const String soundsPianoMove = "assets/sounds/piano/move";
 
-  /// Assets for soundsMoveOpponentCheck
-  /// assets/sounds/move-opponent-check.mp3
-  static const String soundsMoveOpponentCheck =
-      "assets/sounds/move-opponent-check.mp3";
+  /// Assets for soundsSfxCapture
+  /// assets/sounds/sfx/capture
+  static const String soundsSfxCapture = "assets/sounds/sfx/capture";
 
-  /// Assets for soundsMoveSelf
-  /// assets/sounds/move-self.mp3
-  static const String soundsMoveSelf = "assets/sounds/move-self.mp3";
+  /// Assets for soundsSfxLowTime
+  /// assets/sounds/sfx/lowTime
+  static const String soundsSfxLowTime = "assets/sounds/sfx/lowTime";
 
-  /// Assets for soundsNotification
-  /// assets/sounds/notification.mp3
-  static const String soundsNotification = "assets/sounds/notification.mp3";
+  /// Assets for soundsSfxMove
+  /// assets/sounds/sfx/move
+  static const String soundsSfxMove = "assets/sounds/sfx/move";
 
-  /// Assets for soundsNotify
-  /// assets/sounds/notify.mp3
-  static const String soundsNotify = "assets/sounds/notify.mp3";
+  /// Assets for soundsStandardBerserk
+  /// assets/sounds/standard/berserk
+  static const String soundsStandardBerserk = "assets/sounds/standard/berserk";
 
-  /// Assets for soundsPremove
-  /// assets/sounds/premove.mp3
-  static const String soundsPremove = "assets/sounds/premove.mp3";
+  /// Assets for soundsStandardCapture
+  /// assets/sounds/standard/capture
+  static const String soundsStandardCapture = "assets/sounds/standard/capture";
 
-  /// Assets for soundsPromote
-  /// assets/sounds/promote.mp3
-  static const String soundsPromote = "assets/sounds/promote.mp3";
+  /// Assets for soundsStandardClock
+  /// assets/sounds/standard/clock
+  static const String soundsStandardClock = "assets/sounds/standard/clock";
 
-  /// Assets for soundsPuzzleCorrect2
-  /// assets/sounds/puzzle-correct-2.mp3
-  static const String soundsPuzzleCorrect2 =
-      "assets/sounds/puzzle-correct-2.mp3";
+  /// Assets for soundsStandardConfirmation
+  /// assets/sounds/standard/confirmation
+  static const String soundsStandardConfirmation = "assets/sounds/standard/confirmation";
 
-  /// Assets for soundsPuzzleWrong
-  /// assets/sounds/puzzle-wrong.mp3
-  static const String soundsPuzzleWrong = "assets/sounds/puzzle-wrong.mp3";
+  /// Assets for soundsStandardDong
+  /// assets/sounds/standard/dong
+  static const String soundsStandardDong = "assets/sounds/standard/dong";
 
-  /// Assets for soundsScatter
-  /// assets/sounds/scatter.mp3
-  static const String soundsScatter = "assets/sounds/scatter.mp3";
+  /// Assets for soundsStandardError
+  /// assets/sounds/standard/error
+  static const String soundsStandardError = "assets/sounds/standard/error";
 
-  /// Assets for soundsTenseconds
-  /// assets/sounds/tenseconds.mp3
-  static const String soundsTenseconds = "assets/sounds/tenseconds.mp3";
+  /// Assets for soundsStandardLowTime
+  /// assets/sounds/standard/lowTime
+  static const String soundsStandardLowTime = "assets/sounds/standard/lowTime";
+
+  /// Assets for soundsStandardMove
+  /// assets/sounds/standard/move
+  static const String soundsStandardMove = "assets/sounds/standard/move";
+
+  /// Assets for soundsStandardPuzzleStormEnd
+  /// assets/sounds/standard/puzzleStormEnd
+  static const String soundsStandardPuzzleStormEnd = "assets/sounds/standard/puzzleStormEnd";
 }
+

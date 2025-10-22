@@ -140,6 +140,7 @@ class GameState {
         ..comment = comment
         ..nags = nags,
     );
+    _moveObjects.add(move);
     if (_pos.isGameOver) {
       result = _pos.outcome;
     }

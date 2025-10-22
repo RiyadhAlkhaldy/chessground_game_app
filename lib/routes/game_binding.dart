@@ -1,4 +1,4 @@
-import 'package:chessground_game_app/domain/services/sound_effect_service.dart';
+import 'package:chessground_game_app/domain/services/service/sound_effect_service.dart';
 import 'package:get/get.dart';
 
 import '../data/usecases/play_sound_usecase.dart';

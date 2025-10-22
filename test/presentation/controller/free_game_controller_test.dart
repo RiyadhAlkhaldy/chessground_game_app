@@ -1,5 +1,5 @@
 import 'package:chessground_game_app/data/usecases/play_sound_usecase.dart';
-import 'package:chessground_game_app/domain/services/sound_effect_service.dart';
+import 'package:chessground_game_app/domain/services/service/sound_effect_service.dart';
 import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/presentation/controllers/freee_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
