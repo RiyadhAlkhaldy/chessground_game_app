@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-// import '../../l10n/l10n.dart';
+import '../../l10n/l10n.dart';
 import 'theme.dart';
 
 part 'general_preferences.freezed.dart';
@@ -17,28 +17,28 @@ enum AppThemeSeed {
 }
 
 /// Describes the background theme of the app.
-// enum BackgroundThemeMode {
-//   /// Use either the light or dark theme based on what the user has selected in
-//   /// the system settings.
-//   system,
+enum BackgroundThemeMode {
+  /// Use either the light or dark theme based on what the user has selected in
+  /// the system settings.
+  system,
 
-//   /// Always use the light mode regardless of system preference.
-//   light,
+  /// Always use the light mode regardless of system preference.
+  light,
 
-//   /// Always use the dark mode (if available) regardless of system preference.
-//   dark;
+  /// Always use the dark mode (if available) regardless of system preference.
+  dark;
 
-//   String title(AppLocalizations l10n) {
-//     switch (this) {
-//       case BackgroundThemeMode.system:
-//         return l10n.deviceTheme;
-//       case BackgroundThemeMode.dark:
-//         return l10n.dark;
-//       case BackgroundThemeMode.light:
-//         return l10n.light;
-//     }
-//   }
-// }
+  String title(AppLocalizations l10n) {
+    switch (this) {
+      case BackgroundThemeMode.system:
+        return l10n.deviceTheme;
+      case BackgroundThemeMode.dark:
+        return l10n.dark;
+      case BackgroundThemeMode.light:
+        return l10n.light;
+    }
+  }
+}
 
 enum SoundTheme {
   standard('Standard'),
