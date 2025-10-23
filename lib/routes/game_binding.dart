@@ -10,6 +10,7 @@ import '../presentation/controllers/freee_game_controller.dart';
 import '../presentation/controllers/game_computer_controller.dart';
 import '../presentation/controllers/game_controller.dart';
 import '../presentation/controllers/get_storage_controller.dart';
+import '../presentation/controllers/settings_controller.dart';
 import '../presentation/controllers/side_choosing_controller.dart';
 
 /// [GameBinding]
@@ -38,6 +39,8 @@ class GameBinding extends Bindings {
     ///sounds
     Get.lazyPut(() => SoundEffectService(), fenix: true);
     Get.lazyPut(() => PlaySoundUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => SettingsController(), fenix: true);
+
     Get.lazyPut<IEngineRepository>(
       () => StockfishRepositoryImpl(),
       fenix: true,

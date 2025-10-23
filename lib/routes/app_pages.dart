@@ -7,7 +7,7 @@ import '../presentation/screens/game_computer/game_computer_with_time_screen.dar
 import '../presentation/screens/game_start_up_screen.dart';
 import '../presentation/screens/game_time_screen.dart';
 import '../presentation/screens/home_page.dart';
-import '../presentation/screens/settings_screen.dart';
+import '../presentation/screens/settings/settings_screen.dart';
 import '../presentation/screens/side_choosing/side_choosing_view.dart';
 
 abstract class RouteNames {
@@ -42,10 +42,7 @@ class AppPages {
     ),
     GetPage(name: RouteNames.sideChoosingView, page: () => SideChoosingView()),
     GetPage(name: RouteNames.aboutScreen, page: () => const AboutScreen()),
-    GetPage(
-      name: RouteNames.settingsScreen,
-      page: () => const SettingsScreen(),
-    ),
+    GetPage(name: RouteNames.settingsScreen, page: () => SettingsScreen()),
     GetPage(
       name: RouteNames.gameTimeScreen,
       page: () => const GameTimeScreen(),
