@@ -1,13 +1,12 @@
 // import 'package:chess_vectors_flutter/chess_vectors_flutter.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/presentation/controllers/game_controller.dart';
 import 'package:chessground_game_app/presentation/widgets/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../core/helper/helper_methods.dart';
-import '../../routes/app_pages.dart';
+import '../../../core/helper/helper_methods.dart';
+import '../../../routes/app_pages.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -18,11 +17,6 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       appBar: PlatformAppBar(
         title: Text(context.l10n.mobileSettingsHomeWidgets),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: [AutoSizeText(context.l10n.settingsSettings)],
-        ),
       ),
       body: Stack(
         children: [
@@ -35,7 +29,7 @@ class HomePage extends StatelessWidget {
                 crossAxisCount: 2,
                 children: [
                   buildGameType(
-                    lable: 'Play vs Computer with Time',
+                    lable: '${context.l10n.playAgainstComputer} Time',
                     icon: Icons.computer,
                     onTap: () {
                       controller.setVsComputer(value: true);
@@ -47,7 +41,7 @@ class HomePage extends StatelessWidget {
                     },
                   ),
                   buildGameType(
-                    lable: 'Play vs Friend',
+                    lable: context.l10n.playONline,
                     icon: Icons.person,
                     onTap: () {
                       controller.setVsComputer(value: false);
@@ -59,7 +53,7 @@ class HomePage extends StatelessWidget {
                     },
                   ),
                   buildGameType(
-                    lable: 'Play vs Computer',
+                    lable: context.l10n.playAgainstComputer,
                     icon: Icons.computer,
                     onTap: () {
                       controller.setVsComputer(value: true);
@@ -71,7 +65,7 @@ class HomePage extends StatelessWidget {
                     },
                   ),
                   buildGameType(
-                    lable: 'free Game',
+                    lable: context.l10n.freePlay,
                     icon: Icons.gamepad_outlined,
                     onTap: () {
                       controller.setVsComputer(value: true);

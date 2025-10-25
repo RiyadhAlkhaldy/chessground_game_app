@@ -7,29 +7,35 @@ import '../../../l10n/l10n.dart';
 import '../../controllers/settings_controller.dart';
 
 class SettingsScreen extends GetView<SettingsController> {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, superkey});
   @override
   Widget build(BuildContext context) {
+    // 1 استخراج مجموعة من رموز اللغة الفريدة (مثل: {'en', 'ar', 'fr'})
+    final uniqueLanguageCodes =
+        AppLocalizations.supportedLocales
+            .map((l) => l.languageCode)
+            .toSet() // تحويل إلى Set لإزالة أي تكرار
+            .toList(); // تحويلها مرة أخرى إلى قائمة لعرضها
+
+    final currentLanguageCode = Get.locale?.languageCode;
+
+    debugPrint("Current Locale Code: $currentLanguageCode");
+    debugPrint("Unique Codes for Dropdown: $uniqueLanguageCodes");
+
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.settingsSettings)),
       body: Column(
         children: [
           ListTile(
             title: Text(context.l10n.language),
-
-            trailing: DropdownButton(
-              value: Get.locale?.countryCode,
-
-              // enableFeedback: true,
+            trailing: DropdownButton<String>(
+              // القيمة الحالية يجب أن تكون موجودة في قائمة العناصر (items) مرة واحدة فقط
+              value: currentLanguageCode,
               items:
-                  AppLocalizations.supportedLocales.map((locale) {
-                    return DropdownMenuItem(
-                      value: locale.languageCode,
-                      // enabled:
-                      //     locale.countryCode !=
-                      //     controller.storage.instance.read('locale'),
-                      child: AutoSizeText(locale.languageCode),
-                      
+                  uniqueLanguageCodes.map((code) {
+                    return DropdownMenuItem<String>(
+                      value: code, // <--- الآن كل قيمة (value) ستكون فريدة
+                      child: AutoSizeText(code),
                     );
                   }).toList(),
               onChanged: (val) {

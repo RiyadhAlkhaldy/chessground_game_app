@@ -6,7 +6,7 @@ import '../presentation/screens/game_computer/game_computer_screen.dart';
 import '../presentation/screens/game_computer/game_computer_with_time_screen.dart';
 import '../presentation/screens/game_start_up_screen.dart';
 import '../presentation/screens/game_time_screen.dart';
-import '../presentation/screens/home_page.dart';
+import '../presentation/screens/home/home_page.dart';
 import '../presentation/screens/settings/settings_screen.dart';
 import '../presentation/screens/side_choosing/side_choosing_view.dart';
 

@@ -5,6 +5,27 @@ import '../../domain/models/player.dart';
 import '../../domain/services/chess_game_storage_service.dart';
 import '../../presentation/controllers/get_storage_controller.dart';
 
+Future<Locale> getLocale(GetStorageControllerImp storage) async {
+  Locale? locale;
+
+  String? languageCode = storage.instance.read('locale');
+  String? countryCode = storage.instance.read('countryCode');
+
+  if (languageCode == null) {
+    await storage.instance.write('locale', 'en');
+    await storage.instance.write('countryCode', 'en-US');
+    locale = Locale('en', 'en-US');
+  } else {
+    if (countryCode == null) {
+      await storage.instance.write('countryCode', 'en-US');
+      countryCode = storage.instance.read('countryCode');
+    }
+
+    locale = Locale(languageCode, countryCode);
+  }
+  return locale;
+}
+
 // create a guest player if not exists and return it
 Future<Player?> createPlayerIfNotExists(GetStorageControllerImp storage) async {
   final chessGame = ChessGameStorageService();
