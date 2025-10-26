@@ -4,6 +4,31 @@ import '../../domain/models/chess_game.dart';
 
 typedef JumpCallback = void Function(int halfmoveIndex);
 
+/// Helper: return a unicode chess symbol based on piece letter and color.
+String pieceSymbolFromSan(String san, {required bool isWhiteMove}) {
+  // SAN starts with piece letter for pieces: K Q R B N
+  // Pawn moves usually start with file letter 'a'..'h' -> we can return pawn symbol if desired.
+  if (san.isEmpty) return '';
+
+  final pieceLetter = san[0];
+  // mapping for white pieces (use white symbols) and black pieces (use black symbols)
+  const whiteMap = {'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘'};
+  const blackMap = {'K': '♚', 'Q': '♛', 'R': '♜', 'B': '♝', 'N': '♞'};
+
+  debugPrint('san : $san');
+  if (whiteMap.containsKey(pieceLetter)) {
+    var char = san.substring(1, san.length);
+    char =
+        isWhiteMove
+            ? whiteMap[pieceLetter]! + char
+            : blackMap[pieceLetter]! + char;
+    debugPrint('char: $char');
+    return char;
+  }
+  debugPrint('char $san');
+  return san;
+}
+
 class PgnHorizontalRow extends StatelessWidget {
   final List<MoveData> tokens;
   final int? currentHalfmoveIndex;
@@ -56,9 +81,27 @@ class PgnHorizontalRow extends StatelessWidget {
             : Colors.transparent;
     final borderColor =
         isCurrent ? theme.colorScheme.primary : Colors.transparent;
+    final pieceSymbol = pieceSymbolFromSan(t.san!, isWhiteMove: t.isWhiteMove!);
+    //   // نص الـ SAN قد يبدأ مثلاً "Bxf2" أو "exd6" أو "O-O"
+    //   // سنعرض الرمز فقط إن كان غير فارغ
+    final List<Widget> children = [];
+    if (t.isWhiteMove!) {
+      children.add(Text('${t.moveNumber}.', style: theme.textTheme.bodySmall));
+      children.add(const SizedBox(width: 6));
+    }
+
+    // نعرض رمز القطعة بحجم أصغر قليلاً
+    children.add(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Text(pieceSymbol, style: theme.textTheme.bodyMedium),
+      ),
+    );
+    children.add(const SizedBox(width: 2));
+
     return GestureDetector(
       onTap: () {
-        if (onJumpTo != null) onJumpTo!(t.halfmoveIndex!);
+        // if (onJumpTo != null) onJumpTo!(t.halfmoveIndex!);
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -68,16 +111,7 @@ class PgnHorizontalRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: borderColor, width: 1.2),
         ),
-        child: Row(
-          children: [
-            if (t.isWhiteMove!)
-              Text('${t.moveNumber}.', style: theme.textTheme.bodySmall)
-            else
-              const SizedBox(width: 0),
-            const SizedBox(width: 2),
-            Text(t.san!, style: theme.textTheme.bodyMedium),
-          ],
-        ),
+        child: Row(children: children),
       ),
     );
   }

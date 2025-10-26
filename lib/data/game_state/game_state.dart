@@ -18,19 +18,20 @@ class GameState {
   /// Current immutable position.
   Position _pos;
 
-  /// Full FEN history (one entry per position after each move, includes initial).
-  final List<String> fenHistory = [];
+  /// Full Position history (one entry per position after each move, includes initial).
+  final List<Position> positionHistory = [];
+  final List<Position> _redoPositonStack = [];
 
   /// Normalized FEN → count (normalized = board + turn + castling + ep)
   final Map<String, int> fenCounts = {};
 
   /// PGN moves as a mutable tree.
-  final PgnNode<PgnNodeData> pgnRoot = PgnNode<PgnNodeData>();
+  // final PgnNode<PgnNodeData> pgnRoot = PgnNode<PgnNodeData>();
   // Linear move list (no variations). Each entry stores SAN, optional comment and NAGs.
   final List<MoveData> _moves = [];
+  final List<MoveData> allMoves = [];
 
   // redo stacks
-  final List<String> _redoFenStack = [];
   final List<MoveData> _redoMoveStack = [];
 
   /// last move metadata (used by controller to decide which sound to play, UI badges, etc.)
@@ -88,14 +89,15 @@ class GameState {
   }
 
   void _pushPosition(Position pos) {
-    final fen = pos.fen;
-    fenHistory.add(fen);
-    final key = GameState.normalizeFen(fen);
+    positionHistory.add(pos);
+    final key = GameState.normalizeFen(pos.fen);
     debugPrint("normalizeFen: $key");
     fenCounts[key] = (fenCounts[key] ?? 0) + 1;
   }
 
   void _popPosition(Position pos) {
+    // current position fen removed
+    _redoPositonStack.add(positionHistory.removeLast());
     final fen = pos.fen;
     final key = GameState.normalizeFen(fen);
     // decrement fenCounts for removed fen
@@ -124,23 +126,17 @@ class GameState {
     final String san = record.$2;
 
     // when playing a new move after undo, clear redo stacks
-    if (_redoFenStack.isNotEmpty ||
+    if (_redoPositonStack.isNotEmpty ||
         _redoMoveStack.isNotEmpty ||
         _redoMoveObjStack.isNotEmpty) {
-      _redoFenStack.clear();
+      _redoPositonStack.clear();
       _redoMoveStack.clear();
       _redoMoveObjStack.clear();
     }
 
     _pos = newPos;
     _pushPosition(_pos);
-    _moves.add(
-      MoveData()
-        ..san = san
-        ..comment = comment
-        ..nags = nags,
-    );
-    _moveObjects.add(move);
+
     if (_pos.isGameOver) {
       result = _pos.outcome;
     }
@@ -176,10 +172,13 @@ class GameState {
     final wasCheckmate = _pos.isCheckmate;
 
     final halfmoveIndex = _moveObjects.length - 1;
+    int moveNumber = int.parse(_pos.fen.split(' ').last);
+    debugPrint("moveNumber $moveNumber");
 
     /// last move metadata (used by controller to decide which sound to play, UI badges, etc.)
     _lastMoveMeta =
         MoveData()
+          ..moveNumber = moveNumber
           ..wasCapture = wasCapture
           ..wasCheck = wasCheck
           ..wasCheckmate = wasCheckmate
@@ -190,7 +189,11 @@ class GameState {
           ..nags = nags
           ..fenAfter = _pos.fen
           ..moveNumber = null
-          ..isWhiteMove = null;
+          ..isWhiteMove = _pos.turn == Side.white ? false : true;
+
+    _moves.add(_lastMoveMeta!);
+    allMoves.add(_lastMoveMeta!);
+    _moveObjects.add(move);
   }
 
   /// Return true if current position has occurred 3 or more times.
@@ -270,33 +273,33 @@ class GameState {
   /// Returns map of pieces captured *by* [side] (i.e., opponent lost these).
   // Captures / material evaluation
   // ----------------------------
-  Map<Role, int> getCapturedPieces(Side side) {
-    final opposite = side == Side.white ? Side.black : Side.white;
-    final opponentCounts = _pos.board.materialCount(opposite);
-    final Map<Role, int> initial = {
-      Role.pawn: 8,
-      Role.knight: 2,
-      Role.bishop: 2,
-      Role.rook: 2,
-      Role.queen: 1,
-      Role.king: 1,
-    };
-    final Map<Role, int> captured = {};
-    for (final r in initial.keys) {
-      captured[r] = (initial[r] ?? 0) - (opponentCounts[r] ?? 0);
-    }
-    return captured;
-  }
+  // Map<Role, int> getCapturedPieces(Side side) {
+  //   final opposite = side == Side.white ? Side.black : Side.white;
+  //   final opponentCounts = _pos.board.materialCount(opposite);
+  //   final Map<Role, int> initial = {
+  //     Role.pawn: 8,
+  //     Role.knight: 2,
+  //     Role.bishop: 2,
+  //     Role.rook: 2,
+  //     Role.queen: 1,
+  //     Role.king: 1,
+  //   };
+  //   final Map<Role, int> captured = {};
+  //   for (final r in initial.keys) {
+  //     captured[r] = (initial[r] ?? 0) - (opponentCounts[r] ?? 0);
+  //   }
+  //   return captured;
+  // }
 
   /// Human-readable representation for captured pieces (e.g. "pawn x1, rook x1").
-  String capturedPiecesAsString(Side side) {
-    final caps = getCapturedPieces(side);
-    final List<String> parts = [];
-    caps.forEach((role, cnt) {
-      if (cnt > 0) parts.add('${role.name} x$cnt');
-    });
-    return parts.isEmpty ? '-' : parts.join(', ');
-  }
+  // String capturedPiecesAsString(Side side) {
+  //   final caps = getCapturedPieces(side);
+  //   final List<String> parts = [];
+  //   caps.forEach((role, cnt) {
+  //     if (cnt > 0) parts.add('${role.name} x$cnt');
+  //   });
+  //   return parts.isEmpty ? '-' : parts.join(', ');
+  // }
 
   /// Simple material evaluation in centipawns (White minus Black).
   /// Weights used: pawn=100, knight=300, bishop=300, rook=500, queen=900.
@@ -396,7 +399,7 @@ class GameState {
     return '*';
   }
 
-  bool get canUndo => _moves.isNotEmpty || !(fenHistory.length <= 1);
+  bool get canUndo => _moves.isNotEmpty || !(positionHistory.length <= 1);
 
   // ----------------------------
   // Undo / Redo
@@ -405,19 +408,16 @@ class GameState {
   bool undoMove() {
     if (!canUndo) return false;
     // pop last move and fen
-    final lastFen = fenHistory.removeLast(); // current position fen removed
     final lastMove = _moves.removeLast();
     final lastMoveObj = _moveObjects.removeLast();
 
     // push to redo stacks so we can redo later
-    _redoFenStack.add(lastFen);
     _redoMoveStack.add(lastMove);
     _redoMoveObjStack.add(lastMoveObj);
 
     _popPosition(_pos);
     // set position to new last fen (previous position)
-    final prevFen = fenHistory.last;
-    _pos = Chess.fromSetup(Setup.parseFen(prevFen));
+    _pos = positionHistory.last;
 
     // clear result/resignation/timeout if any (because we rolled back)
     result = null;
@@ -429,23 +429,21 @@ class GameState {
     return true;
   }
 
-  bool get canRedo => _redoFenStack.isNotEmpty || _redoMoveStack.isNotEmpty;
+  bool get canRedo => _redoPositonStack.isNotEmpty || _redoMoveStack.isNotEmpty;
 
   /// Redo previously undone move. Returns true if redone.
   bool redoMove() {
     if (!canRedo) return false;
-    final fen = _redoFenStack.removeLast();
     final move = _redoMoveStack.removeLast();
     final moveObj = _redoMoveObjStack.removeLast();
 
-    // apply fen and move into history
-
-    // restore position
-    _pos = Chess.fromSetup(Setup.parseFen(fen));
-    _pushPosition(_pos);
-
     _moves.add(move);
     _moveObjects.add(moveObj);
+    // apply fen and move into history
+    // restore position
+    _pos = _redoPositonStack.removeLast();
+
+    _pushPosition(_pos);
 
     // if position is terminal, set result
     if (_pos.isGameOver) {
@@ -462,12 +460,12 @@ class GameState {
     final start = initial ?? Chess.initial;
     // reset everything
     _pos = start;
-    fenHistory.clear();
+    positionHistory.clear();
     fenCounts.clear();
     _pushPosition(_pos);
     _moves.clear();
     _moveObjects.clear();
-    _redoFenStack.clear();
+    _redoPositonStack.clear();
     _redoMoveStack.clear();
     _redoMoveObjStack.clear();
     result = null;
@@ -501,21 +499,14 @@ class GameState {
   /// Provide tokens for PGN horizontal display. Each token corresponds to a half-move.
   List<MoveData> getMoveTokens() {
     final List<MoveData> tokens = [];
-    for (int i = 0; i < _moves.length; i++) {
-      final md = _moves[i];
-      final fenAfter =
-          (i < fenHistory.length - 0) ? fenHistory[i + 1] : _pos.fen;
+    for (int i = 0; i < allMoves.length; i++) {
       final moveNumber = (i ~/ 2) + 1;
-      final isWhite = (i % 2 == 0);
+      debugPrint("moveNumberr ${allMoves[i].moveNumber}");
+
       tokens.add(
-        MoveData()
+        allMoves[i]
           ..halfmoveIndex = i
-          ..san = md.san
-          ..comment = md.comment
-          ..nags = md.nags
-          ..fenAfter = fenAfter
-          ..moveNumber = moveNumber
-          ..isWhiteMove = isWhite,
+          ..moveNumber = moveNumber,
       );
     }
     return tokens;
@@ -524,6 +515,110 @@ class GameState {
   int get currentHalfmoveIndex => _moveObjects.length - 1;
 
   bool get hasMoves => _moveObjects.isNotEmpty;
+
+  // <<< ADD HERE: Captured helpers (paste inside class GameState) >>>
+
+  // Returns map of pieces captured *by* [side] (i.e., opponent lost these).
+  Map<Role, int> getCapturedPieces(Side side) {
+    // opponent is the side that lost pieces
+    final opponent = side == Side.white ? Side.black : Side.white;
+
+    // current counts for opponent pieces
+    final opponentCounts =
+        positionHistory.isNotEmpty
+            ? positionHistory.last.board.materialCount(opponent)
+            : _pos.board.materialCount(opponent);
+
+    // initial counts for a full set
+    final Map<Role, int> initial = {
+      Role.pawn: 8,
+      Role.knight: 2,
+      Role.bishop: 2,
+      Role.rook: 2,
+      Role.queen: 1,
+      Role.king: 1,
+    };
+
+    final Map<Role, int> captured = {};
+    for (final r in initial.keys) {
+      final before = initial[r] ?? 0;
+      final now = opponentCounts[r] ?? 0;
+      final taken = (before - now);
+      captured[r] = (taken > 0) ? taken : 0;
+    }
+    return captured;
+  }
+
+  /// Human-readable representation for captured pieces (e.g. "pawn x1, rook x1").
+  /// If none captured returns '-'.
+  String capturedPiecesAsString(Side side) {
+    final caps = getCapturedPieces(side);
+    final List<String> parts = [];
+    caps.forEach((role, cnt) {
+      if (cnt > 0) parts.add('${_roleName(role)} x$cnt');
+    });
+    return parts.isEmpty ? '-' : parts.join(', ');
+  }
+
+  /// Return a compact unicode string of captured pieces for UI (e.g. "♟♟ ♜").
+  /// Format: symbol repeated count times (or symbol+count) — choose according to UI needs.
+  String capturedPiecesAsUnicode(Side side, {bool repeatSymbols = false}) {
+    final caps = getCapturedPieces(side);
+    final List<String> parts = [];
+    caps.forEach((role, cnt) {
+      if (cnt <= 0) return;
+      final sym = roleUnicode(role, isWhite: side == Side.white);
+      if (repeatSymbols) {
+        parts.add(List.filled(cnt, sym).join());
+      } else {
+        parts.add('$sym×$cnt');
+      }
+    });
+    return parts.isEmpty ? '-' : parts.join(' ');
+  }
+
+  /// Helper: produce readable english/arabic short name (you can localize)
+  String _roleName(Role r) {
+    switch (r) {
+      case Role.pawn:
+        return 'pawn';
+      case Role.knight:
+        return 'knight';
+      case Role.bishop:
+        return 'bishop';
+      case Role.rook:
+        return 'rook';
+      case Role.queen:
+        return 'queen';
+      case Role.king:
+        return 'king';
+      default:
+        return r.name;
+    }
+  }
+
+  /// Helper: unicode symbol for role (white/black)
+  String roleUnicode(Role r, {required bool isWhite}) {
+    // white pieces: ♙ ♘ ♗ ♖ ♕ ♔
+    // black pieces: ♟ ♞ ♝ ♜ ♛ ♚
+    const whiteMap = {
+      Role.pawn: '♙',
+      Role.knight: '♘',
+      Role.bishop: '♗',
+      Role.rook: '♖',
+      Role.queen: '♕',
+      Role.king: '♔',
+    };
+    const blackMap = {
+      Role.pawn: '♟',
+      Role.knight: '♞',
+      Role.bishop: '♝',
+      Role.rook: '♜',
+      Role.queen: '♛',
+      Role.king: '♚',
+    };
+    return isWhite ? (whiteMap[r] ?? '') : (blackMap[r] ?? '');
+  }
 }
 
 // /// Main GameState controller.

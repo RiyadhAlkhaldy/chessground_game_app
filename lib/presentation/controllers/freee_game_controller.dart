@@ -309,4 +309,12 @@ class FreeGameController extends GetxController {
     validMoves = makeLegalMoves(gameState.position);
     update();
   }
+
+  Map<Role, int> get whiteCaptured => gameState.getCapturedPieces(Side.white);
+  String get whiteCapturedText => gameState.capturedPiecesAsString(Side.white);
+  String get whiteCapturedIcons =>
+      gameState.capturedPiecesAsUnicode(Side.white);
+String get blackCapturedIcons =>
+      gameState.capturedPiecesAsUnicode(Side.black);
+      
 }
