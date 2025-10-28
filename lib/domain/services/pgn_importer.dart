@@ -4,7 +4,7 @@
 import 'package:chess/chess.dart'; // مثال
 import 'package:isar/isar.dart';
 
-import '../models/chess_game.dart';
+import '../collections/chess_game.dart';
 
 /// تنبّه:
 /// - هذا كود "قابل للتنفيذ" لكن قد تحتاج لتعديل طفيف حسب API الحقيقية للمكتبة 'chess' أو 'dartchess' التي تختارها.

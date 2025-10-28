@@ -11,9 +11,9 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../../core/helper/helper_methodes.dart';
 import '../../data/usecases/play_sound_usecase.dart';
-import '../../domain/entities/extended_evaluation.dart';
-import '../../domain/models/chess_game.dart';
-import '../../domain/models/player.dart';
+import '../../domain/models/extended_evaluation.dart';
+import '../../domain/collections/chess_game.dart';
+import '../../domain/collections/player.dart';
 import '../../domain/services/chess_clock_service.dart';
 import '../../domain/services/chess_game_storage_service.dart';
 import '../../domain/services/stockfish_engine_service.dart';

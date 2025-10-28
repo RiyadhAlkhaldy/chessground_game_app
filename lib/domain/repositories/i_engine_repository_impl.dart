@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
 
 import '../../domain/repositories/i_engine_repository.dart';
-import '../entities/extended_evaluation.dart';
+import '../models/extended_evaluation.dart';
 
 // هذا هو التنفيذ الفعلي، وهو مقتبس مباشرة من StockfishEngineService الممتاز
 // الذي قدمته، مع تعديلات طفيفة لتتناسب مع الواجهة الجديدة.

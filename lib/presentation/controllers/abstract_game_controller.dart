@@ -4,7 +4,7 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../domain/models/chess_game.dart';
+import '../../domain/collections/chess_game.dart';
 
 abstract class AbstractGameController extends GetxController {
   // Rx<Position> position = Chess.initial.obs;

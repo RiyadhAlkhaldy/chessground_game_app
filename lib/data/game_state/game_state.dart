@@ -8,7 +8,7 @@
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 
-import '../../domain/models/chess_game.dart';
+import '../../domain/collections/chess_game.dart';
 
 /// A lightweight mutable controller for a game built on top of dartchess immutable Position.
 /// - Keeps fenHistory and fenCounts for repetition detection.

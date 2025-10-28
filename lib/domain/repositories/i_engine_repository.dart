@@ -1,5 +1,5 @@
 // واجهة مجردة لضمان قابلية تبديل المحرك مستقبلاً
-import '../entities/extended_evaluation.dart';
+import '../models/extended_evaluation.dart';
 
 abstract class IEngineRepository {
   Stream<ExtendedEvaluation> get evaluations;

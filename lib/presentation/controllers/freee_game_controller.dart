@@ -9,8 +9,8 @@ import 'package:get/get.dart';
 import '../../core/helper/helper_methodes.dart';
 import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
-import '../../domain/models/chess_game.dart';
-import '../../domain/models/player.dart';
+import '../../domain/collections/chess_game.dart';
+import '../../domain/collections/player.dart';
 import '../../domain/services/stockfish_engine_service.dart';
 import 'chess_board_settings_controller.dart';
 

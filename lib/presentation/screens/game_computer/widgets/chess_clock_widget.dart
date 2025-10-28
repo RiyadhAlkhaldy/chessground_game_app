@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/constants/assets_images.dart';
-import '../../../../domain/models/player.dart';
+import '../../../../domain/collections/player.dart';
 import '../../../controllers/chess_board_settings_controller.dart';
 
 String formatMsToClock(int ms) {

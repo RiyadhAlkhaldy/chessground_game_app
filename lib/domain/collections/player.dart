@@ -1,6 +1,8 @@
 // lib/models/player.dart
 import 'package:isar/isar.dart';
 
+import '../models/player_model.dart';
+
 part 'player.g.dart';
 
 @Collection()
@@ -38,28 +40,18 @@ class Player {
       "Player{id:$id, uuid:$uuid, name:$name, type:$type, rating:$playerRating}";
 }
 
-// import 'package:isar/isar.dart';
-
-// part 'player.g.dart';
-
-// @Collection()
-// class Player {
-//   Id id = Isar.autoIncrement; // مفتاح تلقائي
-//   late String uuid; // لتعريف فريد
-
-//   /// اسم اللاعب (مثلاً "Riyadh" أو "Stockfish-17.1")
-//   late String name;
-
-//   /// نوع اللاعب: "human" أو "computer"
-//   @Index(caseSensitive: false)
-//   late String type;
-
-//   String? email;
-//   String? image;
-//   DateTime createdAt = DateTime.now();
-//   int playerRating;
-//   // تعليق: يمكن إضافة حقول إضافية مثل elo, profileUrl لاحقًا.
-//   Player({required this.name, required this.type, required this.playerRating});
-//   @override
-//   String toString() => "Player{id:$id, name:$name, type:$type, uuid:$uuid }";
-// }
+// امتداد لتحويل Isar Collection إلى PlayerModel
+extension PlayerMapper on Player {
+  PlayerModel toModel() {
+    return PlayerModel(
+      id: id,
+      uuid: uuid,
+      name: name,
+      type: type,
+      playerRating: playerRating,
+      email: email,
+      image: image,
+      createdAt: createdAt,
+    );
+  }
+}

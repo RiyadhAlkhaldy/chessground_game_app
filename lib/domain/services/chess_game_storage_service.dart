@@ -2,8 +2,8 @@ import 'package:dartchess/dartchess.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../models/chess_game.dart';
-import '../models/player.dart';
+import '../collections/chess_game.dart';
+import '../collections/player.dart';
 
 class ChessGameStorageService {
   // static final ChessGameStorageService _instance =

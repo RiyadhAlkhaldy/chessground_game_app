@@ -1,4 +1,4 @@
-import 'package:chessground_game_app/domain/models/todo.dart';
+import 'package:chessground_game_app/domain/collections/todo.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';

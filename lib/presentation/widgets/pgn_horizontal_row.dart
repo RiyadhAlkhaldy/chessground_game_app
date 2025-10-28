@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/models/chess_game.dart';
+import '../../domain/collections/chess_game.dart';
 
 typedef JumpCallback = void Function(int halfmoveIndex);
 

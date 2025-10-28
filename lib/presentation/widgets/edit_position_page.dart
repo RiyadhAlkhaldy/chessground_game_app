@@ -41,12 +41,12 @@ class EditPositionPage extends StatelessWidget {
                 erasePosition: 'erase position',
               ),
               controller: positionController,
-              showAdvancedOptions: true,
+              // showAdvancedOptions: true,
             ),
           ),
           ElevatedButton(
             onPressed: () {
-              Get.back(result: positionController.position);
+              Get.back(result: positionController.currentPosition);
             },
             child: Text('Validate position'),
           ),
