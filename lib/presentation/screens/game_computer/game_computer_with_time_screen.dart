@@ -82,9 +82,17 @@ class BuildPortrait extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // EvaluationBarWidget(),
-          ShowCircleAvatarAndTimerInUp(),
+          ShowCircleAvatarAndTimerInUp(
+            whitePlayer: ctrl.whitePlayer,
+            blackPlayer: ctrl.blackPlayer,
+            clockCtrl: ctrl.clockCtrl,
+          ),
           ChessBoardWidget(ctrlBoardSettings: ctrlBoardSettings),
-          ShowCircleAvatarAndTimerInDown(),
+          ShowCircleAvatarAndTimerInDown(
+            whitePlayer: ctrl.whitePlayer,
+            blackPlayer: ctrl.blackPlayer,
+            clockCtrl: ctrl.clockCtrl,
+          ),
 
           const SizedBox(height: screenPortraitSplitter),
           Expanded(

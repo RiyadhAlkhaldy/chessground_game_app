@@ -10,6 +10,7 @@ import '../../core/helper/helper_methodes.dart';
 import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/models/chess_game.dart';
+import '../../domain/models/player.dart';
 import '../../domain/services/stockfish_engine_service.dart';
 import 'chess_board_settings_controller.dart';
 
@@ -36,6 +37,10 @@ class FreeGameController extends GetxController {
 
   final PlaySoundUseCase plySound;
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
+  Rx<Player> whitePlayer =
+      Player(uuid: 'White_Player', name: 'White Player', type: 'player').obs;
+  Rx<Player> blackPlayer =
+      Player(uuid: 'Black Player', name: 'Black Player', type: 'player').obs;
   FreeGameController(this.plySound);
   bool canPop = false;
   NormalMove? promotionMove;
@@ -311,10 +316,19 @@ class FreeGameController extends GetxController {
   }
 
   Map<Role, int> get whiteCaptured => gameState.getCapturedPieces(Side.white);
+  Map<Role, int> get blackCaptured => gameState.getCapturedPieces(Side.black);
   String get whiteCapturedText => gameState.capturedPiecesAsString(Side.white);
   String get whiteCapturedIcons =>
       gameState.capturedPiecesAsUnicode(Side.white);
-String get blackCapturedIcons =>
+  String get blackCapturedIcons =>
       gameState.capturedPiecesAsUnicode(Side.black);
-      
+
+  ///
+  ///
+
+  // في controller أو widget بعد استدعاء setState/update
+  List<Role> get whiteCapturedList =>
+      gameState.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
+  List<Role> get blackCapturedList =>
+      gameState.getCapturedPiecesList(Side.black);
 }

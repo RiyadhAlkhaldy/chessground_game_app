@@ -1,11 +1,12 @@
+import 'package:chessground_game_app/data/game_state/game_state.dart';
 import 'package:chessground_game_app/domain/services/chess_clock_service.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/constants/assets_images.dart';
+import '../../../../domain/models/player.dart';
 import '../../../controllers/chess_board_settings_controller.dart';
-import '../../../controllers/game_computer_controller.dart';
 
 String formatMsToClock(int ms) {
   final Duration d = Duration(milliseconds: ms);
@@ -15,48 +16,109 @@ String formatMsToClock(int ms) {
 }
 
 class ShowCircleAvatarAndTimerInUp extends StatelessWidget {
-  const ShowCircleAvatarAndTimerInUp({super.key});
+  const ShowCircleAvatarAndTimerInUp({
+    super.key,
+    required this.whitePlayer,
+    required this.blackPlayer,
+    this.clockCtrl,
+    this.whiteCapturedList,
+    this.blackCapturedList,
+    this.gameState,
+  });
 
+  final Rx<Player> whitePlayer;
+  final Rx<Player> blackPlayer;
+  final ChessClockService? clockCtrl;
+  final List<Role>? whiteCapturedList;
+  final List<Role>? blackCapturedList;
+  final GameState? gameState;
   @override
   Widget build(BuildContext context) {
     final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
     if (ctrlBoardSettings.orientation.value == Side.white) {
-      return BlackPlayerClockWidget();
+      return BlackPlayerClockWidget(
+        blackPlayer: blackPlayer,
+        clockCtrl: clockCtrl,
+        blackCapturedList: blackCapturedList,
+        gameState: gameState,
+      );
     } else {
-      return WhitePlayerClockWidget();
+      return WhitePlayerClockWidget(
+        whitePlayer: whitePlayer,
+        clockCtrl: clockCtrl,
+        whiteCapturedList: whiteCapturedList,
+        gameState: gameState,
+      );
     }
   }
 }
 
 class ShowCircleAvatarAndTimerInDown extends StatelessWidget {
-  const ShowCircleAvatarAndTimerInDown({super.key});
+  const ShowCircleAvatarAndTimerInDown({
+    super.key,
+    required this.whitePlayer,
+    required this.blackPlayer,
+    this.clockCtrl,
 
+    this.whiteCapturedList,
+    this.blackCapturedList,
+    this.gameState,
+  });
+  final Rx<Player> whitePlayer;
+  final Rx<Player> blackPlayer;
+  final ChessClockService? clockCtrl;
+
+  final List<Role>? whiteCapturedList;
+  final List<Role>? blackCapturedList;
+  final GameState? gameState;
   @override
   Widget build(BuildContext context) {
     final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
     if (ctrlBoardSettings.orientation.value == Side.white) {
-      return WhitePlayerClockWidget();
+      return WhitePlayerClockWidget(
+        whitePlayer: whitePlayer,
+        clockCtrl: clockCtrl,
+        whiteCapturedList: whiteCapturedList,
+        gameState: gameState,
+      );
     } else {
-      return BlackPlayerClockWidget();
+      return BlackPlayerClockWidget(
+        blackPlayer: blackPlayer,
+        clockCtrl: clockCtrl,
+        blackCapturedList: blackCapturedList,
+        gameState: gameState,
+      );
     }
   }
 }
 
 class WhitePlayerClockWidget extends StatelessWidget {
-  WhitePlayerClockWidget({super.key});
+  const WhitePlayerClockWidget({
+    super.key,
+    required this.whitePlayer,
+    this.clockCtrl,
+    this.whiteCapturedList,
+    this.gameState,
+  });
 
-  final controller = Get.find<GameComputerWithTimeController>();
+  final Rx<Player> whitePlayer;
+  final ChessClockService? clockCtrl;
+  final List<Role>? whiteCapturedList;
+  final GameState? gameState;
   @override
   Widget build(BuildContext context) {
+    final materialAdvantge = gameState!.getMaterialAdvantageSignedForWhite;
+    final materialAdvantgeWhite = materialAdvantge > 0 ? materialAdvantge : '';
+
     return Column(
       children: [
         Obx(
           () =>
-              controller.whitePlayer.value.name.isEmpty
+              whitePlayer.value.name.isEmpty
                   ? const SizedBox()
                   : ListTile(
                     leading:
-                        controller.whitePlayer.value.image == null
+                        whitePlayer.value.image == null
                             ? CircleAvatar(
                               radius: 25,
                               backgroundImage: AssetImage(
@@ -67,19 +129,26 @@ class WhitePlayerClockWidget extends StatelessWidget {
                               radius: 25,
 
                               backgroundImage: NetworkImage(
-                                controller.whitePlayer.value.image!,
+                                whitePlayer.value.image!,
                               ),
                             ),
-                    title: Text(
-                      controller.whitePlayer.value.name.substring(0, 6),
+                    title: Text(whitePlayer.value.name.substring(0, 6)),
+                    subtitle: Row(
+                      children: [
+                        Text('Rating: ${whitePlayer.value.playerRating}'),
+                        if (whiteCapturedList != null)
+                          Text(
+                            "${whiteCapturedList!.map((r) => gameState!.roleUnicode(r, isWhite: true)).toList().join()}$materialAdvantgeWhite",
+                          ),
+                      ],
                     ),
-                    subtitle: Text(
-                      'Rating: ${controller.whitePlayer.value.playerRating}',
-                    ),
-                    trailing: Text(
-                      formatMsToClock(controller.clockCtrl!.whiteTimeMs.value),
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                    trailing:
+                        clockCtrl != null
+                            ? Text(
+                              formatMsToClock(clockCtrl!.whiteTimeMs.value),
+                              style: const TextStyle(fontSize: 16),
+                            )
+                            : null,
                   ),
         ),
       ],
@@ -88,20 +157,31 @@ class WhitePlayerClockWidget extends StatelessWidget {
 }
 
 class BlackPlayerClockWidget extends StatelessWidget {
-  BlackPlayerClockWidget({super.key});
-  final controller = Get.find<GameComputerWithTimeController>();
+  const BlackPlayerClockWidget({
+    super.key,
+    required this.blackPlayer,
+    this.clockCtrl,
+    this.blackCapturedList,
+    this.gameState,
+  });
 
+  final Rx<Player> blackPlayer;
+  final ChessClockService? clockCtrl;
+  final List<Role>? blackCapturedList;
+  final GameState? gameState;
   @override
   Widget build(BuildContext context) {
+    final materialAdvantge = gameState!.getMaterialAdvantageSignedForBlack;
+    final materialAdvantgeBlack = materialAdvantge > 0 ? materialAdvantge : '';
     return Column(
       children: [
         Obx(
           () =>
-              controller.blackPlayer.value.name.isEmpty
+              blackPlayer.value.name.isEmpty
                   ? const SizedBox()
                   : ListTile(
                     leading:
-                        controller.blackPlayer.value.image == null
+                        blackPlayer.value.image == null
                             ? CircleAvatar(
                               radius: 25,
                               backgroundImage: AssetImage(
@@ -112,20 +192,27 @@ class BlackPlayerClockWidget extends StatelessWidget {
                               radius: 25,
 
                               backgroundImage: NetworkImage(
-                                controller.blackPlayer.value.image!,
+                                blackPlayer.value.image!,
                               ),
                             ),
-                    title: Text(
-                      controller.blackPlayer.value.name.substring(0, 6),
+                    title: Text(blackPlayer.value.name.substring(0, 6)),
+                    subtitle: Row(
+                      children: [
+                        Text('Rating: ${blackPlayer.value.playerRating}'),
+                        if (blackCapturedList != null)
+                          Text(
+                            "${blackCapturedList!.map((r) => gameState!.roleUnicode(r, isWhite: false)).toList().join()}$materialAdvantgeBlack",
+                          ),
+                      ],
                     ),
-                    subtitle: Text(
-                      'Rating: ${controller.blackPlayer.value.playerRating}',
-                    ),
-                    trailing: Text(
-                      formatMsToClock(controller.clockCtrl!.blackTimeMs.value),
+                    trailing:
+                        clockCtrl != null
+                            ? Text(
+                              formatMsToClock(clockCtrl!.blackTimeMs.value),
 
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                              style: const TextStyle(fontSize: 16),
+                            )
+                            : null,
                   ),
         ),
         // const SizedBox(height: 16),

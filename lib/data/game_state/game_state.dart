@@ -269,38 +269,6 @@ class GameState {
   //   return _pos.hasInsufficientMaterial(side);
   // }
 
-  // ----------------------------
-  /// Returns map of pieces captured *by* [side] (i.e., opponent lost these).
-  // Captures / material evaluation
-  // ----------------------------
-  // Map<Role, int> getCapturedPieces(Side side) {
-  //   final opposite = side == Side.white ? Side.black : Side.white;
-  //   final opponentCounts = _pos.board.materialCount(opposite);
-  //   final Map<Role, int> initial = {
-  //     Role.pawn: 8,
-  //     Role.knight: 2,
-  //     Role.bishop: 2,
-  //     Role.rook: 2,
-  //     Role.queen: 1,
-  //     Role.king: 1,
-  //   };
-  //   final Map<Role, int> captured = {};
-  //   for (final r in initial.keys) {
-  //     captured[r] = (initial[r] ?? 0) - (opponentCounts[r] ?? 0);
-  //   }
-  //   return captured;
-  // }
-
-  /// Human-readable representation for captured pieces (e.g. "pawn x1, rook x1").
-  // String capturedPiecesAsString(Side side) {
-  //   final caps = getCapturedPieces(side);
-  //   final List<String> parts = [];
-  //   caps.forEach((role, cnt) {
-  //     if (cnt > 0) parts.add('${role.name} x$cnt');
-  //   });
-  //   return parts.isEmpty ? '-' : parts.join(', ');
-  // }
-
   /// Simple material evaluation in centipawns (White minus Black).
   /// Weights used: pawn=100, knight=300, bishop=300, rook=500, queen=900.
   int materialEvaluationCentipawns() {
@@ -516,39 +484,6 @@ class GameState {
 
   bool get hasMoves => _moveObjects.isNotEmpty;
 
-  // <<< ADD HERE: Captured helpers (paste inside class GameState) >>>
-
-  // Returns map of pieces captured *by* [side] (i.e., opponent lost these).
-  Map<Role, int> getCapturedPieces(Side side) {
-    // opponent is the side that lost pieces
-    final opponent = side == Side.white ? Side.black : Side.white;
-
-    // current counts for opponent pieces
-    final opponentCounts =
-        positionHistory.isNotEmpty
-            ? positionHistory.last.board.materialCount(opponent)
-            : _pos.board.materialCount(opponent);
-
-    // initial counts for a full set
-    final Map<Role, int> initial = {
-      Role.pawn: 8,
-      Role.knight: 2,
-      Role.bishop: 2,
-      Role.rook: 2,
-      Role.queen: 1,
-      Role.king: 1,
-    };
-
-    final Map<Role, int> captured = {};
-    for (final r in initial.keys) {
-      final before = initial[r] ?? 0;
-      final now = opponentCounts[r] ?? 0;
-      final taken = (before - now);
-      captured[r] = (taken > 0) ? taken : 0;
-    }
-    return captured;
-  }
-
   /// Human-readable representation for captured pieces (e.g. "pawn x1, rook x1").
   /// If none captured returns '-'.
   String capturedPiecesAsString(Side side) {
@@ -592,8 +527,24 @@ class GameState {
         return 'queen';
       case Role.king:
         return 'king';
-      default:
-        return r.name;
+    }
+  }
+
+  // القيم المادية لكل دور (pawn=1, knight=3, bishop=3, rook=5, queen=9)
+  int _roleValue(Role role) {
+    switch (role) {
+      case Role.pawn:
+        return 1;
+      case Role.knight:
+        return 3;
+      case Role.bishop:
+        return 3;
+      case Role.rook:
+        return 5;
+      case Role.queen:
+        return 9;
+      case Role.king:
+        return 0;
     }
   }
 
@@ -619,72 +570,77 @@ class GameState {
     };
     return isWhite ? (whiteMap[r] ?? '') : (blackMap[r] ?? '');
   }
+
+  /// عدد كل دور مأخوذ *بواسطة* [side] (أي opponent فقد هذه القطع).
+  Map<Role, int> getCapturedPieces(Side side) {
+    final opponent = side == Side.white ? Side.black : Side.white;
+    final opponentCounts =
+        positionHistory.isNotEmpty
+            ? positionHistory.last.board.materialCount(opponent)
+            : _pos.board.materialCount(opponent);
+
+    final Map<Role, int> initial = {
+      Role.pawn: 8,
+      Role.knight: 2,
+      Role.bishop: 2,
+      Role.rook: 2,
+      Role.queen: 1,
+      Role.king: 1,
+    };
+
+    final Map<Role, int> captured = {};
+    for (final r in initial.keys) {
+      final before = initial[r] ?? 0;
+      final now = opponentCounts[r] ?? 0;
+      final taken = (before - now);
+      captured[r] = (taken > 0) ? taken : 0;
+    }
+    return captured;
+  }
+
+  /// Returns an expanded list of Roles for captured pieces by [side].
+  /// Example: {pawn:2, rook:1} -> [Role.pawn, Role.pawn, Role.rook]
+  List<Role> getCapturedPiecesList(Side side) {
+    final map = getCapturedPieces(side);
+    final List<Role> list = [];
+    // order like lichess: pawn, knight, bishop, rook, queen (you can change order)
+    final order = [Role.pawn, Role.knight, Role.bishop, Role.rook, Role.queen];
+    for (final r in order) {
+      final cnt = map[r] ?? 0;
+      for (int i = 0; i < cnt; i++) {
+        list.add(r);
+      }
+    }
+    return list;
+  }
+
+  /// مجموع القيمة المادية للقطع **على اللوحة** لجهة [side].
+  int materialOnBoard(Side side) {
+    final counts =
+        positionHistory.isNotEmpty
+            ? positionHistory.last.board.materialCount(side)
+            : _pos.board.materialCount(side);
+
+    int total = 0;
+    counts.forEach((role, cnt) {
+      total += (cnt ?? 0) * _roleValue(role);
+    });
+    return total;
+  }
+
+  /// مجموع القيمة المادية للقطع **التي أخذها** [side] (sum of values of captured pieces by side).
+  int capturedValue(Side side) {
+    final map = getCapturedPieces(side);
+    int total = 0;
+    map.forEach((role, cnt) {
+      total += (cnt) * _roleValue(role);
+    });
+    return total;
+  }
+
+  int get getMaterialAdvantageSignedForWhite =>
+      materialOnBoard(Side.white) - materialOnBoard(Side.black);
+
+  int get getMaterialAdvantageSignedForBlack =>
+      materialOnBoard(Side.black) - materialOnBoard(Side.white);
 }
-
-// /// Main GameState controller.
-// extension GameStatee on GameState {
-//   /// Simple positional evaluation: material + mobility + bishop pair + small center control.
-//   /// Returns centipawns (positive means White advantage).
-//   int evaluateCentipawns() {
-//     final material = materialEvaluationCentipawns();
-
-//     // mobility: number of legal moves difference * factor
-//     final movesLength = _pos.legalMoves.length;
-//     final whiteMoves = _pos.turn == Side.white ? movesLength : 0;
-//     final blackMoves = _pos.turn == Side.black ? movesLength : 0;
-//     final mobilityDiff = (whiteMoves - blackMoves);
-//     final mobilityScore = mobilityDiff * 5; // 5 cp per legal move advantage
-
-//     // bishop pair bonus
-//     final whiteCounts = _pos.board.materialCount(Side.white);
-//     final blackCounts = _pos.board.materialCount(Side.black);
-//     int bishopPair = 0;
-//     if ((whiteCounts[Role.bishop] ?? 0) >= 2) bishopPair += 50;
-//     if ((blackCounts[Role.bishop] ?? 0) >= 2) bishopPair -= 50;
-
-//     // small center pawns bonus: count pawns on d/e files
-//     int centerPawnScore = 0;
-//     centerPawnScore += _countPawnsOnFiles(Side.white, ['d', 'e']) * 10;
-//     centerPawnScore -= _countPawnsOnFiles(Side.black, ['d', 'e']) * 10;
-
-//     return material + mobilityScore + bishopPair + centerPawnScore;
-//   }
-
-//   int _countPawnsOnFiles(Side side, List<String> files) {
-//     var count = 0;
-//     // iterate over board squares A1..H8; use roleAt to detect pawns
-//     for (final sq in Square.values) {
-//       final role = _pos.board.roleAt(sq);
-//       final s = _pos.board.sideAt(sq);
-//       if (role == Role.pawn && s == side) {
-//         final fileChar = sq.toString().toLowerCase(); // depends on enum naming
-//         // Fallback: we can compute file by sq.index % 8 but this depends on library
-//         // To be robust, match by algebraic notation if available:
-//         final alg = sq.toString(); // adjust if needed
-//         for (final f in files) {
-//           if (alg.contains(f)) count++;
-//         }
-//       }
-//     }
-//     return count;
-//   }
-
-//   /// Return approximate win probability for White from centipawn advantage.
-//   /// Uses logistic-like mapping (approximation).
-//   double centipawnToWinProbability(int cp) {
-//     final exponent = -cp / 400.0;
-//     return 1.0 / (1.0 + pow(10, exponent));
-//   }
-
-//   /// ELO helper: expected score for player A against B.
-//   static double eloExpected(int ratingA, int ratingB) {
-//     return 1.0 / (1.0 + pow(10.0, (ratingB - ratingA) / 400.0));
-//   }
-
-//   /// Update rating for player A. score = 1, 0.5, 0
-//   static int eloUpdate(int ratingA, int ratingB, double score, {int k = 20}) {
-//     final expect = eloExpected(ratingA, ratingB);
-//     final newRating = ratingA + (score - expect) * k;
-//     return newRating.round();
-//   }
-// }
