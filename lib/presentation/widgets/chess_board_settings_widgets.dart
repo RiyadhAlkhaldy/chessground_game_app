@@ -1,4 +1,5 @@
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -23,7 +24,7 @@ class ChessBoardSettingsWidgets extends StatelessWidget {
           (controller) => ListView(
             children: [
               ExpansionTile(
-                title: const Text('Settings'),
+                title: Text(context.l10n.mobileBoardSettings),
                 initiallyExpanded: true,
                 shape: const RoundedRectangleBorder(),
                 minTileHeight: 0,

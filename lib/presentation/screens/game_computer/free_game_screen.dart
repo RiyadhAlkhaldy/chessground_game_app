@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -112,7 +113,11 @@ class BuildLandScape extends StatelessWidget {
       padding: const EdgeInsets.all(screenPadding),
       child: Row(
         children: [
-          Expanded(child: ChessBoardWidget()),
+          Expanded(
+            child: GetBuilder<FreeGameController>(
+              builder: (_) => ChessBoardWidget(),
+            ),
+          ),
 
           const SizedBox(width: screenLandscapeSplitter),
           Expanded(
@@ -127,6 +132,20 @@ class BuildLandScape extends StatelessWidget {
                       onJumpTo: (idx) => ctrl.jumpToHalfmove(idx),
                     );
                   },
+                ),
+                ShowCircleAvatarAndTimerInUp(
+                  whitePlayer: ctrl.whitePlayer,
+                  blackPlayer: ctrl.blackPlayer,
+                  whiteCapturedList: ctrl.whiteCapturedList,
+                  blackCapturedList: ctrl.blackCapturedList,
+                  gameState: ctrl.gameState,
+                ),
+                ShowCircleAvatarAndTimerInDown(
+                  whitePlayer: ctrl.whitePlayer,
+                  blackPlayer: ctrl.blackPlayer,
+                  whiteCapturedList: ctrl.whiteCapturedList,
+                  blackCapturedList: ctrl.blackCapturedList,
+                  gameState: ctrl.gameState,
                 ),
                 Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),
@@ -156,7 +175,7 @@ class BuildControlButtons extends StatelessWidget {
               Expanded(child: buildNewRoundButton(ctrl)),
               Expanded(child: buildUndoButton()),
               Expanded(child: buildRedoButton()),
-              // Expanded(child: buildMenuButton()),
+              Expanded(child: buildMenuButton()),
             ],
           );
         },
@@ -331,20 +350,16 @@ Widget buildRedoButton() => GetX<FreeGameController>(
         onPressed: controller.canRedo.value ? controller.redoMove : null,
       ),
 );
-Widget buildMenuButton() => GetX<FreeGameController>(
-  builder:
-      (controller) => IconButton(
-        icon: Icon(Symbols.menu, size: iconSize),
-        onPressed: () {
-          Get.generalDialog(
-            pageBuilder:
-                (context, animation, secondaryAnimation) => Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: screenPadding,
-                  ),
-                  child: ChessBoardSettingsWidgets(),
-                ),
-          );
-        },
+Widget buildMenuButton() => IconButton(
+  icon: Icon(Symbols.menu, size: iconSize),
+  onPressed: () {
+    Get.dialog(
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: screenPadding),
+        child: ChessBoardSettingsWidgets(),
       ),
+      name: Get.context!.l10n.mobileBoardSettings,
+      barrierColor: Theme.of(Get.context!).dialogTheme.backgroundColor,
+    );
+  },
 );
