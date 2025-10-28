@@ -4,6 +4,7 @@ import 'package:chessground_game_app/presentation/controllers/game_controller.da
 import 'package:chessground_game_app/presentation/widgets/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../core/helper/helper_methods.dart';
 import '../../../routes/app_pages.dart';
@@ -26,7 +27,8 @@ class HomePage extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: GridView.count(
                 shrinkWrap: true,
-                crossAxisCount: 2,
+                crossAxisCount: 3,
+                // physics: FixedExtentScrollPhysics(),
                 children: [
                   buildGameType(
                     lable: '${context.l10n.playAgainstComputer} Time',
@@ -75,7 +77,7 @@ class HomePage extends StatelessWidget {
                   ),
                   buildGameType(
                     lable: context.l10n.mobileSettingsTab,
-                    icon: Icons.settings,
+                    icon: Symbols.settings,
                     onTap: () {
                       // navigate to settings screen
 
@@ -83,8 +85,17 @@ class HomePage extends StatelessWidget {
                     },
                   ),
                   buildGameType(
+                    lable: context.l10n.recentGames,
+                    icon: Symbols.history,
+
+                    onTap: () {
+                      // navigate to recent games screen
+                      Get.toNamed(RouteNames.recentGamesPage);
+                    },
+                  ),
+                  buildGameType(
                     lable: context.l10n.about,
-                    icon: Icons.info,
+                    icon: Symbols.info,
                     onTap: () {
                       // navigate to about screen
                       Get.toNamed(RouteNames.aboutScreen);

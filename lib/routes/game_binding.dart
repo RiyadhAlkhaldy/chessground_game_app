@@ -1,3 +1,5 @@
+import 'package:chessground_game_app/domain/repositories/game_repository.dart';
+import 'package:chessground_game_app/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/domain/services/service/sound_effect_service.dart';
 import 'package:get/get.dart';
 
@@ -68,6 +70,10 @@ class GameBinding extends Bindings {
 
     ///
     Get.lazyPut(() => FreeGameController(Get.find()), fenix: true);
+    Get.lazyPut(
+      () => GamesRepository(isar: ChessGameStorageService.db!),
+      fenix: true,
+    );
 
     ///
   }

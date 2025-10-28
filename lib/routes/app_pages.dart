@@ -1,4 +1,5 @@
 import 'package:chessground_game_app/presentation/screens/game_computer/free_game_screen.dart';
+import 'package:chessground_game_app/presentation/screens/recent_screen/recent_page.dart';
 import 'package:get/get.dart';
 
 import '../presentation/screens/about_screen.dart';
@@ -23,6 +24,7 @@ abstract class RouteNames {
   static String settingsScreen = '/SettingsScreen';
   static String gameStartUpScreen = '/GameStartUpScreen';
   static String aboutScreen = '/AboutScreen';
+  static String recentGamesPage = '/RecentGamesPage';
   static String puzzles = '/Puzzles';
   static String rankings = '/Rankings';
   static String friends = '/Friends';
@@ -52,6 +54,7 @@ class AppPages {
       page: () => GameStartUpScreen(isCustomTime: false, gameTime: '5'),
     ),
     GetPage(name: RouteNames.freeGameScreen, page: () => FreeGameScreen()),
+    GetPage(name: RouteNames.recentGamesPage, page: () => RecentGamesPage()),
     // GetPage(name: RouteNames.gamesScreen, page: () => const GameScreen()),
 
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),

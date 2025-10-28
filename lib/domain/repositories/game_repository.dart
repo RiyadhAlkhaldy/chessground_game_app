@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:uuid/uuid.dart';
 
 import '../collections/chess_game.dart';
 import '../collections/player.dart';
@@ -78,44 +79,44 @@ class GamesRepository {
 
   /// إدراج بيانات Mock (8-12 مباراة) إذا كانت قاعدة البيانات فارغة
   Future<void> insertMockDataIfEmpty() async {
-    final count = await isar.chessGames.count();
-    if (count > 0) return;
-
+    // final count = await isar.chessGames.count();
+    // if (count > 0) return;
+    final uuid1 = Uuid().v4();
+    final uuid2 = Uuid().v4();
     // داخل transaction نُدخل لاعبين ومباريات
     await isar.writeTxn(() async {
       // أنشئ لاعبين
-      final p1 = Player(uuid: 'player-uuid-1', name: 'Alex', type: 'human')
+      final p1 = Player(uuid: uuid1, name: 'player-$uuid1', type: 'human')
         ..playerRating = 1037;
-      final p2 = Player(uuid: 'player-uuid-2', name: 'Mikology', type: 'human')
+      final p2 = Player(uuid: uuid2, name: 'player-$uuid2', type: 'human')
         ..playerRating = 1072;
 
       final id1 = await isar.players.put(p1);
       final id2 = await isar.players.put(p2);
 
       // لعبة مثال
-      final g1 =
-          ChessGame()
-            ..uuid = 'game-uuid-1'
-            ..date = DateTime.now().subtract(const Duration(hours: 2))
-            ..result = '1-0'
-            ..eco = 'C20'
-            ..whiteElo = 1037
-            ..blackElo = 1072
-            ..timeControl = '5+0'
-            ..fullPgn = '[Event "Example"] 1. e4 e5 2. Nf3 Nc6 3. Bb5 a6'
-            ..movesCount = 6
-            ..moves = [
-              MoveData()
-                ..san = 'e4'
-                ..fenAfter =
-                    'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1'
-                ..isWhiteMove = true,
-              MoveData()
-                ..san = 'e5'
-                ..fenAfter =
-                    'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2'
-                ..isWhiteMove = false,
-            ];
+      final g1 = ChessGame()
+        ..uuid = 'game-uuid-1'
+        ..date = DateTime.now().subtract(const Duration(hours: 2))
+        ..result = '1-0'
+        ..eco = 'C20'
+        ..whiteElo = 1037
+        ..blackElo = 1072
+        ..timeControl = '5+0'
+        ..fullPgn = '[Event "Example"] 1. e4 e5 2. Nf3 Nc6 3. Bb5 a6'
+        ..movesCount = 6
+        ..moves = [
+          MoveData()
+            ..san = 'e4'
+            ..fenAfter =
+                'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1'
+            ..isWhiteMove = true,
+          MoveData()
+            ..san = 'e5'
+            ..fenAfter =
+                'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2'
+            ..isWhiteMove = false,
+        ];
 
       // ربط اللاعبين عبر IsarLink
       g1.whitePlayer.value = p1;
