@@ -37,11 +37,9 @@ class FreeGameScreen extends StatelessWidget {
       ),
 
       body: OrientationBuilder(
-        builder:
-            (context, orientation) =>
-                orientation == Orientation.portrait
-                    ? BuildPortrait()
-                    : BuildLandScape(),
+        builder: (context, orientation) => orientation == Orientation.portrait
+            ? BuildPortrait()
+            : BuildLandScape(),
       ),
     );
   }
@@ -69,26 +67,25 @@ class BuildPortrait extends StatelessWidget {
               },
             ),
             GetBuilder<FreeGameController>(
-              builder:
-                  (ctrl) => Column(
-                    children: [
-                      ShowCircleAvatarAndTimerInUp(
-                        whitePlayer: ctrl.whitePlayer,
-                        blackPlayer: ctrl.blackPlayer,
-                        whiteCapturedList: ctrl.whiteCapturedList,
-                        blackCapturedList: ctrl.blackCapturedList,
-                        gameState: ctrl.gameState,
-                      ),
-                      ChessBoardWidget(),
-                      ShowCircleAvatarAndTimerInDown(
-                        whitePlayer: ctrl.whitePlayer,
-                        blackPlayer: ctrl.blackPlayer,
-                        whiteCapturedList: ctrl.whiteCapturedList,
-                        blackCapturedList: ctrl.blackCapturedList,
-                        gameState: ctrl.gameState,
-                      ),
-                    ],
+              builder: (ctrl) => Column(
+                children: [
+                  ShowCircleAvatarAndTimerInUp(
+                    whitePlayer: ctrl.whitePlayer,
+                    blackPlayer: ctrl.blackPlayer,
+                    whiteCapturedList: ctrl.whiteCapturedList,
+                    blackCapturedList: ctrl.blackCapturedList,
+                    gameState: ctrl.gameState,
                   ),
+                  ChessBoardWidget(),
+                  ShowCircleAvatarAndTimerInDown(
+                    whitePlayer: ctrl.whitePlayer,
+                    blackPlayer: ctrl.blackPlayer,
+                    whiteCapturedList: ctrl.whiteCapturedList,
+                    blackCapturedList: ctrl.blackCapturedList,
+                    gameState: ctrl.gameState,
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: screenPortraitSplitter),
@@ -186,10 +183,9 @@ class BuildControlButtons extends StatelessWidget {
 
 Widget buildNewRoundButton(FreeGameController ctrl) => IconButton(
   icon: Icon(Symbols.refresh, size: iconSize),
-  onPressed:
-      ctrl.gameState.isGameOverExtended || !ctrl.canUndo.value
-          ? null
-          : ctrl.reset,
+  onPressed: ctrl.gameState.isGameOverExtended || !ctrl.canUndo.value
+      ? null
+      : ctrl.reset,
 );
 
 Color darken(Color c, [double amount = .1]) {
@@ -211,10 +207,9 @@ class ChessBoardWidget extends GetView<FreeGameController> {
           // );
 
           return PopScope(
-            canPop:
-                controller
-                    .gameState
-                    .isGameOverExtended, // Prevents automatic exit
+            canPop: controller
+                .gameState
+                .isGameOverExtended, // Prevents automatic exit
 
             onPopInvokedWithResult: (didPop, result) async {
               if (didPop) {
@@ -223,14 +218,13 @@ class ChessBoardWidget extends GetView<FreeGameController> {
               if (controller.getResult != null) {
                 Get.back();
               } else {
-                final shouldExit = await showExitConfirmationDialog(
-                  context,
-                ).then((value) {
-                  if (value != null && value == true) {
-                    controller.resign(controller.gameState.turn);
-                  }
-                  return value;
-                });
+                final shouldExit = await showExitConfirmationDialog(context)
+                    .then((value) {
+                      if (value != null && value == true) {
+                        controller.resign(controller.gameState.turn);
+                      }
+                      return value;
+                    });
 
                 if (shouldExit == true) {
                   if (context.mounted) {
@@ -251,83 +245,78 @@ class ChessBoardWidget extends GetView<FreeGameController> {
               }
             },
             child: GetX<ChessBoardSettingsController>(
-              builder:
-                  (ctrlBoardSettings) => Chessboard(
-                    size: min(constraints.maxWidth, constraints.maxHeight),
-                    settings: ChessboardSettings(
-                      pieceAssets: ctrlBoardSettings.pieceSet.value.assets,
-                      colorScheme: ctrlBoardSettings.boardTheme.value.colors,
-                      border:
-                          ctrlBoardSettings.showBorder.value
-                              ? BoardBorder(
-                                width: 10.0,
-                                color: darken(
-                                  ctrlBoardSettings
-                                      .boardTheme
-                                      .value
-                                      .colors
-                                      .darkSquare,
-                                  0.2,
-                                ),
-                              )
-                              : null,
-                      enableCoordinates: true,
+              builder: (ctrlBoardSettings) => Chessboard(
+                size: min(constraints.maxWidth, constraints.maxHeight),
+                settings: ChessboardSettings(
+                  pieceAssets: ctrlBoardSettings.pieceSet.value.assets,
+                  colorScheme: ctrlBoardSettings.boardTheme.value.colors,
+                  border: ctrlBoardSettings.showBorder.value
+                      ? BoardBorder(
+                          width: 10.0,
+                          color: darken(
+                            ctrlBoardSettings
+                                .boardTheme
+                                .value
+                                .colors
+                                .darkSquare,
+                            0.2,
+                          ),
+                        )
+                      : null,
+                  enableCoordinates: true,
 
-                      // showLastMove: true,
-                      // enablePremoveCastling: true,
-                      // showValidMoves: true,
-                      autoQueenPromotion: false,
-                      animationDuration:
-                          ctrlBoardSettings.pieceAnimation.value
-                              ? const Duration(milliseconds: 200)
-                              : Duration.zero,
+                  // showLastMove: true,
+                  // enablePremoveCastling: true,
+                  // showValidMoves: true,
+                  autoQueenPromotion: false,
+                  animationDuration: ctrlBoardSettings.pieceAnimation.value
+                      ? const Duration(milliseconds: 200)
+                      : Duration.zero,
 
-                      dragFeedbackScale:
-                          ctrlBoardSettings.dragMagnify.value ? 2.0 : 1.0,
-                      dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
-                      drawShape: DrawShapeOptions(
-                        enable: ctrlBoardSettings.drawMode,
-                        onCompleteShape: ctrlBoardSettings.onCompleteShape,
-                        onClearShapes: () {
-                          ctrlBoardSettings.shapes.value = ISet<Shape>();
-                        },
-                      ),
-                      pieceShiftMethod:
-                          ctrlBoardSettings.pieceShiftMethod.value,
-                      autoQueenPromotionOnPremove: false,
-                      pieceOrientationBehavior:
-                          // controller.playMode == Mode.freePlay
-                          // PieceOrientationBehavior.opponentUpsideDown,
-                          PieceOrientationBehavior.facingUser,
-                    ),
-                    orientation: ctrlBoardSettings.orientation.value,
-
-                    fen: controller.fen,
-                    // lastMove: controller.lastMove,
-                    game: GameData(
-                      playerSide:
-                          controller.gameState.isGameOverExtended
-                              ? PlayerSide.none
-                              : controller.gameState.position.turn == Side.white
-                              ? PlayerSide.white
-                              : PlayerSide.black,
-                      validMoves: controller.validMoves,
-                      sideToMove: controller.gameState.position.turn,
-                      isCheck: controller.gameState.position.isCheck,
-                      promotionMove: controller.promotionMove,
-                      onMove: controller.onUserMoveAgainstAI,
-                      onPromotionSelection: controller.onPromotionSelection,
-                      premovable: (
-                        onSetPremove: controller.onSetPremove,
-                        premove: controller.premove,
-                      ),
-                    ),
-
-                    shapes:
-                        ctrlBoardSettings.shapes.value.isNotEmpty
-                            ? ctrlBoardSettings.shapes.value
-                            : null,
+                  dragFeedbackScale: ctrlBoardSettings.dragMagnify.value
+                      ? 2.0
+                      : 1.0,
+                  dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
+                  drawShape: DrawShapeOptions(
+                    enable: ctrlBoardSettings.drawMode,
+                    onCompleteShape: ctrlBoardSettings.onCompleteShape,
+                    onClearShapes: () {
+                      ctrlBoardSettings.shapes.value = ISet<Shape>();
+                    },
                   ),
+                  pieceShiftMethod: ctrlBoardSettings.pieceShiftMethod.value,
+                  autoQueenPromotionOnPremove: false,
+                  pieceOrientationBehavior:
+                      // controller.playMode == Mode.freePlay
+                      // PieceOrientationBehavior.opponentUpsideDown,
+                      PieceOrientationBehavior.facingUser,
+                ),
+                orientation: ctrlBoardSettings.orientation.value,
+
+                fen: controller.fen,
+                // lastMove: controller.lastMove,
+                game: GameData(
+                  playerSide: controller.gameState.isGameOverExtended
+                      ? PlayerSide.none
+                      : controller.gameState.position.turn == Side.white
+                      ? PlayerSide.white
+                      : PlayerSide.black,
+                  validMoves: controller.validMoves,
+                  sideToMove: controller.gameState.position.turn,
+                  isCheck: controller.gameState.position.isCheck,
+                  promotionMove: controller.promotionMove,
+                  onMove: controller.onUserMoveAgainstAI,
+                  onPromotionSelection: controller.onPromotionSelection,
+                  premovable: (
+                    onSetPremove: controller.onSetPremove,
+                    premove: controller.premove,
+                  ),
+                ),
+
+                shapes: ctrlBoardSettings.shapes.value.isNotEmpty
+                    ? ctrlBoardSettings.shapes.value
+                    : null,
+              ),
             ),
           );
         },
@@ -337,18 +326,16 @@ class ChessBoardWidget extends GetView<FreeGameController> {
 }
 
 Widget buildUndoButton() => GetX<FreeGameController>(
-  builder:
-      (controller) => IconButton(
-        icon: Icon(Symbols.chevron_left, size: iconSize),
-        onPressed: controller.canUndo.value ? controller.undoMove : null,
-      ),
+  builder: (controller) => IconButton(
+    icon: Icon(Symbols.chevron_left, size: iconSize),
+    onPressed: controller.canUndo.value ? controller.undoMove : null,
+  ),
 );
 Widget buildRedoButton() => GetX<FreeGameController>(
-  builder:
-      (controller) => IconButton(
-        icon: Icon(Symbols.chevron_right, size: iconSize),
-        onPressed: controller.canRedo.value ? controller.redoMove : null,
-      ),
+  builder: (controller) => IconButton(
+    icon: Icon(Symbols.chevron_right, size: iconSize),
+    onPressed: controller.canRedo.value ? controller.redoMove : null,
+  ),
 );
 Widget buildMenuButton() => IconButton(
   icon: Icon(Symbols.menu, size: iconSize),

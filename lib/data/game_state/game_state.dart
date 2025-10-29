@@ -176,7 +176,6 @@ class GameState {
     final wasCheck = _pos.isCheck;
     final wasCheckmate = _pos.isCheckmate;
 
-    final halfmoveIndex = _moveObjects.length - 1;
     int moveNumber = int.parse(_pos.fen.split(' ').last);
     debugPrint("moveNumber $moveNumber");
 
@@ -187,12 +186,11 @@ class GameState {
       ..wasCheck = wasCheck
       ..wasCheckmate = wasCheckmate
       ..wasPromotion = wasPromotion
-      ..halfmoveIndex = halfmoveIndex
+      ..halfmoveIndex = allMoves.length
       ..san = san
       ..comment = comment
       ..nags = nags
       ..fenAfter = _pos.fen
-      ..moveNumber = null
       ..isWhiteMove = _pos.turn == Side.white ? false : true;
 
     _moves.add(_lastMoveMeta!);
@@ -468,20 +466,7 @@ class GameState {
   List<Move> getMoveObjectsCopy() => List<Move>.from(_moveObjects);
 
   /// Provide tokens for PGN horizontal display. Each token corresponds to a half-move.
-  List<MoveData> getMoveTokens() {
-    final List<MoveData> tokens = [];
-    for (int i = 0; i < allMoves.length; i++) {
-      final moveNumber = (i ~/ 2) + 1;
-      debugPrint("moveNumberr ${allMoves[i].moveNumber}");
-
-      tokens.add(
-        allMoves[i]
-          ..halfmoveIndex = i
-          ..moveNumber = moveNumber,
-      );
-    }
-    return tokens;
-  }
+  List<MoveData> get getMoveTokens => allMoves;
 
   int get currentHalfmoveIndex => _moveObjects.length - 1;
 

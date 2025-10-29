@@ -35,8 +35,11 @@ void main() {
 
       test('Play capture move', () {
         final gs = GameState(
-          initial: Chess.fromSetup(Setup.parseFen(
-              'rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2')),
+          initial: Chess.fromSetup(
+            Setup.parseFen(
+              'rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2',
+            ),
+          ),
         );
         gs.play(Move.parse('e4d5')!);
         expect(gs.lastMoveMeta!.wasCapture, isTrue);
@@ -44,7 +47,9 @@ void main() {
 
       test('Play promotion move', () {
         final gs = GameState(
-          initial: Chess.fromSetup(Setup.parseFen('8/P7/8/k7/8/8/8/K7 w - - 0 1')),
+          initial: Chess.fromSetup(
+            Setup.parseFen('8/P7/8/k7/8/8/8/K7 w - - 0 1'),
+          ),
         );
         gs.play(Move.parse('a7a8q')!);
         expect(gs.lastMoveMeta!.wasPromotion, isTrue);
@@ -52,8 +57,11 @@ void main() {
 
       test('Play castling move', () {
         final gs = GameState(
-          initial: Chess.fromSetup(Setup.parseFen(
-              'r3k2r/pppp1ppp/8/8/8/8/PPPP1PPP/R3K2R w KQkq - 0 1')),
+          initial: Chess.fromSetup(
+            Setup.parseFen(
+              'r3k2r/pppp1ppp/8/8/8/8/PPPP1PPP/R3K2R w KQkq - 0 1',
+            ),
+          ),
         );
         gs.play(Move.parse('e1g1')!); // O-O
         expect(
@@ -228,8 +236,11 @@ void main() {
 
       test('capturedPiecesAsUnicode shows symbols when captures exist', () {
         final gs = GameState(
-          initial: Chess.fromSetup(Setup.parseFen(
-              'rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2')),
+          initial: Chess.fromSetup(
+            Setup.parseFen(
+              'rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2',
+            ),
+          ),
         );
         gs.play(Move.parse('e4d5')!);
         final unicode = gs.capturedPiecesAsUnicode(Side.white);
@@ -238,7 +249,11 @@ void main() {
 
       test('getCapturedPiecesList ordered correctly', () {
         // A very simple scenario: White pawn captures a black bishop.
-        final gs = GameState(initial: Chess.fromSetup(Setup.parseFen('k7/8/8/8/4b3/3P4/8/K7 w - - 0 1')));
+        final gs = GameState(
+          initial: Chess.fromSetup(
+            Setup.parseFen('k7/8/8/8/4b3/3P4/8/K7 w - - 0 1'),
+          ),
+        );
 
         // White pawn on d3 captures black bishop on e4.
         gs.play(gs.position.parseSan('dxe4')!);
@@ -285,10 +300,22 @@ void main() {
         final gs = GameState();
         gs.play(Move.parse('e2e4')!);
         gs.play(Move.parse('e7e5')!);
-        final tokens = gs.getMoveTokens();
+        final tokens = gs.getMoveTokens;
         expect(tokens.first.moveNumber, equals(1));
-        expect(tokens.last.moveNumber, equals(1));
+        expect(tokens.last.moveNumber, equals(2));
         expect(tokens.last.san, equals('e5'));
+      });
+      test('getMoveTokens includes move numbers part 2', () {
+        final gs = GameState();
+        gs.play(Move.parse('e2e4')!);
+        gs.play(Move.parse('e7e5')!);
+        gs.play(Move.parse('f2f4')!);
+        gs.play(Move.parse('f7f5')!);
+
+        final tokens = gs.getMoveTokens;
+        expect(tokens.first.moveNumber, equals(1));
+        expect(tokens.last.moveNumber, equals(3));
+        expect(tokens.last.san, equals('f5'));
       });
     });
   });

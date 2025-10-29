@@ -273,7 +273,7 @@ void main() {
       test('getMoveTokens includes move numbers', () {
         final gs = GameState();
         gs.play(Move.parse('e2e4')!);
-        final tokens = gs.getMoveTokens();
+        final tokens = gs.getMoveTokens;
         expect(tokens.first.moveNumber, equals(1));
       });
     });

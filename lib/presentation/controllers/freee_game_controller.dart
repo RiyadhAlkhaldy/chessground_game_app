@@ -37,10 +37,16 @@ class FreeGameController extends GetxController {
 
   final PlaySoundUseCase plySound;
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
-  Rx<Player> whitePlayer =
-      Player(uuid: 'White_Player', name: 'White Player', type: 'player').obs;
-  Rx<Player> blackPlayer =
-      Player(uuid: 'Black Player', name: 'Black Player', type: 'player').obs;
+  Rx<Player> whitePlayer = Player(
+    uuid: 'White_Player',
+    name: 'White Player',
+    type: 'player',
+  ).obs;
+  Rx<Player> blackPlayer = Player(
+    uuid: 'Black Player',
+    name: 'Black Player',
+    type: 'player',
+  ).obs;
   FreeGameController(this.plySound);
   bool canPop = false;
   NormalMove? promotionMove;
@@ -201,33 +207,10 @@ class FreeGameController extends GetxController {
       // validMoves = IMap(const {});
       promotionMove = null;
       debugPrint("gameState.position.fen: ${gameState.position.fen}");
-      _capturedPiecesResult();
       gameStatus;
       update();
     }
     tryPlayPremove();
-  }
-
-  void _capturedPiecesResult() {
-    final capturedWhite = gameState.getCapturedPieces(Side.white);
-    final capturedBlack = gameState.getCapturedPieces(Side.black);
-    List<Role> whiteRoles = [];
-    List<Role> blackRoles = [];
-    int whitePoints = 0;
-    int blackPoints = 0;
-    capturedWhite.forEach((key, value) {
-      whitePoints += value;
-      whiteRoles.add(key);
-    });
-    capturedBlack.forEach((key, value) {
-      blackPoints += value;
-      blackRoles.add(key);
-    });
-    debugPrint("Side.white $whitePoints $whiteRoles");
-    debugPrint(
-      "Side.black $blackPoints $blackRoles ${blackRoles.first.name.codeUnits}",
-    );
-    debugPrint("result = ${(whitePoints - blackPoints)}");
   }
 
   // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
@@ -296,7 +279,7 @@ class FreeGameController extends GetxController {
   }
 
   /// expose PGN tokens for the UI
-  List<MoveData> get pgnTokens => gameState.getMoveTokens();
+  List<MoveData> get pgnTokens => gameState.getMoveTokens;
 
   int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
 
