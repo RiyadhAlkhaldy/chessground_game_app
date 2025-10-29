@@ -55,6 +55,9 @@ class GameState {
   /// Create GameState with an initial Position (defaults to standard initial).
   GameState({Position? initial}) : _pos = initial ?? Chess.initial {
     _pushPosition(_pos);
+    if (_pos.isGameOver) {
+      result = _pos.outcome;
+    }
   }
 
   /// Current position (immutable).
@@ -90,6 +93,8 @@ class GameState {
 
   void _pushPosition(Position pos) {
     positionHistory.add(pos);
+    debugPrint("normalizeFen: ${pos.fen}");
+
     final key = GameState.normalizeFen(pos.fen);
     debugPrint("normalizeFen: $key");
     fenCounts[key] = (fenCounts[key] ?? 0) + 1;
@@ -176,20 +181,19 @@ class GameState {
     debugPrint("moveNumber $moveNumber");
 
     /// last move metadata (used by controller to decide which sound to play, UI badges, etc.)
-    _lastMoveMeta =
-        MoveData()
-          ..moveNumber = moveNumber
-          ..wasCapture = wasCapture
-          ..wasCheck = wasCheck
-          ..wasCheckmate = wasCheckmate
-          ..wasPromotion = wasPromotion
-          ..halfmoveIndex = halfmoveIndex
-          ..san = san
-          ..comment = comment
-          ..nags = nags
-          ..fenAfter = _pos.fen
-          ..moveNumber = null
-          ..isWhiteMove = _pos.turn == Side.white ? false : true;
+    _lastMoveMeta = MoveData()
+      ..moveNumber = moveNumber
+      ..wasCapture = wasCapture
+      ..wasCheck = wasCheck
+      ..wasCheckmate = wasCheckmate
+      ..wasPromotion = wasPromotion
+      ..halfmoveIndex = halfmoveIndex
+      ..san = san
+      ..comment = comment
+      ..nags = nags
+      ..fenAfter = _pos.fen
+      ..moveNumber = null
+      ..isWhiteMove = _pos.turn == Side.white ? false : true;
 
     _moves.add(_lastMoveMeta!);
     allMoves.add(_lastMoveMeta!);
@@ -249,7 +253,7 @@ class GameState {
 
   bool get isCheckmate => _pos.isCheckmate; // 8. EndGame  isCheckmate
 
-  bool get isGameOver => _pos.isGameOver;
+  bool get isGameOver => _pos.isGameOver || isCheck || isDraw;
 
   ///
   bool get isGameOverExtended => isMate || isDraw;
@@ -446,10 +450,9 @@ class GameState {
       return;
     }
     // ensure we don't exceed available moves
-    final upto =
-        (halfmoveIndex < _moveObjects.length)
-            ? halfmoveIndex
-            : _moveObjects.length - 1;
+    final upto = (halfmoveIndex < _moveObjects.length)
+        ? halfmoveIndex
+        : _moveObjects.length - 1;
 
     // But because we cleared _moveObjects earlier, we need source moves — so this method expects caller to
     // pass a copy of moves or the GameState itself maintains _moveObjects; to support rebuild we will assume
@@ -502,7 +505,7 @@ class GameState {
     final List<String> parts = [];
     caps.forEach((role, cnt) {
       if (cnt <= 0) return;
-      final sym = roleUnicode(role, isWhite: side == Side.white);
+      final sym = roleUnicode(role, isWhite: side != Side.white);
       if (repeatSymbols) {
         parts.add(List.filled(cnt, sym).join());
       } else {
@@ -572,31 +575,27 @@ class GameState {
   }
 
   /// عدد كل دور مأخوذ *بواسطة* [side] (أي opponent فقد هذه القطع).
-  Map<Role, int> getCapturedPieces(Side side) {
-    final opponent = side == Side.white ? Side.black : Side.white;
-    final opponentCounts =
-        positionHistory.isNotEmpty
-            ? positionHistory.last.board.materialCount(opponent)
-            : _pos.board.materialCount(opponent);
-
-    final Map<Role, int> initial = {
-      Role.pawn: 8,
-      Role.knight: 2,
-      Role.bishop: 2,
-      Role.rook: 2,
-      Role.queen: 1,
-      Role.king: 1,
-    };
-
-    final Map<Role, int> captured = {};
-    for (final r in initial.keys) {
-      final before = initial[r] ?? 0;
-      final now = opponentCounts[r] ?? 0;
-      final taken = (before - now);
-      captured[r] = (taken > 0) ? taken : 0;
+    Map<Role, int> getCapturedPieces(Side side) {
+      final opponent = side == Side.white ? Side.black : Side.white;
+  
+      // Get the material count for the opponent at the start of the game.
+      final initialCounts = positionHistory.first.board.materialCount(opponent);
+  
+      // Get the material count for the opponent in the current position.
+      final currentCounts = positionHistory.last.board.materialCount(opponent);
+  
+      final Map<Role, int> captured = {};
+      // Iterate over all piece roles to see what has been captured.
+      for (final r in Role.values) {
+        final initialCount = initialCounts[r] ?? 0;
+        final currentCount = currentCounts[r] ?? 0;
+        final taken = initialCount - currentCount;
+        if (taken > 0) {
+          captured[r] = taken;
+        }
+      }
+      return captured;
     }
-    return captured;
-  }
 
   /// Returns an expanded list of Roles for captured pieces by [side].
   /// Example: {pawn:2, rook:1} -> [Role.pawn, Role.pawn, Role.rook]
@@ -616,10 +615,9 @@ class GameState {
 
   /// مجموع القيمة المادية للقطع **على اللوحة** لجهة [side].
   int materialOnBoard(Side side) {
-    final counts =
-        positionHistory.isNotEmpty
-            ? positionHistory.last.board.materialCount(side)
-            : _pos.board.materialCount(side);
+    final counts = positionHistory.isNotEmpty
+        ? positionHistory.last.board.materialCount(side)
+        : _pos.board.materialCount(side);
 
     int total = 0;
     counts.forEach((role, cnt) {
