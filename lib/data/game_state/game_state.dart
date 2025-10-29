@@ -253,7 +253,7 @@ class GameState {
 
   bool get isCheckmate => _pos.isCheckmate; // 8. EndGame  isCheckmate
 
-  bool get isGameOver => _pos.isGameOver || isCheck || isDraw;
+  bool get isGameOver => _pos.isGameOver || isMate || isDraw;
 
   ///
   bool get isGameOverExtended => isMate || isDraw;
@@ -575,27 +575,27 @@ class GameState {
   }
 
   /// عدد كل دور مأخوذ *بواسطة* [side] (أي opponent فقد هذه القطع).
-    Map<Role, int> getCapturedPieces(Side side) {
-      final opponent = side == Side.white ? Side.black : Side.white;
-  
-      // Get the material count for the opponent at the start of the game.
-      final initialCounts = positionHistory.first.board.materialCount(opponent);
-  
-      // Get the material count for the opponent in the current position.
-      final currentCounts = positionHistory.last.board.materialCount(opponent);
-  
-      final Map<Role, int> captured = {};
-      // Iterate over all piece roles to see what has been captured.
-      for (final r in Role.values) {
-        final initialCount = initialCounts[r] ?? 0;
-        final currentCount = currentCounts[r] ?? 0;
-        final taken = initialCount - currentCount;
-        if (taken > 0) {
-          captured[r] = taken;
-        }
+  Map<Role, int> getCapturedPieces(Side side) {
+    final opponent = side == Side.white ? Side.black : Side.white;
+
+    // Get the material count for the opponent at the start of the game.
+    final initialCounts = positionHistory.first.board.materialCount(opponent);
+
+    // Get the material count for the opponent in the current position.
+    final currentCounts = positionHistory.last.board.materialCount(opponent);
+
+    final Map<Role, int> captured = {};
+    // Iterate over all piece roles to see what has been captured.
+    for (final r in Role.values) {
+      final initialCount = initialCounts[r] ?? 0;
+      final currentCount = currentCounts[r] ?? 0;
+      final taken = initialCount - currentCount;
+      if (taken > 0) {
+        captured[r] = taken;
       }
-      return captured;
     }
+    return captured;
+  }
 
   /// Returns an expanded list of Roles for captured pieces by [side].
   /// Example: {pawn:2, rook:1} -> [Role.pawn, Role.pawn, Role.rook]

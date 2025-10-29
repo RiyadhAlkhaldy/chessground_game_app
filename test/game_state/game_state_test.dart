@@ -113,10 +113,11 @@ void main() {
     group('Endgame Conditions', () {
       test('Detect checkmate', () {
         final mateFen =
-            'rnb1kbnr/pppp1ppp/8/4p3/6Pq/5N2/PPPPPP1P/RNBQKB1R w KQkq - 1 3';
-        final gs = Chess.fromSetup(Setup.parseFen(mateFen));
+            'rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKB1R w KQkq - 1 3';
+        final gs = GameState(initial: Chess.fromSetup(Setup.parseFen(mateFen)));
         expect(gs.isCheckmate, isTrue);
-        // expect(gs.isGameOver, isTrue);
+        expect(gs.isGameOver, isTrue);
+        expect(gs.isMate, isTrue);
       });
 
       test('Detect stalemate', () {
@@ -150,8 +151,8 @@ void main() {
         for (int i = 0; i < 3; i++) {
           gs.play(Move.parse('g1f3')!);
           gs.play(Move.parse('g8f6')!);
-          gs.undoMove();
-          gs.undoMove();
+          gs.play(Move.parse('f3g1')!);
+          gs.play(Move.parse('f6g8')!);
         }
         expect(gs.isThreefoldRepetition(), isTrue);
       });
