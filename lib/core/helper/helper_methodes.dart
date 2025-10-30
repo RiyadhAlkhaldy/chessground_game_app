@@ -27,9 +27,12 @@ Future<Locale> getLocale(GetStorageControllerImp storage) async {
 }
 
 // create a guest player if not exists and return it
-Future<Player?> createPlayerIfNotExists(GetStorageControllerImp storage) async {
+Future<Player?> createPlayerIfNotExists(
+  GetStorageControllerImp storage, [
+  String key = 'user_uuid',
+]) async {
   final chessGame = ChessGameStorageService();
-  String? uuid = storage.getUUid('user_uuid');
+  String? uuid = storage.getUUid(key);
   if (uuid == null || uuid.isEmpty) {
     uuid = Uuid().v4();
     var newPlayer = Player(

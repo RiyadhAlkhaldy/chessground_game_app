@@ -424,11 +424,13 @@ class GameState {
     return true;
   }
 
-  /// Rebuild state up to given halfmove index (inclusive). If index == -1 -> initial position.
-  /// This method resets current game state and replays moves up to index.
-  void replayToHalfmove(int halfmoveIndex, {Position? initial}) {
+  void replayToHalfmove(
+    int halfmoveIndex, {
+    Position? initial,
+    List<Move>? moves,
+  }) {
     final start = initial ?? Chess.initial;
-    // reset everything
+
     _pos = start;
     positionHistory.clear();
     fenCounts.clear();
@@ -444,22 +446,15 @@ class GameState {
     agreementFlag = false;
     _lastMoveMeta = null;
 
-    if (halfmoveIndex < 0) {
-      return;
-    }
-    // ensure we don't exceed available moves
-    final upto = (halfmoveIndex < _moveObjects.length)
+    if (halfmoveIndex < 0 || moves == null || moves.isEmpty) return;
+
+    final upto = (halfmoveIndex < moves.length)
         ? halfmoveIndex
-        : _moveObjects.length - 1;
+        : moves.length - 1;
 
-    // But because we cleared _moveObjects earlier, we need source moves — so this method expects caller to
-    // pass a copy of moves or the GameState itself maintains _moveObjects; to support rebuild we will assume
-    // caller saved a copy before clearing. For safety, this method will not replay if there are no saved moves.
-    // We'll instead provide a separate method getMoveObjectsCopy() so controller can rebuild by doing:
-    // new GameState(); then for i in 0..index: newGameState.play(moveObjects[i]);
-    // So keep this method minimal — we leave full rebuild to controller using getMoveObjectsCopy().
-
-    // (Method kept for compatibility but not used in controller.)
+    for (int i = 0; i <= upto; i++) {
+      play(moves[i]);
+    }
   }
 
   /// Return a copy of the internal Move objects (for replay).

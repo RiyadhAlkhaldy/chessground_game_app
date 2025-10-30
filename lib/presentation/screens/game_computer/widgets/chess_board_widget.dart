@@ -1,34 +1,66 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/helper/helper_methodes.dart';
 import 'package:chessground_game_app/presentation/controllers/game_computer_controller.dart';
+import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
-import '../controllers/chess_board_settings_controller.dart';
-
-Color darken(Color c, [double amount = .1]) {
-  assert(amount >= 0 && amount <= 1);
-  return Color.lerp(c, const Color(0xFF000000), amount) ?? c;
-}
+import '../../../../core/const.dart';
+import '../../../../core/styles/styles.dart';
+import '../../../controllers/chess_board_settings_controller.dart';
 
 class ChessBoardWidget extends GetView<GameComputerController> {
-  const ChessBoardWidget({super.key, required this.ctrlBoardSettings});
-
-  final ChessBoardSettingsController ctrlBoardSettings;
-
+  const ChessBoardWidget({super.key});
   @override
   Widget build(BuildContext context) {
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          debugPrint('rebuild buildChessBoardWidget');
+          return PopScope(
+            canPop: controller
+                .gameState
+                .isGameOverExtended, // Prevents automatic exit
 
-          return GetBuilder<GameComputerController>(
-            builder: (controller) => Obx(() {
-              return controller.stockfishState.value != StockfishState.ready
+            onPopInvokedWithResult: (didPop, result) async {
+              if (didPop) {
+                return;
+              }
+              if (controller.getResult != null) {
+                Get.back();
+              } else {
+                final shouldExit = await showExitConfirmationDialog(context)
+                    .then((value) {
+                      if (value != null && value == true) {
+                        controller.resign(controller.gameState.turn);
+                      }
+                      return value;
+                    });
+
+                if (shouldExit == true) {
+                  if (context.mounted) {
+                    // controller.gameStatus;
+                    // controller.plySound.executeResignSound();
+                    controller.resign(
+                      controller.playerSide == PlayerSide.white
+                          ? Side.white
+                          : Side.black,
+                    );
+                    await controller.gameStatus;
+                    // And then, after closing the second dialog, navigate back
+                    // if (context.mounted) {
+                    //   Get.back();
+                    // }
+                  }
+                }
+              }
+            },
+            child: GetX<ChessBoardSettingsController>(
+              builder: (ctrlBoardSettings) =>
+                  controller.stockfishState.value != StockfishState.ready
                   ? const CircularProgressIndicator()
                   : Chessboard(
                       size: min(constraints.maxWidth, constraints.maxHeight),
@@ -37,7 +69,7 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                         colorScheme: ctrlBoardSettings.boardTheme.value.colors,
                         border: ctrlBoardSettings.showBorder.value
                             ? BoardBorder(
-                                width: 16.0,
+                                width: 10.0,
                                 color: darken(
                                   ctrlBoardSettings
                                       .boardTheme
@@ -85,8 +117,8 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                       game: GameData(
                         playerSide: controller.playerSide,
                         validMoves: controller.validMoves,
-                        sideToMove: controller.position.value.turn,
-                        isCheck: controller.position.value.isCheck,
+                        sideToMove: controller.gameState.position.turn,
+                        isCheck: controller.gameState.position.isCheck,
                         promotionMove: controller.promotionMove,
                         onMove: controller.onUserMoveAgainstAI,
                         onPromotionSelection: controller.onPromotionSelection,
@@ -99,8 +131,8 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                       shapes: ctrlBoardSettings.shapes.value.isNotEmpty
                           ? ctrlBoardSettings.shapes.value
                           : null,
-                    );
-            }),
+                    ),
+            ),
           );
         },
       ),

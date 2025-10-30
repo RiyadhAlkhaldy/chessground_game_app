@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/constants/assets_images.dart';
-import '../../../../domain/collections/player.dart';
+import '../../../../domain/models/player_model.dart';
 import '../../../controllers/chess_board_settings_controller.dart';
 
 String formatMsToClock(int ms) {
@@ -26,8 +26,8 @@ class ShowCircleAvatarAndTimerInUp extends StatelessWidget {
     this.gameState,
   });
 
-  final Rx<Player> whitePlayer;
-  final Rx<Player> blackPlayer;
+  final Rx<PlayerModel> whitePlayer;
+  final Rx<PlayerModel> blackPlayer;
   final ChessClockService? clockCtrl;
   final List<Role>? whiteCapturedList;
   final List<Role>? blackCapturedList;
@@ -64,8 +64,8 @@ class ShowCircleAvatarAndTimerInDown extends StatelessWidget {
     this.blackCapturedList,
     this.gameState,
   });
-  final Rx<Player> whitePlayer;
-  final Rx<Player> blackPlayer;
+  final Rx<PlayerModel> whitePlayer;
+  final Rx<PlayerModel> blackPlayer;
   final ChessClockService? clockCtrl;
 
   final List<Role>? whiteCapturedList;
@@ -101,7 +101,7 @@ class WhitePlayerClockWidget extends StatelessWidget {
     this.gameState,
   });
 
-  final Rx<Player> whitePlayer;
+  final Rx<PlayerModel> whitePlayer;
   final ChessClockService? clockCtrl;
   final List<Role>? whiteCapturedList;
   final GameState? gameState;
@@ -113,43 +113,38 @@ class WhitePlayerClockWidget extends StatelessWidget {
     return Column(
       children: [
         Obx(
-          () =>
-              whitePlayer.value.name.isEmpty
-                  ? const SizedBox()
-                  : ListTile(
-                    leading:
-                        whitePlayer.value.image == null
-                            ? CircleAvatar(
-                              radius: 25,
-                              backgroundImage: AssetImage(
-                                AssetsImages.userIcon,
-                              ),
-                            )
-                            : CircleAvatar(
-                              radius: 25,
+          () => whitePlayer.value.name.isEmpty
+              ? const SizedBox()
+              : ListTile(
+                  leading: whitePlayer.value.image == null
+                      ? CircleAvatar(
+                          radius: 25,
+                          backgroundImage: AssetImage(AssetsImages.userIcon),
+                        )
+                      : CircleAvatar(
+                          radius: 25,
 
-                              backgroundImage: NetworkImage(
-                                whitePlayer.value.image!,
-                              ),
-                            ),
-                    title: Text(whitePlayer.value.name.substring(0, 6)),
-                    subtitle: Row(
-                      children: [
-                        Text('Rating: ${whitePlayer.value.playerRating}'),
-                        if (whiteCapturedList != null)
-                          Text(
-                            "${whiteCapturedList!.map((r) => gameState!.roleUnicode(r, isWhite: true)).toList().join()}$materialAdvantgeWhite",
+                          backgroundImage: NetworkImage(
+                            whitePlayer.value.image!,
                           ),
-                      ],
-                    ),
-                    trailing:
-                        clockCtrl != null
-                            ? Text(
-                              formatMsToClock(clockCtrl!.whiteTimeMs.value),
-                              style: const TextStyle(fontSize: 16),
-                            )
-                            : null,
+                        ),
+                  title: Text(whitePlayer.value.name.substring(0, 6)),
+                  subtitle: Row(
+                    children: [
+                      Text('Rating: ${whitePlayer.value.playerRating}'),
+                      if (whiteCapturedList != null)
+                        Text(
+                          "${whiteCapturedList!.map((r) => gameState!.roleUnicode(r, isWhite: true)).toList().join()}$materialAdvantgeWhite",
+                        ),
+                    ],
                   ),
+                  trailing: clockCtrl != null
+                      ? Text(
+                          formatMsToClock(clockCtrl!.whiteTimeMs.value),
+                          style: const TextStyle(fontSize: 16),
+                        )
+                      : null,
+                ),
         ),
       ],
     );
@@ -165,7 +160,7 @@ class BlackPlayerClockWidget extends StatelessWidget {
     this.gameState,
   });
 
-  final Rx<Player> blackPlayer;
+  final Rx<PlayerModel> blackPlayer;
   final ChessClockService? clockCtrl;
   final List<Role>? blackCapturedList;
   final GameState? gameState;
@@ -176,44 +171,39 @@ class BlackPlayerClockWidget extends StatelessWidget {
     return Column(
       children: [
         Obx(
-          () =>
-              blackPlayer.value.name.isEmpty
-                  ? const SizedBox()
-                  : ListTile(
-                    leading:
-                        blackPlayer.value.image == null
-                            ? CircleAvatar(
-                              radius: 25,
-                              backgroundImage: AssetImage(
-                                AssetsImages.userIcon,
-                              ),
-                            )
-                            : CircleAvatar(
-                              radius: 25,
+          () => blackPlayer.value.name.isEmpty
+              ? const SizedBox()
+              : ListTile(
+                  leading: blackPlayer.value.image == null
+                      ? CircleAvatar(
+                          radius: 25,
+                          backgroundImage: AssetImage(AssetsImages.userIcon),
+                        )
+                      : CircleAvatar(
+                          radius: 25,
 
-                              backgroundImage: NetworkImage(
-                                blackPlayer.value.image!,
-                              ),
-                            ),
-                    title: Text(blackPlayer.value.name.substring(0, 6)),
-                    subtitle: Row(
-                      children: [
-                        Text('Rating: ${blackPlayer.value.playerRating}'),
-                        if (blackCapturedList != null)
-                          Text(
-                            "${blackCapturedList!.map((r) => gameState!.roleUnicode(r, isWhite: false)).toList().join()}$materialAdvantgeBlack",
+                          backgroundImage: NetworkImage(
+                            blackPlayer.value.image!,
                           ),
-                      ],
-                    ),
-                    trailing:
-                        clockCtrl != null
-                            ? Text(
-                              formatMsToClock(clockCtrl!.blackTimeMs.value),
-
-                              style: const TextStyle(fontSize: 16),
-                            )
-                            : null,
+                        ),
+                  title: Text(blackPlayer.value.name.substring(0, 6)),
+                  subtitle: Row(
+                    children: [
+                      Text('Rating: ${blackPlayer.value.playerRating}'),
+                      if (blackCapturedList != null)
+                        Text(
+                          "${blackCapturedList!.map((r) => gameState!.roleUnicode(r, isWhite: false)).toList().join()}$materialAdvantgeBlack",
+                        ),
+                    ],
                   ),
+                  trailing: clockCtrl != null
+                      ? Text(
+                          formatMsToClock(clockCtrl!.blackTimeMs.value),
+
+                          style: const TextStyle(fontSize: 16),
+                        )
+                      : null,
+                ),
         ),
         // const SizedBox(height: 16),
         // _controls(controller.clockCtrl!),
@@ -240,8 +230,8 @@ Widget _controls(ChessClockService chessClock) {
       ),
       const SizedBox(width: 2),
       ElevatedButton(
-        onPressed:
-            () => chessClock.reset(newInitialMs: chessClock.initialTimeMs),
+        onPressed: () =>
+            chessClock.reset(newInitialMs: chessClock.initialTimeMs),
         child: const Text('Reset'),
       ),
     ],

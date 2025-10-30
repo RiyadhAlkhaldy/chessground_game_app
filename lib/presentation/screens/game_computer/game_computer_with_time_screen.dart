@@ -1,17 +1,21 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/helper/helper_methodes.dart';
+import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
-import '../../../core/helper/helper_methodes.dart';
-import '../../../domain/services/stockfish_engine_service.dart';
+import '../../../core/const.dart';
+import '../../../core/styles/styles.dart';
 import '../../controllers/chess_board_settings_controller.dart';
-import '../../controllers/game_computer_controller.dart';
+import '../../controllers/game_computer_with_time_controller.dart';
 import '../../widgets/chess_board_settings_widgets.dart';
+import '../../widgets/pgn_horizontal_row.dart';
 import 'widgets/chess_clock_widget.dart';
 
 class GameComputerWithTimeScreen extends StatelessWidget {
@@ -20,51 +24,20 @@ class GameComputerWithTimeScreen extends StatelessWidget {
   final ctrl = Get.find<GameComputerWithTimeController>();
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false, // Prevents automatic exit
-
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) {
-          return;
-        }
-        if (ctrl.getResult != GameStatus.ongoing) {
-          Get.back();
-        } else {
-          final shouldExit = await showExitConfirmationDialog(context);
-
-          if (shouldExit == true) {
-            if (context.mounted) {
-              //TODO Fix outcome
-              var outcome = ctrl.position.value.outcome;
-              var outcomeText =
-                  '${"الفائز هو :${outcome?.winner == Side.white ? 'الأبيض' : 'الأسود'}"} لقد خسرت هذه اللعبة. يمكنك الآن العودة إلى الصفحة الرئيسية.';
-              // If the user confirms, show the second dialog
-              await showGameOverDialog(context, outcomeText);
-              // And then, after closing the second dialog, navigate back
-              if (context.mounted) {
-                Get.back();
-              }
-            }
-          }
-        }
-      },
-      child: Scaffold(
-        primary: MediaQuery.of(context).orientation == Orientation.portrait,
-        appBar: AppBar(
-          title: GetX<GameComputerWithTimeController>(
-            builder: (_) {
-              return Text(ctrl.statusText.value);
-            },
-          ),
+    return Scaffold(
+      primary: MediaQuery.of(context).orientation == Orientation.portrait,
+      appBar: AppBar(
+        title: GetX<GameComputerWithTimeController>(
+          builder: (_) {
+            return Text(ctrl.statusText.value);
+          },
         ),
+      ),
 
-        body: OrientationBuilder(
-          builder:
-              (context, orientation) =>
-                  orientation == Orientation.portrait
-                      ? BuildPortrait()
-                      : BuildLandScape(),
-        ),
+      body: OrientationBuilder(
+        builder: (context, orientation) => orientation == Orientation.portrait
+            ? BuildPortrait()
+            : BuildLandScape(),
       ),
     );
   }
@@ -78,35 +51,48 @@ class BuildPortrait extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: screenPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // EvaluationBarWidget(),
-          ShowCircleAvatarAndTimerInUp(
-            whitePlayer: ctrl.whitePlayer,
-            blackPlayer: ctrl.blackPlayer,
-            clockCtrl: ctrl.clockCtrl,
-          ),
-          ChessBoardWidget(ctrlBoardSettings: ctrlBoardSettings),
-          ShowCircleAvatarAndTimerInDown(
-            whitePlayer: ctrl.whitePlayer,
-            blackPlayer: ctrl.blackPlayer,
-            clockCtrl: ctrl.clockCtrl,
-          ),
-
-          const SizedBox(height: screenPortraitSplitter),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: screenPadding),
-              child: ChessBoardSettingsWidgets(),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            GetBuilder<GameComputerWithTimeController>(
+              builder: (controller) {
+                return PgnHorizontalRow(
+                  tokens: ctrl.pgnTokens,
+                  currentHalfmoveIndex: ctrl.currentHalfmoveIndex,
+                  onJumpTo: (idx) => ctrl.jumpToHalfmove(idx),
+                );
+              },
             ),
-          ),
-          const SizedBox(height: screenPortraitSplitter),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: screenPadding),
-            child: BuildControlButtons(),
-          ),
-        ],
+            GetBuilder<GameComputerWithTimeController>(
+              builder: (ctrl) => Column(
+                children: [
+                  ShowCircleAvatarAndTimerInUp(
+                    whitePlayer: ctrl.whitePlayer,
+                    blackPlayer: ctrl.blackPlayer,
+                    whiteCapturedList: ctrl.whiteCapturedList,
+                    blackCapturedList: ctrl.blackCapturedList,
+                    gameState: ctrl.gameState,
+                  ),
+                  ChessBoardWidget(),
+                  ShowCircleAvatarAndTimerInDown(
+                    whitePlayer: ctrl.whitePlayer,
+                    blackPlayer: ctrl.blackPlayer,
+                    whiteCapturedList: ctrl.whiteCapturedList,
+                    blackCapturedList: ctrl.blackCapturedList,
+                    gameState: ctrl.gameState,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: screenPortraitSplitter),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: screenPadding),
+              child: BuildControlButtons(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -122,21 +108,40 @@ class BuildLandScape extends StatelessWidget {
       padding: const EdgeInsets.all(screenPadding),
       child: Row(
         children: [
-          // EvaluationBarWidget(),
-          // ctrlBoardSettings.orientation.value == Side.white
-          //     ? ChessClockBlackWidget(chessClock: ctrl.clockCtrl!)
-          //     : ChessClockBlackWidget(chessClock: ctrl.clockCtrl!),
           Expanded(
-            child: ChessBoardWidget(ctrlBoardSettings: ctrlBoardSettings),
+            child: GetBuilder<GameComputerWithTimeController>(
+              builder: (_) => ChessBoardWidget(),
+            ),
           ),
-          // ctrlBoardSettings.orientation.value == Side.white
-          //     ? ChessClockBlackWidget(chessClock: ctrl.clockCtrl!)
-          //     : ChessClockBlackWidget(chessClock: ctrl.clockCtrl!),
+
           const SizedBox(width: screenLandscapeSplitter),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                GetBuilder<GameComputerWithTimeController>(
+                  builder: (controller) {
+                    return PgnHorizontalRow(
+                      tokens: ctrl.pgnTokens,
+                      currentHalfmoveIndex: ctrl.currentHalfmoveIndex,
+                      onJumpTo: (idx) => ctrl.jumpToHalfmove(idx),
+                    );
+                  },
+                ),
+                ShowCircleAvatarAndTimerInUp(
+                  whitePlayer: ctrl.whitePlayer,
+                  blackPlayer: ctrl.blackPlayer,
+                  whiteCapturedList: ctrl.whiteCapturedList,
+                  blackCapturedList: ctrl.blackCapturedList,
+                  gameState: ctrl.gameState,
+                ),
+                ShowCircleAvatarAndTimerInDown(
+                  whitePlayer: ctrl.whitePlayer,
+                  blackPlayer: ctrl.blackPlayer,
+                  whiteCapturedList: ctrl.whiteCapturedList,
+                  blackCapturedList: ctrl.blackCapturedList,
+                  gameState: ctrl.gameState,
+                ),
                 Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),
                 BuildControlButtons(),
@@ -173,131 +178,161 @@ class BuildControlButtons extends StatelessWidget {
   }
 }
 
-Widget buildNewRoundButton(GameComputerWithTimeController ctrl) =>
-    FilledButton.icon(
-      icon: const Icon(Icons.refresh_rounded),
-      label: const Text('New Round'),
-      onPressed: () {
-        ctrl.reset();
-      },
-    );
-
-Widget buildUndoButton() => GetX<GameComputerWithTimeController>(
-  builder:
-      (controller) => FilledButton.icon(
-        icon: const Icon(Icons.undo_rounded),
-        label: const Text('Undo'),
-        onPressed: controller.canUndo.value ? controller.undoMove : null,
-      ),
-);
-Widget buildRedoButton() => GetX<GameComputerWithTimeController>(
-  builder:
-      (controller) => FilledButton.icon(
-        icon: const Icon(Icons.redo_rounded),
-        label: const Text('Redo'),
-        onPressed: controller.canRedo.value ? controller.redoMove : null,
-      ),
-);
-
-Color darken(Color c, [double amount = .1]) {
-  assert(amount >= 0 && amount <= 1);
-  return Color.lerp(c, const Color(0xFF000000), amount) ?? c;
-}
-
 class ChessBoardWidget extends GetView<GameComputerWithTimeController> {
-  const ChessBoardWidget({super.key, required this.ctrlBoardSettings});
-
-  final ChessBoardSettingsController ctrlBoardSettings;
-
+  const ChessBoardWidget({super.key});
   @override
   Widget build(BuildContext context) {
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          debugPrint('rebuild buildChessBoardWidget');
+          return PopScope(
+            canPop: controller
+                .gameState
+                .isGameOverExtended, // Prevents automatic exit
 
-          return GetBuilder<GameComputerWithTimeController>(
-            builder:
-                (controller) => Obx(() {
-                  return controller.stockfishState.value != StockfishState.ready
-                      ? const CircularProgressIndicator()
-                      : Chessboard(
-                        size: min(constraints.maxWidth, constraints.maxHeight),
-                        settings: ChessboardSettings(
-                          pieceAssets: ctrlBoardSettings.pieceSet.value.assets,
-                          colorScheme:
-                              ctrlBoardSettings.boardTheme.value.colors,
-                          border:
-                              ctrlBoardSettings.showBorder.value
-                                  ? BoardBorder(
-                                    width: 16.0,
-                                    color: darken(
-                                      ctrlBoardSettings
-                                          .boardTheme
-                                          .value
-                                          .colors
-                                          .darkSquare,
-                                      0.2,
-                                    ),
-                                  )
-                                  : null,
-                          enableCoordinates: true,
+            onPopInvokedWithResult: (didPop, result) async {
+              if (didPop) {
+                return;
+              }
+              if (controller.getResult != null) {
+                Get.back();
+              } else {
+                final shouldExit = await showExitConfirmationDialog(context)
+                    .then((value) {
+                      if (value != null && value == true) {
+                        controller.resign(controller.gameState.turn);
+                      }
+                      return value;
+                    });
 
-                          // showLastMove: true,
-                          // enablePremoveCastling: true,
-                          // showValidMoves: true,
-                          autoQueenPromotion: false,
-                          animationDuration:
-                              ctrlBoardSettings.pieceAnimation.value
-                                  ? const Duration(milliseconds: 200)
-                                  : Duration.zero,
+                if (shouldExit == true) {
+                  if (context.mounted) {
+                    // controller.gameStatus;
+                    // controller.plySound.executeResignSound();
+                    controller.resign(
+                      controller.playerSide == PlayerSide.white
+                          ? Side.white
+                          : Side.black,
+                    );
+                    await controller.gameStatus;
+                    // And then, after closing the second dialog, navigate back
+                    // if (context.mounted) {
+                    //   Get.back();
+                    // }
+                  }
+                }
+              }
+            },
+            child: GetX<ChessBoardSettingsController>(
+              builder: (ctrlBoardSettings) =>
+                  controller.stockfishState.value != StockfishState.ready
+                  ? const CircularProgressIndicator()
+                  : Chessboard(
+                      size: min(constraints.maxWidth, constraints.maxHeight),
+                      settings: ChessboardSettings(
+                        pieceAssets: ctrlBoardSettings.pieceSet.value.assets,
+                        colorScheme: ctrlBoardSettings.boardTheme.value.colors,
+                        border: ctrlBoardSettings.showBorder.value
+                            ? BoardBorder(
+                                width: 10.0,
+                                color: darken(
+                                  ctrlBoardSettings
+                                      .boardTheme
+                                      .value
+                                      .colors
+                                      .darkSquare,
+                                  0.2,
+                                ),
+                              )
+                            : null,
+                        enableCoordinates: true,
 
-                          dragFeedbackScale:
-                              ctrlBoardSettings.dragMagnify.value ? 2.0 : 1.0,
-                          dragTargetKind:
-                              ctrlBoardSettings.dragTargetKind.value,
-                          drawShape: DrawShapeOptions(
-                            enable: ctrlBoardSettings.drawMode,
-                            onCompleteShape: ctrlBoardSettings.onCompleteShape,
-                            onClearShapes: () {
-                              ctrlBoardSettings.shapes.value = ISet<Shape>();
-                            },
-                          ),
-                          pieceShiftMethod:
-                              ctrlBoardSettings.pieceShiftMethod.value,
-                          autoQueenPromotionOnPremove: false,
-                          pieceOrientationBehavior:
-                              // controller.playMode == Mode.freePlay
-                              // PieceOrientationBehavior.opponentUpsideDown,
-                              PieceOrientationBehavior.facingUser,
+                        // showLastMove: true,
+                        // enablePremoveCastling: true,
+                        // showValidMoves: true,
+                        autoQueenPromotion: false,
+                        animationDuration:
+                            ctrlBoardSettings.pieceAnimation.value
+                            ? const Duration(milliseconds: 200)
+                            : Duration.zero,
+
+                        dragFeedbackScale: ctrlBoardSettings.dragMagnify.value
+                            ? 2.0
+                            : 1.0,
+                        dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
+                        drawShape: DrawShapeOptions(
+                          enable: ctrlBoardSettings.drawMode,
+                          onCompleteShape: ctrlBoardSettings.onCompleteShape,
+                          onClearShapes: () {
+                            ctrlBoardSettings.shapes.value = ISet<Shape>();
+                          },
                         ),
-                        orientation: ctrlBoardSettings.orientation.value,
+                        pieceShiftMethod:
+                            ctrlBoardSettings.pieceShiftMethod.value,
+                        autoQueenPromotionOnPremove: false,
+                        pieceOrientationBehavior:
+                            // controller.playMode == Mode.freePlay
+                            // PieceOrientationBehavior.opponentUpsideDown,
+                            PieceOrientationBehavior.facingUser,
+                      ),
+                      orientation: ctrlBoardSettings.orientation.value,
 
-                        fen: controller.fen,
-                        // lastMove: controller.lastMove,
-                        game: GameData(
-                          playerSide: controller.playerSide,
-                          validMoves: controller.validMoves,
-                          sideToMove: controller.position.value.turn,
-                          isCheck: controller.position.value.isCheck,
-                          promotionMove: controller.promotionMove,
-                          onMove: controller.onUserMoveAgainstAI,
-                          onPromotionSelection: controller.onPromotionSelection,
-                          premovable: (
-                            onSetPremove: controller.onSetPremove,
-                            premove: controller.premove,
-                          ),
+                      fen: controller.fen,
+                      // lastMove: controller.lastMove,
+                      game: GameData(
+                        playerSide: controller.playerSide,
+                        validMoves: controller.validMoves,
+                        sideToMove: controller.gameState.position.turn,
+                        isCheck: controller.gameState.position.isCheck,
+                        promotionMove: controller.promotionMove,
+                        onMove: controller.onUserMoveAgainstAI,
+                        onPromotionSelection: controller.onPromotionSelection,
+                        premovable: (
+                          onSetPremove: controller.onSetPremove,
+                          premove: controller.premove,
                         ),
+                      ),
 
-                        shapes:
-                            ctrlBoardSettings.shapes.value.isNotEmpty
-                                ? ctrlBoardSettings.shapes.value
-                                : null,
-                      );
-                }),
+                      shapes: ctrlBoardSettings.shapes.value.isNotEmpty
+                          ? ctrlBoardSettings.shapes.value
+                          : null,
+                    ),
+            ),
           );
         },
       ),
     );
   }
 }
+
+Widget buildNewRoundButton(GameComputerWithTimeController ctrl) => IconButton(
+  icon: Icon(Symbols.refresh, size: iconSize),
+  onPressed: ctrl.gameState.isGameOverExtended || !ctrl.canUndo.value
+      ? null
+      : ctrl.reset,
+);
+Widget buildUndoButton() => GetX<GameComputerWithTimeController>(
+  builder: (controller) => IconButton(
+    icon: Icon(Symbols.chevron_left, size: iconSize),
+    onPressed: controller.canUndo.value ? controller.undoMove : null,
+  ),
+);
+Widget buildRedoButton() => GetX<GameComputerWithTimeController>(
+  builder: (controller) => IconButton(
+    icon: Icon(Symbols.chevron_right, size: iconSize),
+    onPressed: controller.canRedo.value ? controller.redoMove : null,
+  ),
+);
+Widget buildMenuButton() => IconButton(
+  icon: Icon(Symbols.menu, size: iconSize),
+  onPressed: () {
+    Get.dialog(
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: screenPadding),
+        child: ChessBoardSettingsWidgets(),
+      ),
+      name: Get.context!.l10n.mobileBoardSettings,
+      barrierColor: Theme.of(Get.context!).dialogTheme.backgroundColor,
+    );
+  },
+);

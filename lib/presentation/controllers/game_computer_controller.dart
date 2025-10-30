@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/presentation/controllers/game_controller.dart';
+import 'package:chessground_game_app/domain/collections/player.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -10,35 +10,63 @@ import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../../core/helper/helper_methodes.dart';
+import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
-import '../../domain/models/extended_evaluation.dart';
 import '../../domain/collections/chess_game.dart';
-import '../../domain/collections/player.dart';
-import '../../domain/services/chess_clock_service.dart';
+import '../../domain/models/extended_evaluation.dart';
+import '../../domain/models/player_model.dart';
 import '../../domain/services/chess_game_storage_service.dart';
 import '../../domain/services/stockfish_engine_service.dart';
-import 'abstract_game_controller.dart';
 import 'chess_board_settings_controller.dart';
 import 'get_storage_controller.dart';
 import 'side_choosing_controller.dart';
 
-part 'game_computer_with_time_controller.dart';
-
-abstract class GameAiController extends AbstractGameController
+class GameComputerController extends GetxController
     with WidgetsBindingObserver {
-  final GetStorageControllerImp storage = Get.find<GetStorageControllerImp>();
-  Rx<Player> whitePlayer = Player(uuid: '', name: '', type: '').obs;
-  Rx<Player> blackPlayer = Player(uuid: '', name: '', type: '').obs;
+  GameState gameState = GameState();
+  Position get initail => Chess.fromSetup(Setup.parseFen(_initailLocalFen));
+  String get _initailLocalFen => Chess.initial.fen;
+  // String get _initailLocalFen => "8/P7/8/k7/8/8/8/K7 w - - 0 1";
+  late String _fen;
+
+  // ignore: unnecessary_getters_setters
+  String get fen => _fen;
+
+  set fen(String value) => _fen = value;
+
+  ValidMoves validMoves = IMap(const {});
+
+  bool get isCheckmate => gameState.isCheckmate;
+
+  Side? get winner {
+    return gameState.result?.winner;
+  }
+
+  Rx<PlayerModel> whitePlayer = PlayerModel(
+    id: 1,
+    uuid: 'White_Player',
+    name: 'White Player',
+    type: 'player',
+    createdAt: DateTime.now(),
+  ).obs;
+  Rx<PlayerModel> blackPlayer = PlayerModel(
+    id: 2,
+    uuid: 'Black Player',
+    name: 'Black Player',
+    type: 'player',
+    createdAt: DateTime.now(),
+  ).obs;
   final PlaySoundUseCase plySound;
-  final SideChoosingController choosingCtrl;
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
+  final storage = Get.find<GetStorageControllerImp>();
+  final SideChoosingController choosingCtrl;
   final Rx<StockfishState> stockfishState = StockfishState.disposed.obs;
   final StockfishEngineService engineService;
-  GameAiController(this.choosingCtrl, this.engineService, this.plySound);
+  GameComputerController(this.choosingCtrl, this.engineService, this.plySound);
   bool canPop = false;
   NormalMove? promotionMove;
   NormalMove? premove;
-  PlayerSide playerSide = PlayerSide.none;
+  PlayerSide playerSide = PlayerSide.both;
   Side humanSide = Side.white;
   int thinkingTimeForAI = 2000; // default 2 seconds
 
@@ -50,8 +78,11 @@ abstract class GameAiController extends AbstractGameController
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
+    gameState = GameState(initial: initail);
+    fen = gameState.position.fen;
+    validMoves = makeLegalMoves(gameState.position);
+    plySound.executeDongSound();
+
     onstartVsEngine().then((_) {
       engineService.start().then((_) {
         _applyStockfishSettings();
@@ -71,17 +102,40 @@ abstract class GameAiController extends AbstractGameController
     engineService.bestmoves.listen((event) {
       debugPrint('bestmoves: $event');
       _makeMoveAi(event);
+      update();
     });
-    ever(position, (_) {
-      if (position.value.isGameOver) {
-        _gameStorageService.endGame(
-          chessGame,
-          result: position.value.turn == Side.white ? '1-0' : '0-1',
-          movesData: pastMoves,
-          headers: _headers,
-        );
-      }
-    });
+    update();
+
+    // ever(position, (_) {
+    //   if (position.value.isGameOver) {
+    //     _gameStorageService.endGame(
+    //       chessGame,
+    //       result: position.value.turn == Side.white ? '1-0' : '0-1',
+    //       movesData: pastMoves,
+    //       headers: _headers,
+    //     );
+    //   }
+    // });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _startStockfishIfNecessary();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      engineService.stopStockfish();
+    }
+  }
+
+  void _startStockfishIfNecessary() {
+    engineService.startStockfishIfNecessary
+        ? engineService.start().then((_) {
+            stockfishState.value = StockfishState.ready;
+            update();
+          })
+        : null;
   }
 
   Future<void> onstartVsEngine() async {
@@ -96,20 +150,20 @@ abstract class GameAiController extends AbstractGameController
       ctrlBoardSettings.orientation.value = Side.white;
       await createPlayerIfNotExists(
         storage,
-      ).then((value) => whitePlayer.value = value!);
+      ).then((value) => whitePlayer.value = value!.toModel());
       await createAIPlayerIfNotExists(
         storage,
-      ).then((value) => blackPlayer.value = value!);
+      ).then((value) => blackPlayer.value = value!.toModel());
     } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
       playerSide = PlayerSide.black;
       ctrlBoardSettings.orientation.value = Side.black;
       await createAIPlayerIfNotExists(
         storage,
-      ).then((value) => whitePlayer.value = value!);
+      ).then((value) => whitePlayer.value = value!.toModel());
 
       await createPlayerIfNotExists(
         storage,
-      ).then((value) => blackPlayer.value = value!);
+      ).then((value) => blackPlayer.value = value!.toModel());
     }
   }
 
@@ -134,7 +188,7 @@ abstract class GameAiController extends AbstractGameController
     _headers['ECO'] = 'C77';
     _headers['WhiteElo'] = whitePlayer.value.playerRating.toString();
     _headers['BlackElo'] = blackPlayer.value.playerRating.toString();
-    _headers['PlyCount'] = pastMoves.length.toString();
+    _headers['PlyCount'] = gameState.allMoves.length.toString();
     _headers['Termination'] = 'Normal';
     _headers['Opening'] = "Ruy Lopez, Closed, Breyer Defense";
     _headers['Variant'] = "Standard";
@@ -145,23 +199,24 @@ abstract class GameAiController extends AbstractGameController
     _gameStorageService.startNewGame(
       chessGame: chessGame,
       startFEN: fen,
-      white: whitePlayer.value,
-      black: blackPlayer.value,
+      white: whitePlayer.value.toCollection(),
+      black: blackPlayer.value.toCollection(),
       headers: _headers,
     );
   }
 
   /// حفظ اللعبة الحالية في Isar
   Future<void> saveCurrentGame() async {
-    _headers['Result'] = getResult.name;
+    //TODO
+    // _headers['Result'] = getResult.name;
     _headers['EventDate'] = DateTime.now().toIso8601String().split('T').first;
     _headers['WhiteElo'] = whitePlayer.value.playerRating.toString();
     _headers['BlackElo'] = blackPlayer.value.playerRating.toString();
-    _headers['PlyCount'] = pastMoves.length.toString();
-    _headers['Termination'] = gameTermination.name;
+    // _headers['PlyCount'] = pastMoves.length.toString();
+    // _headers['Termination'] = gameTermination.name;
 
     final root = PgnNode<PgnNodeData>();
-    for (final move in pastMoves) {
+    for (final move in gameState.allMoves) {
       root.children.add(PgnChildNode<PgnNodeData>(PgnNodeData(san: move.san!)));
     }
     final pgnGame = PgnGame<PgnNodeData>(
@@ -171,70 +226,48 @@ abstract class GameAiController extends AbstractGameController
     );
     final pgnText = pgnGame.makePgn();
 
-    chessGame =
-        chessGame
-          ..fullPgn = pgnText
-          ..movesCount = pastMoves.length
-          ..event = _headers['Event']
-          ..site = _headers['Site']
-          ..date = DateTime.now()
-          ..round = _headers['Round']
-          ..result = _headers['Result']
-          ..whitePlayer.value = whitePlayer.value
-          ..blackPlayer.value = blackPlayer.value
-          ..moves;
+    chessGame = chessGame
+      ..fullPgn = pgnText
+      ..movesCount = gameState.allMoves.length
+      ..event = _headers['Event']
+      ..site = _headers['Site']
+      ..date = DateTime.now()
+      ..round = _headers['Round']
+      ..result = _headers['Result']
+      ..whitePlayer.value = whitePlayer.value.toCollection()
+      ..blackPlayer.value = blackPlayer.value.toCollection()
+      ..moves;
 
     await _gameStorageService.saveGame(
       chessGame,
-      whitePlayer.value,
-      blackPlayer.value,
+      whitePlayer.value.toCollection(),
+      blackPlayer.value.toCollection(),
     );
   }
 
-  ///
-  // // النسخة المعدلة من getResult
-  GameStatus get getResult {
-    if (position.value.isCheckmate) return GameStatus.checkmate;
-    if (position.value.isStalemate) return GameStatus.stalemate;
-    if (position.value.isInsufficientMaterial || position.value.isVariantEnd
-    // || position.value.isFiftyMoveRule ||     // <-- إضافة جديدة
-    // position.value.isThreefoldRepetition
-    ) {
-      // <-- إضافة جديدة
-      return GameStatus.insufficientMaterial;
+  Future<void> playAiMove() async {
+    await Future.delayed(Duration(milliseconds: 100));
+    if (gameState.isGameOver) return;
+
+    final allMoves = [
+      for (final entry in gameState.position.legalMoves.entries)
+        for (final dest in entry.value.squares)
+          NormalMove(from: entry.key, to: dest),
+    ];
+
+    if (allMoves.isNotEmpty) {
+      engineService.goMovetime(thinkingTimeForAI);
     }
-    return GameStatus.ongoing;
   }
 
-  @override
-  void undoMove() {
-    super.undoMove();
-    engineService.setPosition(fen: fen);
-  }
-
-  @override
-  void redoMove() {
-    super.redoMove();
-    engineService.setPosition(fen: fen);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    engineService.stopStockfish();
-
-    super.dispose();
-  }
-
-  @override
-  void onClose() {
-    engineService.stopStockfish();
-    super.onClose();
+  // // النسخة المعدلة من getResult
+  Outcome? get getResult {
+    return gameState.result;
   }
 
   GameTermination get gameTermination {
     // إذا كانت الـ Position (من dartchess) تعطي هذه القيم — نستخدمها مباشرة
-    final pos = position.value;
+    final pos = gameState.position;
 
     if (pos.isCheckmate) return GameTermination.checkmate;
     if (pos.isStalemate) return GameTermination.stalemate;
@@ -244,56 +277,99 @@ abstract class GameAiController extends AbstractGameController
       return GameTermination.insufficientMaterial;
     }
 
-    // fifty-move rule (إذا دعمتها المكتبة)
-    // في dartchess عادة يوجد عداد halfmoveClock ضمن FEN أو property مثل pos.halfMoveClock
-    // try {
-    //   // إذا كانت مكتبة dartchess توفر isFiftyMoveRule أو halfmove clock:
-    //   if (pos.halfmoveClock != null && pos.halfmoveClock >= 100) {
-    //     // 100 half-moves == 50 full moves
-    // return GameTermination.halfmoveClock;
-    //   }
-    // } catch (_) {}
-
-    // threefold repetition: بعض إصدارات المكتبة توفر isThreefoldRepetition/outcome
-    // if (pos.isThreefoldRepetition) return GameResult.threefoldRepetition;
-
-    // حالة انتهاء الوقت تتمّ عبر ChessClockService وليس عبر Position
-
     return GameTermination.agreement;
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      _startStockfishIfNecessary();
-    } else if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
-      engineService.stopStockfish();
+  RxString statusText = "free Play".obs;
+
+  Future<GameStatus> get gameStatus async {
+    if (gameState.isGameOverExtended) {
+      if (gameState.isMate) {
+        statusText.value = "the owner is ${gameState.result?.winner}";
+        if (gameState.isCheckmate) {
+          statusText.value = "checkmate ${statusText.value}";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.checkmate;
+        }
+        if (gameState.isTimeout()) {
+          statusText.value = "timeout ${statusText.value}";
+          await plySound.executeLowTimeSound();
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.timeout;
+        }
+        if (gameState.isResigned()) {
+          statusText.value =
+              "the ${gameState.result?.winner?.opposite.name} resigned, the owner is ${gameState.result?.winner!.name}";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.resignation;
+        }
+      } else if (gameState.isDraw) {
+        statusText.value = "the result is Draw,";
+        await plySound.executeLowTimeSound();
+
+        if (gameState.isFiftyMoveRule()) {
+          statusText.value = "${statusText.value} cause fifty move rule";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.fiftyMoveRule;
+        }
+        if (gameState.isStalemate) {
+          statusText.value = "${statusText.value} cause stalemate";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.stalemate;
+        }
+        if (gameState.isInsufficientMaterial) {
+          statusText.value = "${statusText.value} cause insufficient Material";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.insufficientMaterial;
+        }
+        if (gameState.isThreefoldRepetition()) {
+          statusText.value =
+              "${statusText.value} cause is threefold Repetition";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.threefoldRepetition;
+        }
+        if (gameState.isAgreedDraw()) {
+          statusText.value = "${statusText.value} cause is Agreed Draw";
+          await showGameOverDialog(Get.context!, statusText.value);
+          return GameStatus.agreement;
+        }
+      }
     }
+
+    ///
+    if (gameState.turn == Side.white) {
+      statusText.value = "دور الأبيض";
+    } else if (gameState.turn == Side.black) {
+      statusText.value = "دور الأسود";
+    }
+    if (gameState.isCheck) {
+      statusText.value += '(كش)';
+    }
+
+    ///
+    return GameStatus.ongoing;
   }
 
-  void _startStockfishIfNecessary() {
-    engineService.startStockfishIfNecessary
-        ? engineService.start().then((_) {
-          stockfishState.value = StockfishState.ready;
-          update();
-        })
-        : null;
-  }
+  /// Agreement draw: set result to draw.
+  void setAgreementDraw() => {gameState.setAgreementDraw(), update()};
+
+  /// Resign: if side resigns, winner is the other side.
+  void resign(Side side) => {
+    gameState.resign(side),
+    plySound.executeResignSound(),
+    update(),
+  };
 
   ///reset
   void reset() {
-    past.clear();
-    future.clear();
-    pastMoves.clear();
-    futureMoves.clear();
-    position.value = Chess.initial;
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
-    engineService.ucinewgame();
+    gameState = GameState(initial: initail);
+    fen = gameState.position.fen;
+    validMoves = makeLegalMoves(gameState.position);
     promotionMove = null;
     debugPrint('reset to $fen');
+    engineService.ucinewgame();
+    plySound.executeDongSound();
+    update();
   }
 
   void tryPlayPremove() {
@@ -333,125 +409,96 @@ abstract class GameAiController extends AbstractGameController
     if (isPromotionPawnMove(move)) {
       promotionMove = move;
       update();
-    } else if (position.value.isLegal(move)) {
+    } else if (gameState.position.isLegal(move)) {
       _applyMove(move);
       validMoves = IMap(const {});
       promotionMove = null;
       update();
+      gameStatus;
+
       await playAiMove();
+      update();
     }
+    tryPlayPremove();
   }
 
   // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
   void _applyMove(NormalMove move) {
-    debugPrint("fen: $fen");
-    debugPrint("move.uci: ${move.uci}");
-    // 2. أضف الوضع الجديد إلى سجل التاريخ
-    past.add(position.value);
-    // 3. امسح سجل الـ Redo لأننا بدأنا مسارًا جديدًا للحركات
-    future.clear();
-    // 1. قم بتطبيق النقلة على الوضع الحالي
-    final res = position.value.makeSan(move);
-    position.value = res.$1;
-    fen = position.value.fen;
-    validMoves = makeLegalMoves(position.value);
-    engineService.setPosition(fen: position.value.fen);
-    pastMoves.add(
-      MoveData()
-        ..san = res.$2
-        ..fenAfter = res.$1.fen
-        ..lan = move.uci,
-    );
-    debugPrint(
-      'SAN Move: ${res.$2} ${pastMoves[pastMoves.length - 1].fenAfter} ${pastMoves[pastMoves.length - 1].lan}',
-    );
-    // plySound.executeMoveSound();
+    gameState.play(move);
+    fen = gameState.position.fen;
+    validMoves = makeLegalMoves(gameState.position);
+    engineService.setPosition(fen: fen);
+    // decide which sound to play based on metadata
+    final meta = gameState.lastMoveMeta;
+    if (meta != null) {
+      // capture has priority (play capture instead of plain move)
+      if (meta.wasCapture) {
+        plySound.executeCaptureSound();
+      } else {
+        plySound.executeMoveSound();
+      }
+      if (meta.wasPromotion) {
+        plySound.executePromoteSound();
+      }
+      if (meta.wasCheckmate) {
+        plySound.executeCheckmateSound();
+      } else if (meta.wasCheck) {
+        plySound.executeCheckSound();
+      }
+    } else {
+      // fallback
+      plySound.executeMoveSound();
+    }
   }
 
   void _makeMoveAi(String best) async {
     debugPrint("best move from stockfish: $best");
 
     var bestMove = NormalMove.fromUci(best);
-    if (position.value.isLegal(bestMove) == false) return;
+    if (gameState.position.isLegal(bestMove) == false) return;
 
-    if (position.value.isLegal(bestMove)) {
+    if (gameState.position.isLegal(bestMove)) {
       _applyMove(bestMove);
       update();
       tryPlayPremove();
-    }
-    updateTextState();
-  }
-
-  Future<void> playAiMove() async {
-    await Future.delayed(Duration(milliseconds: 100));
-    if (position.value.isGameOver) return;
-
-    final allMoves = [
-      for (final entry in position.value.legalMoves.entries)
-        for (final dest in entry.value.squares)
-          NormalMove(from: entry.key, to: dest),
-    ];
-
-    if (allMoves.isNotEmpty) {
-      engineService.goMovetime(thinkingTimeForAI);
     }
   }
 
   bool isPromotionPawnMove(NormalMove move) {
     return move.promotion == null &&
-        position.value.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == Rank.first && position.value.turn == Side.black) ||
-            (move.to.rank == Rank.eighth && position.value.turn == Side.white));
+        gameState.position.board.roleAt(move.from) == Role.pawn &&
+        ((move.to.rank == Rank.first &&
+                gameState.position.turn == Side.black) ||
+            (move.to.rank == Rank.eighth &&
+                gameState.position.turn == Side.white));
   }
 
-  RxString statusText = "AI chess".obs;
-  void updateTextState() {
-    if (position.value.isCheckmate) {
-      statusText.value = ' - كش موت!';
-      switch (position.value.outcome) {
-        case Outcome.blackWins:
-          statusText.value += ' الفائز: لأسود';
-          break;
-        case Outcome.whiteWins:
-          statusText.value += ' الفائز: لابيض';
-          break;
-        case Outcome.draw:
-          statusText.value = ' - تعادل!';
-          break;
-      }
-      return;
-    } else if (position.value.isCheck) {
-      statusText.value = '(كش)';
-      return;
-    } else if (position.value.isInsufficientMaterial) {
-      statusText.value = "لا يمكن إنهاء اللعبة";
-      return;
-    } else if (position.value.isStalemate) {
-      statusText.value = ' - طريق مسدود!';
-      return;
-    } else if (position.value.isGameOver) {
-      statusText.value = ' - انتهت اللعبة';
-      switch (position.value.outcome) {
-        case Outcome.blackWins:
-          statusText.value += ' الفائز: لأسود';
-          break;
-        case Outcome.whiteWins:
-          statusText.value += ' الفائز: لابيض';
-          break;
-        case Outcome.draw:
-          statusText.value += ' - تعادل!';
-          break;
-      }
-      return;
-    } else if (position.value.turn == Side.white) {
-      statusText.value = "دور الأبيض";
-      return;
-    } else if (position.value.turn == Side.black) {
-      statusText.value = "دور الأسود";
-      return;
-    } else if (position.value.isVariantEnd) {
-      statusText.value = ' - انتهت اللعبة';
-      return;
+  // if can undo return true , if can redo return true
+  RxBool get canUndo =>
+      (!gameState.isGameOverExtended && gameState.canUndo).obs;
+  RxBool get canRedo =>
+      (!gameState.isGameOverExtended && gameState.canRedo).obs;
+
+  void undoMove() {
+    if (canUndo.value) {
+      gameState.undoMove();
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
+      // play a feedback sound (optional)
+      plySound.executeMoveSound();
+      engineService.setPosition(fen: fen);
+      update();
+    }
+  }
+
+  void redoMove() {
+    if (canRedo.value) {
+      gameState.redoMove();
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
+      plySound.executeMoveSound();
+      engineService.setPosition(fen: fen);
+      update();
     }
   }
 
@@ -501,13 +548,54 @@ abstract class GameAiController extends AbstractGameController
       'Thinking Time for AI (ms): ${choosingCtrl.thinkingTimeForAI.value}',
     );
   }
-}
 
-class GameComputerController extends GameAiController {
-  ///constructer
-  GameComputerController(
-    super.choosingCtrl,
-    super.engineService,
-    super.plySound,
-  );
+  /// expose PGN tokens for the UI
+  List<MoveData> get pgnTokens => gameState.getMoveTokens;
+
+  int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
+
+  /// jump to a halfmove index (0-based). This will rebuild the game state up to that halfmove.
+  /// Implementation: get a copy of move objects from gameState, construct a fresh GameState
+  /// and replay moves up to `index` then replace controller.gameState with rebuilt one.
+  void jumpToHalfmove(int index) {
+    final allMoves = gameState.getMoveObjectsCopy();
+    final newState = GameState(initial: initail);
+    for (int i = 0; i <= index && i < allMoves.length; i++) {
+      newState.play(allMoves[i]);
+    }
+    gameState = newState;
+    fen = gameState.position.fen;
+    validMoves = makeLegalMoves(gameState.position);
+    update();
+  }
+
+  Map<Role, int> get whiteCaptured => gameState.getCapturedPieces(Side.white);
+  Map<Role, int> get blackCaptured => gameState.getCapturedPieces(Side.black);
+  String get whiteCapturedText => gameState.capturedPiecesAsString(Side.white);
+  String get whiteCapturedIcons =>
+      gameState.capturedPiecesAsUnicode(Side.white);
+  String get blackCapturedIcons =>
+      gameState.capturedPiecesAsUnicode(Side.black);
+
+  ///
+  ///
+
+  // في controller أو widget بعد استدعاء setState/update
+  List<Role> get whiteCapturedList =>
+      gameState.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
+  List<Role> get blackCapturedList =>
+      gameState.getCapturedPiecesList(Side.black);
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    engineService.stopStockfish();
+
+    super.dispose();
+  }
+
+  @override
+  void onClose() {
+    engineService.stopStockfish();
+    super.onClose();
+  }
 }

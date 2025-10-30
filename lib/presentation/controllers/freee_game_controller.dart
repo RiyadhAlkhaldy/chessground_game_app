@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/domain/collections/player.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -10,9 +11,10 @@ import '../../core/helper/helper_methodes.dart';
 import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/collections/chess_game.dart';
-import '../../domain/collections/player.dart';
+import '../../domain/models/player_model.dart';
 import '../../domain/services/stockfish_engine_service.dart';
 import 'chess_board_settings_controller.dart';
+import 'get_storage_controller.dart';
 
 class FreeGameController extends GetxController {
   GameState gameState = GameState();
@@ -37,25 +39,38 @@ class FreeGameController extends GetxController {
 
   final PlaySoundUseCase plySound;
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
-  Rx<Player> whitePlayer = Player(
+  final storage = Get.find<GetStorageControllerImp>();
+
+  Rx<PlayerModel> whitePlayer = PlayerModel(
+    id: 1,
     uuid: 'White_Player',
     name: 'White Player',
     type: 'player',
+    createdAt: DateTime.now(),
   ).obs;
-  Rx<Player> blackPlayer = Player(
+  Rx<PlayerModel> blackPlayer = PlayerModel(
+    id: 2,
     uuid: 'Black Player',
     name: 'Black Player',
     type: 'player',
+    createdAt: DateTime.now(),
   ).obs;
   FreeGameController(this.plySound);
   bool canPop = false;
   NormalMove? promotionMove;
   NormalMove? premove;
   PlayerSide playerSide = PlayerSide.both;
+  Future<void> _initPlayer() async {
+    final wPlayer = await createPlayerIfNotExists(storage);
+    final bPlayer = await createPlayerIfNotExists(storage, 'ai_user_uuid');
+    whitePlayer.value = wPlayer!.toModel();
+    blackPlayer.value = bPlayer!.toModel();
+  }
 
   @override
   void onInit() {
     super.onInit();
+    _initPlayer().then((_) {});
     gameState = GameState(initial: initail);
     fen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
@@ -305,9 +320,6 @@ class FreeGameController extends GetxController {
       gameState.capturedPiecesAsUnicode(Side.white);
   String get blackCapturedIcons =>
       gameState.capturedPiecesAsUnicode(Side.black);
-
-  ///
-  ///
 
   // في controller أو widget بعد استدعاء setState/update
   List<Role> get whiteCapturedList =>
