@@ -22,8 +22,9 @@ class SoundEffectService {
 
   bool soundLoaded = false;
   String? loadError;
-  final _extension =
-      defaultTargetPlatform == TargetPlatform.iOS ? 'aifc' : 'mp3';
+  final _extension = defaultTargetPlatform == TargetPlatform.iOS
+      ? 'aifc'
+      : 'mp3';
 
   /// Loads a single sound from the given [SoundTheme].
   Future<void> loadSound(String themePath, Sound sound) async {

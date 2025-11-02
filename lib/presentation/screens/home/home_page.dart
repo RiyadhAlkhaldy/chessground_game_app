@@ -1,7 +1,7 @@
 // import 'package:chess_vectors_flutter/chess_vectors_flutter.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/presentation/controllers/game_controller.dart';
-import 'package:chessground_game_app/presentation/widgets/platform.dart';
+import 'package:chessground_game_app/core/dialog/platform.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';

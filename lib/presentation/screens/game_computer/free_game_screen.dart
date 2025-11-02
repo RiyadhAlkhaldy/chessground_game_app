@@ -195,12 +195,6 @@ class ChessBoardWidget extends GetView<FreeGameController> {
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // debugPrint("gameStatus: ${controller.gameStatus}");
-          // debugPrint("getResult: ${controller.getResult}");
-          // debugPrint(
-          //   "getResult:: ${controller.gameState.position.outcome}",
-          // );
-
           return PopScope(
             canPop: controller
                 .gameState
@@ -226,11 +220,12 @@ class ChessBoardWidget extends GetView<FreeGameController> {
                     // controller.gameStatus;
                     // controller.plySound.executeResignSound();
                     controller.resign(
-                      controller.playerSide == PlayerSide.white
-                          ? Side.white
-                          : Side.black,
+                      controller.playerSide == PlayerSide.black
+                          ? Side.black
+                          : Side.white,
                     );
-                    await controller.gameStatus;
+                    controller.gameStatus;
+                    // controller.getResult;
                     // And then, after closing the second dialog, navigate back
                     // if (context.mounted) {
                     //   Get.back();

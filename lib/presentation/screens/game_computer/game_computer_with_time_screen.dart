@@ -73,6 +73,7 @@ class BuildPortrait extends StatelessWidget {
                     whiteCapturedList: ctrl.whiteCapturedList,
                     blackCapturedList: ctrl.blackCapturedList,
                     gameState: ctrl.gameState,
+                    clockCtrl: ctrl.clockCtrl,
                   ),
                   ChessBoardWidget(),
                   ShowCircleAvatarAndTimerInDown(
@@ -81,6 +82,7 @@ class BuildPortrait extends StatelessWidget {
                     whiteCapturedList: ctrl.whiteCapturedList,
                     blackCapturedList: ctrl.blackCapturedList,
                     gameState: ctrl.gameState,
+                    clockCtrl: ctrl.clockCtrl,
                   ),
                 ],
               ),
@@ -280,7 +282,9 @@ class ChessBoardWidget extends GetView<GameComputerWithTimeController> {
                       fen: controller.fen,
                       // lastMove: controller.lastMove,
                       game: GameData(
-                        playerSide: controller.playerSide,
+                        playerSide: controller.getResult == null
+                            ? controller.playerSide
+                            : PlayerSide.none,
                         validMoves: controller.validMoves,
                         sideToMove: controller.gameState.position.turn,
                         isCheck: controller.gameState.position.isCheck,

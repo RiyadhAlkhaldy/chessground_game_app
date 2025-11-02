@@ -70,6 +70,7 @@ dependencies:
   pull_to_refresh: ^2.0.0
   flutter_chess_board: ^1.0.1
   editable_chess_board: ^0.1.4
+  deep_pick: ^1.1.0
   # flutter_local_notifications: ^19.5.0
   # meta: ^1.16.0
   # isar_flutter_libs: ^3.1.0+1 # Needed for Flutter apps

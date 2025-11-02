@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
-import '../../../../core/const.dart';
 import '../../../../core/styles/styles.dart';
 import '../../../controllers/chess_board_settings_controller.dart';
 
@@ -115,7 +114,9 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                       fen: controller.fen,
                       // lastMove: controller.lastMove,
                       game: GameData(
-                        playerSide: controller.playerSide,
+                        playerSide: controller.getResult == null
+                            ? controller.playerSide
+                            : PlayerSide.none,
                         validMoves: controller.validMoves,
                         sideToMove: controller.gameState.position.turn,
                         isCheck: controller.gameState.position.isCheck,

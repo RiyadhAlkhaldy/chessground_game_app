@@ -5,6 +5,9 @@
 // Depends on package:dartchess
 // Add to package exports if you want it public: `export 'src/game_state/game_state.dart';`
 
+import 'dart:async';
+
+import 'package:chessground_game_app/core/dialog/game_status.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +18,47 @@ import '../../domain/collections/chess_game.dart';
 /// - Records moves to a PGN tree (PgnNode/PgnChildNode).
 /// - Provides game-level actions: agreement draw, resign, timeout.
 class GameState {
+  final StreamController<GameStatus> _gameStatus = StreamController.broadcast();
+  Stream<GameStatus> get gameStatus => _gameStatus.stream;
+
+  void dispose() {
+    _gameStatus.close();
+  }
+
+  GameStatus status() {
+    if (isGameOverExtended) {
+      if (isMate) {
+        if (isCheckmate) {
+          return GameStatus.checkmate;
+        }
+        if (isTimeout()) {
+          return GameStatus.timeout;
+        }
+        if (isResigned()) {
+          return GameStatus.resign;
+        }
+      } else if (isDraw) {
+        if (isFiftyMoveRule()) {
+          return GameStatus.fiftyMoveRule;
+        }
+        if (isStalemate) {
+          return GameStatus.stalemate;
+        }
+        if (isInsufficientMaterial) {
+          return GameStatus.insufficientMaterialClaim;
+        }
+        if (isThreefoldRepetition()) {
+          return GameStatus.threefoldRepetition;
+        }
+        if (isAgreedDraw()) {
+          return GameStatus.agreement;
+        }
+      }
+    }
+
+    return GameStatus.ongoing;
+  }
+
   /// Current immutable position.
   Position _pos;
 
@@ -54,6 +98,8 @@ class GameState {
 
   /// Create GameState with an initial Position (defaults to standard initial).
   GameState({Position? initial}) : _pos = initial ?? Chess.initial {
+    _gameStatus.add(GameStatus.ongoing);
+
     _pushPosition(_pos);
     if (_pos.isGameOver) {
       result = _pos.outcome;
@@ -196,6 +242,7 @@ class GameState {
     _moves.add(_lastMoveMeta!);
     allMoves.add(_lastMoveMeta!);
     _moveObjects.add(move);
+    _gameStatus.add(status());
   }
 
   /// Return true if current position has occurred 3 or more times.
@@ -220,6 +267,7 @@ class GameState {
   void setAgreementDraw() {
     agreementFlag = true;
     result = Outcome.draw;
+    _gameStatus.add(status());
   }
 
   bool isAgreedDraw() => agreementFlag; // 3. EndGame  isAgreedDraw
@@ -229,6 +277,7 @@ class GameState {
     resignationSide = side;
     final winner = side == Side.white ? Side.black : Side.white;
     result = Outcome(winner: winner);
+    _gameStatus.add(status());
   }
 
   bool isResigned() => resignationSide != null; // 4. EndGame  isResigned
@@ -238,6 +287,7 @@ class GameState {
     timeoutSide = side;
     final winner = side == Side.white ? Side.black : Side.white;
     result = Outcome(winner: winner);
+    _gameStatus.add(status());
   }
 
   bool isTimeout() => timeoutSide != null; // 5. EndGame  isTimeout

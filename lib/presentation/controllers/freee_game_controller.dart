@@ -7,12 +7,14 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/dialog/game_result_dialog.dart';
+import '../../core/dialog/game_status.dart';
 import '../../core/helper/helper_methodes.dart';
+import '../../core/dialog/status_l10n.dart';
 import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/collections/chess_game.dart';
 import '../../domain/models/player_model.dart';
-import '../../domain/services/stockfish_engine_service.dart';
 import 'chess_board_settings_controller.dart';
 import 'get_storage_controller.dart';
 
@@ -34,7 +36,7 @@ class FreeGameController extends GetxController {
   bool get isCheckmate => gameState.isCheckmate;
 
   Side? get winner {
-    return gameState.result?.winner;
+    return getResult!.winner;
   }
 
   final PlaySoundUseCase plySound;
@@ -70,15 +72,37 @@ class FreeGameController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _initPlayer().then((_) {});
+    _initPlayer().then((_) async {
+      await plySound.executeDongSound();
+    });
     gameState = GameState(initial: initail);
     fen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
-    update();
-    plySound.executeDongSound();
-    // ever(gameState, (_) {
-    //   if (gameState.position.isGameOver) {}
-    // });
+    _listenToGameStatus();
+  }
+
+  void _listenToGameStatus() {
+    gameState.gameStatus.listen((status) {
+      if (gameState.turn == Side.white) {
+        statusText.value = "دور الأبيض";
+      } else if (gameState.turn == Side.black) {
+        statusText.value = "دور الأسود";
+      }
+      if (gameState.isCheck) {
+        statusText.value += '(كش)';
+      }
+      if (status != GameStatus.ongoing) {
+        statusText.value =
+            "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.position, winner: gameState.result?.winner, isThreefoldRepetition: gameState.isThreefoldRepetition())} ";
+        Get.dialog(
+          GameResultDialog(
+            gameState: gameState,
+            gameStatus: status,
+            reset: reset,
+          ),
+        );
+      }
+    });
   }
 
   // // النسخة المعدلة من getResult
@@ -88,73 +112,7 @@ class FreeGameController extends GetxController {
 
   RxString statusText = "free Play".obs;
 
-  Future<GameStatus> get gameStatus async {
-    if (gameState.isGameOverExtended) {
-      if (gameState.isMate) {
-        statusText.value = "the owner is ${gameState.result?.winner}";
-        if (gameState.isCheckmate) {
-          statusText.value = "checkmate ${statusText.value}";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.checkmate;
-        }
-        if (gameState.isTimeout()) {
-          statusText.value = "timeout ${statusText.value}";
-          await plySound.executeLowTimeSound();
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.timeout;
-        }
-        if (gameState.isResigned()) {
-          statusText.value =
-              "the ${gameState.result?.winner?.opposite.name} resigned, the owner is ${gameState.result?.winner!.name}";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.resignation;
-        }
-      } else if (gameState.isDraw) {
-        statusText.value = "the result is Draw,";
-        await plySound.executeLowTimeSound();
-
-        if (gameState.isFiftyMoveRule()) {
-          statusText.value = "${statusText.value} cause fifty move rule";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.fiftyMoveRule;
-        }
-        if (gameState.isStalemate) {
-          statusText.value = "${statusText.value} cause stalemate";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.stalemate;
-        }
-        if (gameState.isInsufficientMaterial) {
-          statusText.value = "${statusText.value} cause insufficient Material";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.insufficientMaterial;
-        }
-        if (gameState.isThreefoldRepetition()) {
-          statusText.value =
-              "${statusText.value} cause is threefold Repetition";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.threefoldRepetition;
-        }
-        if (gameState.isAgreedDraw()) {
-          statusText.value = "${statusText.value} cause is Agreed Draw";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.agreement;
-        }
-      }
-    }
-
-    ///
-    if (gameState.turn == Side.white) {
-      statusText.value = "دور الأبيض";
-    } else if (gameState.turn == Side.black) {
-      statusText.value = "دور الأسود";
-    }
-    if (gameState.isCheck) {
-      statusText.value += '(كش)';
-    }
-
-    ///
-    return GameStatus.ongoing;
-  }
+  GameStatus get gameStatus => gameState.status();
 
   /// Agreement draw: set result to draw.
   void setAgreementDraw() => {gameState.setAgreementDraw(), update()};
@@ -169,15 +127,14 @@ class FreeGameController extends GetxController {
   ///reset
   void reset() {
     gameState = GameState(initial: initail);
-
     fen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
     promotionMove = null;
     debugPrint('reset to $fen');
-    update();
-    // play reset sound if wanted
-    // plySound.executeMoveSound();
     plySound.executeDongSound();
+    statusText.value = "free Play";
+
+    update();
   }
 
   void tryPlayPremove() {
@@ -222,7 +179,6 @@ class FreeGameController extends GetxController {
       // validMoves = IMap(const {});
       promotionMove = null;
       debugPrint("gameState.position.fen: ${gameState.position.fen}");
-      gameStatus;
       update();
     }
     tryPlayPremove();
@@ -255,6 +211,7 @@ class FreeGameController extends GetxController {
       // fallback
       plySound.executeMoveSound();
     }
+    gameStatus; // to update statusText
   }
 
   bool isPromotionPawnMove(NormalMove move) {
@@ -326,4 +283,10 @@ class FreeGameController extends GetxController {
       gameState.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
   List<Role> get blackCapturedList =>
       gameState.getCapturedPiecesList(Side.black);
+
+  @override
+  void dispose() {
+    gameState.dispose();
+    super.dispose();
+  }
 }

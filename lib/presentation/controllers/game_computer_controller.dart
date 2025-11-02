@@ -9,7 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
+import '../../core/dialog/game_result_dialog.dart';
+import '../../core/dialog/game_status.dart';
 import '../../core/helper/helper_methodes.dart';
+import '../../core/dialog/status_l10n.dart';
 import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/collections/chess_game.dart';
@@ -105,17 +108,7 @@ class GameComputerController extends GetxController
       update();
     });
     update();
-
-    // ever(position, (_) {
-    //   if (position.value.isGameOver) {
-    //     _gameStorageService.endGame(
-    //       chessGame,
-    //       result: position.value.turn == Side.white ? '1-0' : '0-1',
-    //       movesData: pastMoves,
-    //       headers: _headers,
-    //     );
-    //   }
-    // });
+    _listenToGameStatus();
   }
 
   @override
@@ -265,100 +258,66 @@ class GameComputerController extends GetxController
     return gameState.result;
   }
 
-  GameTermination get gameTermination {
-    // إذا كانت الـ Position (من dartchess) تعطي هذه القيم — نستخدمها مباشرة
-    final pos = gameState.position;
+  // GameTermination get gameTermination {
+  //   // إذا كانت الـ Position (من dartchess) تعطي هذه القيم — نستخدمها مباشرة
+  //   final pos = gameState.position;
 
-    if (pos.isCheckmate) return GameTermination.checkmate;
-    if (pos.isStalemate) return GameTermination.stalemate;
+  //   if (pos.isCheckmate) return GameTermination.checkmate;
+  //   if (pos.isStalemate) return GameTermination.stalemate;
 
-    // insufficient material و variant end
-    if (pos.isInsufficientMaterial) {
-      return GameTermination.insufficientMaterial;
-    }
+  //   // insufficient material و variant end
+  //   if (pos.isInsufficientMaterial) {
+  //     return GameTermination.insufficientMaterial;
+  //   }
 
-    return GameTermination.agreement;
-  }
-
-  RxString statusText = "free Play".obs;
-
-  Future<GameStatus> get gameStatus async {
-    if (gameState.isGameOverExtended) {
-      if (gameState.isMate) {
-        statusText.value = "the owner is ${gameState.result?.winner}";
-        if (gameState.isCheckmate) {
-          statusText.value = "checkmate ${statusText.value}";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.checkmate;
-        }
-        if (gameState.isTimeout()) {
-          statusText.value = "timeout ${statusText.value}";
-          await plySound.executeLowTimeSound();
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.timeout;
-        }
-        if (gameState.isResigned()) {
-          statusText.value =
-              "the ${gameState.result?.winner?.opposite.name} resigned, the owner is ${gameState.result?.winner!.name}";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.resignation;
-        }
-      } else if (gameState.isDraw) {
-        statusText.value = "the result is Draw,";
-        await plySound.executeLowTimeSound();
-
-        if (gameState.isFiftyMoveRule()) {
-          statusText.value = "${statusText.value} cause fifty move rule";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.fiftyMoveRule;
-        }
-        if (gameState.isStalemate) {
-          statusText.value = "${statusText.value} cause stalemate";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.stalemate;
-        }
-        if (gameState.isInsufficientMaterial) {
-          statusText.value = "${statusText.value} cause insufficient Material";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.insufficientMaterial;
-        }
-        if (gameState.isThreefoldRepetition()) {
-          statusText.value =
-              "${statusText.value} cause is threefold Repetition";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.threefoldRepetition;
-        }
-        if (gameState.isAgreedDraw()) {
-          statusText.value = "${statusText.value} cause is Agreed Draw";
-          await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.agreement;
-        }
+  //   return GameTermination.agreement;
+  // }
+  void _listenToGameStatus() {
+    gameState.gameStatus.listen((status) {
+      if (gameState.turn == Side.white) {
+        statusText.value = "دور الأبيض";
+      } else if (gameState.turn == Side.black) {
+        statusText.value = "دور الأسود";
       }
-    }
-
-    ///
-    if (gameState.turn == Side.white) {
-      statusText.value = "دور الأبيض";
-    } else if (gameState.turn == Side.black) {
-      statusText.value = "دور الأسود";
-    }
-    if (gameState.isCheck) {
-      statusText.value += '(كش)';
-    }
-
-    ///
-    return GameStatus.ongoing;
+      if (gameState.isCheck) {
+        statusText.value += '(كش)';
+      }
+      if (status != GameStatus.ongoing) {
+        statusText.value =
+            "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.position, winner: gameState.result?.winner, isThreefoldRepetition: gameState.isThreefoldRepetition())} ";
+        Get.dialog(
+          GameResultDialog(
+            gameState: gameState,
+            gameStatus: status,
+            reset: reset,
+          ),
+        );
+        _gameStorageService.endGame(
+          chessGame,
+          result: winner == Side.white ? '1-0' : '0-1',
+          movesData: gameState.getMoveTokens,
+          headers: _headers,
+        );
+      }
+    });
   }
+
+  RxString statusText = "Play vs AI".obs;
+
+  GameStatus get gameStatus => gameState.status();
 
   /// Agreement draw: set result to draw.
-  void setAgreementDraw() => {gameState.setAgreementDraw(), update()};
+  void setAgreementDraw() {
+    gameState.setAgreementDraw();
+    update();
+  }
 
   /// Resign: if side resigns, winner is the other side.
-  void resign(Side side) => {
-    gameState.resign(side),
-    plySound.executeResignSound(),
-    update(),
-  };
+  void resign(Side side) {
+    gameState.resign(side);
+    plySound.executeResignSound();
+    update();
+  }
 
   ///reset
   void reset() {
@@ -414,7 +373,6 @@ class GameComputerController extends GetxController
       validMoves = IMap(const {});
       promotionMove = null;
       update();
-      gameStatus;
 
       await playAiMove();
       update();
@@ -449,6 +407,7 @@ class GameComputerController extends GetxController
       // fallback
       plySound.executeMoveSound();
     }
+    gameStatus;
   }
 
   void _makeMoveAi(String best) async {
@@ -585,17 +544,17 @@ class GameComputerController extends GetxController
       gameState.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
   List<Role> get blackCapturedList =>
       gameState.getCapturedPiecesList(Side.black);
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    engineService.stopStockfish();
-
+    engineService.dispose();
     super.dispose();
   }
 
   @override
   void onClose() {
-    engineService.stopStockfish();
+    engineService.dispose();
     super.onClose();
   }
 }

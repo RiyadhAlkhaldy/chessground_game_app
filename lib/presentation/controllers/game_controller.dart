@@ -208,12 +208,11 @@ class GameController extends GetxController {
   // set difficulty
   void setGameDifficulty({required int level}) {
     _gameLevel = level;
-    _gameDifficulty =
-        level == 1
-            ? GameDifficulty.easy
-            : level == 2
-            ? GameDifficulty.medium
-            : GameDifficulty.hard;
+    _gameDifficulty = level == 1
+        ? GameDifficulty.easy
+        : level == 2
+        ? GameDifficulty.medium
+        : GameDifficulty.hard;
     update();
   }
 

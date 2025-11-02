@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
+import '../../core/dialog/game_status.dart';
 import '../../core/helper/helper_methodes.dart';
 import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
@@ -309,7 +310,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
           statusText.value =
               "the ${gameState.result?.winner?.opposite.name} resigned, the owner is ${gameState.result?.winner!.name}";
           await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.resignation;
+          return GameStatus.resign;
         }
       } else if (gameState.isDraw) {
         statusText.value = "the result is Draw,";
@@ -328,7 +329,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
         if (gameState.isInsufficientMaterial) {
           statusText.value = "${statusText.value} cause insufficient Material";
           await showGameOverDialog(Get.context!, statusText.value);
-          return GameStatus.insufficientMaterial;
+          return GameStatus.insufficientMaterialClaim;
         }
         if (gameState.isThreefoldRepetition()) {
           statusText.value =
@@ -422,7 +423,6 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
       validMoves = IMap(const {});
       promotionMove = null;
       update();
-      gameStatus;
 
       await playAiMove();
       update();
@@ -457,6 +457,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
       // fallback
       plySound.executeMoveSound();
     }
+    gameStatus;
   }
 
   void _makeMoveAi(String best) async {

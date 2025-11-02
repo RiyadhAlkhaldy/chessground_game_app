@@ -7,18 +7,18 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 import '../models/extended_evaluation.dart';
 
 /// حالة اللعبة المستخلصة محليًا (نستخدم dartchess للتحقق)
-enum GameStatus {
-  ongoing,
-  checkmate,
-  timeout,
-  resignation,
-  stalemate,
-  // draw,
-  agreement,
-  threefoldRepetition,
-  fiftyMoveRule,
-  insufficientMaterial,
-}
+// enum GameStatus {
+//   ongoing,
+//   checkmate,
+//   timeout,
+//   resignation,
+//   stalemate,
+//   // draw,
+//   agreement,
+//   threefoldRepetition,
+//   fiftyMoveRule,
+//   insufficientMaterial,
+// }
 
 /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine
 class StockfishEngineService {
@@ -207,16 +207,20 @@ class StockfishEngineService {
       final wdlMatch = RegExp(r'wdl\s+(\d+)\s+(\d+)\s+(\d+)').firstMatch(line);
 
       final int? cp = cpMatch != null ? int.parse(cpMatch.group(1)!) : null;
-      final int? mate =
-          mateMatch != null ? int.parse(mateMatch.group(1)!) : null;
+      final int? mate = mateMatch != null
+          ? int.parse(mateMatch.group(1)!)
+          : null;
 
       ///
-      final int? wdlWin =
-          wdlMatch != null ? int.parse(wdlMatch.group(1)!) : null;
-      final int? wdlDraw =
-          wdlMatch != null ? int.parse(wdlMatch.group(2)!) : null;
-      final int? wdlLoss =
-          wdlMatch != null ? int.parse(wdlMatch.group(3)!) : null;
+      final int? wdlWin = wdlMatch != null
+          ? int.parse(wdlMatch.group(1)!)
+          : null;
+      final int? wdlDraw = wdlMatch != null
+          ? int.parse(wdlMatch.group(2)!)
+          : null;
+      final int? wdlLoss = wdlMatch != null
+          ? int.parse(wdlMatch.group(3)!)
+          : null;
 
       // debugPrint(
       //   "pv:$pv , pvMatch:$pvMatch , depth:$depth  , cpMatch:$cp , mateMatch:$mateMatch",

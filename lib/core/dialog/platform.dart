@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../core/const.dart';
-import 'tab_scaffold.dart';
+import '../const.dart';
+import '../../presentation/widgets/tab_scaffold.dart';
 
 /// A simple widget that builds different things on different platforms.
 class PlatformWidget extends StatelessWidget {
