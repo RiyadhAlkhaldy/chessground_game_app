@@ -1,4 +1,5 @@
-// example_usage.dart
+// ignore_for_file: file_names
+
 import 'package:dartchess/dartchess.dart';
 
 final headers = {
@@ -64,9 +65,8 @@ Position applyMoveAndRecordSAN(Position p, NormalMove move, List<String> out) {
     out.add(san);
     return newPos;
   } catch (e) {
-    // بديل: استخدم toSan + play
-    final String san = p.toSan(move); // احصل على SAN من الوضع الحالي
-    out.add(san);
+    final makeSan = p.makeSan(move); // احصل على SAN من الوضع الحالي
+    out.add(makeSan.$2);
     final Position newPos = p.play(move);
     return newPos;
   }

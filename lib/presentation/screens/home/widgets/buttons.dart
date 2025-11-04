@@ -97,8 +97,10 @@ class _OpacityButtonState extends State<OpacityButton> {
 /// Child widgets with a `tooltip` already have an `onLongPress` callback that will
 /// conflict.
 /// `onTap` callback should be handled by the child widget.
+
 class RepeatButton extends StatefulWidget {
   const RepeatButton({
+    super.key,
     required this.onLongPress,
     required this.child,
     this.triggerDelays = const [
@@ -122,7 +124,7 @@ class RepeatButton extends StatefulWidget {
   final Duration holdDelay;
 
   @override
-  _RepeatButtonState createState() => _RepeatButtonState();
+  State<RepeatButton> createState() => _RepeatButtonState();
 }
 
 class _RepeatButtonState extends State<RepeatButton> {
@@ -182,7 +184,11 @@ class LoadingButtonBuilder<T> extends StatefulWidget {
 
   final Future<T>? initialFuture;
   final Future<T> Function() fetchData;
-  final Widget Function(BuildContext context, bool isLoading, Future<T> Function() fetchData)
+  final Widget Function(
+    BuildContext context,
+    bool isLoading,
+    Future<T> Function() fetchData,
+  )
   builder;
 
   @override

@@ -269,6 +269,7 @@ class ChessGameStorageService {
 
   /// حفظ snapshot مؤقت للعبة (مثلاً عند إغلاق الشاشة)
   Future<void> saveGameSnapshot(ChessGame game) async {
+    // ignore: unused_local_variable
     final isar = db;
     // await isar.writeTxn(() async {
     //   final g = await isar?.chessGames.get(game.id);

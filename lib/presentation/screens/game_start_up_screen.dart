@@ -64,38 +64,41 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
                     ),
                     widget.isCustomTime
                         ? BuildCustomTime(
-                          time: whiteTimeInMenutes.toString(),
-                          onLeftArrowCricked: () {
-                            setState(() {
-                              whiteTimeInMenutes--;
-                            });
-                          },
-                          onRightArrowCricked: () {
-                            setState(() {
-                              whiteTimeInMenutes++;
-                            });
-                          },
-                        )
+                            time: whiteTimeInMenutes.toString(),
+                            onLeftArrowCricked: () {
+                              setState(() {
+                                whiteTimeInMenutes--;
+                              });
+                            },
+                            onRightArrowCricked: () {
+                              setState(() {
+                                whiteTimeInMenutes++;
+                              });
+                            },
+                          )
                         : Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 0.5, color: Colors.black),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6.0),
-                            child: Center(
-                              child: Text(
-                                widget.gameTime,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.black,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                width: 0.5,
+                                color: Colors.black,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Center(
+                                child: Text(
+                                  widget.gameTime,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
                   ],
                 ),
 
@@ -118,85 +121,92 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
                     ),
                     widget.isCustomTime
                         ? BuildCustomTime(
-                          time: blackTimeInMenutes.toString(),
-                          onLeftArrowCricked: () {
-                            setState(() {
-                              blackTimeInMenutes--;
-                            });
-                          },
-                          onRightArrowCricked: () {
-                            setState(() {
-                              blackTimeInMenutes++;
-                            });
-                          },
-                        )
+                            time: blackTimeInMenutes.toString(),
+                            onLeftArrowCricked: () {
+                              setState(() {
+                                blackTimeInMenutes--;
+                              });
+                            },
+                            onRightArrowCricked: () {
+                              setState(() {
+                                blackTimeInMenutes++;
+                              });
+                            },
+                          )
                         : Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            border: Border.all(width: 0.5, color: Colors.black),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(6.0),
-                            child: Center(
-                              child: Text(
-                                widget.gameTime,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.black,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                width: 0.5,
+                                color: Colors.black,
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6.0),
+                              child: Center(
+                                child: Text(
+                                  widget.gameTime,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
                   ],
                 ),
                 const SizedBox(height: 20),
 
                 controller.vsComputer
                     ? Obx(
-                      () => Opacity(
-                        opacity: controller.uciLimitStrength.value ? 1.0 : 0.5,
-                        child: AbsorbPointer(
-                          absorbing: !controller.uciLimitStrength.value,
-                          child: Column(
-                            children: [
-                              // UCI_Elo Slider
-                              Text(
-                                'UCI Elo: ${controller.uciElo.value}',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              Slider(
-                                value: controller.uciElo.value.toDouble(),
-                                min: 1320,
-                                max: 3190,
-                                divisions: 300,
-                                label: controller.uciElo.value.toString(),
-                                onChanged: (double value) {
-                                  controller.uciElo.value = value.toInt();
-                                },
-                                activeColor: Colors.orangeAccent,
-                                inactiveColor: Colors.orange.shade200
-                                    .withOpacity(0.3),
-                              ),
-                            ],
+                        () => Opacity(
+                          opacity: controller.uciLimitStrength.value
+                              ? 1.0
+                              : 0.5,
+                          child: AbsorbPointer(
+                            absorbing: !controller.uciLimitStrength.value,
+                            child: Column(
+                              children: [
+                                // UCI_Elo Slider
+                                Text(
+                                  'UCI Elo: ${controller.uciElo.value}',
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                                Slider(
+                                  value: controller.uciElo.value.toDouble(),
+                                  min: 1320,
+                                  max: 3190,
+                                  divisions: 300,
+                                  label: controller.uciElo.value.toString(),
+                                  onChanged: (double value) {
+                                    controller.uciElo.value = value.toInt();
+                                  },
+                                  activeColor: Colors.orangeAccent,
+                                  inactiveColor: Colors.orange.shade200
+                                      .withValues(alpha: 0.3),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    )
+                      )
                     : const SizedBox.shrink(),
                 const SizedBox(height: 20),
 
                 controller.isLoading
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
-                      onPressed: () {
-                        // navigate to game screen
-                        playGame(controller: controller);
-                      },
-                      child: Text('Play'),
-                    ),
+                        onPressed: () {
+                          // navigate to game screen
+                          playGame(controller: controller);
+                        },
+                        child: Text('Play'),
+                      ),
 
                 const SizedBox(height: 20),
 

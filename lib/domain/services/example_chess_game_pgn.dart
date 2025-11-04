@@ -100,8 +100,10 @@ Future<void> runExample() async {
   final headers = PgnGame.defaultHeaders();
   headers['Event'] = 'Local Game';
   headers['Site'] = 'My Flutter App';
-  headers['Date'] =
-      DateTime.now().toIso8601String().split('T').first; // YYYY-MM-DD
+  headers['Date'] = DateTime.now()
+      .toIso8601String()
+      .split('T')
+      .first; // YYYY-MM-DD
   headers['Round'] = '1';
   headers['White'] = white.name;
   headers['Black'] = black.name;
@@ -118,9 +120,8 @@ Future<void> runExample() async {
     moves: root,
     comments: [],
   );
-  final pgnFromWriter =
-      pgnGame
-          .makePgn(); // سلسلة PGN جاهزة. (طريقة مدمجة). :contentReference[oaicite:6]{index=6}
+  final pgnFromWriter = pgnGame
+      .makePgn(); // سلسلة PGN جاهزة. (طريقة مدمجة). :contentReference[oaicite:6]{index=6}
 
   // (ب) بديل يدوي: دالة بسيطة تحول SAN list إلى نص PGN
   final pgnManual = manualPgnFromSanList(
@@ -130,16 +131,15 @@ Future<void> runExample() async {
   );
 
   // 5) حفظ الـGame في Isar وربط باللاعبين
-  final game =
-      ChessGame()
-        ..fullPgn =
-            pgnFromWriter // أو pgnManual
-        ..movesCount = sanList.length
-        ..event = headers['Event']
-        ..site = headers['Site']
-        ..date = DateTime.now()
-        ..round = headers['Round']
-        ..result = headers['Result'];
+  final game = ChessGame()
+    ..fullPgn =
+        pgnFromWriter // أو pgnManual
+    ..movesCount = sanList.length
+    ..event = headers['Event']
+    ..site = headers['Site']
+    ..date = DateTime.now()
+    ..round = headers['Round']
+    ..result = headers['Result'];
 
   // ربط اللاعبين
   game.whitePlayer.value = white;
@@ -153,8 +153,8 @@ Future<void> runExample() async {
     await game.blackPlayer.save();
   });
 
-  print('--- PGN (writer) ---\n$pgnFromWriter\n');
-  print('--- PGN (manual) ---\n$pgnManual\n');
+  debugPrint('--- PGN (writer) ---\n$pgnFromWriter\n');
+  debugPrint('--- PGN (manual) ---\n$pgnManual\n');
 
   // 6) قراءة لاحقة: استرجاع الـGame مع تحميل بيانات اللاعبين
   final loadedGame = await isar.chessGames.get(game.id);
@@ -165,7 +165,7 @@ Future<void> runExample() async {
 
     final whiteLoaded = loadedGame.whitePlayer.value;
     final blackLoaded = loadedGame.blackPlayer.value;
-    print('Loaded game: ${whiteLoaded?.name} vs ${blackLoaded?.name}');
-    print('Stored PGN length: ${loadedGame.fullPgn!.length}');
+    debugPrint('Loaded game: ${whiteLoaded?.name} vs ${blackLoaded?.name}');
+    debugPrint('Stored PGN length: ${loadedGame.fullPgn!.length}');
   }
 }

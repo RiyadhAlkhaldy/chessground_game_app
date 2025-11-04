@@ -5,6 +5,7 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
 // import 'package:stockfish/stockfish.dart';
@@ -15,25 +16,25 @@ void main() {
       final stockfish = Stockfish();
 
       //  stockfish
-      print(stockfish.state.value);
-      print("message");
+      debugPrint(stockfish.state.value.toString());
+      debugPrint("message");
     });
     test(" dstockfish testing sa", () async {
       final stockfish = Stockfish();
 
       // Create a subscribtion on stdout : subscription that you'll have to cancel before disposing Stockfish.
       final stockfishSubscription = stockfish.stdout.listen((message) {
-        print(message);
+        debugPrint(message);
       });
 
       // Create a subscribtion on stderr : subscription that you'll have to cancel before disposing Stockfish.
       final stockfishErrorsSubscription = stockfish.stderr.listen((message) {
-        print(message);
+        debugPrint(message);
       });
       // final x = await stockfish.stderr.single.then((v) => v);
       // print(x);
 
-      stockfishErrorsSubscription.onData((data) => print(data));
+      stockfishErrorsSubscription.onData((data) => debugPrint(data));
       await Future.delayed(Duration(seconds: 5));
 
       // Get Stockfish ready

@@ -8,16 +8,16 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../core/utils/dialog/game_result_dialog.dart';
-import '../../core/utils/dialog/game_status.dart';
-import '../../core/utils/dialog/status_l10n.dart';
-import '../../data/game_state/game_state.dart';
-import '../../data/usecases/play_sound_usecase.dart';
-import '../../domain/collections/chess_game.dart';
-import '../../domain/models/player_model.dart';
-import '../../domain/services/chess_game_storage_service.dart';
-import 'chess_board_settings_controller.dart';
-import 'get_storage_controller.dart';
+import '../../../../core/utils/dialog/game_result_dialog.dart';
+import '../../../../core/utils/dialog/game_status.dart';
+import '../../../../core/utils/dialog/status_l10n.dart';
+import '../../../../data/game_state/game_state.dart';
+import '../../../../data/usecases/play_sound_usecase.dart';
+import '../../../../domain/collections/chess_game.dart';
+import '../../../../domain/models/player_model.dart';
+import '../../../../domain/services/chess_game_storage_service.dart';
+import '../../../../presentation/controllers/chess_board_settings_controller.dart';
+import '../../../../presentation/controllers/get_storage_controller.dart';
 
 class FreeGameController extends GetxController {
   GameState gameState = GameState();
@@ -26,6 +26,7 @@ class FreeGameController extends GetxController {
   String get _initailLocalFen => Chess.initial.fen;
   late String _fen;
 
+  // ignore: unnecessary_getters_setters
   String get fen => _fen;
   set fen(String value) => _fen = value;
 
@@ -80,7 +81,7 @@ class FreeGameController extends GetxController {
       uuid: whiteModel.uuid,
       name: whiteModel.name,
       type: whiteModel.type,
-      playerRating: whiteModel.playerRating ?? 1200,
+      playerRating: whiteModel.playerRating,
     );
     savedWhitePlayer = await storage.createOrGetPlayerByUuid(
       whiteCollectionPlayer.uuid,
@@ -95,7 +96,7 @@ class FreeGameController extends GetxController {
       uuid: blackModel.uuid,
       name: blackModel.name,
       type: blackModel.type,
-      playerRating: blackModel.playerRating ?? 1200,
+      playerRating: blackModel.playerRating,
     );
     savedBlackPlayer = await storage.createOrGetPlayerByUuid(
       blackCollectionPlayer.uuid,
@@ -276,6 +277,7 @@ class FreeGameController extends GetxController {
       final moveData = _buildMoveDataFromLastMove(gameState);
       if (moveData != null && currentGame != null) {
         // addMoveToGame is async — call but do not block UI (still await to handle failures optionally)
+        // ignore: body_might_complete_normally_catch_error
         storage.addMoveToGame(currentGame!.id, moveData).catchError((e) {
           debugPrint('Error saving move to DB: $e');
         });
@@ -499,10 +501,10 @@ MoveData? _buildMoveDataFromLastMove(GameState gameState) {
       ..comment = lastToken.comment
       ..nags = lastToken.nags
       ..variations = lastToken.variations
-      ..wasCapture = lastToken.wasCapture ?? false
-      ..wasCheck = lastToken.wasCheck ?? false
-      ..wasCheckmate = lastToken.wasCheckmate ?? false
-      ..wasPromotion = lastToken.wasPromotion ?? false
+      ..wasCapture = lastToken.wasCapture
+      ..wasCheck = lastToken.wasCheck
+      ..wasCheckmate = lastToken.wasCheckmate
+      ..wasPromotion = lastToken.wasPromotion
       ..isWhiteMove = lastToken.isWhiteMove
       ..halfmoveIndex = halfmoveIndex
       ..moveNumber = lastToken.moveNumber;
@@ -535,7 +537,7 @@ MoveData? _buildMoveDataFromLastMove(GameState gameState) {
 
 String _normalMoveToLan(NormalMove move) {
   // convert from/to squares to lan like 'e2e4' and include promotion if any
-  String sq(int file, int rank) => '${"abcdefgh"[file]}${rank + 1}';
+  // String sq(int file, int rank) => '${"abcdefgh"[file]}${rank + 1}';
   final from = move.from;
   final to = move.to;
   final fromStr = '${"abcdefgh"[from.file]}${from.rank + 1}';
@@ -580,11 +582,11 @@ Future<void> _finalizeGame(
       break;
     case GameStatus.timeout:
       final win = gameState.result?.winner;
-      if (win == Side.white)
+      if (win == Side.white) {
         resultText = '1-0';
-      else if (win == Side.black)
+      } else if (win == Side.black) {
         resultText = '0-1';
-      else {
+      } else {
         // fallback: determine opposite of who timed out - but we don't have that here
         resultText = '*';
       }
@@ -603,10 +605,8 @@ Future<void> _finalizeGame(
     'Date': currentGame.date != null
         ? currentGame.date!.toIso8601String().split('T').first
         : DateTime.now().toIso8601String().split('T').first,
-    'White':
-        currentGame.whitePlayer.value?.name ?? savedWhitePlayer.name ?? 'White',
-    'Black':
-        currentGame.blackPlayer.value?.name ?? savedBlackPlayer.name ?? 'Black',
+    'White': currentGame.whitePlayer.value?.name ?? savedWhitePlayer.name,
+    'Black': currentGame.blackPlayer.value?.name ?? savedBlackPlayer.name,
     'Result': resultText,
   };
 

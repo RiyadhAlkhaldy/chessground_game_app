@@ -14,7 +14,7 @@ class TodoService {
     Todo todo;
     for (int i = 0; i < 5; i++) {
       await Future.delayed(Duration(seconds: 3));
-      print("i+i======== add");
+      debugPrint("i+i======== add");
       todo = Todo()..content = "i+i========";
 
       await db.writeTxn(() async => await db.todos.put(todo));
@@ -23,7 +23,7 @@ class TodoService {
 
   static void gets() async {
     db.todos.buildQuery<Todo>().watch().listen(
-      (event) => event.forEach((element) => debugPrint(element.toString())),
+      (event) => event.map((element) => debugPrint(element.toString())),
     );
   }
 }

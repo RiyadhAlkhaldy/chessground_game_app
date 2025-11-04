@@ -67,7 +67,7 @@ String pieceSymbolFromSan(String san, {required bool isWhiteMove}) {
 Widget _buildToken(BuildContext context, MoveData t, bool isCurrent) {
   final theme = Theme.of(context);
   final bg = isCurrent
-      ? theme.colorScheme.primary.withOpacity(0.15)
+      ? theme.colorScheme.primary.withValues(alpha: 0.15)
       : Colors.transparent;
   final borderColor = isCurrent
       ? theme.colorScheme.primary

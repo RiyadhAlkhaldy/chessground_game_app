@@ -1,5 +1,6 @@
 // example_usage.dart
 import 'package:dartchess/dartchess.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 String makePgnFromSanList({
   required Map<String, String> headers, // ex: {'Event':'MyGame', 'White':'Alice', ...}
@@ -47,8 +48,8 @@ Position applyMoveAndRecordSAN(Position p, NormalMove move, List<String> out) {
     return newPos;
   } catch (e) {
     // بديل: استخدم toSan + play
-    final String san = p.toSan(move); // احصل على SAN من الوضع الحالي
-    out.add(san);
+    final makeSan = p.makeSan(move); // احصل على SAN من الوضع الحالي
+    out.add(makeSan.$2);
     final Position newPos = p.play(move);
     return newPos;
   }
@@ -125,10 +126,10 @@ void main() {
     );
 
     // الآن sanList يحتوي على سلسلة الـSAN للحركات:
-    print('SAN moves: ${sanList.join(' ')}');
+    debugPrint('SAN moves: ${sanList.join(' ')}');
 
     // يمكنك استخدام pos.outcome أو pos.isGameOver للتحقق من النهاية
-    print('Is game over? ${pos.isGameOver}  Outcome: ${pos.outcome}');
+    debugPrint('Is game over? ${pos.isGameOver}  Outcome: ${pos.outcome}');
   });
 }
 

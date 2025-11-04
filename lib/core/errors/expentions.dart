@@ -1,11 +1,12 @@
 import 'package:chessground_game_app/core/errors/error_model.dart';
-import 'package:dio/dio.dart'; 
+import 'package:dio/dio.dart';
 
 //!ServerException
 class ServerException implements Exception {
   final ErrorModel errorModel;
   ServerException(this.errorModel);
 }
+
 //!CacheExeption
 class CacheExeption implements Exception {
   final String errorMessage;
@@ -60,7 +61,7 @@ class UnknownException extends ServerException {
   UnknownException(super.errorModel);
 }
 
-handleDioException(DioException e) {
+void handleDioException(DioException e) {
   switch (e.type) {
     case DioExceptionType.connectionError:
       throw ConnectionErrorException(ErrorModel.fromJson(e.response!.data));
@@ -97,15 +98,18 @@ handleDioException(DioException e) {
         case 504: // Bad request
 
           throw BadResponseException(
-              ErrorModel(status: 504, errorMessage: e.response!.data));
+            ErrorModel(status: 504, errorMessage: e.response!.data),
+          );
       }
 
     case DioExceptionType.cancel:
       throw CancelException(
-          ErrorModel(errorMessage: e.toString(), status: 500));
+        ErrorModel(errorMessage: e.toString(), status: 500),
+      );
 
     case DioExceptionType.unknown:
       throw UnknownException(
-          ErrorModel(errorMessage: e.toString(), status: 500));
+        ErrorModel(errorMessage: e.toString(), status: 500),
+      );
   }
 }

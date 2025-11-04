@@ -48,7 +48,7 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                           ? Side.white
                           : Side.black,
                     );
-                    await controller.gameStatus;
+                    controller.gameStatus;
                     // And then, after closing the second dialog, navigate back
                     // if (context.mounted) {
                     //   Get.back();

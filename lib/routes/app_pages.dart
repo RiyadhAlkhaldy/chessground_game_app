@@ -1,4 +1,4 @@
-import 'package:chessground_game_app/presentation/screens/game_computer/free_game_screen.dart';
+import 'package:chessground_game_app/features/free_game/presentation/pages/free_game_page.dart';
 import 'package:chessground_game_app/presentation/screens/recent_screen/recent_page.dart';
 import 'package:get/get.dart';
 
@@ -53,7 +53,7 @@ class AppPages {
       name: RouteNames.gameStartUpScreen,
       page: () => GameStartUpScreen(isCustomTime: false, gameTime: '5'),
     ),
-    GetPage(name: RouteNames.freeGameScreen, page: () => FreeGameScreen()),
+    GetPage(name: RouteNames.freeGameScreen, page: () => FreeGamePage()),
     GetPage(name: RouteNames.recentGamesPage, page: () => RecentGamesPage()),
     // GetPage(name: RouteNames.gamesScreen, page: () => const GameScreen()),
 

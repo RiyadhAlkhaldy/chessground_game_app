@@ -24,7 +24,7 @@ class SideChoosingView extends StatelessWidget {
             borderRadius: BorderRadius.circular(15),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -89,8 +89,8 @@ class SideChoosingView extends StatelessWidget {
                               controller.uciElo.value = value.toInt();
                             },
                             activeColor: Colors.orangeAccent,
-                            inactiveColor: Colors.orange.shade200.withOpacity(
-                              0.3,
+                            inactiveColor: Colors.orange.shade200.withValues(
+                              alpha: 0.3,
                             ),
                           ),
                         ],
@@ -118,8 +118,8 @@ class SideChoosingView extends StatelessWidget {
                               controller.skillLevel.value = value.toInt();
                             },
                             activeColor: Colors.tealAccent,
-                            inactiveColor: Colors.teal.shade200.withOpacity(
-                              0.3,
+                            inactiveColor: Colors.teal.shade200.withValues(
+                              alpha: 0.3,
                             ),
                           ),
                         ],
@@ -143,8 +143,8 @@ class SideChoosingView extends StatelessWidget {
                           controller.depth.value = value.toInt();
                         },
                         activeColor: Colors.deepPurpleAccent,
-                        inactiveColor: Colors.deepPurple.shade200.withOpacity(
-                          0.3,
+                        inactiveColor: Colors.deepPurple.shade200.withValues(
+                          alpha: 0.3,
                         ),
                       ),
                       Text(
@@ -160,7 +160,9 @@ class SideChoosingView extends StatelessWidget {
                           controller.thinkingTimeForAI.value = value.toInt();
                         },
                         activeColor: Colors.cyanAccent,
-                        inactiveColor: Colors.cyan.shade200.withOpacity(0.3),
+                        inactiveColor: Colors.cyan.shade200.withValues(
+                          alpha: 0.3,
+                        ),
                       ),
                     ],
                   ),
@@ -176,8 +178,8 @@ class SideChoosingView extends StatelessWidget {
                       ),
                       Switch(
                         value: controller.showMoveHints.value,
-                        onChanged:
-                            (val) => controller.showMoveHints.value = val,
+                        onChanged: (val) =>
+                            controller.showMoveHints.value = val,
                         activeThumbColor: Colors.green,
                       ),
                     ],

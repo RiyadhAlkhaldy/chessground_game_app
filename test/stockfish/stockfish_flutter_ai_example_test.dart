@@ -170,10 +170,14 @@ class EngineService {
     _stderrSub?.cancel();
     try {
       _stockfish.stdin = 'quit';
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Error sending quit to Stockfish: $e');
+    }
     try {
       _stockfish.dispose();
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Error disposing Stockfish: $e');
+    }
     await _raw.close();
     await _eval.close();
     await _bestmove.close();
@@ -197,6 +201,7 @@ class StockfishChessGameController {
 
   Future<String> playerMove(String uciMove, {int aiMoveTimeMs = 1000}) async {
     final moveObj = _uciToMoveObject(uciMove);
+    // ignore: unused_local_variable
     final legalMoves = _pos.legalMoves;
 
     // if (!legalMoves.contains(moveObj)) {

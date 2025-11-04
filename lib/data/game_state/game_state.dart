@@ -651,7 +651,7 @@ class GameState {
 
     int total = 0;
     counts.forEach((role, cnt) {
-      total += (cnt ?? 0) * _roleValue(role);
+      total += cnt * _roleValue(role);
     });
     return total;
   }

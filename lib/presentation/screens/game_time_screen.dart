@@ -18,7 +18,7 @@ class _GameTimeScreenState extends State<GameTimeScreen> {
   Widget build(BuildContext context) {
     final gameProvider = Get.put(GameController());
 
-    print('VS VALUE: ${gameProvider.vsComputer}');
+    debugPrint('VS VALUE: ${gameProvider.vsComputer}');
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,

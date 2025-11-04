@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import '../data/usecases/play_sound_usecase.dart';
 import '../domain/services/stockfish_engine_service.dart';
 import '../presentation/controllers/chess_board_settings_controller.dart';
-import '../presentation/controllers/freee_game_controller.dart';
+import '../features/free_game/presentation/controllers/freee_game_controller.dart';
 import '../presentation/controllers/game_computer_controller.dart';
 import '../presentation/controllers/game_computer_with_time_controller.dart';
 import '../presentation/controllers/game_controller.dart';

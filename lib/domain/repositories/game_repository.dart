@@ -97,7 +97,9 @@ Future<List<ChessGame >>? getAllGames( )async{
       final p2 = Player(uuid: uuid2, name: 'player-$uuid2', type: 'human')
         ..playerRating = 1072;
 
+      // ignore: unused_local_variable
       final id1 = await isar.players.put(p1);
+      // ignore: unused_local_variable
       final id2 = await isar.players.put(p2);
 
       // لعبة مثال

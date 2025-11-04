@@ -5,6 +5,7 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
 
@@ -13,29 +14,29 @@ void main() {
     test("stockfish chess engine test", () async {
       final stockfish = Stockfish();
       //  stockfish
-      print(stockfish.state.value);
-      print("message");
+      debugPrint(stockfish.state.value.toString());
+      debugPrint("message");
     });
     test("stockfish2 testing s2a", () async {
       final stockfish = Stockfish();
-      print("message");
+      debugPrint("message");
 
       // Create a subscribtion on stdout : subscription that you'll have to cancel before disposing Stockfish.
       final stockfishSubscription = stockfish.stdout.listen((message) {
-        print(message);
+        debugPrint(message);
       });
-      print("message");
+      debugPrint("message");
 
       // Create a subscribtion on stderr : subscription that you'll have to cancel before disposing Stockfish.
-      final stockfishErrorsSubscription = stockfish.stdout.listen((message) {
-        print(message);
+      final stockfishErrorsSubscription = stockfish.stderr.listen((message) {
+        debugPrint(message);
       });
-      print("message last");
-      print(stockfish.state.value);
+      debugPrint("message last");
+      debugPrint(stockfish.state.value.toString());
       final x = await stockfish.stdout.single.then((v) => v);
-      print(x);
+      debugPrint(x);
       await Future.delayed(Duration(seconds: 2));
-      print(stockfish.state.value);
+      debugPrint(stockfish.state.value.toString());
       // stockfish
 
       // Send you commands to Stockfish stdin
