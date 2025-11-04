@@ -22,6 +22,7 @@ class GameBinding extends Bindings {
   void dependencies() {
     /// services
     Get.lazyPut(() => SoundEffectService(), fenix: true);
+    Get.lazyPut(() => ChessGameStorageService(), fenix: true);
     Get.lazyPut<StockfishEngineService>(
       () => StockfishEngineService(),
       fenix: true,
@@ -74,7 +75,10 @@ class GameBinding extends Bindings {
 
     /// repositories
     Get.lazyPut(
-      () => GamesRepository(isar: ChessGameStorageService.db!),
+      () => GamesRepository(
+        isar: ChessGameStorageService.db!,
+        storageService: Get.find(),
+      ),
       fenix: true,
     );
   }

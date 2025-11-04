@@ -22,8 +22,9 @@ class GameCardWidget extends StatelessWidget {
     final whiteName = game.whitePlayer.value?.name ?? 'لاعب';
     final blackName = game.blackPlayer.value?.name ?? 'خصم';
 
-    final dateStr =
-        game.date != null ? DateFormat.yMd().add_Hm().format(game.date!) : '';
+    final dateStr = game.date != null
+        ? DateFormat.yMd().add_Hm().format(game.date!)
+        : '';
 
     // الواجهة: بطاقة مع مصغّر رقعة وأرقام وتصنيف ونتيجة
     return Card(
@@ -42,7 +43,7 @@ class GameCardWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '$whiteName  •  ${game.whiteElo ?? '-'}',
+                    '${game.id}: $whiteName  •  ${game.whiteElo ?? '-'}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),

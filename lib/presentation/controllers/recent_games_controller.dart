@@ -21,6 +21,19 @@ class RecentGamesController extends GetxController {
     super.onInit();
     loadInitial().then((_) {
       repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
+      repository.insertMockDataIfEmpty();
     });
     // اختياري: الاستماع للتغييرات التلقائية
     // repository.watchRecentGames().listen((list) {

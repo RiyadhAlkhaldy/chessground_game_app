@@ -71,14 +71,10 @@ dependencies:
   flutter_chess_board: ^1.0.1
   editable_chess_board: ^0.1.4
   deep_pick: ^1.1.0
+  path_provider_platform_interface: ^2.1.2
+  path_provider_windows: ^2.3.0
   # flutter_local_notifications: ^19.5.0
   # meta: ^1.16.0
-  # isar_flutter_libs: ^3.1.0+1 # Needed for Flutter apps
-
-# distributionUrl=https\://services.gradle.org/distributions/gradle-8.12-all.zip
-#      id("com.android.application") version "8.7.3" apply false
-    # id("org.jetbrains.kotlin.android") version "2.1.0" apply false
-
 
 dev_dependencies:
   flutter_test:
@@ -93,8 +89,6 @@ dev_dependencies:
   # freezed_lint: ^0.0.12
   # isar_generator: ^3.1.0+1
   # isar_generator: any
-# dependency_overrides:
-#   source_gen: ^1.2.2
  
 
 # For information on the generic Dart part of this file, see the
