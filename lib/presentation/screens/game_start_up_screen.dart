@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 
 // import 'package:flutter_chess/providers/authentication_provider.dart';
 
-import '../../core/helper/constants.dart';
+import '../../core/utils/helper/constants.dart';
 import '../../routes/app_pages.dart';
 import '../controllers/game_controller.dart';
 import '../widgets/widgets.dart';

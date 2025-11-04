@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../domain/collections/player.dart';
-import '../../domain/services/chess_game_storage_service.dart';
-import '../../presentation/controllers/get_storage_controller.dart';
+import '../../../domain/collections/player.dart';
+import '../../../domain/services/chess_game_storage_service.dart';
+import '../../../presentation/controllers/get_storage_controller.dart';
 
 Future<Locale> getLocale(GetStorageControllerImp storage) async {
   Locale? locale;

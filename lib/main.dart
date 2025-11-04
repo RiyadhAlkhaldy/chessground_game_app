@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:l10n_esperanto/l10n_esperanto.dart';
 
-import 'core/helper/helper_methodes.dart';
+import 'core/utils/helper/helper_methodes.dart';
 import 'domain/services/chess_game_storage_service.dart';
 import 'l10n/l10n.dart';
 import 'presentation/controllers/get_storage_controller.dart';

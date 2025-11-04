@@ -9,10 +9,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
-import '../../core/dialog/game_result_dialog.dart';
-import '../../core/dialog/game_status.dart';
-import '../../core/helper/helper_methodes.dart';
-import '../../core/dialog/status_l10n.dart';
+import '../../core/utils/dialog/game_result_dialog.dart';
+import '../../core/utils/dialog/game_status.dart';
+import '../../core/utils/helper/helper_methodes.dart';
+import '../../core/utils/dialog/status_l10n.dart';
 import '../../data/game_state/game_state.dart';
 import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/collections/chess_game.dart';

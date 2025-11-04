@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:sound_effect/sound_effect.dart';
 
-import '../../../core/constants/app_images_sounds.dart';
+import '../../../core/utils/dialog/constants/app_images_sounds.dart';
 import '../../../data/settings/general_preferences.dart';
 
 enum Sound {

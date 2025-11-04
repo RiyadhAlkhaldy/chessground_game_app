@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/core/helper/helper_methodes.dart';
+import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/presentation/controllers/game_computer_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
-import '../../../../core/styles/styles.dart';
+import '../../../../core/utils/styles/styles.dart';
 import '../../../controllers/chess_board_settings_controller.dart';
 
 class ChessBoardWidget extends GetView<GameComputerController> {

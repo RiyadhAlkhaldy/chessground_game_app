@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/board_theme.dart';
-import '../../core/helper/helper_methodes.dart';
+import '../../core/utils/helper/helper_methodes.dart';
 
 class ChessBoardSettingsController extends GetxController {
   Rx<Side> orientation = Side.white.obs;

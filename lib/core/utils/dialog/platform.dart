@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../const.dart';
+import 'constants/const.dart';
 import 'tab_scaffold.dart';
 
 /// A simple widget that builds different things on different platforms.

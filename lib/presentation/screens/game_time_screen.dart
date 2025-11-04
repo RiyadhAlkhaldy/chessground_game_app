@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../core/helper/constants.dart';
-import '../../core/helper/helper_methods.dart';
+import '../../core/utils/helper/constants.dart';
+import '../../core/utils/helper/helper_methods.dart';
 import '../controllers/game_controller.dart';
 import 'game_start_up_screen.dart';
 

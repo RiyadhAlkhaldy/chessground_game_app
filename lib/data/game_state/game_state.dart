@@ -7,7 +7,7 @@
 
 import 'dart:async';
 
-import 'package:chessground_game_app/core/dialog/game_status.dart';
+import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 

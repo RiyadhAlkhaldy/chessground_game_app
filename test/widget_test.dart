@@ -6,7 +6,7 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 // import 'package:chessground_game_app/mainq.dart';
-import 'package:chessground_game_app/core/helper/helper_methodes.dart';
+import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/main.dart';
 import 'package:chessground_game_app/presentation/controllers/get_storage_controller.dart';

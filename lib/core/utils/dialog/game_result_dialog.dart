@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:chessground_game_app/core/const.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
-import 'package:chessground_game_app/core/dialog/status_l10n.dart';
+import 'package:chessground_game_app/core/utils/dialog/status_l10n.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../data/game_state/game_state.dart';
+import '../../../data/game_state/game_state.dart';
 import 'game_status.dart';
 
 class GameResultDialog extends StatefulWidget {

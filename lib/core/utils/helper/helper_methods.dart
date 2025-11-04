@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 // import 'package:flutter_chess/providers/game_provider.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../presentation/controllers/game_controller.dart';
+import '../../../presentation/controllers/game_controller.dart';
 import 'constants.dart';
 // import 'package:squares/squares.dart';
 

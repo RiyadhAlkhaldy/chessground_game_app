@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/core/const.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
@@ -9,8 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../../../core/helper/helper_methodes.dart';
-import '../../../core/styles/styles.dart';
+import '../../../core/utils/helper/helper_methodes.dart';
+import '../../../core/utils/styles/styles.dart';
 import '../../controllers/chess_board_settings_controller.dart';
 import '../../controllers/freee_game_controller.dart';
 import '../../widgets/chess_board_settings_widgets.dart';

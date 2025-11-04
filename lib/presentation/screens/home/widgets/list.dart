@@ -2,7 +2,7 @@ import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/presentation/screens/home/widgets/buttons.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/styles/styles.dart';
+import '../../../../core/utils/styles/styles.dart';
 
 /// A platform agnostic list section.
 ///

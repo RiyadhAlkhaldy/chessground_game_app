@@ -2,7 +2,7 @@ import 'dart:math' show max;
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/styles/styles.dart';
+import '../../../../core/utils/styles/styles.dart';
 
 class Shimmer extends StatefulWidget {
   static ShimmerState? of(BuildContext context) {

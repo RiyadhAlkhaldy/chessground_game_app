@@ -1,4 +1,4 @@
-import 'package:chessground_game_app/core/const.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/presentation/widgets/pgn_horizontal_row.dart';
 import 'package:flutter/material.dart';
