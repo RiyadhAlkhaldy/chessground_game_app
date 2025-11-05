@@ -1,14 +1,13 @@
-// lib/models/player_model.dart
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../domain/entities/player_entity.dart';
 import '../collections/player.dart';
 
 part 'player_model.freezed.dart';
 part 'player_model.g.dart'; // لترميز/فك ترميز JSON
 
 @freezed
-class PlayerModel with _$PlayerModel {
+abstract class PlayerModel with _$PlayerModel {
   const factory PlayerModel({
     // المفتاح المحلي في Isar. يجب أن يكون اختياريًا (nullable) عند الإنشاء.
     required final int? id,
@@ -54,5 +53,20 @@ extension PlayerModelMapper on PlayerModel {
     }
     collection.createdAt = createdAt;
     return collection;
+  }
+
+  // ⚠️ الأهم في المعمارية النظيفة: وظيفة التحويل (Mapper)
+  // تحويل PlayerModel (البيانات الخارجية) إلى PlayerEntity (الكيان الداخلي)
+  PlayerEntity toEntity() {
+    return PlayerEntity(
+      id: id,
+      uuid: uuid,
+      name: name,
+      type: type,
+      playerRating: playerRating,
+      email: email,
+      image: image,
+      createdAt: createdAt,
+    );
   }
 }

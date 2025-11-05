@@ -1,20 +1,22 @@
 import 'dart:async';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/domain/collections/player.dart'
+import 'package:chessground_game_app/data/collections/player.dart'
     as col_player;
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/game_termination_enum.dart';
 import '../../../../core/utils/dialog/game_result_dialog.dart';
 import '../../../../core/utils/dialog/game_status.dart';
 import '../../../../core/utils/dialog/status_l10n.dart';
 import '../../../../data/game_state/game_state.dart';
+import '../../../../data/models/player_model.dart';
 import '../../../../data/usecases/play_sound_usecase.dart';
-import '../../../../domain/collections/chess_game.dart';
-import '../../../../domain/models/player_model.dart';
+import '../../../../data/collections/chess_game.dart';
+import '../../../../data/collections/move_data.dart';
 import '../../../../domain/services/chess_game_storage_service.dart';
 import '../../../../presentation/controllers/chess_board_settings_controller.dart';
 import '../../../../presentation/controllers/get_storage_controller.dart';

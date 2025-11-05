@@ -2,25 +2,25 @@ import 'package:chessground_game_app/domain/services/chess_game_storage_service.
 import 'package:isar/isar.dart';
 import 'package:uuid/uuid.dart';
 
-import '../collections/chess_game.dart';
-import '../collections/player.dart';
+import '../../data/collections/chess_game.dart';
+import '../../data/collections/move_data.dart';
+import '../../data/collections/player.dart';
 
 class GamesRepository {
   final Isar isar;
   final ChessGameStorageService storageService;
   GamesRepository({required this.isar, required this.storageService});
 
+  Future<List<ChessGame>>? getAllGames() async {
+    return storageService.getAllGames();
+  }
 
-Future<List<ChessGame >>? getAllGames( )async{
-  return storageService.getAllGames();
-}
   /// جلب أحدث المباريات مع دعم الـ pagination
   /// page تبدأ من 0
   Future<List<ChessGame>> getRecentGames({
     int page = 0,
     int pageSize = 20,
   }) async {
-    
     // نرتب تنازلياً حسب التاريخ إذا متوفر وإلا حسب id
     final query = isar.chessGames.where();
 

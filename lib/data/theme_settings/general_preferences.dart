@@ -111,10 +111,9 @@ sealed class BackgroundImage with _$BackgroundImage {
       seedColor: seedColor,
       brightness: Brightness.dark,
     ),
-    textTheme:
-        defaultTargetPlatform == TargetPlatform.iOS
-            ? kCupertinoDefaultTextTheme
-            : null,
+    textTheme: defaultTargetPlatform == TargetPlatform.iOS
+        ? kCupertinoDefaultTextTheme
+        : null,
   );
 
   /// The base theme for the background image.

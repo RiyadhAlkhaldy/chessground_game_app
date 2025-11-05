@@ -2,8 +2,9 @@ import 'package:dartchess/dartchess.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../collections/chess_game.dart';
-import '../collections/player.dart';
+import '../../data/collections/chess_game.dart';
+import '../../data/collections/move_data.dart';
+import '../../data/collections/player.dart';
 
 class ChessGameStorageService {
   static Isar? db;

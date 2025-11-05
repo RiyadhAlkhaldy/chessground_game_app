@@ -1,22 +1,12 @@
 import 'package:isar/isar.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/game_termination_enum.dart';
+import '../models/chess_game_model.dart';
+import 'move_data.dart';
 import 'player.dart';
 
 part 'chess_game.g.dart';
-
-enum GameTermination {
-  checkmate,
-  stalemate,
-  timeout,
-  // halfmoveClock,
-  resignation,
-  agreement,
-  threefoldRepetition,
-  fiftyMoveRule,
-  insufficientMaterial,
-  ongoing,
-}
 
 @Collection()
 class ChessGame {
@@ -29,9 +19,7 @@ class ChessGame {
   String? site;
   DateTime? date;
   String? round;
-  // String? whitePlayer;
-  // String? blackPlayer;
-  // روابط للاعبين (1:1 لكل دور)
+
   final whitePlayer = IsarLink<Player>();
   final blackPlayer = IsarLink<Player>();
   @Index()
@@ -47,9 +35,6 @@ class ChessGame {
   String? fullPgn; // النص الكامل للمباراة (مصدر)
   int movesCount =
       0; // عدد الحركات (half-moves or SAN entries — نستخدم SAN entries)
-
-  // قائمة حركات مضمنة
-  // @Embedded()
   List<MoveData> moves = [];
 
   // تتبع المستخدم/المصدر
@@ -60,24 +45,28 @@ class ChessGame {
       "ChessGame{id:$id, uuid:$uuid, whitePlayer:$whitePlayer, blackPlayer:$blackPlayer, result:$result, termination:$termination, moves:$moves, fullPgn:$fullPgn }";
 }
 
-@Embedded()
-class MoveData {
-  String? san; // e.g. "Nf3", "exd5", "O-O"
-  String? lan; // e.g. "g1f3", "e4d5"
-  String? comment; // نص التعليق من { ... }
-  List<int>? nags;
-  String? fenAfter; // FEN بعد تنفيذ الحركة
-  List<String>?
-  variations; // نص المتغيرات (يمكن أن نخزنها كنصوص خام أو تبني هيكل شجري)
-  bool wasCapture = false;
-  bool wasCheck = false;
-  bool wasCheckmate = false;
-  bool wasPromotion = false;
-  bool? isWhiteMove;
-  int? halfmoveIndex;
-  int? moveNumber;
-
-  @override
-  String toString() =>
-      "MoveData{san:$san, lan:$lan, nags:$nags, comment:$comment, fenAfter:$fenAfter }";
+extension ChessGameMapper on ChessGame {
+  // تحويل إلى نموذج بيانات
+  ChessGameModel toModel() {
+    return ChessGameModel(
+      id: id,
+      uuid: uuid,
+      event: event,
+      site: site,
+      date: date,
+      round: round,
+      whitePlayer: whitePlayer.value!.toModel(),
+      blackPlayer: blackPlayer.value!.toModel(),
+      result: result ?? "",
+      termination: termination,
+      eco: eco,
+      whiteElo: whiteElo,
+      blackElo: blackElo,
+      timeControl: timeControl,
+      startingFen: startingFen,
+      fullPgn: fullPgn,
+      movesCount: movesCount,
+      moves: moves.map((move) => move.toModel()).toList(),
+    );
+  }
 }

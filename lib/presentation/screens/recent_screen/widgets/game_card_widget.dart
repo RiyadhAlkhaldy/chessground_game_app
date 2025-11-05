@@ -1,4 +1,4 @@
-import 'package:chessground_game_app/domain/collections/chess_game.dart';
+import 'package:chessground_game_app/data/collections/chess_game.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 

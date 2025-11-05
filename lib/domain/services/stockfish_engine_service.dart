@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
-import '../models/extended_evaluation.dart';
+import '../../data/models/extended_evaluation.dart';
 
 /// حالة اللعبة المستخلصة محليًا (نستخدم dartchess للتحقق)
 // enum GameStatus {

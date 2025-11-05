@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../domain/collections/chess_game.dart';
+import '../../data/collections/move_data.dart';
 
 typedef JumpCallback = void Function(int halfmoveIndex);
 

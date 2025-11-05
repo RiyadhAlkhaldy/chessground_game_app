@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 
-import '../../domain/collections/chess_game.dart';
+import '../../data/collections/chess_game.dart';
 import '../../domain/repositories/game_repository.dart';
 
 class GameDetailsController extends GetxController {
