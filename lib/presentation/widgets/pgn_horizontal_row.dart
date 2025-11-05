@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../data/collections/move_data.dart';
+import '../../data/models/move_data_model.dart';
 
 typedef JumpCallback = void Function(int halfmoveIndex);
 
@@ -29,7 +29,7 @@ String pieceSymbolFromSan(String san, {required bool isWhiteMove}) {
   debugPrint('char $san');
   return san;
 }
-// Widget _buildToken(BuildContext context, MoveData t, bool isCurrent) {
+// Widget _buildToken(BuildContext context, MoveDataModel t, bool isCurrent) {
 //   final theme = Theme.of(context);
 //   final bg = isCurrent
 //       ? theme.colorScheme.primary.withOpacity(0.15)
@@ -64,7 +64,7 @@ String pieceSymbolFromSan(String san, {required bool isWhiteMove}) {
 //     ),
 //   );
 // }
-Widget _buildToken(BuildContext context, MoveData t, bool isCurrent) {
+Widget _buildToken(BuildContext context, MoveDataModel t, bool isCurrent) {
   final theme = Theme.of(context);
   final bg = isCurrent
       ? theme.colorScheme.primary.withValues(alpha: 0.15)
@@ -108,7 +108,7 @@ Widget _buildToken(BuildContext context, MoveData t, bool isCurrent) {
 }
 
 class PgnHorizontalRow extends StatefulWidget {
-  final List<MoveData> tokens;
+  final List<MoveDataModel> tokens;
   final int? currentHalfmoveIndex;
   final JumpCallback? onJumpTo;
 

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/data/collections/player.dart';
+import 'package:chessground_game_app/data/models/move_data_model.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -11,14 +12,13 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../../core/utils/dialog/game_result_dialog.dart';
 import '../../core/utils/dialog/game_status.dart';
-import '../../core/utils/helper/helper_methodes.dart';
 import '../../core/utils/dialog/status_l10n.dart';
-import '../../data/game_state/game_state.dart';
-import '../../data/usecases/play_sound_usecase.dart';
+import '../../core/utils/helper/helper_methodes.dart';
 import '../../data/collections/chess_game.dart';
-import '../../data/collections/move_data.dart';
+import '../../data/game_state/game_state.dart';
 import '../../data/models/extended_evaluation.dart';
 import '../../data/models/player_model.dart';
+import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/services/chess_game_storage_service.dart';
 import '../../domain/services/stockfish_engine_service.dart';
 import 'chess_board_settings_controller.dart';
@@ -296,7 +296,9 @@ class GameComputerController extends GetxController
         _gameStorageService.endGame(
           chessGame,
           result: winner == Side.white ? '1-0' : '0-1',
-          movesData: gameState.getMoveTokens,
+          movesData: gameState.getMoveTokens
+              .map((e) => e.toCollection())
+              .toList(),
           headers: _headers,
         );
       }
@@ -510,7 +512,7 @@ class GameComputerController extends GetxController
   }
 
   /// expose PGN tokens for the UI
-  List<MoveData> get pgnTokens => gameState.getMoveTokens;
+  List<MoveDataModel> get pgnTokens => gameState.getMoveTokens;
 
   int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
 

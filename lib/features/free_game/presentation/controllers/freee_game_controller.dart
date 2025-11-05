@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/data/collections/player.dart'
     as col_player;
+import 'package:chessground_game_app/domain/entities/player_entity.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -12,11 +13,10 @@ import '../../../../core/game_termination_enum.dart';
 import '../../../../core/utils/dialog/game_result_dialog.dart';
 import '../../../../core/utils/dialog/game_status.dart';
 import '../../../../core/utils/dialog/status_l10n.dart';
-import '../../../../data/game_state/game_state.dart';
-import '../../../../data/models/player_model.dart';
-import '../../../../data/usecases/play_sound_usecase.dart';
 import '../../../../data/collections/chess_game.dart';
-import '../../../../data/collections/move_data.dart';
+import '../../../../data/game_state/game_state.dart';
+import '../../../../data/models/move_data_model.dart';
+import '../../../../data/usecases/play_sound_usecase.dart';
 import '../../../../domain/services/chess_game_storage_service.dart';
 import '../../../../presentation/controllers/chess_board_settings_controller.dart';
 import '../../../../presentation/controllers/get_storage_controller.dart';
@@ -44,14 +44,14 @@ class FreeGameController extends GetxController {
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
   final storageGet = Get.find<GetStorageControllerImp>();
 
-  Rx<PlayerModel> whitePlayer = PlayerModel(
+  Rx<PlayerEntity> whitePlayer = PlayerEntity(
     id: 1,
     uuid: 'White_Player',
     name: 'White Player',
     type: 'player',
     createdAt: DateTime.now(),
   ).obs;
-  Rx<PlayerModel> blackPlayer = PlayerModel(
+  Rx<PlayerEntity> blackPlayer = PlayerEntity(
     id: 2,
     uuid: 'Black_Player',
     name: 'Black Player',
@@ -73,7 +73,7 @@ class FreeGameController extends GetxController {
   PlayerSide playerSide = PlayerSide.both;
 
   Future<void> _initPlayer() async {
-    // convert PlayerModel -> col_player.Player and persist using storage
+    // convert PlayerEntity -> col_player.Player and persist using storage
     // Use supplied storage methods to create or get players
     // if createPlayerIfNotExists exists elsewhere you can reuse it; here we use storage directly
 
@@ -274,15 +274,17 @@ class FreeGameController extends GetxController {
       plySound.executeMoveSound();
     }
 
-    // BUILD MoveData from last applied move and store to DB
+    // BUILD MoveDataModel from last applied move and store to DB
     try {
       final moveData = _buildMoveDataFromLastMove(gameState);
       if (moveData != null && currentGame != null) {
         // addMoveToGame is async — call but do not block UI (still await to handle failures optionally)
         // ignore: body_might_complete_normally_catch_error
-        storage.addMoveToGame(currentGame!.id, moveData).catchError((e) {
-          debugPrint('Error saving move to DB: $e');
-        });
+        storage
+            .addMoveToGame(currentGame!.id, moveData.toCollection())
+            .catchError((e) {
+              debugPrint('Error saving move to DB: $e');
+            });
       }
     } catch (e) {
       debugPrint('Error building/saving move data: $e');
@@ -326,7 +328,7 @@ class FreeGameController extends GetxController {
     }
   }
 
-  List<MoveData> get pgnTokens => gameState.getMoveTokens;
+  List<MoveDataModel> get pgnTokens => gameState.getMoveTokens;
   int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
 
   void jumpToHalfmove(int index) {
@@ -432,14 +434,16 @@ Future<void> saveSnapshotOnClose(
   ChessGame? currentGame,
   ChessGameStorageService storage,
   GameState gameState,
-  PlayerModel? savedWhitePlayer,
-  PlayerModel? savedBlackPlayer,
+  PlayerEntity? savedWhitePlayer,
+  PlayerEntity? savedBlackPlayer,
 ) async {
   if (currentGame == null) return;
   if (currentGame.termination == GameTermination.ongoing) return;
   try {
     // update currentGame fields from current memory state
-    currentGame.moves = gameState.getMoveTokens; // may need conversion
+    currentGame.moves = gameState.getMoveTokens
+        .map((move) => move.toCollection())
+        .toList(); // may need conversion
     currentGame.movesCount = currentGame.moves.length;
     currentGame.fullPgn = storage.manualPgnFromSanListForTest(
       // NOTE: storage._manualPgn... is internal; if private, call a public wrapper or reconstruct here
@@ -476,14 +480,14 @@ Future<void> saveSnapshotOnClose(
   }
 }
 
-MoveData? _buildMoveDataFromLastMove(GameState gameState) {
+MoveDataModel? _buildMoveDataFromLastMove(GameState gameState) {
   // gameState should have last move tokens or last move object
   // get last move SAN / LAN and meta
   final tokens =
-      gameState.getMoveTokens; // List<MoveData> from dartchess? or similar
+      gameState.getMoveTokens; // List<MoveDataModel> from dartchess? or similar
   if (tokens.isEmpty) return null;
 
-  // get the last MoveData token the GameState provides (this may differ in shape)
+  // get the last MoveDataModel token the GameState provides (this may differ in shape)
   // For safety we attempt to retrieve the last move object via gameState.currentHalfmoveIndex
   final halfmoveIndex = gameState.currentHalfmoveIndex;
   // try to get the last move object (GameState provides getMoveObjectsCopy())
@@ -494,45 +498,46 @@ MoveData? _buildMoveDataFromLastMove(GameState gameState) {
     // fallback: use tokens last
     final lastToken = tokens.isNotEmpty ? tokens.last : null;
     if (lastToken == null) return null;
-    final md = MoveData()
-      ..san = lastToken.san
-      ..lan =
-          lastToken.lan ??
-          '' // lan may be null
-      ..fenAfter = gameState.position.fen
-      ..comment = lastToken.comment
-      ..nags = lastToken.nags
-      ..variations = lastToken.variations
-      ..wasCapture = lastToken.wasCapture
-      ..wasCheck = lastToken.wasCheck
-      ..wasCheckmate = lastToken.wasCheckmate
-      ..wasPromotion = lastToken.wasPromotion
-      ..isWhiteMove = lastToken.isWhiteMove
-      ..halfmoveIndex = halfmoveIndex
-      ..moveNumber = lastToken.moveNumber;
+    final md = MoveDataModel(
+      moveNumber: lastToken.moveNumber,
+      san: lastToken.san,
+      comment: lastToken.comment,
+      nags: lastToken.nags ?? [],
+      fenAfter: lastToken.fenAfter,
+      isWhiteMove: lastToken.isWhiteMove,
+      halfmoveIndex: allMoves.length,
+      wasCapture: lastToken.wasCapture,
+      wasPromotion: lastToken.wasPromotion,
+      wasCheck: lastToken.wasCheck,
+      wasCheckmate: lastToken.wasCheckmate,
+      variations: lastToken.variations ?? [],
+      lan: lastToken.lan ?? '',
+    );
+
     return md;
   } else {
-    // convert NormalMove object at allMoves[halfmoveIndex] to MoveData
+    // convert NormalMove object at allMoves[halfmoveIndex] to MoveDataModel
     final normalMove = allMoves[halfmoveIndex];
     // get SAN token corresponding to this normalMove if possible
     final sanToken = tokens.length > halfmoveIndex
         ? tokens[halfmoveIndex]
         : null;
 
-    final md = MoveData()
-      ..san = sanToken?.san ?? normalMove.toString()
-      ..lan = _normalMoveToLan(Move.parse(normalMove.san!) as NormalMove)
-      ..fenAfter = gameState.position.fen
-      ..comment = sanToken?.comment
-      ..nags = sanToken?.nags
-      ..variations = sanToken?.variations
-      ..wasCapture = normalMove.wasCapture
-      ..wasCheck = gameState.position.isCheck
-      ..wasCheckmate = gameState.isCheckmate
-      ..wasPromotion = normalMove.wasPromotion
-      ..isWhiteMove = normalMove.isWhiteMove
-      ..halfmoveIndex = halfmoveIndex
-      ..moveNumber = (halfmoveIndex ~/ 2) + 1;
+    final md = MoveDataModel(
+      san: sanToken?.san ?? normalMove.toString(),
+      lan: _normalMoveToLan(Move.parse(normalMove.san!) as NormalMove),
+      fenAfter: gameState.position.fen,
+      comment: sanToken?.comment,
+      nags: sanToken?.nags ?? [],
+      variations: sanToken?.variations ?? [],
+      wasCapture: normalMove.wasCapture,
+      wasCheck: gameState.isCheck,
+      wasCheckmate: gameState.isCheckmate,
+      wasPromotion: normalMove.wasPromotion,
+      isWhiteMove: normalMove.isWhiteMove,
+      halfmoveIndex: halfmoveIndex,
+      moveNumber: (halfmoveIndex ~/ 2) + 1,
+    );
     return md;
   }
 }
@@ -558,8 +563,8 @@ Future<void> _finalizeGame(
   GameState gameState,
   ChessGame? currentGame,
   ChessGameStorageService storage,
-  PlayerModel savedWhitePlayer,
-  PlayerModel savedBlackPlayer,
+  PlayerEntity savedWhitePlayer,
+  PlayerEntity savedBlackPlayer,
 ) async {
   if (currentGame == null) return;
   String resultText = '*';
@@ -613,7 +618,7 @@ Future<void> _finalizeGame(
   };
 
   try {
-    // harvest movesData from currentGame.moves (already stored as MoveData)
+    // harvest movesData from currentGame.moves (already stored as MoveDataModel)
     final movesData = currentGame.moves;
 
     // call storage.endGame (signature per earlier service: endGame(chessGame, result, movesData, termination, headers))
@@ -663,14 +668,14 @@ Future<void> _finalizeGame(
 //   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
 //   final storage = Get.find<GetStorageControllerImp>();
 
-//   Rx<PlayerModel> whitePlayer = PlayerModel(
+//   Rx<PlayerEntity> whitePlayer = PlayerEntity(
 //     id: 1,
 //     uuid: 'White_Player',
 //     name: 'White Player',
 //     type: 'player',
 //     createdAt: DateTime.now(),
 //   ).obs;
-//   Rx<PlayerModel> blackPlayer = PlayerModel(
+//   Rx<PlayerEntity> blackPlayer = PlayerEntity(
 //     id: 2,
 //     uuid: 'Black Player',
 //     name: 'Black Player',
@@ -871,7 +876,7 @@ Future<void> _finalizeGame(
 //   }
 
 //   /// expose PGN tokens for the UI
-//   List<MoveData> get pgnTokens => gameState.getMoveTokens;
+//   List<MoveDataModel> get pgnTokens => gameState.getMoveTokens;
 
 //   int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
 

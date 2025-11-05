@@ -11,7 +11,7 @@ import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 
-import '../collections/move_data.dart';
+import '../models/move_data_model.dart';
 
 /// A lightweight mutable controller for a game built on top of dartchess immutable Position.
 /// - Keeps fenHistory and fenCounts for repetition detection.
@@ -72,15 +72,15 @@ class GameState {
   /// PGN moves as a mutable tree.
   // final PgnNode<PgnNodeData> pgnRoot = PgnNode<PgnNodeData>();
   // Linear move list (no variations). Each entry stores SAN, optional comment and NAGs.
-  final List<MoveData> _moves = [];
-  final List<MoveData> allMoves = [];
+  final List<MoveDataModel> _moves = [];
+  final List<MoveDataModel> allMoves = [];
 
   // redo stacks
-  final List<MoveData> _redoMoveStack = [];
+  final List<MoveDataModel> _redoMoveStack = [];
 
   /// last move metadata (used by controller to decide which sound to play, UI badges, etc.)
-  MoveData? _lastMoveMeta;
-  MoveData? get lastMoveMeta => _lastMoveMeta;
+  MoveDataModel? _lastMoveMeta;
+  MoveDataModel? get lastMoveMeta => _lastMoveMeta;
   final List<Move> _moveObjects = [];
   final List<Move> _redoMoveObjStack = [];
 
@@ -226,18 +226,21 @@ class GameState {
     debugPrint("moveNumber $moveNumber");
 
     /// last move metadata (used by controller to decide which sound to play, UI badges, etc.)
-    _lastMoveMeta = MoveData()
-      ..moveNumber = moveNumber
-      ..wasCapture = wasCapture
-      ..wasCheck = wasCheck
-      ..wasCheckmate = wasCheckmate
-      ..wasPromotion = wasPromotion
-      ..halfmoveIndex = allMoves.length
-      ..san = san
-      ..comment = comment
-      ..nags = nags
-      ..fenAfter = _pos.fen
-      ..isWhiteMove = _pos.turn == Side.white ? false : true;
+    _lastMoveMeta = MoveDataModel(
+      moveNumber: moveNumber,
+      san: san,
+      comment: comment,
+      nags: nags!,
+      fenAfter: _pos.fen,
+      isWhiteMove: _pos.turn == Side.white ? false : true,
+      halfmoveIndex: allMoves.length,
+      wasCapture: wasCapture,
+      wasPromotion: wasPromotion,
+      wasCheck: wasCheck,
+      wasCheckmate: wasCheckmate,
+      variations: [],
+      lan: move.uci,
+    );
 
     _moves.add(_lastMoveMeta!);
     allMoves.add(_lastMoveMeta!);
@@ -511,7 +514,7 @@ class GameState {
   List<Move> getMoveObjectsCopy() => List<Move>.from(_moveObjects);
 
   /// Provide tokens for PGN horizontal display. Each token corresponds to a half-move.
-  List<MoveData> get getMoveTokens => allMoves;
+  List<MoveDataModel> get getMoveTokens => allMoves;
 
   int get currentHalfmoveIndex => _moveObjects.length - 1;
 

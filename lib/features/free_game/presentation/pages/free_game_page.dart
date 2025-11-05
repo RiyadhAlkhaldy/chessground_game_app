@@ -6,10 +6,10 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../../presentation/controllers/chess_board_settings_controller.dart';
 import '../../../../presentation/screens/game_computer/widgets/chess_board_widget.dart';
-import '../../../../presentation/screens/game_computer/widgets/chess_clock_widget.dart';
 import '../../../../presentation/widgets/chess_board_settings_widgets.dart';
 import '../../../../presentation/widgets/pgn_horizontal_row.dart';
 import '../controllers/freee_game_controller.dart';
+import '../widgets/chess_clock_widget.dart';
 
 class FreeGamePage extends StatelessWidget {
   FreeGamePage({super.key});

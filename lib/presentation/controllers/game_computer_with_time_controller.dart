@@ -13,12 +13,12 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 import '../../core/game_termination_enum.dart';
 import '../../core/utils/dialog/game_status.dart';
 import '../../core/utils/helper/helper_methodes.dart';
-import '../../data/game_state/game_state.dart';
-import '../../data/usecases/play_sound_usecase.dart';
 import '../../data/collections/chess_game.dart';
-import '../../data/collections/move_data.dart';
+import '../../data/game_state/game_state.dart';
 import '../../data/models/extended_evaluation.dart';
+import '../../data/models/move_data_model.dart';
 import '../../data/models/player_model.dart';
+import '../../data/usecases/play_sound_usecase.dart';
 import '../../domain/services/chess_clock_service.dart';
 import '../../domain/services/chess_game_storage_service.dart';
 import '../../domain/services/stockfish_engine_service.dart';
@@ -561,7 +561,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
   }
 
   /// expose PGN tokens for the UI
-  List<MoveData> get pgnTokens => gameState.getMoveTokens;
+  List<MoveDataModel> get pgnTokens => gameState.getMoveTokens;
 
   int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
 
