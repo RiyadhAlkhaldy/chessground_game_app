@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 
 import '../../data/collections/chess_game.dart';
-import '../../domain/repositories/game_repository.dart';
+import '../../domain/repositories/games_repository.dart';
 
 class GameDetailsController extends GetxController {
   final GamesRepository repository = Get.find<GamesRepository>();

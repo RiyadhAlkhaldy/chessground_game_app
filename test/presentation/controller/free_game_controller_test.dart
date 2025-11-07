@@ -1,5 +1,10 @@
-import 'package:chessground_game_app/data/usecases/play_sound_usecase.dart';
+import 'package:chessground_game_app/data/datasources/local_datasource.dart';
+import 'package:chessground_game_app/data/datasources/stockfish_datasource.dart';
+import 'package:chessground_game_app/data/repositories/game_repository_impl.dart';
+import 'package:chessground_game_app/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/domain/services/service/sound_effect_service.dart';
+import 'package:chessground_game_app/domain/usecases/play_move.dart';
+import 'package:chessground_game_app/domain/usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/features/free_game/presentation/controllers/freee_game_controller.dart';
 import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
 import 'package:dartchess/dartchess.dart';
@@ -10,9 +15,22 @@ void main() {
   group('FreeGameController Tests', () {
     late FreeGameController ctrl;
 
-    setUp(() {
+    setUp(() async {
+      await ChessGameStorageService.initForTest('free_game_controller_test');
       Get.put(ChessBoardSettingsController());
-      ctrl = FreeGameController(PlaySoundUseCase(SoundEffectService()));
+      ctrl = FreeGameController(
+        PlaySoundUseCase(SoundEffectService()),
+        PlayMove(
+          GameRepositoryImpl(
+            local: LocalDataSourceImpl(
+              Get.find<ChessGameStorageService>().isar,
+              Get.find(),
+            ),
+            stockfish: Get.find<StockfishDataSource>(),
+          ),
+        ),
+        Get.find(),
+      );
       ctrl.onInit();
     });
 

@@ -1,4 +1,4 @@
-import '../../domain/services/service/sound_effect_service.dart';
+import '../services/service/sound_effect_service.dart';
 
 class PlaySoundUseCase {
   final SoundEffectService soundEffect;

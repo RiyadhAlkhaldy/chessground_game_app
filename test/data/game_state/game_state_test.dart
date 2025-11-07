@@ -1,5 +1,5 @@
 // test/game_state_test.dart
-import 'package:chessground_game_app/data/game_state/game_state.dart';
+import 'package:chessground_game_app/domain/services/game_state/game_state.dart';
 import 'package:dartchess/dartchess.dart';
 // import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';

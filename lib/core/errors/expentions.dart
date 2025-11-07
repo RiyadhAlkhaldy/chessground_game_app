@@ -60,7 +60,22 @@ class CancelException extends ServerException {
 class UnknownException extends ServerException {
   UnknownException(super.errorModel);
 }
+/// for me 
+class DatabaseFailure extends ServerException {
+  DatabaseFailure(super.errorModel);
+}
 
+class CacheFailure extends CacheExeption {
+  CacheFailure() : super(errorMessage: "Cache Error");
+}
+
+ class OfflineFailure extends ServerException {
+  OfflineFailure(super.errorModel);
+}
+
+class EngineFailure extends ServerException {
+  EngineFailure(super.errorModel);
+}
 void handleDioException(DioException e) {
   switch (e.type) {
     case DioExceptionType.connectionError:

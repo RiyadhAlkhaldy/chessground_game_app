@@ -1,12 +1,19 @@
-import 'package:chessground_game_app/domain/repositories/game_repository.dart';
+import 'package:chessground_game_app/domain/repositories/games_repository.dart';
 import 'package:chessground_game_app/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/domain/services/service/sound_effect_service.dart';
 import 'package:get/get.dart';
 
-import '../data/usecases/play_sound_usecase.dart';
+import '../data/datasources/local_datasource.dart';
+import '../data/datasources/stockfish_datasource.dart';
+import '../data/repositories/game_repository_impl.dart';
+import '../data/repositories/games_respository_impl.dart';
+import '../domain/repositories/game_repository.dart';
 import '../domain/services/stockfish_engine_service.dart';
-import '../presentation/controllers/chess_board_settings_controller.dart';
+import '../domain/usecases/init_chess_game.dart';
+import '../domain/usecases/play_move.dart';
+import '../domain/usecases/play_sound_usecase.dart';
 import '../features/free_game/presentation/controllers/freee_game_controller.dart';
+import '../presentation/controllers/chess_board_settings_controller.dart';
 import '../presentation/controllers/game_computer_controller.dart';
 import '../presentation/controllers/game_computer_with_time_controller.dart';
 import '../presentation/controllers/game_controller.dart';
@@ -20,6 +27,16 @@ import '../presentation/controllers/side_choosing_controller.dart';
 class GameBinding extends Bindings {
   @override
   void dependencies() {
+    /// data sources
+    Get.lazyPut(
+      () => LocalDataSourceImpl(
+        Get.find<ChessGameStorageService>().isar,
+        Get.find<GetStorageControllerImp>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(() => StockfishDataSource(), fenix: true);
+
     /// services
     Get.lazyPut(() => SoundEffectService(), fenix: true);
     Get.lazyPut(() => ChessGameStorageService(), fenix: true);
@@ -33,6 +50,8 @@ class GameBinding extends Bindings {
       () => PlaySoundUseCase(Get.find<SoundEffectService>()),
       fenix: true,
     );
+    Get.lazyPut(() => PlayMove(Get.find<GameRepository>()), fenix: true);
+    Get.lazyPut(() => InitChessGame(Get.find()), fenix: true);
 
     /// controllers
     Get.lazyPut<GetStorageController>(
@@ -71,13 +90,27 @@ class GameBinding extends Bindings {
     );
 
     /// تسجيل المتحكم (FreeGameController)
-    Get.lazyPut(() => FreeGameController(Get.find()), fenix: true);
+    Get.lazyPut(
+      () => FreeGameController(Get.find(), Get.find(), Get.find()),
+      fenix: true,
+    );
 
     /// repositories
-    Get.lazyPut(
-      () => GamesRepository(
-        isar: ChessGameStorageService.db!,
+    Get.lazyPut<GamesRepository>(
+      () => GamesRepositoryImpl(
+        isar: Get.find<ChessGameStorageService>().isar,
         storageService: Get.find(),
+      ),
+      fenix: true,
+    );
+
+    Get.lazyPut<GameRepository>(
+      () => GameRepositoryImpl(
+        local: LocalDataSourceImpl(
+          Get.find<ChessGameStorageService>().isar,
+          Get.find<GetStorageControllerImp>(),
+        ),
+        stockfish: Get.find<StockfishDataSource>(),
       ),
       fenix: true,
     );

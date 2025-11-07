@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/data/collections/player.dart'
-    as col_player;
 import 'package:chessground_game_app/domain/entities/player_entity.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
@@ -10,39 +8,39 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/game_termination_enum.dart';
+import '../../../../core/params/params.dart';
 import '../../../../core/utils/dialog/game_result_dialog.dart';
 import '../../../../core/utils/dialog/game_status.dart';
 import '../../../../core/utils/dialog/status_l10n.dart';
 import '../../../../data/collections/chess_game.dart';
-import '../../../../data/game_state/game_state.dart';
 import '../../../../data/models/move_data_model.dart';
-import '../../../../data/usecases/play_sound_usecase.dart';
+import '../../../../domain/entities/chess_game_entity.dart';
 import '../../../../domain/services/chess_game_storage_service.dart';
+import '../../../../domain/services/game_state/game_state.dart';
+import '../../../../domain/usecases/init_chess_game.dart';
+import '../../../../domain/usecases/play_move.dart';
+import '../../../../domain/usecases/play_sound_usecase.dart';
 import '../../../../presentation/controllers/chess_board_settings_controller.dart';
 import '../../../../presentation/controllers/get_storage_controller.dart';
 
 class FreeGameController extends GetxController {
-  GameState gameState = GameState();
-
   Position get initail => Chess.fromSetup(Setup.parseFen(_initailLocalFen));
   String get _initailLocalFen => Chess.initial.fen;
+  // String get _initailLocalFen => "8/P7/8/k7/8/8/8/K7 w - - 0 1";
   late String _fen;
 
   // ignore: unnecessary_getters_setters
   String get fen => _fen;
+
   set fen(String value) => _fen = value;
 
   ValidMoves validMoves = IMap(const {});
 
-  bool get isCheckmate => gameState.isCheckmate;
+  bool get isCheckmate => gameState.value!.isCheckmate;
 
   Side? get winner {
     return getResult?.winner;
   }
-
-  final PlaySoundUseCase plySound;
-  final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
-  final storageGet = Get.find<GetStorageControllerImp>();
 
   Rx<PlayerEntity> whitePlayer = PlayerEntity(
     id: 1,
@@ -53,104 +51,72 @@ class FreeGameController extends GetxController {
   ).obs;
   Rx<PlayerEntity> blackPlayer = PlayerEntity(
     id: 2,
-    uuid: 'Black_Player',
+    uuid: 'Black Player',
     name: 'Black Player',
     type: 'player',
     createdAt: DateTime.now(),
   ).obs;
 
-  // ===== storage & game record fields =====
-  final ChessGameStorageService storage = ChessGameStorageService();
-  ChessGame? currentGame; // يمثل سجل اللعبة في Isar
-  col_player.Player? savedWhitePlayer;
-  col_player.Player? savedBlackPlayer;
-
-  FreeGameController(this.plySound);
-
   bool canPop = false;
   NormalMove? promotionMove;
   NormalMove? premove;
   PlayerSide playerSide = PlayerSide.both;
-
   Future<void> _initPlayer() async {
-    // convert PlayerEntity -> col_player.Player and persist using storage
-    // Use supplied storage methods to create or get players
-    // if createPlayerIfNotExists exists elsewhere you can reuse it; here we use storage directly
-
-    // White player
-    final whiteModel = whitePlayer.value;
-    final whiteCollectionPlayer = col_player.Player(
-      uuid: whiteModel.uuid,
-      name: whiteModel.name,
-      type: whiteModel.type,
-      playerRating: whiteModel.playerRating,
+    final response = await initChessGame(
+      InitChessGameParams(site: '', event: ''),
     );
-    savedWhitePlayer = await storage.createOrGetPlayerByUuid(
-      whiteCollectionPlayer.uuid,
-      name: whiteCollectionPlayer.name,
-      rating: whiteCollectionPlayer.playerRating,
-      type: whiteCollectionPlayer.type,
-    );
-
-    // Black player (for free play we create another local human)
-    final blackModel = blackPlayer.value;
-    final blackCollectionPlayer = col_player.Player(
-      uuid: blackModel.uuid,
-      name: blackModel.name,
-      type: blackModel.type,
-      playerRating: blackModel.playerRating,
-    );
-    savedBlackPlayer = await storage.createOrGetPlayerByUuid(
-      blackCollectionPlayer.uuid,
-      name: blackCollectionPlayer.name,
-      rating: blackCollectionPlayer.playerRating,
-      type: blackCollectionPlayer.type,
-    );
-
-    // Attempt to resume unfinished game for this owner (owner = savedWhitePlayer.uuid)
-    await _resumeOrCreateGame(ownerUuid: savedWhitePlayer!.uuid);
+    response.fold((l) {}, (chsGameEnty) {
+      chessGameEntity = chsGameEnty;
+      whitePlayer.value = chsGameEnty.whitePlayer;
+      blackPlayer.value = chsGameEnty.blackPlayer;
+    });
   }
+
+  final PlaySoundUseCase plySound;
+  final PlayMove playMoveUsecase;
+  final InitChessGame initChessGame;
+  ChessGameEntity? chessGameEntity;
+  final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
+  final storage = Get.find<GetStorageControllerImp>();
+  Rxn<GameState> gameState = Rxn<GameState>();
+  final RxBool isLoading = false.obs;
+  final RxnString error = RxnString();
+
+  // load existing game from repository (usecase loadGame not shown here)
+  void setGameState(GameState state) {
+    gameState.value = state;
+  }
+
+  FreeGameController(this.plySound, this.playMoveUsecase, this.initChessGame);
 
   @override
   void onInit() {
     super.onInit();
-    // init storage DB - ensure it is initialized somewhere in app start; but call here if needed
-    ChessGameStorageService.init(); // safe to call repeatedly (it guards against double init)
     _initPlayer().then((_) async {
       await plySound.executeDongSound();
     });
-
-    gameState = GameState(initial: initail);
-    fen = gameState.position.fen;
-    validMoves = makeLegalMoves(gameState.position);
+    gameState.value = GameState(initial: initail);
+    fen = gameState.value!.position.fen;
+    validMoves = makeLegalMoves(gameState.value!.position);
     _listenToGameStatus();
   }
 
   void _listenToGameStatus() {
-    gameState.gameStatus.listen((status) async {
-      if (gameState.turn == Side.white) {
+    gameState.value!.gameStatus.listen((status) {
+      if (gameState.value!.turn == Side.white) {
         statusText.value = "دور الأبيض";
-      } else if (gameState.turn == Side.black) {
+      } else if (gameState.value!.turn == Side.black) {
         statusText.value = "دور الأسود";
       }
-      if (gameState.isCheck) {
+      if (gameState.value!.isCheck) {
         statusText.value += '(كش)';
       }
       if (status != GameStatus.ongoing) {
-        // قبل عرض النتيجة: خزّن النتيجة النهائية في DB
-        await _finalizeGame(
-          status,
-          gameState,
-          currentGame,
-          storage,
-          whitePlayer.value,
-          blackPlayer.value,
-        );
         statusText.value =
-            "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.position, winner: gameState.result?.winner, isThreefoldRepetition: gameState.isThreefoldRepetition())} ";
+            "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.value!.position, winner: gameState.value!.result?.winner, isThreefoldRepetition: gameState.value!.isThreefoldRepetition())} ";
         Get.dialog(
           GameResultDialog(
-            gameState: gameState,
+            gameState: gameState.value!,
             gameStatus: status,
             reset: reset,
           ),
@@ -159,41 +125,34 @@ class FreeGameController extends GetxController {
     });
   }
 
+  // // النسخة المعدلة من getResult
   Outcome? get getResult {
-    return gameState.result;
+    return gameState.value!.result;
   }
 
   RxString statusText = "free Play".obs;
 
-  GameStatus get gameStatus => gameState.status();
+  GameStatus get gameStatus => gameState.value!.status();
 
-  /// Agreement draw
-  void setAgreementDraw() {
-    gameState.setAgreementDraw();
-    update();
-  }
+  /// Agreement draw: set result to draw.
+  void setAgreementDraw() => {gameState.value!.setAgreementDraw(), update()};
 
-  /// Resign
-  void resign(Side side) {
-    gameState.resign(side);
-    plySound.executeResignSound();
-    update();
-  }
+  /// Resign: if side resigns, winner is the other side.
+  void resign(Side side) => {
+    gameState.value!.resign(side),
+    plySound.executeResignSound(),
+    update(),
+  };
 
-  /// reset
+  ///reset
   void reset() {
-    gameState = GameState(initial: initail);
-    fen = gameState.position.fen;
-    validMoves = makeLegalMoves(gameState.position);
+    gameState.value = GameState(initial: initail);
+    fen = gameState.value!.position.fen;
+    validMoves = makeLegalMoves(gameState.value!.position);
     promotionMove = null;
     debugPrint('reset to $fen');
     plySound.executeDongSound();
     statusText.value = "free Play";
-
-    // when resetting we also start a new DB game record
-    if (savedWhitePlayer != null && savedBlackPlayer != null) {
-      _resumeOrCreateGame(ownerUuid: savedWhitePlayer!.uuid);
-    }
 
     update();
   }
@@ -235,84 +194,116 @@ class FreeGameController extends GetxController {
     if (isPromotionPawnMove(move)) {
       promotionMove = move;
       update();
-      return;
-    } else if (gameState.position.isLegal(move)) {
+    } else if (gameState.value!.position.isLegal(move)) {
       _applyMove(move);
+      // validMoves = IMap(const {});
       promotionMove = null;
-      debugPrint("gameState.position.fen: ${gameState.position.fen}");
+      debugPrint(
+        "gameState.value!.position.fen: ${gameState.value!.position.fen}",
+      );
       update();
     }
     tryPlayPremove();
   }
 
-  /// تطبيق النقلة وتحديث state و حفظ الحركة في DB
-  void _applyMove(NormalMove move) {
-    // play move in GameState
-    gameState.play(move);
+  // Future<void> onUserMove(
+  //   Move move, {
+  //   String? comment,
+  //   List<int>? nags,
+  //   required String uuid,
+  // }) async {
+  //   final state = gameState.value!;
+  //   isLoading.value = true;
+  //   final res = await playMoveUsecase(
+  //     gameUuid: uuid,
+  //     state: state,
+  //     move: move,
+  //     comment: comment,
+  //     nags: nags,
+  //     persist: true,
+  //   );
+  //   res.fold(
+  //     (f) {
+  //       error.value = f.toString();
+  //     },
+  //     (_) {
+  //       // update observed gameState.value! (GameState mutated in-place)
+  //       gameState.refresh();
+  //     },
+  //   );
+  //   isLoading.value = false;
+  // }
 
-    // update fen & moves in UI
-    fen = gameState.position.fen;
-    validMoves = makeLegalMoves(gameState.position);
+  // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
+  void _applyMove(NormalMove move) async {
+    final state = gameState.value!;
+    isLoading.value = true;
+    final res = await playMoveUsecase(
+      gameUuid: chessGameEntity!.uuid,
+      state: state,
+      move: move,
+      comment: null,
+      nags: [],
+      persist: true,
+    );
+    res.fold(
+      (f) {
+        error.value = f.toString();
+      },
+      (_) {
+        // update observed gameState.value! (GameState mutated in-place)
+        gameState.refresh();
+        fen = gameState.value!.position.fen;
+        validMoves = makeLegalMoves(gameState.value!.position);
 
-    // play sounds based on meta
-    final meta = gameState.lastMoveMeta;
-    if (meta != null) {
-      if (meta.wasCapture) {
-        plySound.executeCaptureSound();
-      } else {
-        plySound.executeMoveSound();
-      }
-      if (meta.wasPromotion) {
-        plySound.executePromoteSound();
-      }
-      if (meta.wasCheckmate) {
-        plySound.executeCheckmateSound();
-      } else if (meta.wasCheck) {
-        plySound.executeCheckSound();
-      }
-    } else {
-      plySound.executeMoveSound();
-    }
-
-    // BUILD MoveDataModel from last applied move and store to DB
-    try {
-      final moveData = _buildMoveDataFromLastMove(gameState);
-      if (moveData != null && currentGame != null) {
-        // addMoveToGame is async — call but do not block UI (still await to handle failures optionally)
-        // ignore: body_might_complete_normally_catch_error
-        storage
-            .addMoveToGame(currentGame!.id, moveData.toCollection())
-            .catchError((e) {
-              debugPrint('Error saving move to DB: $e');
-            });
-      }
-    } catch (e) {
-      debugPrint('Error building/saving move data: $e');
-    }
-
-    // update status text (gameState.gameStatus stream will handle finalization)
-    gameStatus;
+        // decide which sound to play based on metadata
+        final meta = gameState.value!.lastMoveMeta;
+        if (meta != null) {
+          // capture has priority (play capture instead of plain move)
+          if (meta.wasCapture) {
+            plySound.executeCaptureSound();
+          } else {
+            plySound.executeMoveSound();
+          }
+          if (meta.wasPromotion) {
+            plySound.executePromoteSound();
+          }
+          if (meta.wasCheckmate) {
+            plySound.executeCheckmateSound();
+          } else if (meta.wasCheck) {
+            plySound.executeCheckSound();
+          }
+        } else {
+          // fallback
+          plySound.executeMoveSound();
+        }
+        gameStatus; // to update statusText
+      },
+    );
+    isLoading.value = false;
   }
 
   bool isPromotionPawnMove(NormalMove move) {
     return move.promotion == null &&
-        gameState.position.board.roleAt(move.from) == Role.pawn &&
+        gameState.value!.position.board.roleAt(move.from) == Role.pawn &&
         ((move.to.rank == Rank.first &&
-                gameState.position.turn == Side.black) ||
+                gameState.value!.position.turn == Side.black) ||
             (move.to.rank == Rank.eighth &&
-                gameState.position.turn == Side.white));
+                gameState.value!.position.turn == Side.white));
   }
 
+  // if can undo return true , if can redo return true
   RxBool get canUndo =>
-      (!gameState.isGameOverExtended && gameState.canUndo).obs;
+      (!gameState.value!.isGameOverExtended && gameState.value!.canUndo).obs;
   RxBool get canRedo =>
-      (!gameState.isGameOverExtended && gameState.canRedo).obs;
+      (!gameState.value!.isGameOverExtended && gameState.value!.canRedo).obs;
 
   void undoMove() {
     if (canUndo.value) {
-      gameState.undoMove();
-      fen = gameState.position.fen;
-      validMoves = makeLegalMoves(gameState.position);
+      gameState.value!.undoMove();
+      fen = gameState.value!.position.fen;
+      validMoves = makeLegalMoves(gameState.value!.position);
+      // play a feedback sound (optional)
       plySound.executeMoveSound();
       update();
     }
@@ -320,113 +311,55 @@ class FreeGameController extends GetxController {
 
   void redoMove() {
     if (canRedo.value) {
-      gameState.redoMove();
-      fen = gameState.position.fen;
-      validMoves = makeLegalMoves(gameState.position);
+      gameState.value!.redoMove();
+      fen = gameState.value!.position.fen;
+      validMoves = makeLegalMoves(gameState.value!.position);
       plySound.executeMoveSound();
       update();
     }
   }
 
-  List<MoveDataModel> get pgnTokens => gameState.getMoveTokens;
-  int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
+  /// expose PGN tokens for the UI
+  List<MoveDataModel> get pgnTokens => gameState.value!.getMoveTokens;
 
+  int get currentHalfmoveIndex => gameState.value!.currentHalfmoveIndex;
+
+  /// jump to a halfmove index (0-based). This will rebuild the game state up to that halfmove.
+  /// Implementation: get a copy of move objects from gameState.value!, construct a fresh GameState
+  /// and replay moves up to `index` then replace controller.gameState.value! with rebuilt one.
   void jumpToHalfmove(int index) {
-    final allMoves = gameState.getMoveObjectsCopy();
+    final allMoves = gameState.value!.getMoveObjectsCopy();
     final newState = GameState(initial: initail);
     for (int i = 0; i <= index && i < allMoves.length; i++) {
       newState.play(allMoves[i]);
     }
-    gameState = newState;
-    fen = gameState.position.fen;
-    validMoves = makeLegalMoves(gameState.position);
+    gameState.value = newState;
+    fen = gameState.value!.position.fen;
+    validMoves = makeLegalMoves(gameState.value!.position);
     update();
   }
 
-  Map<Role, int> get whiteCaptured => gameState.getCapturedPieces(Side.white);
-  Map<Role, int> get blackCaptured => gameState.getCapturedPieces(Side.black);
-  String get whiteCapturedText => gameState.capturedPiecesAsString(Side.white);
+  Map<Role, int> get whiteCaptured =>
+      gameState.value!.getCapturedPieces(Side.white);
+  Map<Role, int> get blackCaptured =>
+      gameState.value!.getCapturedPieces(Side.black);
+  String get whiteCapturedText =>
+      gameState.value!.capturedPiecesAsString(Side.white);
   String get whiteCapturedIcons =>
-      gameState.capturedPiecesAsUnicode(Side.white);
+      gameState.value!.capturedPiecesAsUnicode(Side.white);
   String get blackCapturedIcons =>
-      gameState.capturedPiecesAsUnicode(Side.black);
+      gameState.value!.capturedPiecesAsUnicode(Side.black);
 
+  // في controller أو widget بعد استدعاء setState/update
   List<Role> get whiteCapturedList =>
-      gameState.getCapturedPiecesList(Side.white);
+      gameState.value!.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
   List<Role> get blackCapturedList =>
-      gameState.getCapturedPiecesList(Side.black);
+      gameState.value!.getCapturedPiecesList(Side.black);
 
-  /// محاولة استئناف لعبة غير مكتملة أو إنشاء لعبة جديدة
-  Future<void> _resumeOrCreateGame({required String ownerUuid}) async {
-    try {
-      // get all games for owner and find first unfinished (result == null or '*' or "")
-      final games = await storage.getGamesByPlayer(ownerUuid);
-      ChessGame? unfinished;
-      for (final g in games) {
-        if (g.result == null ||
-            g.result == '*' ||
-            (g.moves.isNotEmpty && g.termination != GameTermination.ongoing)) {
-          unfinished = g;
-          break;
-        }
-      }
-
-      if (unfinished != null) {
-        currentGame = unfinished;
-        // load players (ensure loaded)
-        await currentGame!.whitePlayer.load();
-        await currentGame!.blackPlayer.load();
-        debugPrint(
-          'Resumed game id=${currentGame!.id} with ${currentGame!.movesCount} moves',
-        );
-      } else {
-        // create new game record
-        final chessGame = ChessGame();
-        final headers = <String, String>{
-          'Event': 'Free Play',
-          'Site': 'Local',
-          'Date': DateTime.now().toIso8601String().split('T').first,
-          'White': savedWhitePlayer?.name ?? 'White',
-          'Black': savedBlackPlayer?.name ?? 'Black',
-          'Result': '*',
-        };
-
-        final created = await storage.startNewGame(
-          chessGame: chessGame,
-          startFEN: initail.fen,
-          white: savedWhitePlayer!,
-          black: savedBlackPlayer!,
-          headers: headers,
-          event: 'Free Play',
-          site: 'Local',
-          round: '1',
-          date: DateTime.now(),
-        );
-
-        currentGame = created;
-        debugPrint('Created new game id=${currentGame!.id}');
-      }
-    } catch (e) {
-      debugPrint('Error resuming/creating game: $e');
-    }
-  }
-
-  /// save snapshot on close
   @override
-  void onClose() {
-    super.onClose();
-    saveSnapshotOnClose(
-      currentGame,
-      storage,
-      gameState,
-      whitePlayer.value,
-      blackPlayer.value,
-    ).catchError((e) {
-      debugPrint('Error saving snapshot on close: $e');
-    });
-    try {
-      gameState.dispose();
-    } catch (_) {}
+  void dispose() {
+    gameState.value!.dispose();
+    super.dispose();
   }
 }
 
@@ -480,6 +413,7 @@ Future<void> saveSnapshotOnClose(
   }
 }
 
+// ignore: unused_element
 MoveDataModel? _buildMoveDataFromLastMove(GameState gameState) {
   // gameState should have last move tokens or last move object
   // get last move SAN / LAN and meta
@@ -558,6 +492,7 @@ String _normalMoveToLan(NormalMove move) {
 }
 
 /// Map GameStatus to result string and call storage.endGame / finishGame
+// ignore: unused_element
 Future<void> _finalizeGame(
   GameStatus status,
   GameState gameState,

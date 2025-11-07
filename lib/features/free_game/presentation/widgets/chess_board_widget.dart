@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
@@ -22,6 +21,7 @@ class ChessBoardWidget extends GetView<FreeGameController> {
           return PopScope(
             canPop: controller
                 .gameState
+                .value!
                 .isGameOverExtended, // Prevents automatic exit
 
             onPopInvokedWithResult: (didPop, result) async {
@@ -34,7 +34,7 @@ class ChessBoardWidget extends GetView<FreeGameController> {
                 final shouldExit = await showExitConfirmationDialog(context)
                     .then((value) {
                       if (value != null && value == true) {
-                        controller.resign(controller.gameState.turn);
+                        controller.resign(controller.gameState.value!.turn);
                       }
                       return value;
                     });
@@ -110,14 +110,14 @@ class ChessBoardWidget extends GetView<FreeGameController> {
                 fen: controller.fen,
                 // lastMove: controller.lastMove,
                 game: GameData(
-                  playerSide: controller.gameState.isGameOverExtended
+                  playerSide: controller.gameState.value!.isGameOverExtended
                       ? PlayerSide.none
-                      : controller.gameState.position.turn == Side.white
+                      : controller.gameState.value!.position.turn == Side.white
                       ? PlayerSide.white
                       : PlayerSide.black,
                   validMoves: controller.validMoves,
-                  sideToMove: controller.gameState.position.turn,
-                  isCheck: controller.gameState.position.isCheck,
+                  sideToMove: controller.gameState.value!.position.turn,
+                  isCheck: controller.gameState.value!.position.isCheck,
                   promotionMove: controller.promotionMove,
                   onMove: controller.onUserMoveAgainstAI,
                   onPromotionSelection: controller.onPromotionSelection,

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:sound_effect/sound_effect.dart';
 
 import '../../../core/utils/dialog/constants/app_images_sounds.dart';
-import '../../../data/theme_settings/general_preferences.dart';
 
 enum Sound {
   move,

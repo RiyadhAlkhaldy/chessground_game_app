@@ -5,10 +5,10 @@ import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../../../../presentation/controllers/chess_board_settings_controller.dart';
-import '../../../../presentation/screens/game_computer/widgets/chess_board_widget.dart';
 import '../../../../presentation/widgets/chess_board_settings_widgets.dart';
 import '../../../../presentation/widgets/pgn_horizontal_row.dart';
 import '../controllers/freee_game_controller.dart';
+import '../widgets/chess_board_widget.dart';
 import '../widgets/chess_clock_widget.dart';
 
 class FreeGamePage extends StatelessWidget {
@@ -68,7 +68,7 @@ class BuildPortrait extends StatelessWidget {
                     blackPlayer: ctrl.blackPlayer,
                     whiteCapturedList: ctrl.whiteCapturedList,
                     blackCapturedList: ctrl.blackCapturedList,
-                    gameState: ctrl.gameState,
+                    gameState: ctrl.gameState.value,
                   ),
                   ChessBoardWidget(),
                   ShowCircleAvatarAndTimerInDown(
@@ -76,7 +76,7 @@ class BuildPortrait extends StatelessWidget {
                     blackPlayer: ctrl.blackPlayer,
                     whiteCapturedList: ctrl.whiteCapturedList,
                     blackCapturedList: ctrl.blackCapturedList,
-                    gameState: ctrl.gameState,
+                    gameState: ctrl.gameState.value,
                   ),
                 ],
               ),
@@ -129,14 +129,14 @@ class BuildLandScape extends StatelessWidget {
                   blackPlayer: ctrl.blackPlayer,
                   whiteCapturedList: ctrl.whiteCapturedList,
                   blackCapturedList: ctrl.blackCapturedList,
-                  gameState: ctrl.gameState,
+                  gameState: ctrl.gameState.value,
                 ),
                 ShowCircleAvatarAndTimerInDown(
                   whitePlayer: ctrl.whitePlayer,
                   blackPlayer: ctrl.blackPlayer,
                   whiteCapturedList: ctrl.whiteCapturedList,
                   blackCapturedList: ctrl.blackCapturedList,
-                  gameState: ctrl.gameState,
+                  gameState: ctrl.gameState.value,
                 ),
                 Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),
@@ -177,7 +177,7 @@ class BuildControlButtons extends StatelessWidget {
 
 Widget buildNewRoundButton(FreeGameController ctrl) => IconButton(
   icon: Icon(Symbols.refresh, size: iconSize),
-  onPressed: ctrl.gameState.isGameOverExtended || !ctrl.canUndo.value
+  onPressed: ctrl.gameState.value!.isGameOverExtended || !ctrl.canUndo.value
       ? null
       : ctrl.reset,
 );

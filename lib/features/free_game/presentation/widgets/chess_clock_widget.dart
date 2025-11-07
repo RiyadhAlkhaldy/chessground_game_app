@@ -1,4 +1,4 @@
-import 'package:chessground_game_app/data/game_state/game_state.dart';
+import 'package:chessground_game_app/domain/services/game_state/game_state.dart';
 import 'package:chessground_game_app/domain/services/chess_clock_service.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';

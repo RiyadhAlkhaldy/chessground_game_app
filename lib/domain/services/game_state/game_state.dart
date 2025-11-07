@@ -1,4 +1,3 @@
-// lib/src/game_state/game_state.dart
 // Utilities: a thin GameState wrapper to maintain history, detect threefold/fifty-move,
 // record PGN moves and handle agreement/resign/timeout.
 //
@@ -11,7 +10,7 @@ import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 
-import '../models/move_data_model.dart';
+import '../../../data/models/move_data_model.dart';
 
 /// A lightweight mutable controller for a game built on top of dartchess immutable Position.
 /// - Keeps fenHistory and fenCounts for repetition detection.
@@ -360,7 +359,7 @@ class GameState {
       'Round': '?',
       'White': 'White',
       'Black': 'Black',
-      'Result': _resultToPgnString(result),
+      'Result': resultToPgnString(result),
     };
     if (headers != null) baseHeaders.addAll(headers);
 
@@ -412,7 +411,7 @@ class GameState {
   /// material score in pawns (centipawns / 100) as double (positive = White advantage).
   double materialScore() => materialEvaluationCentipawns() / 100.0;
 
-  String _resultToPgnString(Outcome? r) {
+  String resultToPgnString(Outcome? r) {
     if (r == null) return '*';
 
     if (r == Outcome.draw) return '1/2-1/2';
