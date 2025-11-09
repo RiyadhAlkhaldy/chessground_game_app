@@ -2,6 +2,7 @@
 import 'package:chessground_game_app/data/models/mappers/entities_mapper.dart';
 import 'package:dartz/dartz.dart';
 
+import '../../core/errors/expentions.dart';
 import '../../core/errors/failure.dart';
 import '../../core/params/params.dart';
 import '../../domain/entities/chess_game_entity.dart';
@@ -25,9 +26,12 @@ class GameRepositoryImpl implements GameRepository {
   ) async {
     try {
       final model = await local.initGameModel(chessGameEntity);
+
       return Right(model.toEntity());
+    } on IsarException catch (e) {
+      return Left(IsarCacheFailure(errMessage: e.toString()));
     } catch (e) {
-      return Left(Failure(errMessage: e.toString()));
+      return Left(UnknownFailure(errMessage: e.toString()));
     }
   }
 
@@ -35,10 +39,12 @@ class GameRepositoryImpl implements GameRepository {
   Future<Either<Failure, ChessGameEntity>> loadGameByUuid(String uuid) async {
     try {
       final model = await local.getGameModelByUuid(uuid);
-      if (model == null) return Left(Failure(errMessage: 'Game not found'));
+      if (model == null) {
+        return Left(IsarCacheFailure(errMessage: 'Game not found'));
+      }
       return Right(model.toEntity());
-    } catch (e) {
-      return Left(Failure(errMessage: e.toString()));
+    } on IsarException catch (e) {
+      return Left(IsarCacheFailure(errMessage: e.toString()));
     }
   }
 
@@ -47,45 +53,25 @@ class GameRepositoryImpl implements GameRepository {
     ChessGameEntity game,
   ) async {
     try {
-      final model = ChessGameModel(
-        id: game.id,
-        uuid: game.uuid,
-        event: game.event,
-        site: game.site,
-        date: game.date,
-        round: game.round,
-        whitePlayer: game.whitePlayer.toModel(),
-        blackPlayer: game.blackPlayer.toModel(),
-        result: game.result,
-        termination: game.termination,
-        eco: game.eco,
-        whiteElo: game.whiteElo,
-        blackElo: game.blackElo,
-        timeControl: game.timeControl,
-        startingFen: game.startingFen,
-        fullPgn: game.fullPgn,
-        movesCount: game.movesCount,
-        moves: game.moves.map((m) => m.toModel()).toList(),
-      );
-      await local.saveChessGameModel(model);
+      await local.saveChessGameModel(game.toModel());
       return Right(game);
-    } catch (e) {
-      return Left(Failure(errMessage: e.toString()));
+    } on IsarException catch (e) {
+      return Left(IsarCacheFailure(errMessage: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, ChessGameEntity>> persistGameState(
-    String uuid,
+    ChessGameEntity chessGameEntity,
     GameState state,
   ) async {
     try {
       // تحويل GameState إلى ChessGameEntity
-      final entity = _gameStateToEntity(uuid, state);
-      final r = await saveGameEntity(entity);
+      chessGameEntity = _gameStateToEntity(chessGameEntity, state);
+      final r = await saveGameEntity(chessGameEntity);
       return r;
-    } catch (e) {
-      return Left(Failure(errMessage: e.toString()));
+    } on IsarException catch (e) {
+      return Left(IsarCacheFailure(errMessage: e.toString()));
     }
   }
 
@@ -102,8 +88,8 @@ class GameRepositoryImpl implements GameRepository {
         // return Right(best);
       }).asFuture();
       return Right(bestMove);
-    } catch (e) {
-      return Left(Failure(errMessage: e.toString()));
+    } on EngineException catch (e) {
+      return Left(EngineFailure(errMessage: e.toString()));
     }
   }
 
@@ -112,17 +98,20 @@ class GameRepositoryImpl implements GameRepository {
       local.watchGameModel(uuid).map((m) => m.toEntity());
 
   // ---------- helper ----------
-  ChessGameEntity _gameStateToEntity(String uuid, GameState state) {
+  ChessGameEntity _gameStateToEntity(
+    ChessGameEntity chessGameEntity,
+    GameState state,
+  ) {
     // Use GameState.public API to extract PGN, moves, fen, result...
     final fullPgn = state.pgnString();
     final startingFen = state.position.fen; // careful
     final movesModels = state.getMoveTokens.map((m) => m.toEntity()).toList();
 
     return ChessGameEntity(
-      uuid: uuid,
+      uuid: chessGameEntity.uuid,
       // players: not available here — caller should have attached players in state/entity
-      whitePlayer: stateInitialPlayerToEntity(state, true),
-      blackPlayer: stateInitialPlayerToEntity(state, false),
+      whitePlayer: chessGameEntity.whitePlayer,
+      blackPlayer: chessGameEntity.blackPlayer,
       fullPgn: fullPgn,
       startingFen: startingFen,
       moves: movesModels,

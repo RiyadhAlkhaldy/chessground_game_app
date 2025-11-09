@@ -8,9 +8,9 @@ class ServerException implements Exception {
 }
 
 //!CacheExeption
-class CacheExeption implements Exception {
+class CacheException implements Exception {
   final String errorMessage;
-  CacheExeption({required this.errorMessage});
+  CacheException({required this.errorMessage});
 }
 
 class BadCertificateException extends ServerException {
@@ -60,22 +60,24 @@ class CancelException extends ServerException {
 class UnknownException extends ServerException {
   UnknownException(super.errorModel);
 }
-/// for me 
-class DatabaseFailure extends ServerException {
-  DatabaseFailure(super.errorModel);
+
+/// for me
+class DatabaseFailure extends CacheException {
+  DatabaseFailure({required super.errorMessage});
 }
 
-class CacheFailure extends CacheExeption {
-  CacheFailure() : super(errorMessage: "Cache Error");
+class IsarException extends CacheException {
+  IsarException({required super.errorMessage});
 }
 
- class OfflineFailure extends ServerException {
-  OfflineFailure(super.errorModel);
+class OfflineException extends ServerException {
+  OfflineException(super.errorModel);
 }
 
-class EngineFailure extends ServerException {
-  EngineFailure(super.errorModel);
+class EngineException extends ServerException {
+  EngineException(super.errorModel, {required String errMessage});
 }
+
 void handleDioException(DioException e) {
   switch (e.type) {
     case DioExceptionType.connectionError:

@@ -1,4 +1,5 @@
 // lib/data/datasources/local_datasource.dart
+import 'package:chessground_game_app/core/errors/expentions.dart';
 import 'package:chessground_game_app/core/game_termination_enum.dart';
 import 'package:chessground_game_app/data/collections/chess_game.dart';
 import 'package:chessground_game_app/data/collections/player.dart';
@@ -7,13 +8,14 @@ import 'package:isar/isar.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/params/params.dart';
+import '../../core/utils/dialog/constants/const.dart';
 import '../../core/utils/helper/helper_methodes.dart';
-import '../../presentation/controllers/get_storage_controller.dart';
+import '../../core/utils/logger.dart';
 import '../models/chess_game_model.dart';
 import '../models/player_model.dart';
 
 abstract class LocalDataSource {
-  Future<ChessGameModel> initGameModel(InitChessGameParams initChessGameParams);
+  Future<ChessGameModel> initGameModel(InitChessGameParams chessParams);
   Future<ChessGameModel?> getGameModelByUuid(String uuid);
   Future<void> saveChessGameModel(ChessGameModel model);
   Stream<ChessGameModel> watchGameModel(String uuid);
@@ -21,83 +23,104 @@ abstract class LocalDataSource {
 
 class LocalDataSourceImpl implements LocalDataSource {
   final Isar isar;
-  GetStorageControllerImp storage;
-  LocalDataSourceImpl(this.isar, this.storage);
+  LocalDataSourceImpl(this.isar);
   @override
-  Future<ChessGameModel> initGameModel(
-    InitChessGameParams initChessGameParams,
-  ) async {
-    PlayerModel? whitePlayer;
-    PlayerModel? blackPlayer;
-    if (initChessGameParams.whitePlayer == null) {
-      final wPlayer = await createPlayerIfNotExists(storage);
-      whitePlayer = wPlayer!.toModel();
-    } else {
-      whitePlayer = initChessGameParams.whitePlayer!.toModel();
+  Future<ChessGameModel> initGameModel(InitChessGameParams chessParams) async {
+    try {
+      PlayerModel? whitePlayer;
+      PlayerModel? blackPlayer;
+      if (chessParams.whitePlayer == null) {
+        final wPlayer = await createOrGetGustPlayer();
+        AppLoggers.info(wPlayer.toString());
+        whitePlayer = wPlayer!.toModel();
+      } else {
+        whitePlayer = chessParams.whitePlayer!.toModel();
+      }
+      if (chessParams.blackPlayer == null) {
+        final bPlayer = await createOrGetGustPlayer(uuidKeyForAI);
+        AppLoggers.info(bPlayer.toString());
+
+        blackPlayer = bPlayer!.toModel();
+      } else {
+        blackPlayer = chessParams.blackPlayer!.toModel();
+      }
+      final model = ChessGameModel(
+        id: Isar.autoIncrement,
+        uuid: Uuid().v4(),
+        event: chessParams.event ?? '',
+        site: chessParams.site ?? '',
+        date: chessParams.date ?? DateTime.now(),
+        round: '',
+        whitePlayer: whitePlayer,
+        blackPlayer: blackPlayer,
+        result: '',
+        termination: GameTermination.ongoing,
+        eco: '',
+        whiteElo: 0,
+        blackElo: 0,
+        timeControl: '',
+        startingFen: '',
+        fullPgn: '',
+        movesCount: 0,
+        moves: [],
+      );
+      AppLogger.fatal(model.toString());
+      await saveChessGameModel(model);
+
+      // AppLogger.fatal("result Isar: ${await isar.chessGames.get(model.id!)}");
+      return model;
+    } catch (e) {
+      throw IsarException(errorMessage: 'error isar on init Game Model:$e');
     }
-    if (initChessGameParams.blackPlayer == null) {
-      final bPlayer = await createPlayerIfNotExists(storage, 'ai_user_uuid');
-      blackPlayer = bPlayer!.toModel();
-    } else {
-      blackPlayer = initChessGameParams.blackPlayer!.toModel();
-    }
-    final model = ChessGameModel(
-      id: Isar.autoIncrement,
-      uuid: Uuid().v4(),
-      event: initChessGameParams.event ?? '',
-      site: initChessGameParams.site ?? '',
-      date: initChessGameParams.date ?? DateTime.now(),
-      round: '',
-      whitePlayer: whitePlayer,
-      blackPlayer: blackPlayer,
-      result: '',
-      termination: GameTermination.ongoing,
-      eco: '',
-      whiteElo: 0,
-      blackElo: 0,
-      timeControl: '',
-      startingFen: '',
-      fullPgn: '',
-      movesCount: 0,
-      moves: [],
-    );
-    await isar.writeTxn(() async {
-      await isar.chessGames.put(model.toCollection());
-    });
-    return model;
   }
 
   @override
   Future<ChessGameModel?> getGameModelByUuid(String uuid) async {
-    final q = await isar.chessGames.filter().uuidEqualTo(uuid).findFirst();
-    return q?.toModel(); // 注意: toModel موجود داخل extension في collection
+    try {
+      final q = await isar.chessGames.filter().uuidEqualTo(uuid).findFirst();
+      return q?.toModel(); // 注意: toModel موجود داخل extension في collection
+    } catch (e) {
+      throw IsarException(
+        errorMessage: 'error isar on get Game Model by uuid: $e',
+      );
+    }
   }
 
   @override
   Future<void> saveChessGameModel(ChessGameModel model) async {
-    await isar.writeTxn(() async {
-      final coll = model.toCollection();
-      await isar.chessGames.put(coll);
-      // ensure players saved as well
-      if (coll.whitePlayer.value != null) {
-        await isar.players.put(coll.whitePlayer.value!);
-      }
-      if (coll.blackPlayer.value != null) {
-        await isar.players.put(coll.blackPlayer.value!);
-      }
-    });
+    try {
+      await isar.writeTxn(() async {
+        final coll = model.toCollection();
+        await isar.chessGames.put(coll);
+        // ensure players saved as well
+        if (coll.whitePlayer.value != null) {
+          await isar.players.put(coll.whitePlayer.value!);
+        }
+        if (coll.blackPlayer.value != null) {
+          await isar.players.put(coll.blackPlayer.value!);
+        }
+      });
+    } catch (e) {
+      throw IsarException(
+        errorMessage: 'error isar on save chess Game Model: $e',
+      );
+    }
   }
 
   @override
   Stream<ChessGameModel> watchGameModel(String uuid) {
-    // watch for changes to the game entity in Isar
-    return isar.chessGames
-        .filter()
-        .uuidEqualTo(uuid)
-        .watch(fireImmediately: true)
-        .map((colls) {
-          final c = colls.isNotEmpty ? colls.first : null;
-          return c?.toModel() ?? (throw Exception('No game'));
-        });
+    try {
+      // watch for changes to the game entity in Isar
+      return isar.chessGames
+          .filter()
+          .uuidEqualTo(uuid)
+          .watch(fireImmediately: true)
+          .map((colls) {
+            final c = colls.isNotEmpty ? colls.first : null;
+            return c?.toModel() ?? (throw Exception('No game'));
+          });
+    } catch (e) {
+      throw IsarException(errorMessage: 'error isar on watch Game Model: $e');
+    }
   }
 }

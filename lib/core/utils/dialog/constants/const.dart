@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+const String uuidKeyForUser = 'uuidKeyForUser';
+const String uuidKeyForAI = 'uuidKeyForAI';
 const int defaultThinkingTimeMs = 1300;
 const int minThinkingTimeMs = 100;
 const int middleThinkingTimeMs = 5000;

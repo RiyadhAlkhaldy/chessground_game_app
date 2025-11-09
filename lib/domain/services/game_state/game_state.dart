@@ -130,8 +130,6 @@ class GameState {
       output = output.replaceAll(re, '');
     }
     // Collapse multiple spaces produced by removals, then trim.
-    //TODO
-    // output = output.replaceAll(RegExp(r'\s'), ' ').trim();
     output = output.replaceAll(RegExp(r'\s+'), ' ').trim();
     return output;
   }

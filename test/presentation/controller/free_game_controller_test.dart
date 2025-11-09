@@ -10,6 +10,7 @@ import 'package:chessground_game_app/presentation/controllers/chess_board_settin
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:isar/isar.dart';
 
 void main() {
   group('FreeGameController Tests', () {
@@ -22,10 +23,7 @@ void main() {
         PlaySoundUseCase(SoundEffectService()),
         PlayMove(
           GameRepositoryImpl(
-            local: LocalDataSourceImpl(
-              Get.find<ChessGameStorageService>().isar,
-              Get.find(),
-            ),
+            local: LocalDataSourceImpl(Get.find<Isar>()),
             stockfish: Get.find<StockfishDataSource>(),
           ),
         ),

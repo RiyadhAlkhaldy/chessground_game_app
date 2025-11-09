@@ -12,6 +12,7 @@ class InitChessGame {
     InitChessGameParams chessGameEntity,
   ) async {
     final response = repository.initGameModel(chessGameEntity);
+
     return response;
   }
 }

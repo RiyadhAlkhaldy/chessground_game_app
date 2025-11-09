@@ -2,7 +2,9 @@ import 'package:chessground_game_app/domain/repositories/games_repository.dart';
 import 'package:chessground_game_app/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/domain/services/service/sound_effect_service.dart';
 import 'package:get/get.dart';
+import 'package:isar/isar.dart';
 
+import '../core/utils/logger.dart';
 import '../data/datasources/local_datasource.dart';
 import '../data/datasources/stockfish_datasource.dart';
 import '../data/repositories/game_repository_impl.dart';
@@ -21,6 +23,22 @@ import '../presentation/controllers/get_storage_controller.dart';
 import '../presentation/controllers/settings_controller.dart';
 import '../presentation/controllers/side_choosing_controller.dart';
 
+Future<void> initFirstDependencies() async {
+  await Get.putAsync<Isar>(() async {
+    await ChessGameStorageService.init();
+    return ChessGameStorageService.db!;
+  }, permanent: true);
+  Get.put(ChessGameStorageService(), permanent: true);
+  Get.lazyPut(() => GetStorageControllerImp(), fenix: true);
+  Get.put<AppLogger>(AppLogger(), permanent: true);
+  // Get.put<NetworkInfo>(
+  //   NetworkInfoImpl(DataConnectionChecker()),
+  //   permanent: true,
+  // );
+  // Get.put(Dio(), permanent: true);
+  // Get.put<ApiConsumer>(DioConsumer(dio: Get.find<Dio>()), permanent: true);
+}
+
 /// [GameBinding]
 /// يربط الاعتمادات (dependencies) لوحدة اللعبة.
 /// Binds the dependencies for the game module.
@@ -28,18 +46,11 @@ class GameBinding extends Bindings {
   @override
   void dependencies() {
     /// data sources
-    Get.lazyPut(
-      () => LocalDataSourceImpl(
-        Get.find<ChessGameStorageService>().isar,
-        Get.find<GetStorageControllerImp>(),
-      ),
-      fenix: true,
-    );
+    Get.lazyPut(() => LocalDataSourceImpl(Get.find<Isar>()), fenix: true);
     Get.lazyPut(() => StockfishDataSource(), fenix: true);
 
     /// services
     Get.lazyPut(() => SoundEffectService(), fenix: true);
-    Get.lazyPut(() => ChessGameStorageService(), fenix: true);
     Get.lazyPut<StockfishEngineService>(
       () => StockfishEngineService(),
       fenix: true,
@@ -98,7 +109,7 @@ class GameBinding extends Bindings {
     /// repositories
     Get.lazyPut<GamesRepository>(
       () => GamesRepositoryImpl(
-        isar: Get.find<ChessGameStorageService>().isar,
+        isar: Get.find<Isar>(),
         storageService: Get.find(),
       ),
       fenix: true,
@@ -106,10 +117,7 @@ class GameBinding extends Bindings {
 
     Get.lazyPut<GameRepository>(
       () => GameRepositoryImpl(
-        local: LocalDataSourceImpl(
-          Get.find<ChessGameStorageService>().isar,
-          Get.find<GetStorageControllerImp>(),
-        ),
+        local: LocalDataSourceImpl(Get.find<Isar>()),
         stockfish: Get.find<StockfishDataSource>(),
       ),
       fenix: true,

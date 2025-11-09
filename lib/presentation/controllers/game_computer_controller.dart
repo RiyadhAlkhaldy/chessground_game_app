@@ -10,17 +10,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
+import '../../core/utils/dialog/constants/const.dart';
 import '../../core/utils/dialog/game_result_dialog.dart';
 import '../../core/utils/dialog/game_status.dart';
 import '../../core/utils/dialog/status_l10n.dart';
 import '../../core/utils/helper/helper_methodes.dart';
 import '../../data/collections/chess_game.dart';
-import '../../domain/services/game_state/game_state.dart';
 import '../../data/models/extended_evaluation.dart';
 import '../../data/models/player_model.dart';
-import '../../domain/usecases/play_sound_usecase.dart';
 import '../../domain/services/chess_game_storage_service.dart';
+import '../../domain/services/game_state/game_state.dart';
 import '../../domain/services/stockfish_engine_service.dart';
+import '../../domain/usecases/play_sound_usecase.dart';
 import 'chess_board_settings_controller.dart';
 import 'get_storage_controller.dart';
 import 'side_choosing_controller.dart';
@@ -142,22 +143,22 @@ class GameComputerController extends GetxController
     if (choosingCtrl.playerColor.value == SideChoosing.white) {
       playerSide = PlayerSide.white;
       ctrlBoardSettings.orientation.value = Side.white;
-      await createPlayerIfNotExists(
-        storage,
-      ).then((value) => whitePlayer.value = value!.toModel());
-      await createAIPlayerIfNotExists(
-        storage,
+      await createOrGetGustPlayer().then(
+        (value) => whitePlayer.value = value!.toModel(),
+      );
+      await createOrGetGustPlayer(
+        uuidKeyForAI,
       ).then((value) => blackPlayer.value = value!.toModel());
     } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
       playerSide = PlayerSide.black;
       ctrlBoardSettings.orientation.value = Side.black;
-      await createAIPlayerIfNotExists(
-        storage,
+      await createOrGetGustPlayer(
+        uuidKeyForAI,
       ).then((value) => whitePlayer.value = value!.toModel());
 
-      await createPlayerIfNotExists(
-        storage,
-      ).then((value) => blackPlayer.value = value!.toModel());
+      await createOrGetGustPlayer().then(
+        (value) => blackPlayer.value = value!.toModel(),
+      );
     }
   }
 

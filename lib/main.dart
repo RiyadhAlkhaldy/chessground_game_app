@@ -4,9 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:l10n_esperanto/l10n_esperanto.dart';
 
 import 'core/utils/helper/helper_methodes.dart';
-import 'domain/services/chess_game_storage_service.dart';
 import 'l10n/l10n.dart';
-import 'presentation/controllers/get_storage_controller.dart';
 import 'presentation/screens/home/home_page.dart';
 import 'routes/app_pages.dart';
 import 'routes/game_binding.dart';
@@ -14,15 +12,13 @@ import 'routes/game_binding.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
-
+  await initFirstDependencies();
   // تأكد أن تُنشئ الـ Guest مبكراً
-  final storage = Get.put(GetStorageControllerImp());
-  Locale locale = await getLocale(storage);
+  // final storage = Get.find<GetStorageControllerImp>();
 
-  await ChessGameStorageService.init();
-  await createPlayerIfNotExists(storage);
+  await createOrGetGustPlayer();
 
-  runApp(MyApp(locale: locale));
+  runApp(MyApp(locale: await getLocale()));
 }
 
 class MyApp extends StatelessWidget {

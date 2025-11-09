@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../data/collections/player.dart';
 import '../../../domain/services/chess_game_storage_service.dart';
 import '../../../presentation/controllers/get_storage_controller.dart';
+import '../dialog/constants/const.dart';
+import '../logger.dart';
 
-Future<Locale> getLocale(GetStorageControllerImp storage) async {
+Future<Locale> getLocale() async {
+  final storage = Get.find<GetStorageControllerImp>();
+
   Locale? locale;
 
   String? languageCode = storage.instance.read('locale');
@@ -27,52 +32,34 @@ Future<Locale> getLocale(GetStorageControllerImp storage) async {
 }
 
 // create a guest player if not exists and return it
-Future<Player?> createPlayerIfNotExists(
-  GetStorageControllerImp storage, [
-  String key = 'user_uuid',
-]) async {
-  final chessGame = ChessGameStorageService();
+Future<Player?> createOrGetGustPlayer([String key = uuidKeyForUser]) async {
+  final storage = Get.find<GetStorageControllerImp>();
+  final chessGame = Get.find<ChessGameStorageService>();
+
   String? uuid = storage.getUUid(key);
+
   if (uuid == null || uuid.isEmpty) {
     uuid = Uuid().v4();
     var newPlayer = Player(
-      name: 'Guest-$uuid',
+      name: key == uuidKeyForUser
+          ? 'Guest${uuid.substring(0, 5)}'
+          : 'stockfish',
       uuid: uuid,
-      type: 'guest',
+      type: key == uuidKeyForUser ? 'guest' : 'AI',
       email: '',
       image: null,
       playerRating: 1200,
     );
     newPlayer = await chessGame.createPlayer(newPlayer);
-    storage.saveUUid('user_uuid', newPlayer.uuid);
-    return newPlayer;
-  } else {
-    final p = await chessGame.getPlayerByUuid(uuid);
-    return p;
-  }
-}
+    storage.saveUUid(key, newPlayer.uuid);
+    AppLoggerr.info("$newPlayer");
 
-// create an AI player if not exists and return it
-Future<Player?> createAIPlayerIfNotExists(
-  GetStorageControllerImp storage,
-) async {
-  final chessGame = ChessGameStorageService();
-  String? uuid = storage.getUUid('ai_user_uuid');
-  if (uuid == null || uuid.isEmpty) {
-    uuid = Uuid().v4();
-    final newPlayer = Player(
-      name: 'ai-$uuid',
-      uuid: uuid,
-      type: 'ai',
-      email: '',
-      image: null,
-      playerRating: 1200,
-    );
-    await chessGame.createPlayer(newPlayer);
-    storage.saveUUid('ai_user_uuid', newPlayer.uuid);
     return newPlayer;
   } else {
-    return await chessGame.getPlayerByUuid(uuid);
+    final player = await chessGame.getPlayerByUuid(uuid);
+    AppLoggerr.info("$player");
+
+    return player;
   }
 }
 

@@ -1,5 +1,5 @@
-import 'package:chessground_game_app/domain/services/game_state/game_state.dart';
 import 'package:chessground_game_app/domain/services/chess_clock_service.dart';
+import 'package:chessground_game_app/domain/services/game_state/game_state.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -26,8 +26,8 @@ class ShowCircleAvatarAndTimerInUp extends StatelessWidget {
     this.gameState,
   });
 
-  final Rx<PlayerEntity> whitePlayer;
-  final Rx<PlayerEntity> blackPlayer;
+  final Rxn<PlayerEntity> whitePlayer;
+  final Rxn<PlayerEntity> blackPlayer;
   final ChessClockService? clockCtrl;
   final List<Role>? whiteCapturedList;
   final List<Role>? blackCapturedList;
@@ -64,8 +64,8 @@ class ShowCircleAvatarAndTimerInDown extends StatelessWidget {
     this.blackCapturedList,
     this.gameState,
   });
-  final Rx<PlayerEntity> whitePlayer;
-  final Rx<PlayerEntity> blackPlayer;
+  final Rxn<PlayerEntity> whitePlayer;
+  final Rxn<PlayerEntity> blackPlayer;
   final ChessClockService? clockCtrl;
 
   final List<Role>? whiteCapturedList;
@@ -101,7 +101,7 @@ class WhitePlayerClockWidget extends StatelessWidget {
     this.gameState,
   });
 
-  final Rx<PlayerEntity> whitePlayer;
+  final Rxn<PlayerEntity> whitePlayer;
   final ChessClockService? clockCtrl;
   final List<Role>? whiteCapturedList;
   final GameState? gameState;
@@ -113,10 +113,10 @@ class WhitePlayerClockWidget extends StatelessWidget {
     return Column(
       children: [
         Obx(
-          () => whitePlayer.value.name.isEmpty
+          () => whitePlayer.value == null
               ? const SizedBox()
               : ListTile(
-                  leading: whitePlayer.value.image == null
+                  leading: whitePlayer.value!.image == null
                       ? CircleAvatar(
                           radius: 25,
                           backgroundImage: AssetImage(AssetsImages.userIcon),
@@ -125,13 +125,13 @@ class WhitePlayerClockWidget extends StatelessWidget {
                           radius: 25,
 
                           backgroundImage: NetworkImage(
-                            whitePlayer.value.image!,
+                            whitePlayer.value!.image!,
                           ),
                         ),
-                  title: Text(whitePlayer.value.name.substring(0, 6)),
+                  title: Text(whitePlayer.value!.name.substring(0, 6)),
                   subtitle: Row(
                     children: [
-                      Text('Rating: ${whitePlayer.value.playerRating}'),
+                      Text('Rating: ${whitePlayer.value!.playerRating}'),
                       if (whiteCapturedList != null)
                         Text(
                           "${whiteCapturedList!.map((r) => gameState!.roleUnicode(r, isWhite: true)).toList().join()}$materialAdvantgeWhite",
@@ -160,7 +160,7 @@ class BlackPlayerClockWidget extends StatelessWidget {
     this.gameState,
   });
 
-  final Rx<PlayerEntity> blackPlayer;
+  final Rxn<PlayerEntity> blackPlayer;
   final ChessClockService? clockCtrl;
   final List<Role>? blackCapturedList;
   final GameState? gameState;
@@ -171,10 +171,10 @@ class BlackPlayerClockWidget extends StatelessWidget {
     return Column(
       children: [
         Obx(
-          () => blackPlayer.value.name.isEmpty
+          () => blackPlayer.value == null
               ? const SizedBox()
               : ListTile(
-                  leading: blackPlayer.value.image == null
+                  leading: blackPlayer.value!.image == null
                       ? CircleAvatar(
                           radius: 25,
                           backgroundImage: AssetImage(AssetsImages.userIcon),
@@ -183,13 +183,13 @@ class BlackPlayerClockWidget extends StatelessWidget {
                           radius: 25,
 
                           backgroundImage: NetworkImage(
-                            blackPlayer.value.image!,
+                            blackPlayer.value!.image!,
                           ),
                         ),
-                  title: Text(blackPlayer.value.name.substring(0, 6)),
+                  title: Text(blackPlayer.value!.name.substring(0, 6)),
                   subtitle: Row(
                     children: [
-                      Text('Rating: ${blackPlayer.value.playerRating}'),
+                      Text('Rating: ${blackPlayer.value!.playerRating}'),
                       if (blackCapturedList != null)
                         Text(
                           "${blackCapturedList!.map((r) => gameState!.roleUnicode(r, isWhite: false)).toList().join()}$materialAdvantgeBlack",

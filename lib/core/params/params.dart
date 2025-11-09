@@ -29,4 +29,9 @@ class InitChessGameParams {
   final DateTime? date;
   final PlayerEntity? whitePlayer;
   final PlayerEntity? blackPlayer;
+
+  @override
+  String toString() { 
+    return "event";
+  }
 }

@@ -21,7 +21,7 @@ class ChessGameStorageService {
     );
   }
 
-  Isar get isar {
+  static Isar get isar {
     if (db == null) {
       throw Exception('Isar database is not initialized. Call init() first.');
     } else {

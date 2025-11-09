@@ -42,20 +42,8 @@ class FreeGameController extends GetxController {
     return getResult?.winner;
   }
 
-  Rx<PlayerEntity> whitePlayer = PlayerEntity(
-    id: 1,
-    uuid: 'White_Player',
-    name: 'White Player',
-    type: 'player',
-    createdAt: DateTime.now(),
-  ).obs;
-  Rx<PlayerEntity> blackPlayer = PlayerEntity(
-    id: 2,
-    uuid: 'Black Player',
-    name: 'Black Player',
-    type: 'player',
-    createdAt: DateTime.now(),
-  ).obs;
+  Rxn<PlayerEntity> whitePlayer = Rxn();
+  Rxn<PlayerEntity> blackPlayer = Rxn();
 
   bool canPop = false;
   NormalMove? promotionMove;
@@ -63,7 +51,7 @@ class FreeGameController extends GetxController {
   PlayerSide playerSide = PlayerSide.both;
   Future<void> _initPlayer() async {
     final response = await initChessGame(
-      InitChessGameParams(site: '', event: ''),
+      InitChessGameParams(site: 'Riyadh alkhaldy', event: 'play with computer'),
     );
     response.fold((l) {}, (chsGameEnty) {
       chessGameEntity = chsGameEnty;
@@ -79,7 +67,7 @@ class FreeGameController extends GetxController {
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
   final storage = Get.find<GetStorageControllerImp>();
   Rxn<GameState> gameState = Rxn<GameState>();
-  final RxBool isLoading = false.obs;
+  // final RxBool isLoading = false.obs;
   final RxnString error = RxnString();
 
   // load existing game from repository (usecase loadGame not shown here)
@@ -206,45 +194,17 @@ class FreeGameController extends GetxController {
     tryPlayPremove();
   }
 
-  // Future<void> onUserMove(
-  //   Move move, {
-  //   String? comment,
-  //   List<int>? nags,
-  //   required String uuid,
-  // }) async {
-  //   final state = gameState.value!;
-  //   isLoading.value = true;
-  //   final res = await playMoveUsecase(
-  //     gameUuid: uuid,
-  //     state: state,
-  //     move: move,
-  //     comment: comment,
-  //     nags: nags,
-  //     persist: true,
-  //   );
-  //   res.fold(
-  //     (f) {
-  //       error.value = f.toString();
-  //     },
-  //     (_) {
-  //       // update observed gameState.value! (GameState mutated in-place)
-  //       gameState.refresh();
-  //     },
-  //   );
-  //   isLoading.value = false;
-  // }
-
   // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
   void _applyMove(NormalMove move) async {
     final state = gameState.value!;
-    isLoading.value = true;
+    // isLoading.value = true;
     final res = await playMoveUsecase(
-      gameUuid: chessGameEntity!.uuid,
+      chessGameEntity: chessGameEntity!,
       state: state,
       move: move,
       comment: null,
       nags: [],
-      persist: true,
+      // persist: true,
     );
     res.fold(
       (f) {
@@ -280,7 +240,7 @@ class FreeGameController extends GetxController {
         gameStatus; // to update statusText
       },
     );
-    isLoading.value = false;
+    // isLoading.value = false;
   }
 
   bool isPromotionPawnMove(NormalMove move) {
