@@ -16,7 +16,7 @@ import '../../../../data/collections/chess_game.dart';
 import '../../../../data/models/move_data_model.dart';
 import '../../../../domain/entities/chess_game_entity.dart';
 import '../../../../domain/services/chess_game_storage_service.dart';
-import '../../../../domain/services/game_state/game_state.dart';
+import '../../../../core/utils/game_state/game_state.dart';
 import '../../../../domain/usecases/init_chess_game.dart';
 import '../../../../domain/usecases/play_move.dart';
 import '../../../../domain/usecases/play_sound_usecase.dart';

@@ -31,7 +31,7 @@ Future<void> initFirstDependencies() async {
   }, permanent: true);
   Get.put(ChessGameStorageService(), permanent: true);
   Get.lazyPut(() => GetStorageControllerImp(), fenix: true);
-  Get.put<AppLogger>(AppLogger(), permanent: true);
+  Get.put<AppLoggerr>(AppLoggerr(), permanent: true);
   // Get.put<NetworkInfo>(
   //   NetworkInfoImpl(DataConnectionChecker()),
   //   permanent: true,

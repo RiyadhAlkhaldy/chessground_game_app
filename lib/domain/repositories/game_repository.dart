@@ -2,10 +2,10 @@
 
 import 'package:dartz/dartz.dart';
 
-import '../../core/errors/failure.dart';
+import '../../core/errors/failures.dart';
 import '../../core/params/params.dart';
 import '../entities/chess_game_entity.dart';
-import '../services/game_state/game_state.dart';
+import '../../core/utils/game_state/game_state.dart';
 
 abstract class GameRepository {
   Future<Either<Failure, ChessGameEntity>> initGameModel(

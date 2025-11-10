@@ -13,6 +13,7 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 import '../../core/game_termination_enum.dart';
 import '../../core/utils/dialog/constants/const.dart';
 import '../../core/utils/dialog/game_status.dart';
+import '../../core/utils/game_state/game_state.dart';
 import '../../core/utils/helper/helper_methodes.dart';
 import '../../data/collections/chess_game.dart';
 import '../../data/models/extended_evaluation.dart';
@@ -20,7 +21,6 @@ import '../../data/models/move_data_model.dart';
 import '../../data/models/player_model.dart';
 import '../../domain/services/chess_clock_service.dart';
 import '../../domain/services/chess_game_storage_service.dart';
-import '../../domain/services/game_state/game_state.dart';
 import '../../domain/services/stockfish_engine_service.dart';
 import '../../domain/usecases/play_sound_usecase.dart';
 import 'chess_board_settings_controller.dart';
@@ -219,7 +219,6 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
 
   /// حفظ اللعبة الحالية في Isar
   Future<void> saveCurrentGame() async {
-    //TODO
     // _headers['Result'] = getResult.name;
     _headers['EventDate'] = DateTime.now().toIso8601String().split('T').first;
     _headers['WhiteElo'] = whitePlayer.value.playerRating.toString();

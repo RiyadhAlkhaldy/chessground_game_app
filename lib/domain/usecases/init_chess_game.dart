@@ -1,4 +1,4 @@
-import 'package:chessground_game_app/core/errors/failure.dart';
+import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:chessground_game_app/domain/entities/chess_game_entity.dart';
 import 'package:dartz/dartz.dart';
 

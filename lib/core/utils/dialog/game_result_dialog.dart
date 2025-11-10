@@ -8,7 +8,7 @@ import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../domain/services/game_state/game_state.dart';
+import '../game_state/game_state.dart';
 import 'game_status.dart';
 
 class GameResultDialog extends StatefulWidget {

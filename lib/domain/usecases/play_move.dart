@@ -2,10 +2,10 @@
 import 'package:dartchess/dartchess.dart';
 import 'package:dartz/dartz.dart';
 
-import '../../core/errors/failure.dart';
+import '../../core/errors/failures.dart';
 import '../entities/chess_game_entity.dart';
 import '../repositories/game_repository.dart';
-import '../services/game_state/game_state.dart';
+import '../../core/utils/game_state/game_state.dart';
 
 class PlayMove {
   final GameRepository repository;

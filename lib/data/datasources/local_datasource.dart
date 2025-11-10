@@ -64,7 +64,7 @@ class LocalDataSourceImpl implements LocalDataSource {
         movesCount: 0,
         moves: [],
       );
-      AppLogger.fatal(model.toString());
+      AppLoggerr.fatal(model.toString());
       await saveChessGameModel(model);
 
       // AppLogger.fatal("result Isar: ${await isar.chessGames.get(model.id!)}");

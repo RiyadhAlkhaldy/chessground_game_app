@@ -3,12 +3,12 @@ import 'package:chessground_game_app/data/models/mappers/entities_mapper.dart';
 import 'package:dartz/dartz.dart';
 
 import '../../core/errors/expentions.dart';
-import '../../core/errors/failure.dart';
+import '../../core/errors/failures.dart';
 import '../../core/params/params.dart';
 import '../../domain/entities/chess_game_entity.dart';
 import '../../domain/entities/player_entity.dart';
 import '../../domain/repositories/game_repository.dart';
-import '../../domain/services/game_state/game_state.dart';
+import '../../core/utils/game_state/game_state.dart';
 import '../datasources/local_datasource.dart';
 import '../datasources/stockfish_datasource.dart';
 import '../models/chess_game_model.dart';
@@ -29,9 +29,9 @@ class GameRepositoryImpl implements GameRepository {
 
       return Right(model.toEntity());
     } on IsarException catch (e) {
-      return Left(IsarCacheFailure(errMessage: e.toString()));
+      return Left(IsarCacheFailure(message: e.toString()));
     } catch (e) {
-      return Left(UnknownFailure(errMessage: e.toString()));
+      return Left(UnknownFailure(message: e.toString()));
     }
   }
 
@@ -40,11 +40,11 @@ class GameRepositoryImpl implements GameRepository {
     try {
       final model = await local.getGameModelByUuid(uuid);
       if (model == null) {
-        return Left(IsarCacheFailure(errMessage: 'Game not found'));
+        return Left(IsarCacheFailure(message: 'Game not found'));
       }
       return Right(model.toEntity());
     } on IsarException catch (e) {
-      return Left(IsarCacheFailure(errMessage: e.toString()));
+      return Left(IsarCacheFailure(message: e.toString()));
     }
   }
 
@@ -56,7 +56,7 @@ class GameRepositoryImpl implements GameRepository {
       await local.saveChessGameModel(game.toModel());
       return Right(game);
     } on IsarException catch (e) {
-      return Left(IsarCacheFailure(errMessage: e.toString()));
+      return Left(IsarCacheFailure(message: e.toString()));
     }
   }
 
@@ -71,7 +71,7 @@ class GameRepositoryImpl implements GameRepository {
       final r = await saveGameEntity(chessGameEntity);
       return r;
     } on IsarException catch (e) {
-      return Left(IsarCacheFailure(errMessage: e.toString()));
+      return Left(IsarCacheFailure(message: e.toString()));
     }
   }
 
@@ -89,7 +89,7 @@ class GameRepositoryImpl implements GameRepository {
       }).asFuture();
       return Right(bestMove);
     } on EngineException catch (e) {
-      return Left(EngineFailure(errMessage: e.toString()));
+      return Left(EngineFailure(message: e.toString()));
     }
   }
 
