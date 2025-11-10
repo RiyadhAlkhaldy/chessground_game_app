@@ -613,7 +613,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
 }
 
 class GameComputerWithTimeController extends GameAiController {
-  ChessClockService? clockCtrl;
+  final ChessClockService clockCtrl;
   GameController? gameCtrl;
 
   ///constructer
@@ -621,6 +621,7 @@ class GameComputerWithTimeController extends GameAiController {
     super.gameCtrl,
     super.engineService,
     super.plySound,
+    this.clockCtrl,
   );
 
   /// حفظ اللعبة الحالية في Isar
@@ -635,23 +636,23 @@ class GameComputerWithTimeController extends GameAiController {
   void onInit() {
     gameCtrl = Get.find<GameController>();
     debugPrint("whitesTime ${gameCtrl!.whitesTime.inSeconds}");
-    clockCtrl = Get.put(
-      ChessClockService(
-        initialTimeMs: (gameCtrl!.whitesTime.inMinutes * 60 * 1000).toInt(),
-        incrementMs: gameCtrl!.incrementalValue * 1000,
-        onTimeout: (player) {
-          debugPrint('time over the ${player.opposite.name} player is winner');
-          _handleTimeout(player);
-        },
-      ),
-    );
-    clockCtrl!.setIncrementalValue(value: gameCtrl!.incrementalValue);
+    // clockCtrl = Get.put(
+    //   ChessClockService(
+    // initialTimeMs: (gameCtrl!.whitesTime.inMinutes * 60 * 1000).toInt(),
+    // incrementMs: gameCtrl!.incrementalValue * 1000,
+    //     onTimeout: (player) {
+    //       debugPrint('time over the ${player.opposite.name} player is winner');
+    //       _handleTimeout(player);
+    //     },
+    //   ),
+    // );
+    clockCtrl.setIncrementalValue(value: gameCtrl!.incrementalValue);
     super.onInit();
     //TODO
-    ever(gameState.position.obs, (_) {
-      clockCtrl!.stop();
-      clockCtrl!.switchTurn(gameState.turn);
-      clockCtrl!.start();
+    ever(gameState.obs, (_) {
+      clockCtrl.stop();
+      clockCtrl.switchTurn(gameState.turn);
+      clockCtrl.start();
     });
   }
 
@@ -681,23 +682,24 @@ class GameComputerWithTimeController extends GameAiController {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    clockCtrl!.didChangeAppLifecycleState(state);
+    clockCtrl.didChangeAppLifecycleState(state);
     super.didChangeAppLifecycleState(state);
   }
 
   @override
   void onClose() {
     super.onClose();
-    clockCtrl!.onClose();
+    clockCtrl.onClose();
   }
 
   @override
   void reset() {
-    clockCtrl!.reset();
+    clockCtrl.reset();
     super.reset();
   }
 
   /// عند انتهاء الوقت — نفعل هذه الدالة (clockService يجب أن يمرّر الجانب الذي انتهى الوقت له)
+  // ignore: unused_element
   void _handleTimeout(Side timedOutSide) async {
     debugPrint('Handling timeout for side: $timedOutSide');
     // من انتهى وقته يخسر، والآخر يفوز (ما لم تكن الحالة تمنع ذلك)
@@ -706,7 +708,7 @@ class GameComputerWithTimeController extends GameAiController {
     debugPrint('Game over by timeout, result: $resultText');
     // نوقف المحرك والساعة
     engineService.stop();
-    clockCtrl?.stop();
+    clockCtrl.stop();
 
     statusText.value =
         'انتهى وقت ${timedOutSide == Side.white ? "الأبيض" : "الأسود"}.';
@@ -735,5 +737,33 @@ class GameComputerWithTimeController extends GameAiController {
     // Use Skill Level and Depth if UCI_LimitStrength is disabled
     // engineService.setOption('Skill Level', skillLevel);
     // engineService.setOption('Depth', depth);
+  }
+}
+
+/// عند انتهاء الوقت — نفعل هذه الدالة (clockService يجب أن يمرّر الجانب الذي انتهى الوقت له)
+void handleTimeout(Side timedOutSide) async {
+  final clockCtrl = Get.find<ChessClockService>();
+  final engineService = Get.find<StockfishEngineService>();
+  final gameComputerWithTimeController =
+      Get.find<GameComputerWithTimeController>();
+  debugPrint('Handling timeout for side: $timedOutSide');
+  // من انتهى وقته يخسر، والآخر يفوز (ما لم تكن الحالة تمنع ذلك)
+  final winnerSide = timedOutSide == Side.white ? Side.black : Side.white;
+  final resultText = winnerSide == Side.white ? '1-0' : '0-1';
+  debugPrint('Game over by timeout, result: $resultText');
+  // نوقف المحرك والساعة
+  engineService.stop();
+  clockCtrl.stop();
+
+  gameComputerWithTimeController.statusText.value =
+      'انتهى وقت ${timedOutSide == Side.white ? "الأبيض" : "الأسود"}.';
+  // gameComputerWithTimeController.whitePlayer.refresh();
+  // gameComputerWithTimeController.blackPlayer.refresh();
+  gameComputerWithTimeController.update();
+  clockCtrl.blackTimeMs.refresh();
+  clockCtrl.whiteTimeMs.refresh();
+  // احفظ اللعبة في الـ DB عبر GameStorageService
+  try {} catch (e) {
+    debugPrint('Error saving game on timeout: handleTimeout $e');
   }
 }

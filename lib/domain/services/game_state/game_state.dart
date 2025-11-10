@@ -227,7 +227,7 @@ class GameState {
       moveNumber: moveNumber,
       san: san,
       comment: comment,
-      nags: nags!,
+      nags: nags ?? [],
       fenAfter: _pos.fen,
       isWhiteMove: _pos.turn == Side.white ? false : true,
       halfmoveIndex: allMoves.length,

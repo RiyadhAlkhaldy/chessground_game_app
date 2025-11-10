@@ -10,6 +10,7 @@ import '../data/datasources/stockfish_datasource.dart';
 import '../data/repositories/game_repository_impl.dart';
 import '../data/repositories/games_respository_impl.dart';
 import '../domain/repositories/game_repository.dart';
+import '../domain/services/chess_clock_service.dart';
 import '../domain/services/stockfish_engine_service.dart';
 import '../domain/usecases/init_chess_game.dart';
 import '../domain/usecases/play_move.dart';
@@ -55,6 +56,14 @@ class GameBinding extends Bindings {
       () => StockfishEngineService(),
       fenix: true,
     );
+    Get.lazyPut(() {
+      final gameCtrl = Get.find<GameController>();
+      return ChessClockService(
+        initialTimeMs: (gameCtrl.whitesTime.inMinutes * 60 * 1000).toInt(),
+        incrementMs: gameCtrl.incrementalValue * 1000,
+        onTimeout: handleTimeout,
+      );
+    }, fenix: true);
 
     /// usecases
     Get.lazyPut(
@@ -96,6 +105,7 @@ class GameBinding extends Bindings {
         Get.find<SideChoosingController>(),
         Get.find<StockfishEngineService>(),
         Get.find<PlaySoundUseCase>(),
+        Get.find<ChessClockService>(),
       ),
       fenix: true,
     );
