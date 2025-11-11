@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/data/collections/player.dart';
-import 'package:chessground_game_app/presentation/controllers/game_controller.dart';
+import 'package:chessground_game_app/presentation/controllers/game_controllerr.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -613,7 +613,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
 
 class GameComputerWithTimeController extends GameAiController {
   final ChessClockService clockCtrl;
-  GameController? gameCtrl;
+  GameControllerr? gameCtrl;
 
   ///constructer
   GameComputerWithTimeController(
@@ -633,7 +633,7 @@ class GameComputerWithTimeController extends GameAiController {
 
   @override
   void onInit() {
-    gameCtrl = Get.find<GameController>();
+    gameCtrl = Get.find<GameControllerr>();
     debugPrint("whitesTime ${gameCtrl!.whitesTime.inSeconds}");
     // clockCtrl = Get.put(
     //   ChessClockService(

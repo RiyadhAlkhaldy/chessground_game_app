@@ -59,24 +59,24 @@ class GameStateConverter {
       }
 
       // Determine termination
-      String termination = 'ongoing';
+      GameTermination termination = GameTermination.ongoing;
       if (gameState.isGameOverExtended) {
         if (gameState.isCheckmate) {
-          termination = GameTermination.checkmate.name;
+          termination = GameTermination.checkmate;
         } else if (gameState.isTimeout()) {
-          termination = GameTermination.timeout.name;
+          termination = GameTermination.timeout;
         } else if (gameState.isResigned()) {
-          termination = GameTermination.resignation.name;
+          termination = GameTermination.resignation;
         } else if (gameState.isFiftyMoveRule()) {
-          termination = GameTermination.fiftyMoveRule.name;
+          termination = GameTermination.fiftyMoveRule;
         } else if (gameState.isStalemate) {
-          termination = GameTermination.stalemate.name;
+          termination = GameTermination.stalemate;
         } else if (gameState.isInsufficientMaterial) {
-          termination = GameTermination.insufficientMaterial.name;
+          termination = GameTermination.insufficientMaterial;
         } else if (gameState.isThreefoldRepetition()) {
-          termination = GameTermination.threefoldRepetition.name;
+          termination = GameTermination.threefoldRepetition;
         } else if (gameState.isAgreedDraw()) {
-          termination = GameTermination.agreement.name;
+          termination = GameTermination.agreement;
         }
       }
 

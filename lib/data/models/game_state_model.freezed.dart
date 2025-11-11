@@ -27,7 +27,7 @@ mixin _$GameStateModel {
   List<MoveDataModel> get moves => throw _privateConstructorUsedError;
   int get currentHalfmoveIndex => throw _privateConstructorUsedError;
   String? get result => throw _privateConstructorUsedError;
-  String get termination => throw _privateConstructorUsedError;
+  GameTermination get termination => throw _privateConstructorUsedError;
   String? get resignationSide => throw _privateConstructorUsedError;
   String? get timeoutSide => throw _privateConstructorUsedError;
   bool get agreementDraw => throw _privateConstructorUsedError;
@@ -55,7 +55,7 @@ abstract class $GameStateModelCopyWith<$Res> {
       List<MoveDataModel> moves,
       int currentHalfmoveIndex,
       String? result,
-      String termination,
+      GameTermination termination,
       String? resignationSide,
       String? timeoutSide,
       bool agreementDraw,
@@ -124,7 +124,7 @@ class _$GameStateModelCopyWithImpl<$Res, $Val extends GameStateModel>
       termination: null == termination
           ? _value.termination
           : termination // ignore: cast_nullable_to_non_nullable
-              as String,
+              as GameTermination,
       resignationSide: freezed == resignationSide
           ? _value.resignationSide
           : resignationSide // ignore: cast_nullable_to_non_nullable
@@ -169,7 +169,7 @@ abstract class _$$GameStateModelImplCopyWith<$Res>
       List<MoveDataModel> moves,
       int currentHalfmoveIndex,
       String? result,
-      String termination,
+      GameTermination termination,
       String? resignationSide,
       String? timeoutSide,
       bool agreementDraw,
@@ -236,7 +236,7 @@ class __$$GameStateModelImplCopyWithImpl<$Res>
       termination: null == termination
           ? _value.termination
           : termination // ignore: cast_nullable_to_non_nullable
-              as String,
+              as GameTermination,
       resignationSide: freezed == resignationSide
           ? _value.resignationSide
           : resignationSide // ignore: cast_nullable_to_non_nullable
@@ -276,7 +276,7 @@ class _$GameStateModelImpl implements _GameStateModel {
       required final List<MoveDataModel> moves,
       this.currentHalfmoveIndex = 0,
       this.result,
-      this.termination = 'ongoing',
+      this.termination = GameTermination.ongoing,
       this.resignationSide,
       this.timeoutSide,
       this.agreementDraw = false,
@@ -325,7 +325,7 @@ class _$GameStateModelImpl implements _GameStateModel {
   final String? result;
   @override
   @JsonKey()
-  final String termination;
+  final GameTermination termination;
   @override
   final String? resignationSide;
   @override
@@ -423,7 +423,7 @@ abstract class _GameStateModel implements GameStateModel {
       required final List<MoveDataModel> moves,
       final int currentHalfmoveIndex,
       final String? result,
-      final String termination,
+      final GameTermination termination,
       final String? resignationSide,
       final String? timeoutSide,
       final bool agreementDraw,
@@ -449,7 +449,7 @@ abstract class _GameStateModel implements GameStateModel {
   @override
   String? get result;
   @override
-  String get termination;
+  GameTermination get termination;
   @override
   String? get resignationSide;
   @override

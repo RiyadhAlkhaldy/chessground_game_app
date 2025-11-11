@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 
 import '../../core/utils/helper/constants.dart';
 import '../../routes/app_pages.dart';
-import '../controllers/game_controller.dart';
+import '../controllers/game_controllerr.dart';
 import '../widgets/widgets.dart';
 
 class GameStartUpScreen extends StatefulWidget {
@@ -31,7 +31,7 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
   int blackTimeInMenutes = 0;
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(GameController());
+    final controller = Get.put(GameControllerr());
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
@@ -41,7 +41,7 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
           onPressed: Get.back,
         ),
       ),
-      body: GetBuilder<GameController>(
+      body: GetBuilder<GameControllerr>(
         builder: (_) {
           return Padding(
             padding: const EdgeInsets.all(8.0),
@@ -221,7 +221,7 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
     );
   }
 
-  void playGame({required GameController controller}) async {
+  void playGame({required GameControllerr controller}) async {
     // final userModel = context.read<AuthenticationProvider>().userModel;
     // check if is custome time
     if (widget.isCustomTime) {
@@ -312,7 +312,6 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
       //           arguments: {"withTime": true},
       //         );
       //       } else {
-      //         // TODO
       //         // search for players
       //         // controller.searchPlayer(
       //         //   userModel: userModel!,

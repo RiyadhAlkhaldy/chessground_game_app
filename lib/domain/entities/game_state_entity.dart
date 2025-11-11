@@ -1,8 +1,9 @@
-
 // lib/domain/entities/game_state_entity.dart
 
 import 'package:dartchess/dartchess.dart';
 import 'package:equatable/equatable.dart';
+
+import '../../core/game_termination_enum.dart';
 import 'move_data_entity.dart';
 
 /// Entity representing the complete game state
@@ -30,7 +31,7 @@ class GameStateEntity extends Equatable {
   final String? result; // "1-0", "0-1", "1/2-1/2", null
 
   /// Game termination reason
-  final String termination; // من GameTermination enum
+  final GameTermination termination; // من GameTermination enum
 
   /// Resignation side if applicable
   final String? resignationSide; // "white" or "black"
@@ -58,7 +59,7 @@ class GameStateEntity extends Equatable {
     required this.moves,
     this.currentHalfmoveIndex = 0,
     this.result,
-    this.termination = 'ongoing',
+    this.termination = GameTermination.ongoing,
     this.resignationSide,
     this.timeoutSide,
     this.agreementDraw = false,
@@ -87,7 +88,8 @@ class GameStateEntity extends Equatable {
   }
 
   /// Check if game is over
-  bool get isGameOver => result != null || termination != 'ongoing';
+  bool get isGameOver =>
+      result != null || termination != GameTermination.ongoing;
 
   /// Check if current position is threefold repetition
   bool get isThreefoldRepetition {
@@ -106,21 +108,21 @@ class GameStateEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        gameUuid,
-        currentFen,
-        fenHistory,
-        fenCounts,
-        moves,
-        currentHalfmoveIndex,
-        result,
-        termination,
-        resignationSide,
-        timeoutSide,
-        agreementDraw,
-        halfmoveClock,
-        materialEvaluation,
-        lastUpdated,
-      ];
+    gameUuid,
+    currentFen,
+    fenHistory,
+    fenCounts,
+    moves,
+    currentHalfmoveIndex,
+    result,
+    termination,
+    resignationSide,
+    timeoutSide,
+    agreementDraw,
+    halfmoveClock,
+    materialEvaluation,
+    lastUpdated,
+  ];
 
   /// Copy with method for immutability
   GameStateEntity copyWith({
@@ -131,7 +133,7 @@ class GameStateEntity extends Equatable {
     List<MoveDataEntity>? moves,
     int? currentHalfmoveIndex,
     String? result,
-    String? termination,
+    GameTermination? termination,
     String? resignationSide,
     String? timeoutSide,
     bool? agreementDraw,

@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../../core/utils/helper/constants.dart';
 import '../../core/utils/helper/helper_methods.dart';
-import '../controllers/game_controller.dart';
+import '../controllers/game_controllerr.dart';
 import 'game_start_up_screen.dart';
 
 class GameTimeScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class GameTimeScreen extends StatefulWidget {
 class _GameTimeScreenState extends State<GameTimeScreen> {
   @override
   Widget build(BuildContext context) {
-    final gameProvider = Get.put(GameController());
+    final gameProvider = Get.put(GameControllerr());
 
     debugPrint('VS VALUE: ${gameProvider.vsComputer}');
     return Scaffold(

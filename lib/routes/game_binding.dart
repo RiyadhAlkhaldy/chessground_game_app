@@ -19,7 +19,7 @@ import '../features/free_game/presentation/controllers/freee_game_controller.dar
 import '../presentation/controllers/chess_board_settings_controller.dart';
 import '../presentation/controllers/game_computer_controller.dart';
 import '../presentation/controllers/game_computer_with_time_controller.dart';
-import '../presentation/controllers/game_controller.dart';
+import '../presentation/controllers/game_controllerr.dart';
 import '../presentation/controllers/get_storage_controller.dart';
 import '../presentation/controllers/settings_controller.dart';
 import '../presentation/controllers/side_choosing_controller.dart';
@@ -57,7 +57,7 @@ class GameBinding extends Bindings {
       fenix: true,
     );
     Get.lazyPut(() {
-      final gameCtrl = Get.find<GameController>();
+      final gameCtrl = Get.find<GameControllerr>();
       return ChessClockService(
         initialTimeMs: (gameCtrl.whitesTime.inMinutes * 60 * 1000).toInt(),
         incrementMs: gameCtrl.incrementalValue * 1000,
@@ -98,7 +98,7 @@ class GameBinding extends Bindings {
       fenix: true,
     );
     // تسجيل المتحكم (GameController)
-    Get.lazyPut(() => GameController(), fenix: true);
+    Get.lazyPut(() => GameControllerr(), fenix: true);
     // // تسجيل المتحكم (GameComputerWithTimeController)
     Get.lazyPut<GameComputerWithTimeController>(
       () => GameComputerWithTimeController(

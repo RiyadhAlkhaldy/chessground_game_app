@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 // import 'package:flutter_chess/providers/game_provider.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../presentation/controllers/game_controller.dart';
+import '../../../presentation/controllers/game_controllerr.dart';
 import 'constants.dart';
 // import 'package:squares/squares.dart';
 
@@ -26,10 +26,12 @@ Widget buildGameType({
               : gameTime! == '60+0'
               ? const SizedBox.shrink()
               : Text(
-                gameTime,
-                style: Theme.of(Get.context!).textTheme.bodyMedium!.copyWith(),
-                textAlign: TextAlign.center,
-              ),
+                  gameTime,
+                  style: Theme.of(
+                    Get.context!,
+                  ).textTheme.bodyMedium!.copyWith(),
+                  textAlign: TextAlign.center,
+                ),
           const SizedBox(height: 10),
           Text(lable, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
@@ -39,7 +41,7 @@ Widget buildGameType({
 }
 
 String getTimerToDisplay({
-  required GameController gameProvider,
+  required GameControllerr gameProvider,
   required bool isUser,
 }) {
   String timer = '';

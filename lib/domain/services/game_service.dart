@@ -1,7 +1,8 @@
 // lib/domain/services/game_service.dart
 
 import 'package:dartchess/dartchess.dart';
-import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart' hide IMap;
+import 'package:fast_immutable_collections/src/imap/imap.dart';
 
 import '../../core/errors/failures.dart';
 import '../../core/game_termination_enum.dart';
@@ -138,7 +139,7 @@ class GameService {
   static String calculateResult(
     GameState gameState,
     GameTermination termination,
-  ) {
+  ) { 
     if (termination == GameTermination.ongoing) {
       return '*';
     }
@@ -275,25 +276,8 @@ class GameService {
 
   /// Get legal moves for current position
   /// الحصول على الحركات القانونية للموضع الحالي
-  static List getLegalMoves(GameState gameState) {
-    //TODO تأكد من البيانات الرجعة صحيحة
-    return gameState.position.legalMoves.entries.map((e) {
-      e.value.squares.map((to) => NormalMove(from: e.key, to: to));
-    }).toList();
-  }
-
-  /// Get legal moves from a specific square
-  /// الحصول على الحركات القانونية من مربع محدد
-  static List getLegalMovesFrom(GameState gameState, Square square) {
-    final allMoves = getLegalMoves(gameState);
-    return allMoves.where((move) {
-      if (move is NormalMove) {
-        return move.from == square;
-      } else if (move is DropMove) {
-        return move.to == square;
-      }
-      return false;
-    }).toList();
+  static IMap<Square, SquareSet> getLegalMoves(GameState gameState) {
+    return gameState.position.legalMoves;
   }
 
   /// Parse move from UCI string
@@ -324,10 +308,14 @@ class GameService {
   ) {
     try {
       final legalMoves = getLegalMoves(gameState);
-      for (final move in legalMoves) {
-        final record = gameState.position.makeSan(move);
-        if (record.$2 == san) {
-          return Right(move);
+      for (final entry in legalMoves.entries) {
+        final from = entry.key;
+        for (final to in entry.value.squares) {
+          final move = NormalMove(from: from, to: to);
+          final record = gameState.position.makeSan(move);
+          if (record.$2 == san) {
+            return Right(move);
+          }
         }
       }
 

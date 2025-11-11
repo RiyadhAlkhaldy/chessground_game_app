@@ -20,7 +20,9 @@ _$GameStateModelImpl _$$GameStateModelImplFromJson(Map<String, dynamic> json) =>
       currentHalfmoveIndex:
           (json['currentHalfmoveIndex'] as num?)?.toInt() ?? 0,
       result: json['result'] as String?,
-      termination: json['termination'] as String? ?? 'ongoing',
+      termination:
+          $enumDecodeNullable(_$GameTerminationEnumMap, json['termination']) ??
+              GameTermination.ongoing,
       resignationSide: json['resignationSide'] as String?,
       timeoutSide: json['timeoutSide'] as String?,
       agreementDraw: json['agreementDraw'] as bool? ?? false,
@@ -39,7 +41,7 @@ Map<String, dynamic> _$$GameStateModelImplToJson(
       'moves': instance.moves,
       'currentHalfmoveIndex': instance.currentHalfmoveIndex,
       'result': instance.result,
-      'termination': instance.termination,
+      'termination': _$GameTerminationEnumMap[instance.termination]!,
       'resignationSide': instance.resignationSide,
       'timeoutSide': instance.timeoutSide,
       'agreementDraw': instance.agreementDraw,
@@ -47,3 +49,15 @@ Map<String, dynamic> _$$GameStateModelImplToJson(
       'materialEvaluation': instance.materialEvaluation,
       'lastUpdated': instance.lastUpdated.toIso8601String(),
     };
+
+const _$GameTerminationEnumMap = {
+  GameTermination.checkmate: 'checkmate',
+  GameTermination.stalemate: 'stalemate',
+  GameTermination.timeout: 'timeout',
+  GameTermination.resignation: 'resignation',
+  GameTermination.agreement: 'agreement',
+  GameTermination.threefoldRepetition: 'threefoldRepetition',
+  GameTermination.fiftyMoveRule: 'fiftyMoveRule',
+  GameTermination.insufficientMaterial: 'insufficientMaterial',
+  GameTermination.ongoing: 'ongoing',
+};

@@ -1,5 +1,6 @@
 // lib/data/models/game_state_model.dart
 
+import 'package:chessground_game_app/core/game_termination_enum.dart';
 import 'package:chessground_game_app/data/models/mappers/entities_mapper.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -21,7 +22,7 @@ class GameStateModel with _$GameStateModel {
     required List<MoveDataModel> moves,
     @Default(0) int currentHalfmoveIndex,
     String? result,
-    @Default('ongoing') String termination,
+    @Default(GameTermination.ongoing) GameTermination termination,
     String? resignationSide,
     String? timeoutSide,
     @Default(false) bool agreementDraw,

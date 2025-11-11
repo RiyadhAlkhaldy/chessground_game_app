@@ -1,849 +1,1057 @@
+// lib/presentation/controllers/game_controller.dart
+
 import 'dart:async';
 
-// import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:chessground/chessground.dart';
 import 'package:dartchess/dartchess.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-// import 'package:flutter_chess/models/game_model.dart';
-// import 'package:flutter_chess/models/user_model.dart';
-// import 'package:uuid/uuid.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:get/get.dart';
-import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
+import 'package:uuid/uuid.dart';
 
-import '../../core/utils/helper/constants.dart';
+import '../../core/game_termination_enum.dart';
+import '../../core/params/params.dart';
+import '../../core/utils/dialog/game_result_dialog.dart';
+import '../../core/utils/dialog/game_status.dart';
+import '../../core/utils/dialog/status_l10n.dart';
+import '../../core/utils/game_state/game_state.dart';
+import '../../core/utils/logger.dart';
+import '../../data/models/move_data_model.dart';
+import '../../domain/converters/game_state_converter.dart';
+import '../../domain/entities/chess_game_entity.dart';
+import '../../domain/entities/player_entity.dart';
+import '../../domain/services/game_service.dart';
+import '../../domain/usecases/game_state/cache_game_state_usecase.dart';
+import '../../domain/usecases/game_state/get_cached_game_state_usecase.dart';
+import '../../domain/usecases/get_game_by_uuid_usecase.dart';
+import '../../domain/usecases/get_or_create_gust_player_usecase.dart';
+import '../../domain/usecases/init_chess_game.dart';
+import '../../domain/usecases/play_move.dart';
+import '../../domain/usecases/play_sound_usecase.dart';
+import '../../domain/usecases/save_game_usecase.dart';
+import '../../domain/usecases/save_player_usecase.dart';
+import '../../domain/usecases/update_game_usecase.dart';
+import 'chess_board_settings_controller.dart';
+import 'get_storage_controller.dart';
 
-class GameController extends GetxController {
-  final skillLevel = 20.obs; // Default to max skill level
-  final uciElo = 3190.obs; // Default to a high Elo
-  final uciLimitStrength = true.obs;
-  int thinkingTimeForAI = 2000; // default 2 seconds
-  // late bishop.Game _game = bishop.Game(variant: bishop.Variant.standard());
-  late Position position = Chess.fromSetup(Setup.parseFen(fen));
+abstract class BaseGameController extends GetxController {
+  Position get initail => Chess.fromSetup(Setup.parseFen(_initailLocalFen));
 
-  String _fen = kInitialFEN;
-  String get fen => _fen;
+  String get _initailLocalFen => Chess.initial.fen;
 
-  set fen(String value) => {_fen = value};
-  // late SquaresState _state = SquaresState.initial(0);
-  bool _aiThinking = false;
-  bool _flipBoard = false;
-  bool _vsComputer = false;
-  bool _isLoading = false;
-  bool _playWhitesTimer = true;
-  bool _playBlacksTimer = true;
-  int _gameLevel = 1;
-  int _incrementalValue = 0;
-  Side _player = Side.white;
-  Timer? _whitesTimer;
-  Timer? _blacksTimer;
-  final int _whitesScore = 0;
-  final int _blacksSCore = 0;
-  GameDifficulty _gameDifficulty = GameDifficulty.easy;
-  final String _gameId = '';
+  String fen = Chess.initial.fen;
 
-  String get gameId => _gameId;
+  ValidMoves validMoves = IMap(const {});
 
-  Duration _whitesTime = Duration.zero;
-  Duration _blacksTime = Duration.zero;
+  bool get isCheckmate => gameState.value!.isCheckmate;
 
-  // saved time
-  Duration _savedWhitesTime = Duration.zero;
-  Duration _savedBlacksTime = Duration.zero;
-
-  bool get playWhitesTimer => _playWhitesTimer;
-  bool get playBlacksTimer => _playBlacksTimer;
-
-  int get whitesScore => _whitesScore;
-  int get blacksScore => _blacksSCore;
-
-  Timer? get whitesTimer => _whitesTimer;
-  Timer? get blacksTimer => _blacksTimer;
-
-  Position get game => position;
-  // SquaresState get state => _state;
-  bool get aiThinking => _aiThinking;
-  bool get flipBoard => _flipBoard;
-
-  int get gameLevel => _gameLevel;
-  GameDifficulty get gameDifficulty => _gameDifficulty;
-
-  int get incrementalValue => _incrementalValue;
-  Side get player => _player;
-  Rx<Side> playerColor = Side.white.obs;
-
-  Duration get whitesTime => _whitesTime;
-  Duration get blacksTime => _blacksTime;
-
-  Duration get savedWhitesTime => _savedWhitesTime;
-  Duration get savedBlacksTime => _savedBlacksTime;
-
-  // get method
-  bool get vsComputer => _vsComputer;
-  bool get isLoading => _isLoading;
-
-  // final FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-  // final FirebaseStorage firebaseStorage = FirebaseStorage.instance;
-
-  // set play whitesTimer
-  Future<void> setPlayWhitesTimer({required bool value}) async {
-    _playWhitesTimer = value;
-    update();
+  Side? get winner {
+    return getResult?.winner;
   }
 
-  // set play blacksTimer
-  Future<void> setPlayBlactsTimer({required bool value}) async {
-    _playBlacksTimer = value;
-    update();
+  Rxn<PlayerEntity> whitePlayer = Rxn();
+  Rxn<PlayerEntity> blackPlayer = Rxn();
+
+  bool canPop = false;
+  NormalMove? promotionMove;
+  NormalMove? premove;
+  PlayerSide playerSide = PlayerSide.both;
+  Future<void> _initPlayer() async {
+    final response = await initChessGame(
+      InitChessGameParams(site: 'Riyadh alkhaldy', event: 'play with computer'),
+    );
+    response.fold((l) {}, (chsGameEnty) {
+      chessGameEntity = chsGameEnty;
+      whitePlayer.value = chsGameEnty.whitePlayer;
+      blackPlayer.value = chsGameEnty.blackPlayer;
+    });
   }
 
-  // get position fen
-  String getPositionFen() {
-    return game.fen;
+  final PlaySoundUseCase plySound;
+  final PlayMove playMoveUsecase;
+  final InitChessGame initChessGame;
+  ChessGameEntity? chessGameEntity;
+  final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
+  final storage = Get.find<GetStorageControllerImp>();
+  Rxn<GameState> gameState = Rxn<GameState>();
+  // final RxBool isLoading = false.obs;
+  final RxnString error = RxnString();
+
+  // load existing game from repository (usecase loadGame not shown here)
+  void setGameState(GameState state) {
+    gameState.value = state;
   }
 
-  // reset game
-  void resetGame({required bool newGame}) {
-    if (newGame) {
-      // check if the player was white in the previous game
-      // change the player
-      if (_player == Side.white) {
-        _player = Side.black;
-      } else {
-        _player = Side.white;
+  BaseGameController(this.plySound, this.playMoveUsecase, this.initChessGame);
+
+  @override
+  void onInit() {
+    super.onInit();
+    _initPlayer().then((_) async {
+      await plySound.executeDongSound();
+    });
+    gameState.value = GameState(initial: initail);
+    fen = gameState.value!.position.fen;
+    validMoves = makeLegalMoves(gameState.value!.position);
+    _listenToGameStatus();
+  }
+
+  void _listenToGameStatus() {
+    gameState.value!.gameStatus.listen((status) {
+      if (gameState.value!.turn == Side.white) {
+        statusText.value = "دور الأبيض";
+      } else if (gameState.value!.turn == Side.black) {
+        statusText.value = "دور الأسود";
       }
+      if (gameState.value!.isCheck) {
+        statusText.value += '(كش)';
+      }
+      if (status != GameStatus.ongoing) {
+        statusText.value =
+            "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.value!.position, winner: gameState.value!.result?.winner, isThreefoldRepetition: gameState.value!.isThreefoldRepetition())} ";
+        Get.dialog(
+          GameResultDialog(
+            gameState: gameState.value!,
+            gameStatus: status,
+            reset: reset,
+          ),
+        );
+      }
+    });
+  }
+
+  // // النسخة المعدلة من getResult
+  Outcome? get getResult {
+    return gameState.value!.result;
+  }
+
+  /// Game result (reactive)
+  /// نتيجة اللعبة (تفاعلية)
+  // final RxString _gameResult = '*'.obs;
+  // String get gameResult => _gameResult.value;
+
+  RxString statusText = "free Play".obs;
+
+  GameStatus get gameStatus => gameState.value!.status();
+
+  /// Agreement draw: set result to draw.
+  void setAgreementDraw() => {gameState.value!.setAgreementDraw(), update()};
+
+  /// Resign: if side resigns, winner is the other side.
+  void resign(Side side) => {
+    gameState.value!.resign(side),
+    plySound.executeResignSound(),
+    update(),
+  };
+
+  ///reset
+  void reset() {
+    gameState.value = GameState(initial: initail);
+    fen = gameState.value!.position.fen;
+    validMoves = makeLegalMoves(gameState.value!.position);
+    promotionMove = null;
+    plySound.executeDongSound();
+    statusText.value = "free Play";
+
+    update();
+  }
+
+  void tryPlayPremove() {
+    if (premove != null) {
+      Timer.run(() {
+        onUserMoveAgainstAI(premove!, isPremove: true);
+      });
     }
-    // reset game
-    position = Chess.initial;
-    // _state = game.squaresState(_player);
+  }
+
+  void onSetPremove(NormalMove? move) {
+    premove = move;
     update();
   }
 
-  // make squre move
-  bool makeSquaresMove(Move move) {
-    // bool result = game.makeSquaresMove(move);
-    update();
-    // return result;
-    return true;
+  void onPromotionSelection(Role? role) {
+    if (role == null) {
+      onPromotionCancel();
+    } else if (promotionMove != null) {
+      onUserMoveAgainstAI(promotionMove!.withPromotion(role));
+    }
   }
 
-  // make squre move
-  bool makeStringMove(String bestMove) {
-    // bool result = game.makeMoveString(bestMove);
-    update();
-    // return result;
-    return true;
-  }
-
-  // set sqaures state
-  Future<void> setSquaresState() async {
-    // _state = game.squaresState(player);
+  void onPromotionCancel() {
+    promotionMove = null;
     update();
   }
 
-  // make random move
-  void makeRandomMove() {
-    // _game.makeRandomMove();
-    update();
-  }
-
-  void flipTheBoard() {
-    _flipBoard = !_flipBoard;
-    update();
-  }
-
-  void setAiThinking(bool value) {
-    _aiThinking = value;
-    update();
-  }
-
-  // set incremental value
-  void setIncrementalValue({required int value}) {
-    _incrementalValue = value;
-    update();
-  }
-
-  // set vs computer
-  void setVsComputer({required bool value}) {
-    _vsComputer = value;
-    update();
-  }
-
-  void setIsLoading({required bool value}) {
-    _isLoading = value;
-    update();
-  }
-
-  // set game time
-  Future<void> setGameTime({
-    required String newSavedWhitesTime,
-    required String newSavedBlacksTime,
+  void onUserMoveAgainstAI(
+    NormalMove move, {
+    bool? isDrop,
+    bool? isPremove,
   }) async {
-    debugPrint('newSavedWhitesTime: $newSavedWhitesTime');
-    // save the times
-    _savedWhitesTime = Duration(minutes: int.parse(newSavedWhitesTime));
-    _savedBlacksTime = Duration(minutes: int.parse(newSavedBlacksTime));
-    // set times
-    setWhitesTime(_savedWhitesTime);
-    setBlacksTime(_savedBlacksTime);
-    update();
-  }
-
-  void setWhitesTime(Duration time) {
-    _whitesTime = time;
-    update();
-  }
-
-  void setBlacksTime(Duration time) {
-    _blacksTime = time;
-    update();
-  }
-
-  // set playerColor
-  void setPlayerColor({required Side player}) {
-    _player = player;
-    playerColor.value = player;
-    update();
-  }
-
-  // set difficulty
-  void setGameDifficulty({required int level}) {
-    _gameLevel = level;
-    _gameDifficulty = level == 1
-        ? GameDifficulty.easy
-        : level == 2
-        ? GameDifficulty.medium
-        : GameDifficulty.hard;
-    update();
-  }
-
-  // pause whites timer
-  void pauseWhitesTimer() {
-    if (_whitesTimer != null) {
-      _whitesTime += Duration(seconds: _incrementalValue);
-      _whitesTimer!.cancel();
+    if (isPromotionPawnMove(move)) {
+      promotionMove = move;
+      update();
+    } else if (gameState.value!.position.isLegal(move)) {
+      _applyMove(move);
+      // validMoves = IMap(const {});
+      promotionMove = null;
       update();
     }
+    tryPlayPremove();
   }
 
-  // pause blacks timer
-  void pauseBlacksTimer() {
-    if (_blacksTimer != null) {
-      _blacksTime += Duration(seconds: _incrementalValue);
-      _blacksTimer!.cancel();
-      update();
-    }
-  }
+  // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
+  void _applyMove(NormalMove move) async {
+    final state = gameState.value!;
+    // isLoading.value = true;
+    final res = await playMoveUsecase(
+      chessGameEntity: chessGameEntity!,
+      state: state,
+      move: move,
+      comment: null,
+      nags: [],
+      // persist: true,
+    );
+    res.fold(
+      (f) {
+        error.value = f.toString();
+      },
+      (_) {
+        // update observed gameState.value! (GameState mutated in-place)
+        gameState.refresh();
+        fen = gameState.value!.position.fen;
+        validMoves = makeLegalMoves(gameState.value!.position);
 
-  // start blacks timer
-  void startBlacksTimer({
-    required BuildContext context,
-    Stockfish? stockfish,
-    required Function onNewGame,
-  }) {
-    _blacksTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _blacksTime = _blacksTime - const Duration(seconds: 1);
-      update();
-
-      if (_blacksTime <= Duration.zero) {
-        // blacks timeout - black has lost the game
-        _blacksTimer!.cancel();
-        update();
-
-        // show game over dialog
-        if (context.mounted) {
-          // gameOverDialog(
-          //   context: context,
-          //   stockfish: stockfish,
-          //   timeOut: true,
-          //   whiteWon: true,
-          //   onNewGame: onNewGame,
-          // );
+        // decide which sound to play based on metadata
+        final meta = gameState.value!.lastMoveMeta;
+        if (meta != null) {
+          // capture has priority (play capture instead of plain move)
+          if (meta.wasCapture) {
+            plySound.executeCaptureSound();
+          } else {
+            plySound.executeMoveSound();
+          }
+          if (meta.wasPromotion) {
+            plySound.executePromoteSound();
+          }
+          if (meta.wasCheckmate) {
+            plySound.executeCheckmateSound();
+          } else if (meta.wasCheck) {
+            plySound.executeCheckSound();
+          }
+        } else {
+          // fallback
+          plySound.executeMoveSound();
         }
-      }
-    });
+        gameStatus; // to update statusText
+      },
+    );
+    // isLoading.value = false;
   }
 
-  // start blacks timer
-  void startWhitesTimer({
-    required BuildContext context,
-    Stockfish? stockfish,
-    required Function onNewGame,
-  }) {
-    _whitesTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _whitesTime = _whitesTime - const Duration(seconds: 1);
+  bool isPromotionPawnMove(NormalMove move) {
+    return move.promotion == null &&
+        gameState.value!.position.board.roleAt(move.from) == Role.pawn &&
+        ((move.to.rank == Rank.first &&
+                gameState.value!.position.turn == Side.black) ||
+            (move.to.rank == Rank.eighth &&
+                gameState.value!.position.turn == Side.white));
+  }
+
+  // if can undo return true , if can redo return true
+  RxBool get canUndo =>
+      (!gameState.value!.isGameOverExtended && gameState.value!.canUndo).obs;
+  RxBool get canRedo =>
+      (!gameState.value!.isGameOverExtended && gameState.value!.canRedo).obs;
+
+  void undoMove() {
+    if (canUndo.value) {
+      gameState.value!.undoMove();
+      fen = gameState.value!.position.fen;
+      validMoves = makeLegalMoves(gameState.value!.position);
+      // play a feedback sound (optional)
+      plySound.executeMoveSound();
       update();
-
-      if (_whitesTime <= Duration.zero) {
-        // whites timeout - white has lost the game
-        _whitesTimer!.cancel();
-        update();
-
-        // show game over dialog
-        if (context.mounted) {
-          // gameOverDialog(
-          //   context: context,
-          //   stockfish: stockfish,
-          //   timeOut: true,
-          //   whiteWon: false,
-          //   onNewGame: onNewGame,
-          // );
-        }
-      }
-    });
-  }
-
-  void gameOverListerner({
-    required BuildContext context,
-    Stockfish? stockfish,
-    required Function onNewGame,
-  }) {
-    if (game.isGameOver) {
-      // pause the timers
-      pauseWhitesTimer();
-      pauseBlacksTimer();
-
-      // cancel the gameStreamsubscription if its not null
-      // if (gameStreamSubScreiption != null) {
-      //   gameStreamSubScreiption!.cancel();
-      // }
-
-      // show game over dialog
-      if (context.mounted) {
-        // gameOverDialog(
-        //   context: context,
-        //   stockfish: stockfish,
-        //   timeOut: false,
-        //   whiteWon: false,
-        //   onNewGame: onNewGame,
-        // );
-      }
     }
   }
 
-  // game over dialog
-  // void gameOverDialog({
-  //   required BuildContext context,
-  //   Stockfish? stockfish,
-  //   required bool timeOut,
-  //   required bool whiteWon,
-  //   required Function onNewGame,
-  // }) {
-  //   // stop stockfish engine
-  //   if (stockfish != null) {
-  //     stockfish.stdin = UCICommands.stop;
-  //   }
-  //   String resultsToShow = '';
-  //   int whitesScoresToShow = 0;
-  //   int blacksSCoresToShow = 0;
+  void redoMove() {
+    if (canRedo.value) {
+      gameState.value!.redoMove();
+      fen = gameState.value!.position.fen;
+      validMoves = makeLegalMoves(gameState.value!.position);
+      plySound.executeMoveSound();
+      update();
+    }
+  }
 
-  //   // check if its a timeOut
-  //   if (timeOut) {
-  //     // check who has won and increment the results accordingly
-  //     if (whiteWon) {
-  //       resultsToShow = 'White won on time';
-  //       whitesScoresToShow = _whitesScore + 1;
-  //     } else {
-  //       resultsToShow = 'Black won on time';
-  //       blacksSCoresToShow = _blacksSCore + 1;
-  //     }
-  //   } else {
-  //     // its not a timeOut
-  //     resultsToShow = game.result!.readable;
+  /// expose PGN tokens for the UI
+  List<MoveDataModel> get pgnTokens => gameState.value!.getMoveTokens;
 
-  //     if (game.isStalemate ||
-  //         game.isInsufficientMaterial ||
-  //         game.isVariantEnd) {
-  //       // game is a draw
-  //       String whitesResults = game.result!.scoreString.split('-').first;
-  //       String blacksResults = game.result!.scoreString.split('-').last;
-  //       whitesScoresToShow = _whitesScore += int.parse(whitesResults);
-  //       blacksSCoresToShow = _blacksSCore += int.parse(blacksResults);
-  //     } else if (game.winner == 0) {
-  //       // meaning white is the winner
-  //       String whitesResults = game.result!.scoreString.split('-').first;
-  //       whitesScoresToShow = _whitesScore += int.parse(whitesResults);
-  //     } else if (game.winner == 1) {
-  //       // meaning black is the winner
-  //       String blacksResults = game.result!.scoreString.split('-').last;
-  //       blacksSCoresToShow = _blacksSCore += int.parse(blacksResults);
-  //     } else if (game.isStalemate) {
-  //       whitesScoresToShow = whitesScore;
-  //       blacksSCoresToShow = blacksScore;
-  //     }
-  //   }
+  int get currentHalfmoveIndex => gameState.value!.currentHalfmoveIndex;
 
-  //   showDialog(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder:
-  //         (context) => AlertDialog(
-  //           title: Text(
-  //             'Game Over\n $whitesScoresToShow - $blacksSCoresToShow',
-  //             textAlign: TextAlign.center,
-  //           ),
-  //           content: Text(resultsToShow, textAlign: TextAlign.center),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () {
-  //                 Navigator.pop(context);
-  //                 // navigate to home screen
-  //                 Navigator.pushNamedAndRemoveUntil(
-  //                   context,
-  //                   Constants.homeScreen,
-  //                   (route) => false,
-  //                 );
-  //               },
-  //               child: const Text(
-  //                 'Cancel',
-  //                 style: TextStyle(color: Colors.red),
-  //               ),
-  //             ),
-  //             TextButton(
-  //               onPressed: () {
-  //                 Navigator.pop(context);
-  //                 // reset the game
-  //               },
-  //               child: const Text('New Game'),
-  //             ),
-  //           ],
-  //         ),
-  //   );
-  // }
-
-  String _waitingText = '';
-
-  String get waitingText => _waitingText;
-
-  void setWaitingText() {
-    _waitingText = '';
+  /// jump to a halfmove index (0-based). This will rebuild the game state up to that halfmove.
+  /// Implementation: get a copy of move objects from gameState.value!, construct a fresh GameState
+  /// and replay moves up to `index` then replace controller.gameState.value! with rebuilt one.
+  void jumpToHalfmove(int index) {
+    final allMoves = gameState.value!.getMoveObjectsCopy();
+    final newState = GameState(initial: initail);
+    for (int i = 0; i <= index && i < allMoves.length; i++) {
+      newState.play(allMoves[i]);
+    }
+    gameState.value = newState;
+    fen = gameState.value!.position.fen;
+    validMoves = makeLegalMoves(gameState.value!.position);
     update();
   }
 
-  // // search for player
-  // Future searchPlayer({
-  //   required UserModel userModel,
-  //   required Function() onSuccess,
-  //   required Function(String) onFail,
-  // }) async {
-  //   try {
-  //     // get all available games
-  //     final availableGames =
-  //         await firebaseFirestore.collection(Constants.availableGames).get();
+  Map<Role, int> get whiteCaptured =>
+      gameState.value!.getCapturedPieces(Side.white);
+  Map<Role, int> get blackCaptured =>
+      gameState.value!.getCapturedPieces(Side.black);
+  String get whiteCapturedText =>
+      gameState.value!.capturedPiecesAsString(Side.white);
+  String get whiteCapturedIcons =>
+      gameState.value!.capturedPiecesAsUnicode(Side.white);
+  String get blackCapturedIcons =>
+      gameState.value!.capturedPiecesAsUnicode(Side.black);
 
-  //     //check if there are any available games
-  //     if (availableGames.docs.isNotEmpty) {
-  //       final List<DocumentSnapshot> gamesList =
-  //           availableGames.docs
-  //               .where((element) => element[Constants.isPlaying] == false)
-  //               .toList();
+  // في controller أو widget بعد استدعاء setState/update
+  List<Role> get whiteCapturedList =>
+      gameState.value!.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
+  List<Role> get blackCapturedList =>
+      gameState.value!.getCapturedPiecesList(Side.black);
 
-  //       // check if there are no games where isPlaying == false
-  //       if (gamesList.isEmpty) {
-  //         _waitingText = Constants.searchingPlayerText;
-  //         update();
-  //         // create a new game
-  //         createNewGameInFireStore(
-  //           userModel: userModel,
-  //           onSuccess: onSuccess,
-  //           onFail: onFail,
-  //         );
-  //       } else {
-  //         _waitingText = Constants.joiningGameText;
-  //         update();
-  //         // join a game
-  //         joinGame(
-  //           game: gamesList.first,
-  //           userModel: userModel,
-  //           onSuccess: onSuccess,
-  //           onFail: onFail,
-  //         );
-  //       }
-  //     } else {
-  //       _waitingText = Constants.searchingPlayerText;
-  //       update();
-  //       // we don not have any available games - create a game
-  //       createNewGameInFireStore(
-  //         userModel: userModel,
-  //         onSuccess: onSuccess,
-  //         onFail: onFail,
-  //       );
-  //     }
-  //   } on FirebaseException catch (e) {
-  //     _isLoading = false;
-  //     update();
-  //     onFail(e.toString());
-  //   }
-  // }
+  @override
+  void dispose() {
+    gameState.value!.dispose();
+    super.dispose();
+  }
+}
 
-  // // create a game
-  // void createNewGameInFireStore({
-  //   required UserModel userModel,
-  //   required Function onSuccess,
-  //   required Function(String) onFail,
-  // }) async {
-  //   // create a game id
-  //   _gameId = const Uuid().v4();
-  //   update();
+/// Main game controller managing game state and business logic
+/// المتحكم الرئيسي لإدارة حالة اللعبة ومنطق الأعمال
+class GameController extends GetxController {
+  // ========== Dependencies (Use Cases) ==========
+  final SaveGameUseCase _saveGameUseCase;
+  final UpdateGameUseCase _updateGameUseCase;
+  final GetGameByUuidUseCase _getGameByUuidUseCase;
+  final CacheGameStateUseCase _cacheGameStateUseCase;
+  final GetCachedGameStateUseCase _getCachedGameStateUseCase;
+  // ignore: unused_field
+  final SavePlayerUseCase _savePlayerUseCase;
+  final GetOrCreateGuestPlayerUseCase _getOrCreateGuestPlayerUseCase;
 
-  //   try {
-  //     await firebaseFirestore
-  //         .collection(Constants.availableGames)
-  //         .doc(userModel.uid)
-  //         .set({
-  //           Constants.uid: '',
-  //           Constants.name: '',
-  //           Constants.photoUrl: '',
-  //           Constants.userRating: 1200,
-  //           Constants.gameCreatorUid: userModel.uid,
-  //           Constants.gameCreatorName: userModel.name,
-  //           Constants.gameCreatorImage: userModel.image,
-  //           Constants.gameCreatorRating: userModel.playerRating,
-  //           Constants.isPlaying: false,
-  //           Constants.gameId: gameId,
-  //           Constants.dateCreated:
-  //               DateTime.now().microsecondsSinceEpoch.toString(),
-  //           Constants.whitesTime: _savedWhitesTime.toString(),
-  //           Constants.blacksTime: _savedBlacksTime.toString(),
-  //         });
+  GameController({
+    required SaveGameUseCase saveGameUseCase,
+    required UpdateGameUseCase updateGameUseCase,
+    required GetGameByUuidUseCase getGameByUuidUseCase,
+    required CacheGameStateUseCase cacheGameStateUseCase,
+    required GetCachedGameStateUseCase getCachedGameStateUseCase,
+    required SavePlayerUseCase savePlayerUseCase,
+    required GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase,
+  }) : _saveGameUseCase = saveGameUseCase,
+       _updateGameUseCase = updateGameUseCase,
+       _getGameByUuidUseCase = getGameByUuidUseCase,
+       _cacheGameStateUseCase = cacheGameStateUseCase,
+       _getCachedGameStateUseCase = getCachedGameStateUseCase,
+       _savePlayerUseCase = savePlayerUseCase,
+       _getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
 
-  //     onSuccess();
-  //   } on FirebaseException catch (e) {
-  //     onFail(e.toString());
-  //   }
-  // }
+  // ========== Observable State ==========
 
-  // String _gameCreatorUid = '';
-  // String _gameCreatorName = '';
-  // String _gameCreatorPhoto = '';
-  // int _gameCreatorRating = 1200;
-  // String _userId = '';
-  // String _userName = '';
-  // String _userPhoto = '';
-  // int _userRating = 1200;
+  /// Current game state
+  /// حالة اللعبة الحالية
+  late GameState _gameState;
+  GameState get gameState => _gameState;
 
-  // String get gameCreatorUid => _gameCreatorUid;
-  // String get gameCreatorName => _gameCreatorName;
-  // String get gameCreatorPhoto => _gameCreatorPhoto;
-  // int get gameCreatorRating => _gameCreatorRating;
-  // String get userId => _userId;
-  // String get userName => _userName;
-  // String get userPhoto => _userPhoto;
-  // int get userRating => _userRating;
+  /// Current chess game entity
+  /// كيان لعبة الشطرنج الحالي
+  final Rx<ChessGameEntity?> _currentGame = Rx<ChessGameEntity?>(null);
+  ChessGameEntity? get currentGame => _currentGame.value;
 
-  // // join game
-  // void joinGame({
-  //   required DocumentSnapshot<Object?> game,
-  //   required UserModel userModel,
-  //   required Function() onSuccess,
-  //   required Function(String) onFail,
-  // }) async {
-  //   try {
-  //     // get our created game
-  //     final myGame =
-  //         await firebaseFirestore
-  //             .collection(Constants.availableGames)
-  //             .doc(userModel.uid)
-  //             .get();
+  /// Loading state
+  /// حالة التحميل
+  final RxBool _isLoading = false.obs;
+  bool get isLoading => _isLoading.value;
 
-  //     // get data from the game we are joining
-  //     _gameCreatorUid = game[Constants.gameCreatorUid];
-  //     _gameCreatorName = game[Constants.gameCreatorName];
-  //     _gameCreatorPhoto = game[Constants.gameCreatorImage];
-  //     _gameCreatorRating = game[Constants.gameCreatorRating];
-  //     _userId = userModel.uid;
-  //     _userName = userModel.name;
-  //     _userPhoto = userModel.image;
-  //     _userRating = userModel.playerRating;
-  //     _gameId = game[Constants.gameId];
-  //     update();
+  /// Error message
+  /// رسالة الخطأ
+  final RxString _errorMessage = ''.obs;
+  String get errorMessage => _errorMessage.value;
 
-  //     if (myGame.exists) {
-  //       // delete our created game since we are joing another game
-  //       await myGame.reference.delete();
-  //     }
+  /// Current position FEN (reactive)
+  /// FEN الموضع الحالي (تفاعلي)
+  final RxString _currentFen = Chess.initial.fen.obs;
+  String get currentFen => _currentFen.value;
 
-  //     // initialize the gameModel
-  //     final gameModel = GameModel(
-  //       gameId: gameId,
-  //       gameCreatorUid: _gameCreatorUid,
-  //       userId: userId,
-  //       positonFen: getPositionFen(),
-  //       winnerId: '',
-  //       whitesTime: game[Constants.whitesTime],
-  //       blacksTime: game[Constants.blacksTime],
-  //       whitsCurrentMove: '',
-  //       blacksCurrentMove: '',
-  //       boardState: state.board.flipped().toString(),
-  //       playState: PlayState.ourTurn.name.toString(),
-  //       isWhitesTurn: true,
-  //       isGameOver: false,
-  //       squareState: state.player,
-  //       moves: state.moves.toList(),
-  //     );
+  /// Current turn (reactive)
+  /// الدور الحالي (تفاعلي)
+  final Rx<Side> _currentTurn = Side.white.obs;
+  Side get currentTurn => _currentTurn.value;
 
-  //     // create a game controller directory in fireStore
-  //     await firebaseFirestore
-  //         .collection(Constants.runningGames)
-  //         .doc(gameId)
-  //         .collection(Constants.game)
-  //         .doc(gameId)
-  //         .set(gameModel.toMap());
+  /// Is game over (reactive)
+  /// هل انتهت اللعبة (تفاعلي)
+  final RxBool _isGameOver = false.obs;
+  bool get isGameOver => _isGameOver.value;
 
-  //     // create a new game directory in fireStore
-  //     await firebaseFirestore
-  //         .collection(Constants.runningGames)
-  //         .doc(gameId)
-  //         .set({
-  //           Constants.gameCreatorUid: gameCreatorUid,
-  //           Constants.gameCreatorName: gameCreatorName,
-  //           Constants.gameCreatorImage: gameCreatorPhoto,
-  //           Constants.gameCreatorRating: gameCreatorRating,
-  //           Constants.userId: userId,
-  //           Constants.userName: userName,
-  //           Constants.userImage: userPhoto,
-  //           Constants.userRating: userRating,
-  //           Constants.isPlaying: true,
-  //           Constants.dateCreated:
-  //               DateTime.now().microsecondsSinceEpoch.toString(),
-  //           Constants.gameScore: '0-0',
-  //         });
+  /// Game result (reactive)
+  /// نتيجة اللعبة (تفاعلية)
+  final RxString _gameResult = '*'.obs;
+  String get gameResult => _gameResult.value;
 
-  //     // update game settings depending on the data of the game we are joining
-  //     await setGameDataAndSettings(game: game, userModel: userModel);
+  /// Game termination reason (reactive)
+  /// سبب إنهاء اللعبة (تفاعلي)
+  final Rx<GameTermination> _termination = GameTermination.ongoing.obs;
+  GameTermination get termination => _termination.value;
 
-  //     onSuccess();
-  //   } on FirebaseException catch (e) {
-  //     onFail(e.toString());
-  //   }
-  // }
+  final Rx<GameStatus> _gameStatus = GameStatus.ongoing.obs;
+  GameStatus get gameStatus => _gameStatus.value;
 
-  // StreamSubscription? isPlayingStreamSubScription;
+  /// Last move metadata (reactive)
+  /// بيانات آخر حركة (تفاعلية)
+  final Rx<MoveDataModel?> _lastMove = Rx<MoveDataModel?>(null);
+  MoveDataModel? get lastMove => _lastMove.value;
 
-  // // chech if the other player has joined
-  // void checkIfOpponentJoined({
-  //   required UserModel userModel,
-  //   required Function() onSuccess,
-  // }) async {
-  //   // stream firestore if the player has joined
-  //   isPlayingStreamSubScription = firebaseFirestore
-  //       .collection(Constants.availableGames)
-  //       .doc(userModel.uid)
-  //       .snapshots()
-  //       .listen((event) async {
-  //         // chech if the game exist
-  //         if (event.exists) {
-  //           final DocumentSnapshot game = event;
+  /// Can undo (reactive)
+  /// إمكانية التراجع (تفاعلي)
+  final RxBool _canUndo = false.obs;
+  bool get canUndo => _canUndo.value;
 
-  //           // chech if itsPlaying == true
-  //           if (game[Constants.isPlaying]) {
-  //             isPlayingStreamSubScription!.cancel();
-  //             await Future.delayed(const Duration(milliseconds: 100));
-  //             // get data from the game we are joining
-  //             _gameCreatorUid = game[Constants.gameCreatorUid];
-  //             _gameCreatorName = game[Constants.gameCreatorName];
-  //             _gameCreatorPhoto = game[Constants.gameCreatorImage];
-  //             _userId = game[Constants.uid];
-  //             _userName = game[Constants.name];
-  //             _userPhoto = game[Constants.photoUrl];
+  /// Can redo (reactive)
+  /// إمكانية الإعادة (تفاعلي)
+  final RxBool _canRedo = false.obs;
+  bool get canRedo => _canRedo.value;
 
-  //             setPlayerColor(player: 0);
-  //             update();
+  /// Material advantage for white (reactive)
+  /// ميزة المواد للأبيض (تفاعلي)
+  final RxInt _materialAdvantage = 0.obs;
+  int get materialAdvantage => _materialAdvantage.value;
 
-  //             onSuccess();
-  //           }
-  //         }
-  //       });
-  // }
+  /// Is position in check (reactive)
+  /// هل الموضع في كش (تفاعلي)
+  final RxBool _isCheck = false.obs;
+  bool get isCheck => _isCheck.value;
 
-  // // set game data and settings
-  // Future<void> setGameDataAndSettings({
-  //   required DocumentSnapshot<Object?> game,
-  //   required UserModel userModel,
-  // }) async {
-  //   // get reference to the game we are joining
-  //   final opponentsGame = firebaseFirestore
-  //       .collection(Constants.availableGames)
-  //       .doc(game[Constants.gameCreatorUid]);
+  /// Auto-save enabled
+  /// التخزين التلقائي مفعّل
+  final RxBool _autoSaveEnabled = true.obs;
+  bool get autoSaveEnabled => _autoSaveEnabled.value;
+  set autoSaveEnabled(bool value) => _autoSaveEnabled.value = value;
 
-  //   // time - 0:10:00.0000000
-  //   List<String> whitesTimeParts = game[Constants.whitesTime].split(':');
-  //   List<String> blacksTimeParts = game[Constants.blacksTime].split(':');
+  // ========== Lifecycle Methods ==========
 
-  //   int whitesGameTime =
-  //       int.parse(whitesTimeParts[0]) * 60 + int.parse(whitesTimeParts[1]);
-  //   int blacksGamesTime =
-  //       int.parse(blacksTimeParts[0]) * 60 + int.parse(blacksTimeParts[1]);
+  @override
+  void onInit() {
+    super.onInit();
+    AppLogger.info('GameController initialized', tag: 'GameController');
+  }
 
-  //   // set game time
-  //   await setGameTime(
-  //     newSavedWhitesTime: whitesGameTime.toString(),
-  //     newSavedBlacksTime: blacksGamesTime.toString(),
-  //   );
+  @override
+  void onClose() {
+    AppLogger.info('GameController disposed', tag: 'GameController');
+    super.onClose();
+  }
 
-  //   // update the created game in fireStore
-  //   await opponentsGame.update({
-  //     Constants.isPlaying: true,
-  //     Constants.uid: userModel.uid,
-  //     Constants.name: userModel.name,
-  //     Constants.photoUrl: userModel.image,
-  //     Constants.userRating: userModel.playerRating,
-  //   });
+  // ========== Public Methods ==========
 
-  //   // set the player state
-  //   setPlayerColor(player: 1);
-  //   update();
-  // }
+  /// Initialize a new game
+  /// تهيئة لعبة جديدة
+  Future<void> startNewGame({
+    required String whitePlayerName,
+    required String blackPlayerName,
+    String? event,
+    String? site,
+    String? timeControl,
+  }) async {
+    try {
+      _setLoading(true);
+      _clearError();
 
-  // bool _isWhitesTurn = true;
-  // String blacksMove = '';
-  // String whitesMove = '';
+      AppLogger.gameEvent(
+        'StartNewGame',
+        data: {'white': whitePlayerName, 'black': blackPlayerName},
+      );
 
-  // bool get isWhitesTurn => _isWhitesTurn;
+      // Create or get players
+      final whitePlayerResult = await _getOrCreateGuestPlayerUseCase(
+        GetOrCreateGuestPlayerParams(name: whitePlayerName),
+      );
 
-  // StreamSubscription? gameStreamSubScreiption;
+      final blackPlayerResult = await _getOrCreateGuestPlayerUseCase(
+        GetOrCreateGuestPlayerParams(name: blackPlayerName),
+      );
 
-  // // listen for game changes in fireStore
-  // Future<void> listenForGameChanges({
-  //   required BuildContext context,
-  //   required UserModel userModel,
-  // }) async {
-  //   CollectionReference gameCollectionReference = firebaseFirestore
-  //       .collection(Constants.runningGames)
-  //       .doc(gameId)
-  //       .collection(Constants.game);
+      if (whitePlayerResult.isLeft() || blackPlayerResult.isLeft()) {
+        _setError('Failed to create players');
+        return;
+      }
 
-  //   gameStreamSubScreiption = gameCollectionReference.snapshots().listen((
-  //     event,
-  //   ) {
-  //     if (event.docs.isNotEmpty) {
-  //       // get the game
-  //       final DocumentSnapshot game = event.docs.first;
+      final whitePlayer = whitePlayerResult.getOrElse(() => throw Exception());
+      final blackPlayer = blackPlayerResult.getOrElse(() => throw Exception());
 
-  //       // check if we are white - this means we are the game creator
-  //       if (game[Constants.gameCreatorUid] == userModel.uid) {
-  //         // check if is white's turn
-  //         if (game[Constants.isWhitesTurn]) {
-  //           _isWhitesTurn = true;
+      // Generate UUID for new game
+      final gameUuid = const Uuid().v4();
 
-  //           // check if blacksCurrentMove is not empty or equal the old move - means black has played his move
-  //           // this means its our tuen to play
-  //           if (game[Constants.blacksCurrentMove] != blacksMove) {
-  //             // update the whites UI
+      // Initialize GameState
+      _gameState = GameState(initial: Chess.initial);
 
-  //             Move convertedMove = convertMoveStringToMove(
-  //               moveString: game[Constants.blacksCurrentMove],
-  //             );
+      // Create ChessGameEntity
+      final newGame = ChessGameEntity(
+        uuid: gameUuid,
+        event: event ?? 'Casual Game',
+        site: site ?? 'Local',
+        date: DateTime.now(),
+        round: '1',
+        whitePlayer: whitePlayer,
+        blackPlayer: blackPlayer,
+        result: '*',
+        termination: GameTermination.ongoing,
+        timeControl: timeControl,
+        startingFen: Chess.initial.fen,
+        moves: const [],
+        movesCount: 0,
+      );
 
-  //             bool result = makeSquaresMove(convertedMove);
-  //             if (result) {
-  //               setSquaresState().whenComplete(() {
-  //                 pauseBlacksTimer();
-  //                 startWhitesTimer(context: context, onNewGame: () {});
+      // Save game to database
+      final saveResult = await _saveGameUseCase(SaveGameParams(game: newGame));
 
-  //                 gameOverListerner(context: context, onNewGame: () {});
-  //               });
-  //             }
-  //           }
-  //           update();
-  //         }
-  //       } else {
-  //         // not the game creator
-  //         _isWhitesTurn = false;
+      saveResult.fold(
+        (failure) {
+          _setError('Failed to save game: ${failure.message}');
+          AppLogger.error('Failed to save game', tag: 'GameController');
+        },
+        (savedGame) async {
+          _currentGame.value = savedGame;
 
-  //         // check is white played his move
-  //         if (game[Constants.whitsCurrentMove] != whitesMove) {
-  //           Move convertedMove = convertMoveStringToMove(
-  //             moveString: game[Constants.whitsCurrentMove],
-  //           );
-  //           bool result = makeSquaresMove(convertedMove);
+          // Cache game state
+          final stateEntity = GameStateConverter.toEntity(_gameState, gameUuid);
+          await _cacheGameStateUseCase(
+            CacheGameStateParams(state: stateEntity),
+          );
 
-  //           if (result) {
-  //             setSquaresState().whenComplete(() {
-  //               pauseWhitesTimer();
-  //               startBlacksTimer(context: context, onNewGame: () {});
+          _updateReactiveState();
 
-  //               gameOverListerner(context: context, onNewGame: () {});
-  //             });
-  //           }
-  //         }
-  //         update();
-  //       }
-  //     }
-  //   });
-  // }
+          AppLogger.gameEvent('NewGameStarted', data: {'uuid': gameUuid});
+          Get.snackbar(
+            'Game Started',
+            'New game between $whitePlayerName vs $blackPlayerName',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error starting new game',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Unexpected error: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
 
-  // // convert move string to move format
-  // Move convertMoveStringToMove({required String moveString}) {
-  //   // Split the move string intp its components
-  //   List<String> parts = moveString.split('-');
+  /// Load existing game by UUID
+  /// تحميل لعبة موجودة باستخدام UUID
+  Future<void> loadGame(String gameUuid) async {
+    try {
+      _setLoading(true);
+      _clearError();
 
-  //   // Extract 'from' and 'to'
-  //   int from = int.parse(parts[0]);
-  //   int to = int.parse(parts[1].split('[')[0]);
+      AppLogger.gameEvent('LoadGame', data: {'uuid': gameUuid});
 
-  //   // Extract 'promo' and 'piece' if available
-  //   String? promo;
-  //   String? piece;
-  //   if (moveString.contains('[')) {
-  //     String extras = moveString.split('[')[1].split(']')[0];
-  //     List<String> extraList = extras.split(',');
-  //     promo = extraList[0];
-  //     if (extraList.length > 1) {
-  //       piece = extraList[1];
-  //     }
-  //   }
+      // Try to get from cache first
+      final cachedResult = await _getCachedGameStateUseCase(
+        GetCachedGameStateParams(gameUuid: gameUuid),
+      );
 
-  //   // Create and return a new Move object
-  //   return Move(from: from, to: to, promo: promo, piece: piece);
-  // }
+      if (cachedResult.isRight()) {
+        final cachedState = cachedResult.getOrElse(() => throw Exception());
+        _gameState = GameStateConverter.fromEntity(cachedState);
 
-  // // play move and save to fireStore
-  // Future<void> playMoveAndSaveToFireStore({
-  //   required BuildContext context,
-  //   required Move move,
-  //   required bool isWhitesMove,
-  // }) async {
-  //   // check if its whites move
-  //   if (isWhitesMove) {
-  //     await firebaseFirestore
-  //         .collection(Constants.runningGames)
-  //         .doc(gameId)
-  //         .collection(Constants.game)
-  //         .doc(gameId)
-  //         .update({
-  //           Constants.positonFen: getPositionFen(),
-  //           Constants.whitsCurrentMove: move.toString(),
-  //           Constants.moves: FieldValue.arrayUnion([move.toString()]),
-  //           Constants.isWhitesTurn: false,
-  //           Constants.playState: PlayState.theirTurn.name.toString(),
-  //         });
+        // Also load the game entity from database
+        final gameResult = await _getGameByUuidUseCase(
+          GetGameByUuidParams(uuid: gameUuid),
+        );
 
-  //     // pause whites timer and start blacks timer
-  //     pauseWhitesTimer();
+        gameResult.fold(
+          (failure) => _setError('Failed to load game: ${failure.message}'),
+          (game) {
+            _currentGame.value = game;
+            _updateReactiveState();
+            AppLogger.gameEvent(
+              'GameLoadedFromCache',
+              data: {'uuid': gameUuid},
+            );
+          },
+        );
+        return;
+      }
 
-  //     Future.delayed(const Duration(milliseconds: 100)).whenComplete(() {
-  //       startBlacksTimer(context: context, onNewGame: () {});
-  //     });
-  //   } else {
-  //     await firebaseFirestore
-  //         .collection(Constants.runningGames)
-  //         .doc(gameId)
-  //         .collection(Constants.game)
-  //         .doc(gameId)
-  //         .update({
-  //           Constants.positonFen: getPositionFen(),
-  //           Constants.blacksCurrentMove: move.toString(),
-  //           Constants.moves: FieldValue.arrayUnion([move.toString()]),
-  //           Constants.isWhitesTurn: true,
-  //           Constants.playState: PlayState.ourTurn.name.toString(),
-  //         });
+      // Load from database
+      final gameResult = await _getGameByUuidUseCase(
+        GetGameByUuidParams(uuid: gameUuid),
+      );
 
-  //     // pause blacks timer and start whites timer
-  //     pauseBlacksTimer();
+      gameResult.fold(
+        (failure) => _setError('Failed to load game: ${failure.message}'),
+        (game) {
+          _currentGame.value = game;
 
-  //     Future.delayed(const Duration(milliseconds: 100)).whenComplete(() {
-  //       startWhitesTimer(context: context, onNewGame: () {});
-  //     });
-  //   }
-  // }
+          // Restore GameState from entity
+          final restoreResult = GameService.restoreGameStateFromEntity(game);
+          restoreResult.fold(
+            (failure) =>
+                _setError('Failed to restore game state: ${failure.message}'),
+            (restoredState) {
+              _gameState = restoredState;
+              _updateReactiveState();
+
+              // Cache the state
+              final stateEntity = GameStateConverter.toEntity(
+                _gameState,
+                gameUuid,
+              );
+              _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
+
+              AppLogger.gameEvent('GameLoaded', data: {'uuid': gameUuid});
+              Get.snackbar(
+                'Game Loaded',
+                'Loaded game: ${game.event ?? 'Untitled'}',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error loading game',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Unexpected error: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Make a move using UCI notation
+  /// تنفيذ حركة باستخدام تدوين UCI
+  Future<void> makeMove(String uci, {String? comment, List<int>? nags}) async {
+    try {
+      if (_isGameOver.value) {
+        Get.snackbar(
+          'Game Over',
+          'Cannot make moves in a finished game',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      // Parse move from UCI
+      final moveResult = GameService.parseMoveFromUci(_gameState, uci);
+
+      moveResult.fold(
+        (failure) {
+          _setError(failure.message);
+          Get.snackbar(
+            'Invalid Move',
+            failure.message,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        },
+        (move) async {
+          // Execute move
+          final executeResult = GameService.executeMove(
+            _gameState,
+            move,
+            comment: comment,
+            nags: nags,
+          );
+
+          executeResult.fold(
+            (failure) {
+              _setError(failure.message);
+              Get.snackbar(
+                'Move Failed',
+                failure.message,
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
+            (updatedState) async {
+              _gameState = updatedState;
+              _updateReactiveState();
+
+              // Auto-save if enabled
+              if (_autoSaveEnabled.value) {
+                await _autoSaveGame();
+              }
+
+              AppLogger.move(
+                _gameState.lastMoveMeta?.san ?? uci,
+                fen: _currentFen.value,
+                isCheck: _isCheck.value,
+              );
+            },
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error making move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to make move: ${e.toString()}');
+    }
+  }
+
+  /// Make a move using Move object
+  /// تنفيذ حركة باستخدام كائن Move
+  Future<void> makeMoveObject(
+    Move move, {
+    String? comment,
+    List<int>? nags,
+  }) async {
+    try {
+      if (_isGameOver.value) {
+        Get.snackbar(
+          'Game Over',
+          'Cannot make moves in a finished game',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      // Execute move
+      final executeResult = GameService.executeMove(
+        _gameState,
+        move,
+        comment: comment,
+        nags: nags,
+      );
+
+      executeResult.fold(
+        (failure) {
+          _setError(failure.message);
+          Get.snackbar(
+            'Move Failed',
+            failure.message,
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        },
+        (updatedState) async {
+          _gameState = updatedState;
+          _updateReactiveState();
+
+          // Auto-save if enabled
+          if (_autoSaveEnabled.value) {
+            await _autoSaveGame();
+          }
+
+          AppLogger.move(
+            _gameState.lastMoveMeta?.san ?? move.uci,
+            fen: _currentFen.value,
+            isCheck: _isCheck.value,
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error making move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to make move: ${e.toString()}');
+    }
+  }
+
+  /// Undo last move
+  /// التراجع عن آخر حركة
+  Future<void> undoMove() async {
+    try {
+      if (!_gameState.canUndo) {
+        Get.snackbar(
+          'Cannot Undo',
+          'No moves to undo',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final success = _gameState.undoMove();
+
+      if (success) {
+        _updateReactiveState();
+
+        // Auto-save if enabled
+        if (_autoSaveEnabled.value) {
+          await _autoSaveGame();
+        }
+
+        AppLogger.gameEvent('MoveUndone');
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error undoing move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to undo move: ${e.toString()}');
+    }
+  }
+
+  /// Redo previously undone move
+  /// إعادة حركة تم التراجع عنها
+  Future<void> redoMove() async {
+    try {
+      if (!_gameState.canRedo) {
+        Get.snackbar(
+          'Cannot Redo',
+          'No moves to redo',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final success = _gameState.redoMove();
+
+      if (success) {
+        _updateReactiveState();
+
+        // Auto-save if enabled
+        if (_autoSaveEnabled.value) {
+          await _autoSaveGame();
+        }
+
+        AppLogger.gameEvent('MoveRedone');
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error redoing move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to redo move: ${e.toString()}');
+    }
+  }
+
+  /// Resign the game
+  /// الاستسلام في اللعبة
+  Future<void> resign(Side side) async {
+    try {
+      _gameState.resign(side);
+      _updateReactiveState();
+
+      await _saveGameToDatabase();
+
+      AppLogger.gameEvent('PlayerResigned', data: {'side': side.name});
+
+      Get.snackbar(
+        'Game Over',
+        '${side == Side.white ? 'White' : 'Black'} resigned',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error resigning',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to resign: ${e.toString()}');
+    }
+  }
+
+  /// Offer/accept draw by agreement
+  /// عرض/قبول التعادل بالاتفاق
+  Future<void> agreeDrawn() async {
+    try {
+      _gameState.setAgreementDraw();
+      _updateReactiveState();
+
+      await _saveGameToDatabase();
+
+      AppLogger.gameEvent('DrawByAgreement');
+
+      Get.snackbar(
+        'Game Over',
+        'Draw by agreement',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error setting draw',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to set draw: ${e.toString()}');
+    }
+  }
+
+  /// Get legal moves for current position
+  /// الحصول على الحركات القانونية للموضع الحالي
+  IMap<Square, SquareSet> getLegalMoves() {
+    return GameService.getLegalMoves(_gameState);
+  }
+
+  /// Get PGN string of current game
+  /// الحصول على نص PGN للعبة الحالية
+  String getPgnString() {
+    if (_currentGame.value == null) return '';
+
+    return _gameState.pgnString(
+      headers: {
+        'Event': _currentGame.value!.event ?? '?',
+        'Site': _currentGame.value!.site ?? '?',
+        'Date':
+            _currentGame.value!.date?.toString().split(' ')[0] ?? '????.??.??',
+        'Round': _currentGame.value!.round ?? '?',
+        'White': _currentGame.value!.whitePlayer.name,
+        'Black': _currentGame.value!.blackPlayer.name,
+      },
+    );
+  }
+
+  /// Get captured pieces for a side
+  /// الحصول على القطع المأسورة لجهة
+  List<Role> getCapturedPieces(Side side) {
+    return _gameState.getCapturedPiecesList(side);
+  }
+
+  /// Get material count on board for a side
+  /// الحصول على عدد المواد على اللوحة لجهة
+  int getMaterialOnBoard(Side side) {
+    return _gameState.materialOnBoard(side);
+  }
+
+  /// Save current game manually
+  /// حفظ اللعبة الحالية يدوياً
+  Future<void> saveGame() async {
+    await _saveGameToDatabase();
+    Get.snackbar(
+      'Game Saved',
+      'Game saved successfully',
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+
+  // ========== Private Methods ==========
+
+  /// Auto-save game after each move
+  /// الحفظ التلقائي للعبة بعد كل حركة
+  Future<void> _autoSaveGame() async {
+    try {
+      await _saveGameToDatabase();
+      AppLogger.debug('Game auto-saved', tag: 'GameController');
+    } catch (e) {
+      AppLogger.warning(
+        'Auto-save failed: ${e.toString()}',
+        tag: 'GameController',
+      );
+      // Don't show error to user for auto-save failures
+    }
+  }
+
+  /// Save game to database
+  /// حفظ اللعبة في قاعدة البيانات
+  Future<void> _saveGameToDatabase() async {
+    if (_currentGame.value == null) return;
+
+    try {
+      // Sync GameState to Entity
+      final syncResult = GameService.syncGameStateToEntity(
+        _gameState,
+        _currentGame.value!,
+      );
+
+      syncResult.fold(
+        (failure) {
+          AppLogger.error(
+            'Failed to sync game state: ${failure.message}',
+            tag: 'GameController',
+          );
+        },
+        (updatedGame) async {
+          // Update game in database
+          final updateResult = await _updateGameUseCase(
+            UpdateGameParams(game: updatedGame),
+          );
+
+          updateResult.fold(
+            (failure) {
+              AppLogger.error(
+                'Failed to update game: ${failure.message}',
+                tag: 'GameController',
+              );
+            },
+            (savedGame) {
+              _currentGame.value = savedGame;
+
+              // Cache state
+              final stateEntity = GameStateConverter.toEntity(
+                _gameState,
+                savedGame.uuid,
+              );
+              _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
+
+              AppLogger.database('Game updated successfully');
+            },
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error saving game',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+    }
+  }
+
+  /// Update all reactive state variables
+  /// تحديث جميع متغيرات الحالة التفاعلية
+  void _updateReactiveState() {
+    _currentFen.value = _gameState.position.fen;
+    _currentTurn.value = _gameState.turn;
+    _isGameOver.value = _gameState.isGameOverExtended;
+    _gameResult.value = GameService.calculateResult(
+      _gameState,
+
+      _currentGame.value!.termination,
+    );
+    _termination.value = _currentGame.value!.termination;
+    _lastMove.value = _gameState.lastMoveMeta;
+    _canUndo.value = _gameState.canUndo;
+    _canRedo.value = _gameState.canRedo;
+    _materialAdvantage.value = _gameState.getMaterialAdvantageSignedForWhite;
+    _isCheck.value = _gameState.isCheck;
+  }
+
+  /// Set loading state
+  /// تعيين حالة التحميل
+  void _setLoading(bool value) {
+    _isLoading.value = value;
+  }
+
+  /// Set error message
+  /// تعيين رسالة الخطأ
+  void _setError(String message) {
+    _errorMessage.value = message;
+    AppLogger.error(message, tag: 'GameController');
+  }
+
+  /// Clear error message
+  /// مسح رسالة الخطأ
+  void _clearError() {
+    _errorMessage.value = '';
+  }
 }
