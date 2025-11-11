@@ -20,16 +20,14 @@ MoveDataModel _$MoveDataModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$MoveDataModel {
-  String? get san =>
-      throw _privateConstructorUsedError; // e.g. "Nf3", "exd5", "O-O"
-  String? get lan => throw _privateConstructorUsedError; // e.g. "g1f3", "e4d5"
-  String? get comment =>
-      throw _privateConstructorUsedError; // نص التعليق من { ... }
-  List<int>? get nags => throw _privateConstructorUsedError;
-  String? get fenAfter =>
-      throw _privateConstructorUsedError; // FEN بعد تنفيذ الحركة
-  List<String>? get variations =>
-      throw _privateConstructorUsedError; // نص المتغيرات (يمكن أن نخزنها كنصوص خام أو تبني هيكل شجري)
+  String? get san => throw _privateConstructorUsedError;
+  String? get lan => throw _privateConstructorUsedError;
+  String? get comment => throw _privateConstructorUsedError;
+  List<int> get nags =>
+      throw _privateConstructorUsedError; // يجب جعلها غير اختيارية مع قيمة افتراضية لـ JSON
+  String? get fenAfter => throw _privateConstructorUsedError;
+  List<String> get variations =>
+      throw _privateConstructorUsedError; // يجب جعلها غير اختيارية مع قيمة افتراضية
   bool get wasCapture => throw _privateConstructorUsedError;
   bool get wasCheck => throw _privateConstructorUsedError;
   bool get wasCheckmate => throw _privateConstructorUsedError;
@@ -54,9 +52,9 @@ abstract class $MoveDataModelCopyWith<$Res> {
       {String? san,
       String? lan,
       String? comment,
-      List<int>? nags,
+      List<int> nags,
       String? fenAfter,
-      List<String>? variations,
+      List<String> variations,
       bool wasCapture,
       bool wasCheck,
       bool wasCheckmate,
@@ -82,9 +80,9 @@ class _$MoveDataModelCopyWithImpl<$Res, $Val extends MoveDataModel>
     Object? san = freezed,
     Object? lan = freezed,
     Object? comment = freezed,
-    Object? nags = freezed,
+    Object? nags = null,
     Object? fenAfter = freezed,
-    Object? variations = freezed,
+    Object? variations = null,
     Object? wasCapture = null,
     Object? wasCheck = null,
     Object? wasCheckmate = null,
@@ -106,18 +104,18 @@ class _$MoveDataModelCopyWithImpl<$Res, $Val extends MoveDataModel>
           ? _value.comment
           : comment // ignore: cast_nullable_to_non_nullable
               as String?,
-      nags: freezed == nags
+      nags: null == nags
           ? _value.nags
           : nags // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
+              as List<int>,
       fenAfter: freezed == fenAfter
           ? _value.fenAfter
           : fenAfter // ignore: cast_nullable_to_non_nullable
               as String?,
-      variations: freezed == variations
+      variations: null == variations
           ? _value.variations
           : variations // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as List<String>,
       wasCapture: null == wasCapture
           ? _value.wasCapture
           : wasCapture // ignore: cast_nullable_to_non_nullable
@@ -162,9 +160,9 @@ abstract class _$$MoveDataModelImplCopyWith<$Res>
       {String? san,
       String? lan,
       String? comment,
-      List<int>? nags,
+      List<int> nags,
       String? fenAfter,
-      List<String>? variations,
+      List<String> variations,
       bool wasCapture,
       bool wasCheck,
       bool wasCheckmate,
@@ -188,9 +186,9 @@ class __$$MoveDataModelImplCopyWithImpl<$Res>
     Object? san = freezed,
     Object? lan = freezed,
     Object? comment = freezed,
-    Object? nags = freezed,
+    Object? nags = null,
     Object? fenAfter = freezed,
-    Object? variations = freezed,
+    Object? variations = null,
     Object? wasCapture = null,
     Object? wasCheck = null,
     Object? wasCheckmate = null,
@@ -212,18 +210,18 @@ class __$$MoveDataModelImplCopyWithImpl<$Res>
           ? _value.comment
           : comment // ignore: cast_nullable_to_non_nullable
               as String?,
-      nags: freezed == nags
+      nags: null == nags
           ? _value._nags
           : nags // ignore: cast_nullable_to_non_nullable
-              as List<int>?,
+              as List<int>,
       fenAfter: freezed == fenAfter
           ? _value.fenAfter
           : fenAfter // ignore: cast_nullable_to_non_nullable
               as String?,
-      variations: freezed == variations
+      variations: null == variations
           ? _value._variations
           : variations // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
+              as List<String>,
       wasCapture: null == wasCapture
           ? _value.wasCapture
           : wasCapture // ignore: cast_nullable_to_non_nullable
@@ -263,9 +261,9 @@ class _$MoveDataModelImpl implements _MoveDataModel {
       {this.san,
       this.lan,
       this.comment,
-      final List<int>? nags,
+      final List<int> nags = const [],
       this.fenAfter,
-      final List<String>? variations,
+      final List<String> variations = const [],
       this.wasCapture = false,
       this.wasCheck = false,
       this.wasCheckmate = false,
@@ -281,39 +279,32 @@ class _$MoveDataModelImpl implements _MoveDataModel {
 
   @override
   final String? san;
-// e.g. "Nf3", "exd5", "O-O"
   @override
   final String? lan;
-// e.g. "g1f3", "e4d5"
   @override
   final String? comment;
-// نص التعليق من { ... }
-  final List<int>? _nags;
-// نص التعليق من { ... }
+  final List<int> _nags;
   @override
-  List<int>? get nags {
-    final value = _nags;
-    if (value == null) return null;
+  @JsonKey()
+  List<int> get nags {
     if (_nags is EqualUnmodifiableListView) return _nags;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableListView(_nags);
   }
 
+// يجب جعلها غير اختيارية مع قيمة افتراضية لـ JSON
   @override
   final String? fenAfter;
-// FEN بعد تنفيذ الحركة
-  final List<String>? _variations;
-// FEN بعد تنفيذ الحركة
+  final List<String> _variations;
   @override
-  List<String>? get variations {
-    final value = _variations;
-    if (value == null) return null;
+  @JsonKey()
+  List<String> get variations {
     if (_variations is EqualUnmodifiableListView) return _variations;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+    return EqualUnmodifiableListView(_variations);
   }
 
-// نص المتغيرات (يمكن أن نخزنها كنصوص خام أو تبني هيكل شجري)
+// يجب جعلها غير اختيارية مع قيمة افتراضية
   @override
   @JsonKey()
   final bool wasCapture;
@@ -404,9 +395,9 @@ abstract class _MoveDataModel implements MoveDataModel {
       {final String? san,
       final String? lan,
       final String? comment,
-      final List<int>? nags,
+      final List<int> nags,
       final String? fenAfter,
-      final List<String>? variations,
+      final List<String> variations,
       final bool wasCapture,
       final bool wasCheck,
       final bool wasCheckmate,
@@ -420,17 +411,17 @@ abstract class _MoveDataModel implements MoveDataModel {
 
   @override
   String? get san;
-  @override // e.g. "Nf3", "exd5", "O-O"
-  String? get lan;
-  @override // e.g. "g1f3", "e4d5"
-  String? get comment;
-  @override // نص التعليق من { ... }
-  List<int>? get nags;
   @override
+  String? get lan;
+  @override
+  String? get comment;
+  @override
+  List<int> get nags;
+  @override // يجب جعلها غير اختيارية مع قيمة افتراضية لـ JSON
   String? get fenAfter;
-  @override // FEN بعد تنفيذ الحركة
-  List<String>? get variations;
-  @override // نص المتغيرات (يمكن أن نخزنها كنصوص خام أو تبني هيكل شجري)
+  @override
+  List<String> get variations;
+  @override // يجب جعلها غير اختيارية مع قيمة افتراضية
   bool get wasCapture;
   @override
   bool get wasCheck;

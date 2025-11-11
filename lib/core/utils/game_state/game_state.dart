@@ -380,8 +380,8 @@ class GameState {
       final List<String> pieceTokens = [];
       pieceTokens.add(move.san!);
       // NAGs as $n
-      if (move.nags != null && move.nags!.isNotEmpty) {
-        pieceTokens.addAll(move.nags!.map((n) => '\$$n'));
+      if (move.nags.isNotEmpty) {
+        pieceTokens.addAll(move.nags.map((n) => '\$$n'));
       }
       // comment as { ... }
       if (move.comment != null && move.comment!.isNotEmpty) {

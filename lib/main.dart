@@ -4,6 +4,8 @@ import 'package:get_storage/get_storage.dart';
 import 'package:l10n_esperanto/l10n_esperanto.dart';
 
 import 'core/utils/helper/helper_methodes.dart';
+import 'core/utils/logger.dart';
+import 'di/ingection_container.dart';
 import 'l10n/l10n.dart';
 import 'presentation/screens/home/home_page.dart';
 import 'routes/app_pages.dart';
@@ -17,8 +19,27 @@ void main() async {
   // final storage = Get.find<GetStorageControllerImp>();
 
   await createOrGetGustPlayer();
+  try {
+    AppLogger.info('Starting Chess Game Application', tag: 'Main');
 
-  runApp(MyApp(locale: await getLocale()));
+    // Initialize dependency injection
+    await InjectionContainer.init();
+
+    AppLogger.info('Application initialized successfully', tag: 'Main');
+
+    // Run the app
+    runApp(MyApp(locale: await getLocale()));
+  } catch (e, stackTrace) {
+    AppLogger.error(
+      'Failed to start application',
+      error: e,
+      stackTrace: stackTrace,
+      tag: 'Main',
+    );
+
+    // Show error screen or rethrow
+    rethrow;
+  }
 }
 
 class MyApp extends StatelessWidget {

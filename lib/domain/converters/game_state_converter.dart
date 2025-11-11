@@ -3,10 +3,10 @@
 import 'package:dartchess/dartchess.dart';
 
 import '../../core/game_termination_enum.dart';
+import '../../core/utils/game_state/game_state.dart';
 import '../../core/utils/logger.dart';
 import '../entities/game_state_entity.dart';
 import '../entities/move_data_entity.dart';
-import '../../core/utils/game_state/game_state.dart';
 
 /// Converter between GameState (util class) and GameStateEntity (domain entity)
 /// محول بين GameState (الكلاس الأداتي) و GameStateEntity (كيان النطاق)
@@ -32,9 +32,9 @@ class GameStateConverter {
               san: moveModel.san,
               lan: moveModel.lan,
               comment: moveModel.comment,
-              nags: moveModel.nags ?? [],
+              nags: moveModel.nags,
               fenAfter: moveModel.fenAfter,
-              variations: moveModel.variations ?? [],
+              variations: moveModel.variations,
               wasCapture: moveModel.wasCapture,
               wasCheck: moveModel.wasCheck,
               wasCheckmate: moveModel.wasCheckmate,

@@ -12,11 +12,11 @@ import '../../../../core/params/params.dart';
 import '../../../../core/utils/dialog/game_result_dialog.dart';
 import '../../../../core/utils/dialog/game_status.dart';
 import '../../../../core/utils/dialog/status_l10n.dart';
+import '../../../../core/utils/game_state/game_state.dart';
 import '../../../../data/collections/chess_game.dart';
 import '../../../../data/models/move_data_model.dart';
 import '../../../../domain/entities/chess_game_entity.dart';
 import '../../../../domain/services/chess_game_storage_service.dart';
-import '../../../../core/utils/game_state/game_state.dart';
 import '../../../../domain/usecases/init_chess_game.dart';
 import '../../../../domain/usecases/play_move.dart';
 import '../../../../domain/usecases/play_sound_usecase.dart';
@@ -396,7 +396,7 @@ MoveDataModel? _buildMoveDataFromLastMove(GameState gameState) {
       moveNumber: lastToken.moveNumber,
       san: lastToken.san,
       comment: lastToken.comment,
-      nags: lastToken.nags ?? [],
+      nags: lastToken.nags,
       fenAfter: lastToken.fenAfter,
       isWhiteMove: lastToken.isWhiteMove,
       halfmoveIndex: allMoves.length,
@@ -404,7 +404,7 @@ MoveDataModel? _buildMoveDataFromLastMove(GameState gameState) {
       wasPromotion: lastToken.wasPromotion,
       wasCheck: lastToken.wasCheck,
       wasCheckmate: lastToken.wasCheckmate,
-      variations: lastToken.variations ?? [],
+      variations: lastToken.variations,
       lan: lastToken.lan ?? '',
     );
 

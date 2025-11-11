@@ -12,12 +12,14 @@ _$MoveDataModelImpl _$$MoveDataModelImplFromJson(Map<String, dynamic> json) =>
       lan: json['lan'] as String?,
       comment: json['comment'] as String?,
       nags: (json['nags'] as List<dynamic>?)
-          ?.map((e) => (e as num).toInt())
-          .toList(),
+              ?.map((e) => (e as num).toInt())
+              .toList() ??
+          const [],
       fenAfter: json['fenAfter'] as String?,
       variations: (json['variations'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       wasCapture: json['wasCapture'] as bool? ?? false,
       wasCheck: json['wasCheck'] as bool? ?? false,
       wasCheckmate: json['wasCheckmate'] as bool? ?? false,
