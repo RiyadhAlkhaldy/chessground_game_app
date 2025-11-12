@@ -1,5 +1,5 @@
 // lib/di/injection_container.dart
- 
+
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,6 +25,9 @@ import '../domain/usecases/get_game_by_uuid_usecase.dart';
 import '../domain/usecases/get_or_create_gust_player_usecase.dart';
 import '../domain/usecases/get_player_by_uuid_usecase.dart';
 import '../domain/usecases/get_recent_games_usecase.dart';
+import '../domain/usecases/init_chess_game.dart';
+import '../domain/usecases/play_move.dart';
+import '../domain/usecases/play_sound_usecase.dart';
 import '../domain/usecases/save_game_usecase.dart';
 import '../domain/usecases/save_player_usecase.dart';
 import '../domain/usecases/update_game_usecase.dart';
@@ -134,6 +137,20 @@ class InjectionContainer {
       () => GameStateRepositoryImpl(cacheDataSource: sl()),
     );
 
+    ///
+    ///TODO
+    // sl.registerLazySingleton<SoundEffectService >(
+    //   () => SoundEffectService (),
+    // );
+    // sl.registerLazySingleton<GameRepository>(
+    //   () => GameRepositoryImpl(cacheDataSource: sl()),
+    // );
+    // sl.registerLazySingleton<GameStateRepository>(
+    //   () => GameStateRepositoryImpl(cacheDataSource: sl()),
+    // );
+    // final PlaySoundUseCase plySound;
+    // final PlayMove playMoveUsecase;
+    // final InitChessGame initChessGame;
     AppLogger.debug('Repositories registered', tag: 'DI');
   }
 
@@ -161,6 +178,11 @@ class InjectionContainer {
     sl.registerLazySingleton(() => CacheGameStateUseCase(sl()));
     sl.registerLazySingleton(() => GetCachedGameStateUseCase(sl()));
     sl.registerLazySingleton(() => RemoveCachedGameStateUseCase(sl()));
+
+    ///
+    sl.registerLazySingleton(() => PlaySoundUseCase(sl()));
+    sl.registerLazySingleton(() => PlayMove(sl()));
+    sl.registerLazySingleton(() => InitChessGame(sl()));
 
     AppLogger.debug('Use cases registered', tag: 'DI');
   }

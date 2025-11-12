@@ -6,20 +6,6 @@ import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 import '../../data/models/extended_evaluation.dart';
 
-/// حالة اللعبة المستخلصة محليًا (نستخدم dartchess للتحقق)
-// enum GameStatus {
-//   ongoing,
-//   checkmate,
-//   timeout,
-//   resignation,
-//   stalemate,
-//   // draw,
-//   agreement,
-//   threefoldRepetition,
-//   fiftyMoveRule,
-//   insufficientMaterial,
-// }
-
 /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine
 class StockfishEngineService {
   static Stockfish? _stockfish;

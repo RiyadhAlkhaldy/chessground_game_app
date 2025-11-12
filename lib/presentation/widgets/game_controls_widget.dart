@@ -26,10 +26,10 @@ class GameControlsWidget extends GetView<GameController> {
             () => _buildControlButton(
               icon: Icons.undo,
               label: 'Undo',
-              onPressed: controller.canUndo
+              onPressed: controller.canUndo.value
                   ? () => controller.undoMove()
                   : null,
-              enabled: controller.canUndo,
+              enabled: controller.canUndo.value,
             ),
           ),
 
@@ -38,10 +38,10 @@ class GameControlsWidget extends GetView<GameController> {
             () => _buildControlButton(
               icon: Icons.redo,
               label: 'Redo',
-              onPressed: controller.canRedo
+              onPressed: controller.canRedo.value
                   ? () => controller.redoMove()
                   : null,
-              enabled: controller.canRedo,
+              enabled: controller.canRedo.value,
             ),
           ),
 
