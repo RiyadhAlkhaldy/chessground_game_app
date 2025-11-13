@@ -9,13 +9,18 @@ import '../data/collections/chess_game.dart';
 import '../data/collections/player.dart';
 import '../data/datasources/chess_game_local_datasource.dart';
 import '../data/datasources/game_state_cache_datasource.dart';
+import '../data/datasources/local_datasource.dart';
 import '../data/datasources/player_local_datasource.dart';
+import '../data/datasources/stockfish_datasource.dart';
 import '../data/repositories/chess_game_repository_impl.dart';
+import '../data/repositories/game_repository_impl.dart';
 import '../data/repositories/game_state_repository_impl.dart';
 import '../data/repositories/player_repository_impl.dart';
 import '../domain/repositories/chess_game_repository.dart';
+import '../domain/repositories/game_repository.dart';
 import '../domain/repositories/game_state_repository.dart';
 import '../domain/repositories/player_repository.dart';
+import '../domain/services/service/sound_effect_service.dart';
 import '../domain/usecases/delete_game_usecase.dart';
 import '../domain/usecases/game_state/cache_game_state_usecase.dart';
 import '../domain/usecases/game_state/get_cached_game_state_usecase.dart';
@@ -105,12 +110,16 @@ class InjectionContainer {
 
     // Local data sources
     sl.registerLazySingleton<ChessGameLocalDataSource>(
-      () => ChessGameLocalDataSourceImpl(isar: sl()),
+      () => ChessGameLocalDataSourceImpl(isar: sl<Isar>()),
     );
 
     sl.registerLazySingleton<PlayerLocalDataSource>(
       () => PlayerLocalDataSourceImpl(isar: sl()),
     );
+    //LocalDataSource
+    sl.registerLazySingleton<LocalDataSource>(() => LocalDataSourceImpl(sl()));
+    // StockfishDataSource
+    sl.registerLazySingleton<StockfishDataSource>(() => StockfishDataSource());
 
     // Cache data source
     sl.registerLazySingleton<GameStateCacheDataSource>(
@@ -138,19 +147,10 @@ class InjectionContainer {
     );
 
     ///
-    ///TODO
-    // sl.registerLazySingleton<SoundEffectService >(
-    //   () => SoundEffectService (),
-    // );
-    // sl.registerLazySingleton<GameRepository>(
-    //   () => GameRepositoryImpl(cacheDataSource: sl()),
-    // );
-    // sl.registerLazySingleton<GameStateRepository>(
-    //   () => GameStateRepositoryImpl(cacheDataSource: sl()),
-    // );
-    // final PlaySoundUseCase plySound;
-    // final PlayMove playMoveUsecase;
-    // final InitChessGame initChessGame;
+    sl.registerLazySingleton<SoundEffectService>(() => SoundEffectService());
+    sl.registerLazySingleton<GameRepository>(
+      () => GameRepositoryImpl(local: sl(), stockfish: sl()),
+    );
     AppLogger.debug('Repositories registered', tag: 'DI');
   }
 

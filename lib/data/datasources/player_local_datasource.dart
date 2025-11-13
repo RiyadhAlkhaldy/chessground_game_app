@@ -1,8 +1,8 @@
 // lib/data/datasources/local/player_local_datasource.dart
 
+import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/data/collections/player.dart';
 import 'package:isar/isar.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../core/utils/logger.dart';
 import '../models/player_model.dart';
@@ -282,35 +282,36 @@ class PlayerLocalDataSourceImpl implements PlayerLocalDataSource {
   Future<PlayerModel> getOrCreateGuestPlayer(String name) async {
     try {
       AppLogger.database('Getting or creating guest player: $name');
-
+      final player = await createOrGetGustPlayer(name);
+      return player!.toModel();
       // Try to find existing guest player with same name
-      final existing = await isar.players
-          .filter()
-          .typeEqualTo('guest', caseSensitive: false)
-          .and()
-          .nameEqualTo(name)
-          .findFirst();
+      // final existing = await isar.players
+      //     .filter()
+      //     .typeEqualTo('guest', caseSensitive: false)
+      //     .and()
+      //     .nameEqualTo(name)
+      //     .findFirst();
 
-      if (existing != null) {
-        AppLogger.database('Found existing guest player', result: existing.id);
-        return existing.toModel();
-      }
+      // if (existing != null) {
+      //   AppLogger.database('Found existing guest player', result: existing.id);
+      //   return existing.toModel();
+      // }
 
-      // Create new guest player
-      final newPlayer = Player(
-        uuid: const Uuid().v4(),
-        name: name,
-        type: 'guest',
-        playerRating: 1200,
-      );
+      // // Create new guest player
+      // final newPlayer = Player(
+      //   uuid: const Uuid().v4(),
+      //   name: name,
+      //   type: 'guest',
+      //   playerRating: 1200,
+      // );
 
-      await isar.writeTxn(() async {
-        await isar.players.put(newPlayer);
-      });
+      // await isar.writeTxn(() async {
+      //   await isar.players.put(newPlayer);
+      // });
 
-      AppLogger.database('Created new guest player', result: newPlayer.id);
+      // AppLogger.database('Created new guest player', result: newPlayer.id);
 
-      return newPlayer.toModel();
+      // return newPlayer.toModel();
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error getting or creating guest player',

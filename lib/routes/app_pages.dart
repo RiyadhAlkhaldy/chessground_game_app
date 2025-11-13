@@ -1,10 +1,12 @@
 import 'package:chessground_game_app/features/free_game/presentation/pages/free_game_page.dart';
+import 'package:chessground_game_app/presentation/biniding.dart/game_binding.dart';
 import 'package:chessground_game_app/presentation/screens/recent_screen/recent_page.dart';
 import 'package:get/get.dart';
 
 import '../presentation/screens/about_screen.dart';
 import '../presentation/screens/game_computer/game_computer_screen.dart';
 import '../presentation/screens/game_computer/game_computer_with_time_screen.dart';
+import '../presentation/screens/game_screen.dart';
 import '../presentation/screens/game_start_up_screen.dart';
 import '../presentation/screens/game_time_screen.dart';
 import '../presentation/screens/home/home_page.dart';
@@ -55,7 +57,11 @@ class AppPages {
     ),
     GetPage(name: RouteNames.freeGameScreen, page: () => FreeGamePage()),
     GetPage(name: RouteNames.recentGamesPage, page: () => RecentGamesPage()),
-    // GetPage(name: RouteNames.gamesScreen, page: () => const GameScreen()),
+    GetPage(
+      name: RouteNames.gamesScreen,
+      page: () => const GameScreen(),
+      binding: GameRouteBinding(),
+    ),
 
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),
     // GetPage(name: RouteNames.analysisScreen, page: () => AnalysisScreen()),

@@ -1,15 +1,12 @@
-// lib/presentation/controllers/game_controller.dart
-
 import 'dart:async';
 
 import 'package:chessground/chessground.dart';
 import 'package:dartchess/dartchess.dart';
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/game_termination_enum.dart';
-import '../../core/params/params.dart';
+import '../../core/utils/dialog/constants/const.dart';
 import '../../core/utils/dialog/game_result_dialog.dart';
 import '../../core/utils/dialog/game_status.dart';
 import '../../core/utils/dialog/status_l10n.dart';
@@ -39,7 +36,10 @@ mixin InitGameMixin {
 
   String fen = Chess.initial.fen;
 
-  ValidMoves validMoves = IMap(const {});
+  /// Valid moves for chessground (IMap format)
+  final Rx<ValidMoves> _validMoves = ValidMoves({}).obs;
+
+  ValidMoves get validMoves => _validMoves.value;
 
   bool get isCheckmate => _gameState.value.isCheckmate;
 
@@ -54,7 +54,7 @@ mixin InitGameMixin {
 
   /// Current game state
   /// حالة اللعبة الحالية
-  late Rx<GameState> _gameState;
+  final Rx<GameState> _gameState = GameState().obs;
   GameState get gameState => _gameState.value;
 
   /// Current chess game entity
@@ -105,17 +105,14 @@ mixin InitGameMixin {
   final Rx<MoveDataModel?> _lastMove = Rx<MoveDataModel?>(null);
   MoveDataModel? get lastMove => _lastMove.value;
 
+  // /// Last move (reactive) - for chessground highlighting
+  // final Rx<Move?> _lastMove = Rx<Move?>(null);
+  // Move? get lastMove => _lastMove.value;
+
   /// Can undo (reactive)
   /// إمكانية التراجع (تفاعلي)
   final RxBool _canUndo = false.obs;
   RxBool get canUndo => _canUndo;
-  //  @override
-  //   RxBool get canUndo =>
-  //       (!_gameState.value.isGameOverExtended && _gameState.value.canUndo).obs;
-
-  //   @override
-  //   RxBool get canRedo =>
-  //       (!_gameState.value.isGameOverExtended && _gameState.value.canRedo).obs;
 
   /// Can redo (reactive)
   /// إمكانية الإعادة (تفاعلي)
@@ -152,29 +149,6 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
     required this.playMoveUsecase,
     required this.initChessGame,
   });
-
-  @override
-  void onInit() {
-    super.onInit();
-    _initPlayer().then((_) async {
-      await plySound.executeDongSound();
-    });
-    _gameState.value = GameState(initial: initail);
-    fen = _gameState.value.position.fen;
-    validMoves = makeLegalMoves(_gameState.value.position);
-    _listenToGameStatus();
-  }
-
-  Future<void> _initPlayer() async {
-    final response = await initChessGame(
-      InitChessGameParams(site: 'Riyadh alkhaldy', event: 'play with computer'),
-    );
-    response.fold((l) {}, (chsGameEnty) {
-      chessGameEntity = chsGameEnty;
-      whitePlayer.value = chsGameEnty.whitePlayer;
-      blackPlayer.value = chsGameEnty.blackPlayer;
-    });
-  }
 
   void _listenToGameStatus() {
     _gameState.value.gameStatus.listen((status) {
@@ -216,9 +190,6 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
 
   RxString statusText = "free Play".obs;
 
-  @override
-  GameStatus get gameStatus => _gameState.value.status();
-
   /// Agreement draw: set result to draw.
   void setAgreementDraw() => {_gameState.value.setAgreementDraw(), update()};
 
@@ -233,7 +204,7 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
   void reset() {
     _gameState.value = GameState(initial: initail);
     fen = _gameState.value.position.fen;
-    validMoves = makeLegalMoves(_gameState.value.position);
+    _validMoves.value = makeLegalMoves(_gameState.value.position);
     promotionMove = null;
     plySound.executeDongSound();
     statusText.value = "free Play";
@@ -277,7 +248,7 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
       update();
     } else if (_gameState.value.position.isLegal(move)) {
       _applyMove(move);
-      // validMoves = IMap(const {});
+      // _validMoves.value  = IMap(const {});
       promotionMove = null;
       update();
     }
@@ -304,7 +275,7 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
         // update observed gameState.value! (GameState mutated in-place)
         _gameState.refresh();
         fen = _gameState.value.position.fen;
-        validMoves = makeLegalMoves(_gameState.value.position);
+        _validMoves.value = makeLegalMoves(_gameState.value.position);
 
         // decide which sound to play based on metadata
         final meta = _gameState.value.lastMoveMeta;
@@ -348,7 +319,7 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
     if (canUndo.value) {
       _gameState.value.undoMove();
       fen = _gameState.value.position.fen;
-      validMoves = makeLegalMoves(_gameState.value.position);
+      _validMoves.value = makeLegalMoves(_gameState.value.position);
       // play a feedback sound (optional)
       plySound.executeMoveSound();
       update();
@@ -359,7 +330,7 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
     if (canRedo.value) {
       _gameState.value.redoMove();
       fen = _gameState.value.position.fen;
-      validMoves = makeLegalMoves(_gameState.value.position);
+      _validMoves.value = makeLegalMoves(_gameState.value.position);
       plySound.executeMoveSound();
       update();
     }
@@ -381,7 +352,7 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
     }
     _gameState.value = newState;
     fen = _gameState.value.position.fen;
-    validMoves = makeLegalMoves(_gameState.value.position);
+    _validMoves.value = makeLegalMoves(_gameState.value.position);
     update();
   }
 
@@ -411,7 +382,7 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
 
 /// Main game controller managing game state and business logic
 /// المتحكم الرئيسي لإدارة حالة اللعبة ومنطق الأعمال
-class GameController extends BaseGameController with InitGameMixin {
+class GameController extends BaseGameController {
   // ========== Dependencies (Use Cases) ==========
   final SaveGameUseCase _saveGameUseCase;
   final UpdateGameUseCase _updateGameUseCase;
@@ -440,21 +411,42 @@ class GameController extends BaseGameController with InitGameMixin {
        _getCachedGameStateUseCase = getCachedGameStateUseCase,
        _savePlayerUseCase = savePlayerUseCase,
        _getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
+  // ========== Observable State ==========
+
+  /// Promotion move (waiting for promotion selection)
+  final Rx<NormalMove?> _promotionMove = Rx<NormalMove?>(null);
+
+  /// Premove
+  final Rx<NormalMove?> _premove = Rx<NormalMove?>(null);
 
   // ========== Lifecycle Methods ==========
 
   @override
   void onInit() {
     super.onInit();
+    startNewGame(
+      whitePlayerName: uuidKeyForUser,
+      blackPlayerName: uuidKeyForAI,
+    ).then((_) {
+      plySound.executeDongSound();
+    });
+    fen = _gameState.value.position.fen;
+    _validMoves.value = makeLegalMoves(_gameState.value.position);
+    _listenToGameStatus();
     AppLogger.info('GameController initialized', tag: 'GameController');
   }
 
   @override
   void onClose() {
     AppLogger.info('GameController disposed', tag: 'GameController');
+    _gameState.value.dispose();
     super.onClose();
   }
 
+  @override
+  Outcome? get getResult {
+    return gameState.result;
+  }
   // ========== Public Methods ==========
 
   /// Initialize a new game
@@ -644,84 +636,12 @@ class GameController extends BaseGameController with InitGameMixin {
     }
   }
 
-  /// Make a move using UCI notation
-  /// تنفيذ حركة باستخدام تدوين UCI
-  Future<void> makeMove(String uci, {String? comment, List<int>? nags}) async {
-    try {
-      if (_isGameOver.value) {
-        Get.snackbar(
-          'Game Over',
-          'Cannot make moves in a finished game',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
-
-      // Parse move from UCI
-      final moveResult = GameService.parseMoveFromUci(_gameState.value, uci);
-
-      moveResult.fold(
-        (failure) {
-          _setError(failure.message);
-          Get.snackbar(
-            'Invalid Move',
-            failure.message,
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        },
-        (move) async {
-          // Execute move
-          final executeResult = GameService.executeMove(
-            _gameState.value,
-            move,
-            comment: comment,
-            nags: nags,
-          );
-
-          executeResult.fold(
-            (failure) {
-              _setError(failure.message);
-              Get.snackbar(
-                'Move Failed',
-                failure.message,
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
-            (updatedState) async {
-              _gameState.value = updatedState;
-              _updateReactiveState();
-
-              // Auto-save if enabled
-              if (_autoSaveEnabled.value) {
-                await _autoSaveGame();
-              }
-
-              AppLogger.move(
-                _gameState.value.lastMoveMeta?.san ?? uci,
-                fen: _currentFen.value,
-                isCheck: _isCheck.value,
-              );
-            },
-          );
-        },
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error making move',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'GameController',
-      );
-      _setError('Failed to make move: ${e.toString()}');
-    }
-  }
-
-  /// Make a move using Move object
-  /// تنفيذ حركة باستخدام كائن Move
-  Future<void> makeMoveObject(
-    Move move, {
-    String? comment,
-    List<int>? nags,
+  /// Handle move from chessground (NormalMove object)
+  /// This is the main method called by chessground
+  Future<void> onUserMove(
+    NormalMove move, {
+    bool? isDrop,
+    bool? isPremove,
   }) async {
     try {
       if (_isGameOver.value) {
@@ -733,42 +653,26 @@ class GameController extends BaseGameController with InitGameMixin {
         return;
       }
 
-      // Execute move
-      final executeResult = GameService.executeMove(
-        _gameState.value,
-        move,
-        comment: comment,
-        nags: nags,
-      );
+      // Check if this is a promotion pawn move
+      if (_isPromotionPawnMove(move)) {
+        _promotionMove.value = move;
+        update();
+        return;
+      }
 
-      executeResult.fold(
-        (failure) {
-          _setError(failure.message);
-          Get.snackbar(
-            'Move Failed',
-            failure.message,
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        },
-        (updatedState) async {
-          _gameState.value = updatedState;
-          _updateReactiveState();
-
-          // Auto-save if enabled
-          if (_autoSaveEnabled.value) {
-            await _autoSaveGame();
-          }
-
-          AppLogger.move(
-            _gameState.value.lastMoveMeta?.san ?? move.uci,
-            fen: _currentFen.value,
-            isCheck: _isCheck.value,
-          );
-        },
-      );
+      // Validate and execute move
+      if (_gameState.value.position.isLegal(move)) {
+        await _executeMove(move);
+      } else {
+        Get.snackbar(
+          'Invalid Move',
+          'This move is not legal',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
     } catch (e, stackTrace) {
       AppLogger.error(
-        'Error making move',
+        'Error handling user move',
         error: e,
         stackTrace: stackTrace,
         tag: 'GameController',
@@ -777,8 +681,89 @@ class GameController extends BaseGameController with InitGameMixin {
     }
   }
 
+  /// Handle promotion selection
+  @override
+  void onPromotionSelection(Role? role) {
+    if (role == null) {
+      // Cancel promotion
+      _promotionMove.value = null;
+      update();
+      return;
+    }
+
+    if (_promotionMove.value != null) {
+      final moveWithPromotion = _promotionMove.value!.withPromotion(role);
+      _promotionMove.value = null;
+      _executeMove(moveWithPromotion);
+    }
+  }
+
+  /// Set premove
+  @override
+  void onSetPremove(NormalMove? move) {
+    _premove.value = move;
+    update();
+  }
+
+  /// Execute move and update state
+  Future<void> _executeMove(NormalMove move) async {
+    try {
+      // Play the move
+      _gameState.value.play(move, nags: []);
+
+      // Update reactive state
+      _updateReactiveState();
+
+      // Auto-save if enabled
+      if (_autoSaveEnabled.value) {
+        await _autoSaveGame();
+      }
+
+      // Play sound based on move type
+      final meta = _gameState.value.lastMoveMeta;
+      if (meta != null) {
+        // Here you would call your sound use case
+        // plySound.executeMoveSound() or similar
+      }
+
+      AppLogger.move(
+        meta?.san ?? move.uci,
+        fen: _currentFen.value,
+        isCheck: _isCheck.value,
+      );
+
+      // Try to execute premove if any
+      _tryPlayPremove();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error executing move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to execute move: ${e.toString()}');
+    }
+  }
+
+  /// Try to play premove
+  void _tryPlayPremove() {
+    if (_premove.value != null) {
+      final premove = _premove.value!;
+      _premove.value = null;
+      onUserMove(premove, isPremove: true);
+    }
+  }
+
+  /// Check if move is a promotion pawn move
+  bool _isPromotionPawnMove(NormalMove move) {
+    return move.promotion == null &&
+        _gameState.value.position.board.roleAt(move.from) == Role.pawn &&
+        ((move.to.rank == 0 && _gameState.value.position.turn == Side.black) ||
+            (move.to.rank == 7 &&
+                _gameState.value.position.turn == Side.white));
+  }
+
   /// Undo last move
-  /// التراجع عن آخر حركة
   @override
   Future<void> undoMove() async {
     try {
@@ -815,7 +800,6 @@ class GameController extends BaseGameController with InitGameMixin {
   }
 
   /// Redo previously undone move
-  /// إعادة حركة تم التراجع عنها
   @override
   Future<void> redoMove() async {
     try {
@@ -852,7 +836,6 @@ class GameController extends BaseGameController with InitGameMixin {
   }
 
   /// Resign the game
-  /// الاستسلام في اللعبة
   @override
   Future<void> resign(Side side) async {
     try {
@@ -880,7 +863,6 @@ class GameController extends BaseGameController with InitGameMixin {
   }
 
   /// Offer/accept draw by agreement
-  /// عرض/قبول التعادل بالاتفاق
   Future<void> agreeDrawn() async {
     try {
       _gameState.value.setAgreementDraw();
@@ -906,14 +888,17 @@ class GameController extends BaseGameController with InitGameMixin {
     }
   }
 
-  /// Get legal moves for current position
-  /// الحصول على الحركات القانونية للموضع الحالي
-  IMap<Square, SquareSet> getLegalMoves() {
-    return GameService.getLegalMoves(_gameState.value);
+  /// Reset game
+  @override
+  void reset() {
+    _gameState.value = GameState(initial: Chess.initial);
+    _updateReactiveState();
+    _promotionMove.value = null;
+    _premove.value = null;
+    AppLogger.gameEvent('GameReset');
   }
 
   /// Get PGN string of current game
-  /// الحصول على نص PGN للعبة الحالية
   String getPgnString() {
     if (_currentGame.value == null) return '';
 
@@ -952,6 +937,28 @@ class GameController extends BaseGameController with InitGameMixin {
       snackPosition: SnackPosition.BOTTOM,
     );
   }
+
+  /// Jump to specific halfmove
+  @override
+  void jumpToHalfmove(int index) {
+    final allMoves = _gameState.value.getMoveObjectsCopy();
+    final newState = GameState(initial: Chess.initial);
+
+    for (int i = 0; i <= index && i < allMoves.length; i++) {
+      newState.play(allMoves[i]);
+    }
+
+    _gameState.value = newState;
+    _updateReactiveState();
+  }
+
+  /// Get move tokens for PGN display
+  @override
+  List<MoveDataModel> get pgnTokens => _gameState.value.getMoveTokens;
+
+  /// Get current halfmove index
+  @override
+  int get currentHalfmoveIndex => _gameState.value.currentHalfmoveIndex;
 
   // ========== Private Methods ==========
 
@@ -1035,11 +1042,13 @@ class GameController extends BaseGameController with InitGameMixin {
     _isGameOver.value = _gameState.value.isGameOverExtended;
     _gameResult.value = GameService.calculateResult(
       _gameState.value,
-
       _currentGame.value!.termination,
+      //   _gameState.value.status(),
     );
     _termination.value = _currentGame.value!.termination;
+    // _termination.value = _gameState.value.status();
     _lastMove.value = _gameState.value.lastMoveMeta;
+    // _validMoves.value = _makeLegalMoves();
     _canUndo.value = _gameState.value.canUndo;
     _canRedo.value = _gameState.value.canRedo;
     _materialAdvantage.value =
@@ -1048,20 +1057,17 @@ class GameController extends BaseGameController with InitGameMixin {
   }
 
   /// Set loading state
-  /// تعيين حالة التحميل
   void _setLoading(bool value) {
     _isLoading.value = value;
   }
 
   /// Set error message
-  /// تعيين رسالة الخطأ
   void _setError(String message) {
     _errorMessage.value = message;
     AppLogger.error(message, tag: 'GameController');
   }
 
   /// Clear error message
-  /// مسح رسالة الخطأ
   void _clearError() {
     _errorMessage.value = '';
   }

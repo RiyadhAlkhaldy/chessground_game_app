@@ -1,0 +1,1215 @@
+بعد تحليل الأكواد الملصقة، سأقوم بتحديد المشاكل والتعديلات المطلوبة:
+🔍 تحليل المشاكل الرئيسية:
+1. في GameController الحالي:
+❌ لا يوجد تكامل صحيح مع chessground package
+❌ دالة makeMove تستخدم UCI فقط بينما chessground يرسل NormalMove مباشرة
+❌ لا يوجد دعم للـ premove و promotion
+❌ validMoves ليست بالصيغة الصحيحة لـ chessground (IMap)
+❌ لا يوجد lastMove للإضاءة
+❌ لا توجد معالجة صحيحة لـ promotion dialog
+2. في GameScreen:
+❌ عدم استخدام chessground بشكل صحيح
+❌ لا توجد معالجة للـ ValidMoves بصيغة IMap
+❌ لا يوجد GameData كامل
+✅ الحل: التعديلات المطلوبة
+📝 التعديل 1: تحديث GameController
+// lib/presentation/controllers/game_controller.dart (UPDATED)
+
+import 'package:chessground/chessground.dart' as cg;
+import 'package:dartchess/dartchess.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import 'package:get/get.dart';
+import 'package:uuid/uuid.dart';
+import '../../core/game_termination_enum.dart';
+import '../../core/utils/game_state.dart';
+import '../../core/utils/logger.dart';
+import '../../domain/converters/game_state_converter.dart';
+import '../../domain/entities/chess_game_entity.dart';
+import '../../domain/entities/player_entity.dart';
+import '../../domain/services/game_service.dart';
+import '../../domain/usecases/game/save_game_usecase.dart';
+import '../../domain/usecases/game/update_game_usecase.dart';
+import '../../domain/usecases/game/get_game_by_uuid_usecase.dart';
+import '../../domain/usecases/game_state/cache_game_state_usecase.dart';
+import '../../domain/usecases/game_state/get_cached_game_state_usecase.dart';
+import '../../domain/usecases/player/save_player_usecase.dart';
+import '../../domain/usecases/player/get_or_create_guest_player_usecase.dart';
+
+/// Main game controller managing game state and business logic
+/// المتحكم الرئيسي لإدارة حالة اللعبة ومنطق الأعمال
+class GameController extends GetxController {
+  // ========== Dependencies (Use Cases) ==========
+  final SaveGameUseCase _saveGameUseCase;
+  final UpdateGameUseCase _updateGameUseCase;
+  final GetGameByUuidUseCase _getGameByUuidUseCase;
+  final CacheGameStateUseCase _cacheGameStateUseCase;
+  final GetCachedGameStateUseCase _getCachedGameStateUseCase;
+  final SavePlayerUseCase _savePlayerUseCase;
+  final GetOrCreateGuestPlayerUseCase _getOrCreateGuestPlayerUseCase;
+
+  GameController({
+    required SaveGameUseCase saveGameUseCase,
+    required UpdateGameUseCase updateGameUseCase,
+    required GetGameByUuidUseCase getGameByUuidUseCase,
+    required CacheGameStateUseCase cacheGameStateUseCase,
+    required GetCachedGameStateUseCase getCachedGameStateUseCase,
+    required SavePlayerUseCase savePlayerUseCase,
+    required GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase,
+  })  : _saveGameUseCase = saveGameUseCase,
+        _updateGameUseCase = updateGameUseCase,
+        _getGameByUuidUseCase = getGameByUuidUseCase,
+        _cacheGameStateUseCase = cacheGameStateUseCase,
+        _getCachedGameStateUseCase = getCachedGameStateUseCase,
+        _savePlayerUseCase = savePlayerUseCase,
+        _getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
+
+  // ========== Observable State ==========
+  
+  /// Current game state
+  late GameState _gameState;
+  GameState get gameState => _gameState;
+
+  /// Current chess game entity
+  final Rx<ChessGameEntity?> _currentGame = Rx<ChessGameEntity?>(null);
+  ChessGameEntity? get currentGame => _currentGame.value;
+
+  /// Loading state
+  final RxBool _isLoading = false.obs;
+  bool get isLoading => _isLoading.value;
+
+  /// Error message
+  final RxString _errorMessage = ''.obs;
+  String get errorMessage => _errorMessage.value;
+
+  /// Current position FEN (reactive)
+  final RxString _currentFen = Chess.initial.fen.obs;
+  String get currentFen => _currentFen.value;
+
+  /// Current turn (reactive)
+  final Rx<Side> _currentTurn = Side.white.obs;
+  Side get currentTurn => _currentTurn.value;
+
+  /// Is game over (reactive)
+  final RxBool _isGameOver = false.obs;
+  bool get isGameOver => _isGameOver.value;
+
+  /// Game result (reactive)
+  final RxString _gameResult = '*'.obs;
+  String get gameResult => _gameResult.value;
+
+  /// Game termination reason (reactive)
+  final Rx<GameTermination> _termination = GameTermination.ongoing.obs;
+  GameTermination get termination => _termination.value;
+
+  /// Last move (reactive) - for chessground highlighting
+  final Rx<cg.Move?> _lastMove = Rx<cg.Move?>(null);
+  cg.Move? get lastMove => _lastMove.value;
+
+  /// Valid moves for chessground (IMap format)
+  final Rx<cg.ValidMoves> _validMoves = cg.ValidMoves({}).obs;
+  cg.ValidMoves get validMoves => _validMoves.value;
+
+  /// Promotion move (waiting for promotion selection)
+  final Rx<NormalMove?> _promotionMove = Rx<NormalMove?>(null);
+  NormalMove? get promotionMove => _promotionMove.value;
+
+  /// Premove
+  final Rx<NormalMove?> _premove = Rx<NormalMove?>(null);
+  NormalMove? get premove => _premove.value;
+
+  /// Can undo (reactive)
+  final RxBool _canUndo = false.obs;
+  bool get canUndo => _canUndo.value;
+
+  /// Can redo (reactive)
+  final RxBool _canRedo = false.obs;
+  bool get canRedo => _canRedo.value;
+
+  /// Material advantage for white (reactive)
+  final RxInt _materialAdvantage = 0.obs;
+  int get materialAdvantage => _materialAdvantage.value;
+
+  /// Is position in check (reactive)
+  final RxBool _isCheck = false.obs;
+  bool get isCheck => _isCheck.value;
+
+  /// Auto-save enabled
+  final RxBool _autoSaveEnabled = true.obs;
+  bool get autoSaveEnabled => _autoSaveEnabled.value;
+  set autoSaveEnabled(bool value) => _autoSaveEnabled.value = value;
+
+  /// Board orientation
+  final Rx<Side> _orientation = Side.white.obs;
+  Side get orientation => _orientation.value;
+  set orientation(Side value) => _orientation.value = value;
+
+  // ========== Lifecycle Methods ==========
+
+  @override
+  void onInit() {
+    super.onInit();
+    AppLogger.info('GameController initialized', tag: 'GameController');
+  }
+
+  @override
+  void onClose() {
+    AppLogger.info('GameController disposed', tag: 'GameController');
+    _gameState.dispose();
+    super.onClose();
+  }
+
+  // ========== Public Methods ==========
+
+  /// Initialize a new game
+  Future<void> startNewGame({
+    required String whitePlayerName,
+    required String blackPlayerName,
+    String? event,
+    String? site,
+    String? timeControl,
+  }) async {
+    try {
+      _setLoading(true);
+      _clearError();
+
+      AppLogger.gameEvent('StartNewGame', data: {
+        'white': whitePlayerName,
+        'black': blackPlayerName,
+      });
+
+      // Create or get players
+      final whitePlayerResult = await _getOrCreateGuestPlayerUseCase(
+        GetOrCreateGuestPlayerParams(name: whitePlayerName),
+      );
+
+      final blackPlayerResult = await _getOrCreateGuestPlayerUseCase(
+        GetOrCreateGuestPlayerParams(name: blackPlayerName),
+      );
+
+      if (whitePlayerResult.isLeft() || blackPlayerResult.isLeft()) {
+        _setError('Failed to create players');
+        return;
+      }
+
+      final whitePlayer = whitePlayerResult.getOrElse(() => throw Exception());
+      final blackPlayer = blackPlayerResult.getOrElse(() => throw Exception());
+
+      // Generate UUID for new game
+      final gameUuid = const Uuid().v4();
+
+      // Initialize GameState
+      _gameState = GameState(initial: Chess.initial);
+
+      // Create ChessGameEntity
+      final newGame = ChessGameEntity(
+        uuid: gameUuid,
+        event: event ?? 'Casual Game',
+        site: site ?? 'Local',
+        date: DateTime.now(),
+        round: '1',
+        whitePlayer: whitePlayer,
+        blackPlayer: blackPlayer,
+        result: '*',
+        termination: GameTermination.ongoing,
+        timeControl: timeControl,
+        startingFen: Chess.initial.fen,
+        moves: const [],
+        movesCount: 0,
+      );
+
+      // Save game to database
+      final saveResult = await _saveGameUseCase(
+        SaveGameParams(game: newGame),
+      );
+
+      saveResult.fold(
+        (failure) {
+          _setError('Failed to save game: ${failure.message}');
+          AppLogger.error('Failed to save game', tag: 'GameController');
+        },
+        (savedGame) async {
+          _currentGame.value = savedGame;
+
+          // Cache game state
+          final stateEntity = GameStateConverter.toEntity(_gameState, gameUuid);
+          await _cacheGameStateUseCase(
+            CacheGameStateParams(state: stateEntity),
+          );
+
+          _updateReactiveState();
+
+          AppLogger.gameEvent('NewGameStarted', data: {'uuid': gameUuid});
+          Get.snackbar(
+            'Game Started',
+            'New game between $whitePlayerName vs $blackPlayerName',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error starting new game',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Unexpected error: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Load existing game by UUID
+  Future<void> loadGame(String gameUuid) async {
+    try {
+      _setLoading(true);
+      _clearError();
+
+      AppLogger.gameEvent('LoadGame', data: {'uuid': gameUuid});
+
+      // Try to get from cache first
+      final cachedResult = await _getCachedGameStateUseCase(
+        GetCachedGameStateParams(gameUuid: gameUuid),
+      );
+
+      if (cachedResult.isRight()) {
+        final cachedState = cachedResult.getOrElse(() => throw Exception());
+        _gameState = GameStateConverter.fromEntity(cachedState);
+
+        // Also load the game entity from database
+        final gameResult = await _getGameByUuidUseCase(
+          GetGameByUuidParams(uuid: gameUuid),
+        );
+
+        gameResult.fold(
+          (failure) => _setError('Failed to load game: ${failure.message}'),
+          (game) {
+            _currentGame.value = game;
+            _updateReactiveState();
+            AppLogger.gameEvent('GameLoadedFromCache', data: {'uuid': gameUuid});
+          },
+        );
+        return;
+      }
+
+      // Load from database
+      final gameResult = await _getGameByUuidUseCase(
+        GetGameByUuidParams(uuid: gameUuid),
+      );
+
+      gameResult.fold(
+        (failure) => _setError('Failed to load game: ${failure.message}'),
+        (game) {
+          _currentGame.value = game;
+
+          // Restore GameState from entity
+          final restoreResult = GameService.restoreGameStateFromEntity(game);
+          restoreResult.fold(
+            (failure) => _setError('Failed to restore game state: ${failure.message}'),
+            (restoredState) {
+              _gameState = restoredState;
+              _updateReactiveState();
+
+              // Cache the state
+              final stateEntity = GameStateConverter.toEntity(_gameState, gameUuid);
+              _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
+
+              AppLogger.gameEvent('GameLoaded', data: {'uuid': gameUuid});
+              Get.snackbar(
+                'Game Loaded',
+                'Loaded game: ${game.event ?? 'Untitled'}',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error loading game',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Unexpected error: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Handle move from chessground (NormalMove object)
+  /// This is the main method called by chessground
+  Future<void> onUserMove(NormalMove move, {bool? isDrop, bool? isPremove}) async {
+    try {
+      if (_isGameOver.value) {
+        Get.snackbar(
+          'Game Over',
+          'Cannot make moves in a finished game',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      // Check if this is a promotion pawn move
+      if (_isPromotionPawnMove(move)) {
+        _promotionMove.value = move;
+        update();
+        return;
+      }
+
+      // Validate and execute move
+      if (_gameState.position.isLegal(move)) {
+        await _executeMove(move);
+      } else {
+        Get.snackbar(
+          'Invalid Move',
+          'This move is not legal',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error handling user move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to make move: ${e.toString()}');
+    }
+  }
+
+  /// Handle promotion selection
+  void onPromotionSelection(Role? role) {
+    if (role == null) {
+      // Cancel promotion
+      _promotionMove.value = null;
+      update();
+      return;
+    }
+
+    if (_promotionMove.value != null) {
+      final moveWithPromotion = _promotionMove.value!.withPromotion(role);
+      _promotionMove.value = null;
+      _executeMove(moveWithPromotion);
+    }
+  }
+
+  /// Set premove
+  void onSetPremove(NormalMove? move) {
+    _premove.value = move;
+    update();
+  }
+
+  /// Execute move and update state
+  Future<void> _executeMove(NormalMove move) async {
+    try {
+      // Play the move
+      _gameState.play(move, nags: []);
+
+      // Update reactive state
+      _updateReactiveState();
+
+      // Auto-save if enabled
+      if (_autoSaveEnabled.value) {
+        await _autoSaveGame();
+      }
+
+      // Play sound based on move type
+      final meta = _gameState.lastMoveMeta;
+      if (meta != null) {
+        // Here you would call your sound use case
+        // plySound.executeMoveSound() or similar
+      }
+
+      AppLogger.move(
+        meta?.san ?? move.uci,
+        fen: _currentFen.value,
+        isCheck: _isCheck.value,
+      );
+
+      // Try to execute premove if any
+      _tryPlayPremove();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error executing move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to execute move: ${e.toString()}');
+    }
+  }
+
+  /// Try to play premove
+  void _tryPlayPremove() {
+    if (_premove.value != null) {
+      final premove = _premove.value!;
+      _premove.value = null;
+      onUserMove(premove, isPremove: true);
+    }
+  }
+
+  /// Check if move is a promotion pawn move
+  bool _isPromotionPawnMove(NormalMove move) {
+    return move.promotion == null &&
+        _gameState.position.board.roleAt(move.from) == Role.pawn &&
+        ((move.to.rank == 0 && _gameState.position.turn == Side.black) ||
+            (move.to.rank == 7 && _gameState.position.turn == Side.white));
+  }
+
+  /// Undo last move
+  Future<void> undoMove() async {
+    try {
+      if (!_gameState.canUndo) {
+        Get.snackbar(
+          'Cannot Undo',
+          'No moves to undo',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final success = _gameState.undoMove();
+
+      if (success) {
+        _updateReactiveState();
+
+        // Auto-save if enabled
+        if (_autoSaveEnabled.value) {
+          await _autoSaveGame();
+        }
+
+        AppLogger.gameEvent('MoveUndone');
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error undoing move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to undo move: ${e.toString()}');
+    }
+  }
+
+  /// Redo previously undone move
+  Future<void> redoMove() async {
+    try {
+      if (!_gameState.canRedo) {
+        Get.snackbar(
+          'Cannot Redo',
+          'No moves to redo',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final success = _gameState.redoMove();
+
+      if (success) {
+        _updateReactiveState();
+
+        // Auto-save if enabled
+        if (_autoSaveEnabled.value) {
+          await _autoSaveGame();
+        }
+
+        AppLogger.gameEvent('MoveRedone');
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error redoing move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to redo move: ${e.toString()}');
+    }
+  }
+
+  /// Resign the game
+  Future<void> resign(Side side) async {
+    try {
+      _gameState.resign(side);
+      _updateReactiveState();
+
+      await _saveGameToDatabase();
+
+      AppLogger.gameEvent('PlayerResigned', data: {'side': side.name});
+
+      Get.snackbar(
+        'Game Over',
+        '${side == Side.white ? 'White' : 'Black'} resigned',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error resigning',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to resign: ${e.toString()}');
+    }
+  }
+
+  /// Offer/accept draw by agreement
+  Future<void> agreeDrawn() async {
+    try {
+      _gameState.setAgreementDraw();
+      _updateReactiveState();
+
+      await _saveGameToDatabase();
+
+      AppLogger.gameEvent('DrawByAgreement');
+
+      Get.snackbar(
+        'Game Over',
+        'Draw by agreement',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error setting draw',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to set draw: ${e.toString()}');
+    }
+  }
+
+  /// Reset game
+  void reset() {
+    _gameState = GameState(initial: Chess.initial);
+    _updateReactiveState();
+    _promotionMove.value = null;
+    _premove.value = null;
+    AppLogger.gameEvent('GameReset');
+  }
+
+  /// Get legal moves for chessground (IMap format)
+  cg.ValidMoves _makeLegalMoves() {
+    final legalMoves = _gameState.position.legalMoves;
+    final Map<String, List<String>> validMovesMap = {};
+
+    for (final move in legalMoves) {
+      if (move is NormalMove) {
+        final fromSquare = _squareToChessgroundSquare(move.from);
+        final toSquare = _squareToChessgroundSquare(move.to);
+        
+        validMovesMap.putIfAbsent(fromSquare, () => []).add(toSquare);
+      }
+    }
+
+    return IMap(validMovesMap);
+  }
+
+  /// Get last move for chessground highlighting
+  cg.Move? _getLastMoveForChessground() {
+    final lastMoveMeta = _gameState.lastMoveMeta;
+    if (lastMoveMeta?.lan == null) return null;
+    
+    try {
+      final move = Move.fromUci(lastMoveMeta!.lan!);
+      if (move is NormalMove) {
+        return cg.Move(
+          from: _squareToChessgroundSquare(move.from),
+          to: _squareToChessgroundSquare(move.to),
+        );
+      }
+    } catch (e) {
+      // Ignore parsing errors
+    }
+    
+    return null;
+  }
+
+  /// Get PGN string of current game
+  String getPgnString() {
+    if (_currentGame.value == null) return '';
+
+    return _gameState.pgnString(
+      headers: {
+        'Event': _currentGame.value!.event ?? '?',
+        'Site': _currentGame.value!.site ?? '?',
+        'Date': _currentGame.value!.date?.toString().split(' ')[0] ?? '????.??.??',
+        'Round': _currentGame.value!.round ?? '?',
+        'White': _currentGame.value!.whitePlayer.name,
+        'Black': _currentGame.value!.blackPlayer.name,
+      },
+    );
+  }
+
+  /// Get captured pieces for a side
+  List<Role> getCapturedPieces(Side side) {
+    return _gameState.getCapturedPiecesList(side);
+  }
+
+  /// Get material count on board for a side
+  int getMaterialOnBoard(Side side) {
+    return _gameState.materialOnBoard(side);
+  }
+
+  /// Save current game manually
+  Future<void> saveGame() async {
+    await _saveGameToDatabase();
+    Get.snackbar(
+      'Game Saved',
+      'Game saved successfully',
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+
+  /// Flip board orientation
+  void flipBoard() {
+    _orientation.value = _orientation.value == Side.white ? Side.black : Side.white;
+  }
+
+  /// Jump to specific halfmove
+  void jumpToHalfmove(int index) {
+    final allMoves = _gameState.getMoveObjectsCopy();
+    final newState = GameState(initial: Chess.initial);
+    
+    for (int i = 0; i <= index && i < allMoves.length; i++) {
+      newState.play(allMoves[i]);
+    }
+    
+    _gameState = newState;
+    _updateReactiveState();
+  }
+
+  /// Get move tokens for PGN display
+  List<MoveDataModel> get pgnTokens => _gameState.getMoveTokens;
+
+  /// Get current halfmove index
+  int get currentHalfmoveIndex => _gameState.currentHalfmoveIndex;
+
+  // ========== Private Methods ==========
+
+  /// Auto-save game after each move
+  Future<void> _autoSaveGame() async {
+    try {
+      await _saveGameToDatabase();
+      AppLogger.debug('Game auto-saved', tag: 'GameController');
+    } catch (e) {
+      AppLogger.warning(
+        'Auto-save failed: ${e.toString()}',
+        tag: 'GameController',
+      );
+    }
+  }
+
+  /// Save game to database
+  Future<void> _saveGameToDatabase() async {
+    if (_currentGame.value == null) return;
+
+    try {
+      // Sync GameState to Entity
+      final syncResult = GameService.syncGameStateToEntity(
+        _gameState,
+        _currentGame.value!,
+      );
+
+      syncResult.fold(
+        (failure) {
+          AppLogger.error(
+            'Failed to sync game state: ${failure.message}',
+            tag: 'GameController',
+          );
+        },
+        (updatedGame) async {
+          // Update game in database
+          final updateResult = await _updateGameUseCase(
+            UpdateGameParams(game: updatedGame),
+          );
+
+          updateResult.fold(
+            (failure) {
+              AppLogger.error(
+                'Failed to update game: ${failure.message}',
+                tag: 'GameController',
+              );
+            },
+            (savedGame) {
+              _currentGame.value = savedGame;
+
+              // Cache state
+              final stateEntity = GameStateConverter.toEntity(
+                _gameState,
+                savedGame.uuid,
+              );
+              _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
+
+              AppLogger.database('Game updated successfully');
+            },
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error saving game',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+    }
+  }
+
+  /// Update all reactive state variables
+  void _updateReactiveState() {
+    _currentFen.value = _gameState.position.fen;
+    _currentTurn.value = _gameState.turn;
+    _isGameOver.value = _gameState.isGameOverExtended;
+    _gameResult.value = GameService.calculateResult(
+      _gameState,
+      _gameState.status(),
+    );
+    _termination.value = _gameState.status();
+    _lastMove.value = _getLastMoveForChessground();
+    _validMoves.value = _makeLegalMoves();
+    _canUndo.value = _gameState.canUndo;
+    _canRedo.value = _gameState.canRedo;
+    _materialAdvantage.value = _gameState.getMaterialAdvantageSignedForWhite;
+    _isCheck.value = _gameState.isCheck;
+  }
+
+  /// Convert dartchess Square to chessground square string
+  String _squareToChessgroundSquare(Square square) {
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    return '${files[square.file]}${square.rank + 1}';
+  }
+
+  /// Set loading state
+  void _setLoading(bool value) {
+    _isLoading.value = value;
+  }
+
+  /// Set error message
+  void _setError(String message) {
+    _errorMessage.value = message;
+    AppLogger.error(message, tag: 'GameController');
+  }
+
+  /// Clear error message
+  void _clearError() {
+    _errorMessage.value = '';
+  }
+}
+📝 التعديل 2: تحديث GameScreen - ChessBoard Widget
+// lib/presentation/pages/game_screen.dart - تحديث buildChessBoard method
+
+/// Build chess board widget
+Widget _buildChessBoard(BuildContext context) {
+  return Obx(() {
+    return cg.Board(
+      size: MediaQuery.of(context).size.width,
+      data: cg.BoardData(
+        interactableSide: controller.isGameOver 
+            ? cg.InteractableSide.none 
+            : cg.InteractableSide.both, // للعب الحر ضد النفس
+        orientation: controller.orientation == Side.white ? cg.Side.white : cg.Side.black,
+        fen: controller.currentFen,
+        lastMove: controller.lastMove,
+        validMoves: controller.validMoves,
+        sideToMove: controller.currentTurn,
+        isCheck: controller.isCheck,
+        // Game data configuration
+        game: cg.GameData(
+          playerSide: cg.PlayerSide.both, // مهم للعب الحر
+          validMoves: controller.validMoves,
+          sideToMove: controller.currentTurn,
+          isCheck: controller.isCheck,
+          promotionMove: controller.promotionMove,
+          onMove: controller.onUserMove, // استخدام onUserMove مباشرة
+          onPromotionSelection: controller.onPromotionSelection,
+          premovable: (
+            onSetPremove: controller.onSetPremove,
+            premove: controller.premove,
+          ),
+        ),
+        // Board theme
+        settings: cg.BoardSettings(
+          colorScheme: cg.BoardColorScheme(
+            lightSquare: const Color(0xFFF0D9B5),
+            darkSquare: const Color(0xFFB58863),
+            lastMove: cg.HighlightDetails(
+              solidColor: Colors.yellow.withOpacity(0.5),
+            ),
+            selected: cg.HighlightDetails(
+              solidColor: Colors.green.withOpacity(0.5),
+            ),
+          ),
+          pieceAssets: cg.PieceSet.merida.assets,
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+          enableCoordinates: true,
+          animationDuration: const Duration(milliseconds: 250),
+          autoQueenPromotion: false,
+          dragTargetKind: cg.DragTargetKind.circle,
+        ),
+      ),
+    );
+  });
+}
+📝 التعديل 3: إضافة دالة مساعدة في GameController
+الصق هذا في آخر GameController (قبل } الأخيرة):
+///إكمال التعديل 3 والتعديلات المتبقية:
+📝 التعديل 3: إضافة دوال مساعدة في GameController (تكملة)
+الصق هذا في آخر GameController (قبل } الأخيرة):
+/// Helper method to create ValidMoves for chessground from legal moves
+  /// دالة مساعدة لإنشاء ValidMoves لـ chessground من الحركات القانونية
+  static cg.ValidMoves makeLegalMovesForChessground(Position position) {
+    final legalMoves = position.legalMoves;
+    final Map<String, List<String>> validMovesMap = {};
+
+    for (final move in legalMoves) {
+      if (move is NormalMove) {
+        final fromSquare = _squareToString(move.from);
+        final toSquare = _squareToString(move.to);
+        
+        validMovesMap.putIfAbsent(fromSquare, () => []).add(toSquare);
+      }
+    }
+
+    return IMap(validMovesMap);
+  }
+
+  /// Convert Square to string for chessground
+  /// تحويل Square إلى نص لـ chessground
+  static String _squareToString(Square square) {
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    return '${files[square.file]}${square.rank + 1}';
+  }
+}
+📝 التعديل 4: تحديث دالة _handleMove في GameScreen
+استبدل دالة _handleMove في game_screen.dart:
+// lib/presentation/pages/game_screen.dart
+
+/// Handle move from chessground
+/// معالجة الحركة من chessground
+void _handleMove(cg.Move move) {
+  // تحويل من chessground Move إلى dartchess Square
+  final from = _chessgroundSquareToSquare(move.from);
+  final to = _chessgroundSquareToSquare(move.to);
+  
+  // البحث عن الحركة المطابقة من الحركات القانونية
+  final legalMoves = controller.gameState.position.legalMoves;
+  
+  for (final legalMove in legalMoves) {
+    if (legalMove is NormalMove && 
+        legalMove.from == from && 
+        legalMove.to == to) {
+      
+      // التحقق من الترقية
+      if (controller._isPromotionPawnMove(legalMove)) {
+        // عرض مربع حوار الترقية
+        _showPromotionDialog(from, to);
+      } else {
+        // تنفيذ الحركة مباشرة
+        controller.onUserMove(legalMove);
+      }
+      return;
+    }
+  }
+}
+📝 التعديل 5: تحسين دالة _updateReactiveState
+استبدل الدالة الموجودة في GameController:
+/// Update all reactive state variables
+/// تحديث جميع متغيرات الحالة التفاعلية
+void _updateReactiveState() {
+  _currentFen.value = _gameState.position.fen;
+  _currentTurn.value = _gameState.turn;
+  _isGameOver.value = _gameState.isGameOverExtended;
+  
+  // حساب النتيجة
+  final termination = GameService.checkGameTermination(_gameState).fold(
+    (failure) => GameTermination.ongoing,
+    (term) => term,
+  );
+  _termination.value = termination;
+  _gameResult.value = GameService.calculateResult(_gameState, termination);
+  
+  // تحديث آخر حركة للإضاءة
+  _lastMove.value = _getLastMoveForChessground();
+  
+  // تحديث الحركات الصالحة
+  _validMoves.value = _makeLegalMoves();
+  
+  // تحديث حالة التراجع/الإعادة
+  _canUndo.value = _gameState.canUndo && !_isGameOver.value;
+  _canRedo.value = _gameState.canRedo && !_isGameOver.value;
+  
+  // تحديث التقييم المادي
+  _materialAdvantage.value = _gameState.getMaterialAdvantageSignedForWhite;
+  
+  // تحديث حالة الكش
+  _isCheck.value = _gameState.isCheck;
+  
+  // إجبار التحديث
+  update();
+}
+📝 التعديل 6: إصلاح GameData في ChessBoard
+استبدل في game_screen.dart قسم ChessBoard بالكامل:
+// lib/presentation/pages/game_screen.dart - buildChessBoard method (COMPLETE)
+
+/// Build chess board widget
+/// بناء عنصر رقعة الشطرنج
+Widget _buildChessBoard(BuildContext context) {
+  return Obx(() {
+    return cg.Board(
+      size: MediaQuery.of(context).size.width,
+      data: cg.BoardData(
+        interactableSide: controller.isGameOver 
+            ? cg.InteractableSide.none 
+            : cg.InteractableSide.both,
+        orientation: controller.orientation == Side.white 
+            ? cg.Side.white 
+            : cg.Side.black,
+        fen: controller.currentFen,
+        lastMove: controller.lastMove,
+        validMoves: controller.validMoves,
+        sideToMove: controller.currentTurn,
+        isCheck: controller.isCheck,
+        settings: cg.BoardSettings(
+          colorScheme: cg.BoardColorScheme(
+            lightSquare: const Color(0xFFF0D9B5),
+            darkSquare: const Color(0xFFB58863),
+            lastMove: cg.HighlightDetails(
+              solidColor: Colors.yellow.withOpacity(0.5),
+            ),
+            selected: cg.HighlightDetails(
+              solidColor: Colors.green.withOpacity(0.5),
+            ),
+          ),
+          pieceAssets: cg.PieceSet.merida.assets,
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+          enableCoordinates: true,
+          animationDuration: const Duration(milliseconds: 250),
+          autoQueenPromotion: false,
+          dragTargetKind: cg.DragTargetKind.circle,
+          dragFeedbackScale: 2.0,
+          pieceShiftMethod: cg.PieceShiftMethod.either,
+        ),
+      ),
+      // استخدام game بدلاً من onMove مباشرة
+      game: cg.GameData(
+        playerSide: controller.isGameOver 
+            ? cg.PlayerSide.none 
+            : cg.PlayerSide.both, // مهم جداً للعب الحر
+        validMoves: controller.validMoves,
+        sideToMove: controller.currentTurn,
+        isCheck: controller.isCheck,
+        promotionMove: controller.promotionMove,
+        onMove: (move, {isDrop}) {
+          controller.onUserMove(move, isDrop: isDrop);
+        },
+        onPromotionSelection: controller.onPromotionSelection,
+        premovable: (
+          onSetPremove: controller.onSetPremove,
+          premove: controller.premove,
+        ),
+      ),
+    );
+  });
+}
+📝 التعديل 7: إضافة زر Flip Board في GameControls
+في game_controls_widget.dart، استبدل دالة _flipBoard:
+/// Flip board orientation
+/// قلب اتجاه الرقعة
+void _flipBoard() {
+  final controller = Get.find<GameController>();
+  controller.flipBoard();
+  Get.snackbar(
+    'Board Flipped',
+    'Board orientation changed',
+    snackPosition: SnackPosition.BOTTOM,
+    duration: const Duration(seconds: 1),
+  );
+}
+📝 التعديل 8: تحديث Move List Widget
+استبدل في move_list_widget.dart:
+// lib/presentation/widgets/move_list_widget.dart
+
+/// Handle move click for navigation
+/// معالجة النقر على الحركة للتنقل
+void _handleMoveClick(int moveIndex) {
+  controller.jumpToHalfmove(moveIndex);
+}
+📝 التعديل 9: إضافة dependاency لـ fast_immutable_collections
+في pubspec.yaml، أضف:
+dependencies:
+  # ... existing dependencies
+  
+  # For IMap (chessground ValidMoves)
+  fast_immutable_collections: ^10.2.4
+ثم شغل:
+flutter pub get
+📝 التعديل 10: تحديث GameService لدعم الحركات
+في game_service.dart، أضف هذه الدالة:
+// lib/domain/services/game_service.dart (ADD THIS)
+
+/// Make ValidMoves map for chessground from Position
+/// إنشاء خريطة ValidMoves لـ chessground من Position
+static Map<String, List<String>> makeValidMovesMap(Position position) {
+  final legalMoves = position.legalMoves;
+  final Map<String, List<String>> validMovesMap = {};
+
+  for (final move in legalMoves) {
+    if (move is NormalMove) {
+      final fromSquare = _squareToChessgroundSquare(move.from);
+      final toSquare = _squareToChessgroundSquare(move.to);
+      
+      validMovesMap.putIfAbsent(fromSquare, () => []).add(toSquare);
+    }
+  }
+
+  return validMovesMap;
+}
+
+/// Convert Square to chessground square notation
+/// تحويل Square إلى تدوين مربع chessground
+static String _squareToChessgroundSquare(Square square) {
+  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  return '${files[square.file]}${square.rank + 1}';
+}
+📝 التعديل 11: إصلاح PopScope في GameScreen
+استبدل PopScope في game_screen.dart:
+// lib/presentation/pages/game_screen.dart - في buildChessBoard
+
+PopScope(
+  canPop: controller.isGameOver,
+  onPopInvokedWithResult: (didPop, result) async {
+    if (didPop) return;
+    
+    if (controller.isGameOver) {
+      Get.back();
+      return;
+    }
+
+    // عرض تأكيد الخروج
+    final shouldExit = await Get.dialog<bool>(
+      AlertDialog(
+        title: const Text('Exit Game'),
+        content: const Text('Do you want to exit? The game will be saved.'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('Exit'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldExit == true) {
+      await controller.saveGame();
+      if (context.mounted) {
+        Get.back();
+      }
+    }
+  },
+  child: /* ChessBoard Widget */
+)
+📝 التعديل 12: تحديث الترقية في GameController
+أضف هذه الدالة في GameController:
+/// Cancel promotion
+/// إلغاء الترقية
+void cancelPromotion() {
+  _promotionMove.value = null;
+  update();
+}
+📋 ملخص التعديلات:
+التعديل
+الملف
+الموقع
+الغرض
+✅ 1
+game_controller.dart
+كامل
+إعادة كتابة شاملة لدعم chessground
+✅ 2
+game_screen.dart
+_buildChessBoard
+تحديث Board widget
+✅ 3
+game_controller.dart
+نهاية الكلاس
+دوال مساعدة
+✅ 4
+game_screen.dart
+_handleMove
+معالجة الحركات
+✅ 5
+game_controller.dart
+_updateReactiveState
+تحسين التحديث
+✅ 6
+game_screen.dart
+_buildChessBoard
+إصلاح GameData
+✅ 7
+game_controls_widget.dart
+_flipBoard
+قلب الرقعة
+✅ 8
+move_list_widget.dart
+_handleMoveClick
+التنقل بين الحركات
+✅ 9
+pubspec.yaml
+dependencies
+إضافة IMap
+✅ 10
+game_service.dart
+نهاية الكلاس
+دالة ValidMoves
+✅ 11
+game_screen.dart
+PopScope
+تأكيد الخروج
+✅ 12
+game_controller.dart
+methods
+إلغاء الترقية
+🎯 الفروقات الرئيسية عن الكود الملصق:
+✅ استخدام NormalMove مباشرة بدلاً من UCI string
+✅ IMap للـ ValidMoves بدلاً من Map عادي
+✅ GameData structure كامل لـ chessground
+✅ Premove support كامل
+✅ Promotion dialog محسّن
+✅ Board orientation قابل للتبديل
+✅ Auto-save بعد كل حركة
+✅ Clean Architecture محفوظة بالكامل
+🚀 الخطوات النهائية:
+# 1. Update dependencies
+flutter pub get
+
+# 2. Generate code if needed
+flutter pub run build_runner build --delete-conflicting-outputs
+
+# 3. Run the app
+flutter run
+⚠️ ملاحظات مهمة:
+PlayerSide.both ضروري للعب الحر (اللاعب يحرك القطع البيضاء والسوداء)
+interactableSide يجب أن يكون InteractableSide.both وليس حسب الدور
+ValidMoves يجب أن يكون IMap وليس Map عادي
+onMove يستقبل NormalMove مباشرة من chessground
+Promotion يحتاج معالجة خاصة قبل تنفيذ الحركة
+الآن التطبيق يجب أن يعمل بشكل صحيح مع دعم كامل للعب الحر! 🎉

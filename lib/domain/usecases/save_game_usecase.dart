@@ -36,16 +36,16 @@ class SaveGameUseCase implements UseCase<ChessGameEntity, SaveGameParams> {
 
       final result = await repository.saveGame(params.game);
 
-      result.fold(
-        (failure) => AppLogger.error(
-          'Failed to save game: ${failure.message}',
-          tag: 'SaveGameUseCase',
-        ),
-        (game) => AppLogger.info(
-          'Game saved successfully: ${game.uuid}',
-          tag: 'SaveGameUseCase',
-        ),
-      );
+      // result.fold(
+      //   (failure) => AppLogger.error(
+      //     'Failed to save game: ${failure.message}',
+      //     tag: 'SaveGameUseCase',
+      //   ),
+      //   (game) => AppLogger.info(
+      //     'Game saved successfully: ${game.uuid}',
+      //     tag: 'SaveGameUseCase',
+      //   ),
+      // );
 
       return result;
     } catch (e, stackTrace) {

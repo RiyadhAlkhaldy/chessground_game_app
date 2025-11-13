@@ -44,30 +44,30 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
   Future<ChessGameModel> saveGame(ChessGameModel game) async {
     try {
       AppLogger.database('Saving game to Isar: ${game.uuid}');
+      AppLogger.database('Saving game to Isar: $game');
 
       // Convert model to collection
-      final collection = game.toCollection();
-
+      final chessGame = game.toCollection();
       // Save to database
-      await isar.writeTxn(() async {
-        // Save players first
-        if (collection.whitePlayer.value != null) {
-          await isar.players.put(collection.whitePlayer.value!);
-          collection.whitePlayer.save();
-        }
-        if (collection.blackPlayer.value != null) {
-          await isar.players.put(collection.blackPlayer.value!);
-          collection.blackPlayer.save();
-        }
 
-        // Save game
-        await isar.chessGames.put(collection);
+      await isar.writeTxn(() async {
+        await isar.chessGames.put(chessGame);
+
+        // Save players first
+        if (chessGame.whitePlayer.value != null) {
+          await isar.players.put(chessGame.whitePlayer.value!);
+          await chessGame.whitePlayer.save();
+        }
+        if (chessGame.blackPlayer.value != null) {
+          await isar.players.put(chessGame.blackPlayer.value!);
+          await chessGame.blackPlayer.save();
+        }
       });
 
-      AppLogger.database('Game saved successfully', result: collection.id);
+      AppLogger.database('Game saved successfully', result: chessGame.id);
 
       // Return saved model with ID
-      return game.copyWith(id: collection.id);
+      return game.copyWith(id: chessGame.id);
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error saving game to Isar',
@@ -94,6 +94,8 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
 
       // Update in database
       await isar.writeTxn(() async {
+        await isar.chessGames.put(collection);
+
         // Update players if modified
         if (collection.whitePlayer.value != null) {
           await isar.players.put(collection.whitePlayer.value!);
@@ -105,7 +107,6 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
         }
 
         // Update game
-        await isar.chessGames.put(collection);
       });
 
       AppLogger.database('Game updated successfully', result: collection.id);

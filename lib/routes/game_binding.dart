@@ -97,7 +97,7 @@ class GameBinding extends Bindings {
       ),
       fenix: true,
     );
-    // تسجيل المتحكم (GameController)
+    // تسجيل المتحكم (GameControllerr)
     Get.lazyPut(() => GameControllerr(), fenix: true);
     // // تسجيل المتحكم (GameComputerWithTimeController)
     Get.lazyPut<GameComputerWithTimeController>(
