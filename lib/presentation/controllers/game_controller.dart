@@ -37,7 +37,7 @@ mixin InitGameMixin {
   String fen = Chess.initial.fen;
 
   /// Valid moves for chessground (IMap format)
-  final Rx<ValidMoves> _validMoves = ValidMoves({}).obs;
+  final Rx<ValidMoves> _validMoves = ValidMoves(const {}).obs;
 
   ValidMoves get validMoves => _validMoves.value;
 
@@ -48,8 +48,15 @@ mixin InitGameMixin {
   ChessGameEntity? chessGameEntity;
 
   bool canPop = false;
-  NormalMove? promotionMove;
-  NormalMove? premove;
+
+  // ========== Observable State ==========
+
+  /// Promotion move (waiting for promotion selection)
+  final Rx<NormalMove?> promotionMove = Rx<NormalMove?>(null);
+
+  /// Premove
+  final Rx<NormalMove?> premove = Rx<NormalMove?>(null);
+
   PlayerSide playerSide = PlayerSide.both;
 
   /// Current game state
@@ -205,7 +212,7 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
     _gameState.value = GameState(initial: initail);
     fen = _gameState.value.position.fen;
     _validMoves.value = makeLegalMoves(_gameState.value.position);
-    promotionMove = null;
+    promotionMove.value = null;
     plySound.executeDongSound();
     statusText.value = "free Play";
 
@@ -213,95 +220,188 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
   }
 
   void tryPlayPremove() {
-    if (premove != null) {
+    if (premove.value != null) {
       Timer.run(() {
-        onUserMoveAgainstAI(premove!, isPremove: true);
+        onUserMoveAgainstAI(premove.value!, isPremove: true);
       });
     }
   }
 
   void onSetPremove(NormalMove? move) {
-    premove = move;
+    premove.value = move;
     update();
   }
 
   void onPromotionSelection(Role? role) {
     if (role == null) {
       onPromotionCancel();
-    } else if (promotionMove != null) {
-      onUserMoveAgainstAI(promotionMove!.withPromotion(role));
+    } else if (promotionMove.value != null) {
+      onUserMoveAgainstAI(promotionMove.value!.withPromotion(role));
     }
   }
 
   void onPromotionCancel() {
-    promotionMove = null;
+    promotionMove.value = null;
     update();
   }
 
+  /// Handle move from chessground (NormalMove object)
+  /// This is the main method called by chessground
   void onUserMoveAgainstAI(
     NormalMove move, {
     bool? isDrop,
     bool? isPremove,
   }) async {
-    if (isPromotionPawnMove(move)) {
-      promotionMove = move;
-      update();
-    } else if (_gameState.value.position.isLegal(move)) {
-      _applyMove(move);
-      // _validMoves.value  = IMap(const {});
-      promotionMove = null;
-      update();
+    try {
+      if (_isGameOver.value) {
+        Get.snackbar(
+          'Game Over',
+          'Cannot make moves in a finished game',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+      // Check if this is a promotion pawn move
+      if (isPromotionPawnMove(move)) {
+        promotionMove.value = move;
+        update();
+        return;
+      }
+
+      // Validate and execute move
+      if (_gameState.value.position.isLegal(move)) {
+        _applyMove(move);
+        promotionMove.value = null;
+        update();
+        tryPlayPremove();
+      } else {
+        Get.snackbar(
+          'Invalid Move',
+          'This move is not legal',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error handling user move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to make move: ${e.toString()}');
     }
-    tryPlayPremove();
   }
 
   // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
   void _applyMove(NormalMove move) async {
-    final state = _gameState.value;
-    // isLoading.value = true;
-    final res = await playMoveUsecase(
-      chessGameEntity: chessGameEntity!,
-      state: state,
-      move: move,
-      comment: null,
-      nags: [],
-      // persist: true,
-    );
-    res.fold(
-      (f) {
-        error.value = f.toString();
-      },
-      (_) {
-        // update observed gameState.value! (GameState mutated in-place)
-        _gameState.refresh();
-        fen = _gameState.value.position.fen;
-        _validMoves.value = makeLegalMoves(_gameState.value.position);
+    try {
+      // Play the move
+      _gameState.value.play(move, nags: []);
 
-        // decide which sound to play based on metadata
-        final meta = _gameState.value.lastMoveMeta;
-        if (meta != null) {
-          // capture has priority (play capture instead of plain move)
-          if (meta.wasCapture) {
-            plySound.executeCaptureSound();
-          } else {
-            plySound.executeMoveSound();
-          }
-          if (meta.wasPromotion) {
-            plySound.executePromoteSound();
-          }
-          if (meta.wasCheckmate) {
-            plySound.executeCheckmateSound();
-          } else if (meta.wasCheck) {
-            plySound.executeCheckSound();
-          }
+      // Update reactive state
+      _updateReactiveState();
+
+      fen = _gameState.value.position.fen;
+      _validMoves.value = makeLegalMoves(_gameState.value.position);
+      // _validMoves.value = _gameState.value.position.legalMoves ;
+
+      // decide which sound to play based on metadata
+      final meta = _gameState.value.lastMoveMeta;
+      if (meta != null) {
+        // capture has priority (play capture instead of plain move)
+        if (meta.wasCapture) {
+          plySound.executeCaptureSound();
         } else {
-          // fallback
           plySound.executeMoveSound();
         }
-        gameStatus; // to update statusText
-      },
-    );
-    // isLoading.value = false;
+        if (meta.wasPromotion) {
+          plySound.executePromoteSound();
+        }
+        if (meta.wasCheckmate) {
+          plySound.executeCheckmateSound();
+        } else if (meta.wasCheck) {
+          plySound.executeCheckSound();
+        }
+      }
+      // update observed gameState.value! (GameState mutated in-place)
+      _gameState.refresh();
+      gameStatus; // to update statusText
+
+      AppLogger.move(
+        meta?.san ?? move.uci,
+        fen: _currentFen.value,
+        isCheck: _isCheck.value,
+      );
+
+      // Try to execute premove if any
+      _tryPlayPremove();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error executing move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to execute move: ${e.toString()}');
+    }
+  }
+
+  /// Execute move and update state
+  Future<void> _executeMove(NormalMove move) async {
+    try {
+      // Play the move
+      _gameState.value.play(move, nags: []);
+
+      // Update reactive state
+      _updateReactiveState();
+
+      // Auto-save if enabled
+      if (_autoSaveEnabled.value) {
+        // await _autoSaveGame();
+      }
+
+      // Play sound based on move type
+      final meta = _gameState.value.lastMoveMeta;
+      if (meta != null) {
+        // Here you would call your sound use case
+        // plySound.executeMoveSound() or similar
+      }
+
+      AppLogger.move(
+        meta?.san ?? move.uci,
+        fen: _currentFen.value,
+        isCheck: _isCheck.value,
+      );
+
+      // Try to execute premove if any
+      _tryPlayPremove();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error executing move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      _setError('Failed to execute move: ${e.toString()}');
+    }
+  }
+
+  /// Try to play premove
+  void _tryPlayPremove() {
+    if (premove.value != null) {
+      final prmove = premove.value!;
+      premove.value = null;
+      onUserMoveAgainstAI(prmove, isPremove: true);
+    }
+  }
+
+  /// Check if move is a promotion pawn move
+  bool _isPromotionPawnMove(NormalMove move) {
+    return move.promotion == null &&
+        _gameState.value.position.board.roleAt(move.from) == Role.pawn &&
+        ((move.to.rank == 0 && _gameState.value.position.turn == Side.black) ||
+            (move.to.rank == 7 &&
+                _gameState.value.position.turn == Side.white));
   }
 
   bool isPromotionPawnMove(NormalMove move) {
@@ -373,6 +473,44 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
   List<Role> get blackCapturedList =>
       _gameState.value.getCapturedPiecesList(Side.black);
 
+  /// Update all reactive state variables
+  /// تحديث جميع متغيرات الحالة التفاعلية
+  void _updateReactiveState() {
+    _currentFen.value = _gameState.value.position.fen;
+    _currentTurn.value = _gameState.value.turn;
+    _isGameOver.value = _gameState.value.isGameOverExtended;
+    _gameResult.value = GameService.calculateResult(
+      _gameState.value,
+      _currentGame.value!.termination,
+      //   _gameState.value.status(),
+    );
+    _termination.value = _currentGame.value!.termination;
+    // _termination.value = _gameState.value.status();
+    _lastMove.value = _gameState.value.lastMoveMeta;
+    // _validMoves.value = _makeLegalMoves();
+    _canUndo.value = _gameState.value.canUndo;
+    _canRedo.value = _gameState.value.canRedo;
+    _materialAdvantage.value =
+        _gameState.value.getMaterialAdvantageSignedForWhite;
+    _isCheck.value = _gameState.value.isCheck;
+  }
+
+  /// Set loading state
+  void _setLoading(bool value) {
+    _isLoading.value = value;
+  }
+
+  /// Set error message
+  void _setError(String message) {
+    _errorMessage.value = message;
+    AppLogger.error(message, tag: 'GameController');
+  }
+
+  /// Clear error message
+  void _clearError() {
+    _errorMessage.value = '';
+  }
+
   @override
   void dispose() {
     _gameState.value.dispose();
@@ -411,13 +549,6 @@ class GameController extends BaseGameController {
        _getCachedGameStateUseCase = getCachedGameStateUseCase,
        _savePlayerUseCase = savePlayerUseCase,
        _getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
-  // ========== Observable State ==========
-
-  /// Promotion move (waiting for promotion selection)
-  final Rx<NormalMove?> _promotionMove = Rx<NormalMove?>(null);
-
-  /// Premove
-  final Rx<NormalMove?> _premove = Rx<NormalMove?>(null);
 
   // ========== Lifecycle Methods ==========
 
@@ -636,131 +767,13 @@ class GameController extends BaseGameController {
     }
   }
 
-  /// Handle move from chessground (NormalMove object)
-  /// This is the main method called by chessground
-  Future<void> onUserMove(
-    NormalMove move, {
-    bool? isDrop,
-    bool? isPremove,
-  }) async {
-    try {
-      if (_isGameOver.value) {
-        Get.snackbar(
-          'Game Over',
-          'Cannot make moves in a finished game',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
-
-      // Check if this is a promotion pawn move
-      if (_isPromotionPawnMove(move)) {
-        _promotionMove.value = move;
-        update();
-        return;
-      }
-
-      // Validate and execute move
-      if (_gameState.value.position.isLegal(move)) {
-        await _executeMove(move);
-      } else {
-        Get.snackbar(
-          'Invalid Move',
-          'This move is not legal',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error handling user move',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'GameController',
-      );
-      _setError('Failed to make move: ${e.toString()}');
-    }
-  }
-
-  /// Handle promotion selection
   @override
-  void onPromotionSelection(Role? role) {
-    if (role == null) {
-      // Cancel promotion
-      _promotionMove.value = null;
-      update();
-      return;
+  void _applyMove(NormalMove move) async {
+    super._applyMove(move);
+    // Auto-save if enabled
+    if (_autoSaveEnabled.value) {
+      await _autoSaveGame();
     }
-
-    if (_promotionMove.value != null) {
-      final moveWithPromotion = _promotionMove.value!.withPromotion(role);
-      _promotionMove.value = null;
-      _executeMove(moveWithPromotion);
-    }
-  }
-
-  /// Set premove
-  @override
-  void onSetPremove(NormalMove? move) {
-    _premove.value = move;
-    update();
-  }
-
-  /// Execute move and update state
-  Future<void> _executeMove(NormalMove move) async {
-    try {
-      // Play the move
-      _gameState.value.play(move, nags: []);
-
-      // Update reactive state
-      _updateReactiveState();
-
-      // Auto-save if enabled
-      if (_autoSaveEnabled.value) {
-        await _autoSaveGame();
-      }
-
-      // Play sound based on move type
-      final meta = _gameState.value.lastMoveMeta;
-      if (meta != null) {
-        // Here you would call your sound use case
-        // plySound.executeMoveSound() or similar
-      }
-
-      AppLogger.move(
-        meta?.san ?? move.uci,
-        fen: _currentFen.value,
-        isCheck: _isCheck.value,
-      );
-
-      // Try to execute premove if any
-      _tryPlayPremove();
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error executing move',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'GameController',
-      );
-      _setError('Failed to execute move: ${e.toString()}');
-    }
-  }
-
-  /// Try to play premove
-  void _tryPlayPremove() {
-    if (_premove.value != null) {
-      final premove = _premove.value!;
-      _premove.value = null;
-      onUserMove(premove, isPremove: true);
-    }
-  }
-
-  /// Check if move is a promotion pawn move
-  bool _isPromotionPawnMove(NormalMove move) {
-    return move.promotion == null &&
-        _gameState.value.position.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == 0 && _gameState.value.position.turn == Side.black) ||
-            (move.to.rank == 7 &&
-                _gameState.value.position.turn == Side.white));
   }
 
   /// Undo last move
@@ -893,8 +906,8 @@ class GameController extends BaseGameController {
   void reset() {
     _gameState.value = GameState(initial: Chess.initial);
     _updateReactiveState();
-    _promotionMove.value = null;
-    _premove.value = null;
+    promotionMove.value = null;
+    premove.value = null;
     AppLogger.gameEvent('GameReset');
   }
 
@@ -1032,43 +1045,5 @@ class GameController extends BaseGameController {
         tag: 'GameController',
       );
     }
-  }
-
-  /// Update all reactive state variables
-  /// تحديث جميع متغيرات الحالة التفاعلية
-  void _updateReactiveState() {
-    _currentFen.value = _gameState.value.position.fen;
-    _currentTurn.value = _gameState.value.turn;
-    _isGameOver.value = _gameState.value.isGameOverExtended;
-    _gameResult.value = GameService.calculateResult(
-      _gameState.value,
-      _currentGame.value!.termination,
-      //   _gameState.value.status(),
-    );
-    _termination.value = _currentGame.value!.termination;
-    // _termination.value = _gameState.value.status();
-    _lastMove.value = _gameState.value.lastMoveMeta;
-    // _validMoves.value = _makeLegalMoves();
-    _canUndo.value = _gameState.value.canUndo;
-    _canRedo.value = _gameState.value.canRedo;
-    _materialAdvantage.value =
-        _gameState.value.getMaterialAdvantageSignedForWhite;
-    _isCheck.value = _gameState.value.isCheck;
-  }
-
-  /// Set loading state
-  void _setLoading(bool value) {
-    _isLoading.value = value;
-  }
-
-  /// Set error message
-  void _setError(String message) {
-    _errorMessage.value = message;
-    AppLogger.error(message, tag: 'GameController');
-  }
-
-  /// Clear error message
-  void _clearError() {
-    _errorMessage.value = '';
   }
 }

@@ -122,7 +122,7 @@ class GameScreen extends GetView<GameController> {
         // Chess board
         Expanded(
           child: Center(
-            child: AspectRatio(aspectRatio: 1.0, child: ChessBoardWidget()),
+            child: AspectRatio(aspectRatio: 1.2, child: ChessBoardWidget()),
           ),
         ),
 
@@ -555,10 +555,6 @@ class ChessBoardWidget extends GetView<GameController> {
                         )
                       : null,
                   enableCoordinates: true,
-
-                  // showLastMove: true,
-                  // enablePremoveCastling: true,
-                  // showValidMoves: true,
                   autoQueenPromotion: false,
                   animationDuration: ctrlBoardSettings.pieceAnimation.value
                       ? const Duration(milliseconds: 200)
@@ -577,28 +573,23 @@ class ChessBoardWidget extends GetView<GameController> {
                   ),
                   pieceShiftMethod: ctrlBoardSettings.pieceShiftMethod.value,
                   autoQueenPromotionOnPremove: false,
-                  pieceOrientationBehavior:
-                      // controller.playMode == Mode.freePlay
-                      // PieceOrientationBehavior.opponentUpsideDown,
-                      PieceOrientationBehavior.facingUser,
+                  pieceOrientationBehavior: PieceOrientationBehavior.facingUser,
                 ),
                 orientation: ctrlBoardSettings.orientation.value,
 
                 fen: controller.currentFen,
                 // lastMove: controller.lastMove,
                 game: GameData(
-                  playerSide: controller.gameState.result == null
-                      ? controller.playerSide
-                      : PlayerSide.none,
+                  playerSide: PlayerSide.both,
                   validMoves: controller.validMoves,
                   sideToMove: controller.gameState.position.turn,
                   isCheck: controller.gameState.position.isCheck,
-                  promotionMove: controller.promotionMove,
-                  onMove: controller.onUserMove,
+                  promotionMove: controller.promotionMove.value,
+                  onMove: controller.onUserMoveAgainstAI,
                   onPromotionSelection: controller.onPromotionSelection,
                   premovable: (
                     onSetPremove: controller.onSetPremove,
-                    premove: controller.premove,
+                    premove: controller.premove.value,
                   ),
                 ),
 

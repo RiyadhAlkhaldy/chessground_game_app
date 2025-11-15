@@ -80,14 +80,22 @@ void makeShowChoicesPicker<T extends Enum>(
           mainAxisSize: MainAxisSize.min,
           children: choices
               .map((value) {
-                return RadioListTile<T>(
-                  title: labelBuilder(value),
-                  value: value,
-                  groupValue: selectedItem,
+                return RadioGroup<T>(
+                  groupValue: selectedItem, // Managed by RadioGroup now
                   onChanged: (value) {
                     if (value != null) onSelectedItemChanged(value);
                     Navigator.of(context).pop();
                   },
+                  child: RadioMenuButton<T>(
+                    onChanged: (value) {
+                      if (value != null) onSelectedItemChanged(value);
+                      Navigator.of(context).pop();
+                    },
+                    value: value,
+                    groupValue: selectedItem,
+
+                    child: labelBuilder(value),
+                  ),
                 );
               })
               .toList(growable: false),

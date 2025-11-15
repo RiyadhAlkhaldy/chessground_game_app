@@ -35,9 +35,9 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: const Text('Setup Game', style: TextStyle(color: Colors.white)),
+        title: const Text('Setup Game'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back),
           onPressed: Get.back,
         ),
       ),
@@ -159,6 +159,35 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
                   ],
                 ),
                 const SizedBox(height: 20),
+                Row(
+                  children: [
+                    GameLevelRadioButton(
+                      onChanged: (value) {
+                        controller.setGameDifficulty(level: 1);
+                      },
+                      value: GameDifficulty.easy,
+                      groupValue: controller.gameDifficulty,
+                      title: GameDifficulty.medium.name,
+                    ),
+                    GameLevelRadioButton(
+                      onChanged: (value) {
+                        controller.setGameDifficulty(level: 2);
+                      },
+
+                      value: GameDifficulty.medium,
+                      groupValue: controller.gameDifficulty,
+                      title: GameDifficulty.medium.name,
+                    ),
+                    GameLevelRadioButton(
+                      onChanged: (value) {
+                        controller.setGameDifficulty(level: 3);
+                      },
+                      value: GameDifficulty.hard,
+                      groupValue: controller.gameDifficulty,
+                      title: GameDifficulty.hard.name,
+                    ),
+                  ],
+                ),
 
                 controller.vsComputer
                     ? Obx(

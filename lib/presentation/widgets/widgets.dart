@@ -19,15 +19,15 @@ class PlayerColorRadioButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RadioListTile<Side>(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      value: value,
-      dense: true,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      contentPadding: EdgeInsets.zero,
-      tileColor: Colors.grey[300],
-      groupValue: groupValue,
-      onChanged: onChanged,
+    return RadioGroup<Side>(
+      groupValue: groupValue, // Managed by RadioGroup now
+      onChanged: onChanged!,
+      child: RadioMenuButton<Side>(
+        onChanged: onChanged,
+        value: value,
+        groupValue: groupValue,
+        child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      ),
     );
   }
 }
@@ -50,18 +50,18 @@ class GameLevelRadioButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final capitalizedTitle = title[0].toUpperCase() + title.substring(1);
     return Expanded(
-      child: RadioListTile<GameDifficulty>(
-        title: Text(
-          capitalizedTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+      child: RadioGroup<GameDifficulty>(
+        groupValue: groupValue, // Managed by RadioGroup now
+        onChanged: onChanged!,
+        child: RadioMenuButton<GameDifficulty>(
+          onChanged: onChanged,
+          value: value,
+          groupValue: groupValue,
+          child: Text(
+            capitalizedTitle,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
-        value: value,
-        dense: true,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        contentPadding: EdgeInsets.zero,
-        tileColor: Colors.grey[300],
-        groupValue: groupValue,
-        onChanged: onChanged,
       ),
     );
   }
