@@ -103,10 +103,10 @@ class PlatformScaffold extends StatelessWidget {
           bottomNavigationBar ??
           (hasExtendedBodyParentScaffold
               ? Container(
-                color: Colors.transparent,
-                height: MediaQuery.paddingOf(context).bottom,
-                width: double.infinity,
-              )
+                  color: Colors.transparent,
+                  height: MediaQuery.paddingOf(context).bottom,
+                  width: double.infinity,
+                )
               : null),
     );
   }
@@ -150,14 +150,14 @@ class PlatformAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return isIOS
         ? ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: kCupertinoBarBlurSigma,
-              sigmaY: kCupertinoBarBlurSigma,
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: kCupertinoBarBlurSigma,
+                sigmaY: kCupertinoBarBlurSigma,
+              ),
+              child: appBar,
             ),
-            child: appBar,
-          ),
-        )
+          )
         : appBar;
   }
 }

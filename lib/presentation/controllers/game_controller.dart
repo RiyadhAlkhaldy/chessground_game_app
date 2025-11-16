@@ -346,46 +346,6 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
     }
   }
 
-  /// Execute move and update state
-  Future<void> _executeMove(NormalMove move) async {
-    try {
-      // Play the move
-      _gameState.value.play(move, nags: []);
-
-      // Update reactive state
-      _updateReactiveState();
-
-      // Auto-save if enabled
-      if (_autoSaveEnabled.value) {
-        // await _autoSaveGame();
-      }
-
-      // Play sound based on move type
-      final meta = _gameState.value.lastMoveMeta;
-      if (meta != null) {
-        // Here you would call your sound use case
-        // plySound.executeMoveSound() or similar
-      }
-
-      AppLogger.move(
-        meta?.san ?? move.uci,
-        fen: _currentFen.value,
-        isCheck: _isCheck.value,
-      );
-
-      // Try to execute premove if any
-      _tryPlayPremove();
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error executing move',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'GameController',
-      );
-      _setError('Failed to execute move: ${e.toString()}');
-    }
-  }
-
   /// Try to play premove
   void _tryPlayPremove() {
     if (premove.value != null) {
@@ -393,15 +353,6 @@ abstract class BaseGameController extends GetxController with InitGameMixin {
       premove.value = null;
       onUserMoveAgainstAI(prmove, isPremove: true);
     }
-  }
-
-  /// Check if move is a promotion pawn move
-  bool _isPromotionPawnMove(NormalMove move) {
-    return move.promotion == null &&
-        _gameState.value.position.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == 0 && _gameState.value.position.turn == Side.black) ||
-            (move.to.rank == 7 &&
-                _gameState.value.position.turn == Side.white));
   }
 
   bool isPromotionPawnMove(NormalMove move) {

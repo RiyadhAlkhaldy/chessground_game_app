@@ -89,8 +89,9 @@ void main() {
     });
 
     test('tricky tokens', () {
-      final steps =
-          PgnGame.parsePgn('O-O-O !! 0-0-0# ??').moves.mainline().toList();
+      final steps = PgnGame.parsePgn(
+        'O-O-O !! 0-0-0# ??',
+      ).moves.mainline().toList();
       expect(steps[0].san, 'O-O-O');
       expect(steps[0].nags, [3]);
       expect(steps[1].san, 'O-O-O#');
@@ -323,8 +324,9 @@ the players are also trying to learn as much as possible about the opponent's pr
     ///
     /// This tests a fix which avoids an infinite loop in the described scenario.
     test('Parse initial game comments - comment before newline', () {
-      final String data =
-          File('./data/wcc_2023_eolcomment.pgn').readAsStringSync();
+      final String data = File(
+        './data/wcc_2023_eolcomment.pgn',
+      ).readAsStringSync();
       final game = PgnGame.parsePgn(data);
       expect(game.comments, [
         '''
@@ -340,22 +342,25 @@ the players are also trying to learn as much as possible about the opponent's pr
     ///
     /// This tests a fix which avoids an infinite loop in the described scenario.
     test('pgn file - WCC 2023 - comment before newline', () {
-      final String data =
-          File('./data/wcc_2023_eolcomment.pgn').readAsStringSync();
+      final String data = File(
+        './data/wcc_2023_eolcomment.pgn',
+      ).readAsStringSync();
       final List<PgnGame<PgnNodeData>> games = PgnGame.parseMultiGamePgn(data);
       expect(games.length, 3);
     });
 
     test('pgn file - kasparov-deep-blue-1997', () {
-      final String data =
-          File('./data/kasparov-deep-blue-1997.pgn').readAsStringSync();
+      final String data = File(
+        './data/kasparov-deep-blue-1997.pgn',
+      ).readAsStringSync();
       final List<PgnGame<PgnNodeData>> games = PgnGame.parseMultiGamePgn(data);
       expect(games.length, 6);
     });
 
     test('pgn file - specify empty headers', () {
-      final String data =
-          File('./data/kasparov-deep-blue-1997.pgn').readAsStringSync();
+      final String data = File(
+        './data/kasparov-deep-blue-1997.pgn',
+      ).readAsStringSync();
       final List<PgnGame<PgnNodeData>> games = PgnGame.parseMultiGamePgn(
         data,
         initHeaders: () => {},
@@ -364,8 +369,9 @@ the players are also trying to learn as much as possible about the opponent's pr
     });
 
     test('pgn file - leading-whitespace', () {
-      final String data =
-          File('./data/leading-whitespace.pgn').readAsStringSync();
+      final String data = File(
+        './data/leading-whitespace.pgn',
+      ).readAsStringSync();
       final List<PgnGame<PgnNodeData>> games = PgnGame.parseMultiGamePgn(data);
       expect(games[0].moves.mainline().map((move) => move.san).toList(), [
         'e4',
@@ -390,10 +396,9 @@ the players are also trying to learn as much as possible about the opponent's pr
     });
 
     test('pgn file - headers-and-moves-on-the-same-line', () {
-      final String data =
-          File(
-            './data/headers-and-moves-on-the-same-line.pgn',
-          ).readAsStringSync();
+      final String data = File(
+        './data/headers-and-moves-on-the-same-line.pgn',
+      ).readAsStringSync();
       final List<PgnGame<PgnNodeData>> games = PgnGame.parseMultiGamePgn(data);
       expect(games[0].headers['Variant'], 'Antichess');
       expect(games[1].moves.mainline().map((move) => move.san).toList(), [
@@ -407,8 +412,9 @@ the players are also trying to learn as much as possible about the opponent's pr
     });
 
     test('pgn file - pathological-headers', () {
-      final String data =
-          File('./data/pathological-headers.pgn').readAsStringSync();
+      final String data = File(
+        './data/pathological-headers.pgn',
+      ).readAsStringSync();
       final List<PgnGame<PgnNodeData>> games = PgnGame.parseMultiGamePgn(data);
       expect(games[0].headers['A'], 'b"');
       expect(games[0].headers['B'], 'b"');

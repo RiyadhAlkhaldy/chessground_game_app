@@ -25,15 +25,15 @@ class SideChoosingController extends GetxController {
   // Method to change the player's color
   void changeValuecolorPlayer(SideChoosing plyrClor) =>
       plyrClor != SideChoosing.white && plyrClor != SideChoosing.black
-          ? () {
-            // make random between SideChoosing.white and SideChoosing.black
-            if (_random.nextInt(13) % 2 == 0) {
-              changeValuecolorPlayer(SideChoosing.white);
-            } else {
-              changeValuecolorPlayer(SideChoosing.black);
-            }
+      ? () {
+          // make random between SideChoosing.white and SideChoosing.black
+          if (_random.nextInt(13) % 2 == 0) {
+            changeValuecolorPlayer(SideChoosing.white);
+          } else {
+            changeValuecolorPlayer(SideChoosing.black);
           }
-          : playerColor.value = plyrClor;
+        }
+      : playerColor.value = plyrClor;
 
   var timeMs = 1000.0;
 

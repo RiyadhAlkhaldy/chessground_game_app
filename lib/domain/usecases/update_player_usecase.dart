@@ -4,9 +4,9 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../core/errors/failures.dart';
-import '../../../core/utils/logger.dart'; 
+import '../../../core/utils/logger.dart';
 import '../entities/player_entity.dart';
-import '../repositories/player_repository.dart'; 
+import '../repositories/player_repository.dart';
 import 'usecase.dart';
 
 /// Use case for updating a player

@@ -2,8 +2,10 @@
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+
 String makePgnFromSanList({
-  required Map<String, String> headers, // ex: {'Event':'MyGame', 'White':'Alice', ...}
+  required Map<String, String>
+  headers, // ex: {'Event':'MyGame', 'White':'Alice', ...}
   required List<String> sanMoves,
   required String result, // "1-0", "0-1", "1/2-1/2", or "*"
 }) {
@@ -31,7 +33,6 @@ String makePgnFromSanList({
   sb.writeln(movesSb.toString().trim());
   return sb.toString();
 }
-
 
 // مساعدة لتطبيق حركة مع الحصول على SAN (يدعم طريقتين إن لزم)
 Position applyMoveAndRecordSAN(Position p, NormalMove move, List<String> out) {
@@ -132,4 +133,3 @@ void main() {
     debugPrint('Is game over? ${pos.isGameOver}  Outcome: ${pos.outcome}');
   });
 }
-

@@ -12,7 +12,8 @@ part of 'player_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 PlayerModel _$PlayerModelFromJson(Map<String, dynamic> json) {
   return _PlayerModel.fromJson(json);
@@ -20,7 +21,7 @@ PlayerModel _$PlayerModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PlayerModel {
-// المفتاح المحلي في Isar. يجب أن يكون اختياريًا (nullable) عند الإنشاء.
+  // المفتاح المحلي في Isar. يجب أن يكون اختياريًا (nullable) عند الإنشاء.
   int? get id =>
       throw _privateConstructorUsedError; // UUID ثابت للتعرّف على اللاعب، وهو جزء أساسي من هوية اللاعب.
   String get uuid => throw _privateConstructorUsedError; // اسم اللاعب
@@ -42,18 +43,20 @@ mixin _$PlayerModel {
 /// @nodoc
 abstract class $PlayerModelCopyWith<$Res> {
   factory $PlayerModelCopyWith(
-          PlayerModel value, $Res Function(PlayerModel) then) =
-      _$PlayerModelCopyWithImpl<$Res, PlayerModel>;
+    PlayerModel value,
+    $Res Function(PlayerModel) then,
+  ) = _$PlayerModelCopyWithImpl<$Res, PlayerModel>;
   @useResult
-  $Res call(
-      {int? id,
-      String uuid,
-      String name,
-      String type,
-      int playerRating,
-      String? email,
-      String? image,
-      DateTime createdAt});
+  $Res call({
+    int? id,
+    String uuid,
+    String name,
+    String type,
+    int playerRating,
+    String? email,
+    String? image,
+    DateTime createdAt,
+  });
 }
 
 /// @nodoc
@@ -78,40 +81,43 @@ class _$PlayerModelCopyWithImpl<$Res, $Val extends PlayerModel>
     Object? image = freezed,
     Object? createdAt = null,
   }) {
-    return _then(_value.copyWith(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      uuid: null == uuid
-          ? _value.uuid
-          : uuid // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as String,
-      playerRating: null == playerRating
-          ? _value.playerRating
-          : playerRating // ignore: cast_nullable_to_non_nullable
-              as int,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      image: freezed == image
-          ? _value.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: freezed == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            uuid: null == uuid
+                ? _value.uuid
+                : uuid // ignore: cast_nullable_to_non_nullable
+                      as String,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            type: null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                      as String,
+            playerRating: null == playerRating
+                ? _value.playerRating
+                : playerRating // ignore: cast_nullable_to_non_nullable
+                      as int,
+            email: freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            image: freezed == image
+                ? _value.image
+                : image // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -119,19 +125,21 @@ class _$PlayerModelCopyWithImpl<$Res, $Val extends PlayerModel>
 abstract class _$$PlayerModelImplCopyWith<$Res>
     implements $PlayerModelCopyWith<$Res> {
   factory _$$PlayerModelImplCopyWith(
-          _$PlayerModelImpl value, $Res Function(_$PlayerModelImpl) then) =
-      __$$PlayerModelImplCopyWithImpl<$Res>;
+    _$PlayerModelImpl value,
+    $Res Function(_$PlayerModelImpl) then,
+  ) = __$$PlayerModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {int? id,
-      String uuid,
-      String name,
-      String type,
-      int playerRating,
-      String? email,
-      String? image,
-      DateTime createdAt});
+  $Res call({
+    int? id,
+    String uuid,
+    String name,
+    String type,
+    int playerRating,
+    String? email,
+    String? image,
+    DateTime createdAt,
+  });
 }
 
 /// @nodoc
@@ -139,8 +147,9 @@ class __$$PlayerModelImplCopyWithImpl<$Res>
     extends _$PlayerModelCopyWithImpl<$Res, _$PlayerModelImpl>
     implements _$$PlayerModelImplCopyWith<$Res> {
   __$$PlayerModelImplCopyWithImpl(
-      _$PlayerModelImpl _value, $Res Function(_$PlayerModelImpl) _then)
-      : super(_value, _then);
+    _$PlayerModelImpl _value,
+    $Res Function(_$PlayerModelImpl) _then,
+  ) : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -154,72 +163,75 @@ class __$$PlayerModelImplCopyWithImpl<$Res>
     Object? image = freezed,
     Object? createdAt = null,
   }) {
-    return _then(_$PlayerModelImpl(
-      id: freezed == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as int?,
-      uuid: null == uuid
-          ? _value.uuid
-          : uuid // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as String,
-      playerRating: null == playerRating
-          ? _value.playerRating
-          : playerRating // ignore: cast_nullable_to_non_nullable
-              as int,
-      email: freezed == email
-          ? _value.email
-          : email // ignore: cast_nullable_to_non_nullable
-              as String?,
-      image: freezed == image
-          ? _value.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as String?,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-    ));
+    return _then(
+      _$PlayerModelImpl(
+        id: freezed == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        uuid: null == uuid
+            ? _value.uuid
+            : uuid // ignore: cast_nullable_to_non_nullable
+                  as String,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        type: null == type
+            ? _value.type
+            : type // ignore: cast_nullable_to_non_nullable
+                  as String,
+        playerRating: null == playerRating
+            ? _value.playerRating
+            : playerRating // ignore: cast_nullable_to_non_nullable
+                  as int,
+        email: freezed == email
+            ? _value.email
+            : email // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        image: freezed == image
+            ? _value.image
+            : image // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$PlayerModelImpl implements _PlayerModel {
-  const _$PlayerModelImpl(
-      {required this.id,
-      required this.uuid,
-      required this.name,
-      required this.type,
-      this.playerRating = 1200,
-      this.email,
-      this.image,
-      required this.createdAt});
+  const _$PlayerModelImpl({
+    required this.id,
+    required this.uuid,
+    required this.name,
+    required this.type,
+    this.playerRating = 1200,
+    this.email,
+    this.image,
+    required this.createdAt,
+  });
 
   factory _$PlayerModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$PlayerModelImplFromJson(json);
 
-// المفتاح المحلي في Isar. يجب أن يكون اختياريًا (nullable) عند الإنشاء.
+  // المفتاح المحلي في Isar. يجب أن يكون اختياريًا (nullable) عند الإنشاء.
   @override
   final int? id;
-// UUID ثابت للتعرّف على اللاعب، وهو جزء أساسي من هوية اللاعب.
+  // UUID ثابت للتعرّف على اللاعب، وهو جزء أساسي من هوية اللاعب.
   @override
   final String uuid;
-// اسم اللاعب
+  // اسم اللاعب
   @override
   final String name;
-// نوع اللاعب (guest/human/computer/registered)
+  // نوع اللاعب (guest/human/computer/registered)
   @override
   final String type;
-// تصنيف اللاعب
+  // تصنيف اللاعب
   @override
   @JsonKey()
   final int playerRating;
@@ -227,7 +239,7 @@ class _$PlayerModelImpl implements _PlayerModel {
   final String? email;
   @override
   final String? image;
-// تاريخ الإنشاء. يجب أن يكون اختياريًا/تلقائيًا.
+  // تاريخ الإنشاء. يجب أن يكون اختياريًا/تلقائيًا.
   @override
   final DateTime createdAt;
 
@@ -256,7 +268,16 @@ class _$PlayerModelImpl implements _PlayerModel {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, uuid, name, type, playerRating, email, image, createdAt);
+    runtimeType,
+    id,
+    uuid,
+    name,
+    type,
+    playerRating,
+    email,
+    image,
+    createdAt,
+  );
 
   @JsonKey(ignore: true)
   @override
@@ -266,22 +287,21 @@ class _$PlayerModelImpl implements _PlayerModel {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PlayerModelImplToJson(
-      this,
-    );
+    return _$$PlayerModelImplToJson(this);
   }
 }
 
 abstract class _PlayerModel implements PlayerModel {
-  const factory _PlayerModel(
-      {required final int? id,
-      required final String uuid,
-      required final String name,
-      required final String type,
-      final int playerRating,
-      final String? email,
-      final String? image,
-      required final DateTime createdAt}) = _$PlayerModelImpl;
+  const factory _PlayerModel({
+    required final int? id,
+    required final String uuid,
+    required final String name,
+    required final String type,
+    final int playerRating,
+    final String? email,
+    final String? image,
+    required final DateTime createdAt,
+  }) = _$PlayerModelImpl;
 
   factory _PlayerModel.fromJson(Map<String, dynamic> json) =
       _$PlayerModelImpl.fromJson;

@@ -30,7 +30,7 @@ class SoundEffectService {
     const standardPath = 'assets/sounds/standard';
     final soundId = sound.name;
     final file = '$soundId.$_extension';
-    String fullPath = '$themePath/$_extension';
+    String fullPath = '$themePath.$_extension';
     // If the sound file is not found in the theme, fallback to the standard theme.
     try {
       await rootBundle.load(fullPath);

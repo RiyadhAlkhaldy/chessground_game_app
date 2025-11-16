@@ -37,13 +37,15 @@ void main() async {
     //     .getApplicationSupportPath();
     Directory.systemTemp.createSync();
     debugPrint('Using temp directory: ${Directory.systemTemp.path}');
-    await Isar.initializeIsarCore(libraries: {Abi.windowsArm64: Directory.systemTemp.path});
+    await Isar.initializeIsarCore(
+      libraries: {Abi.windowsArm64: Directory.systemTemp.path},
+    );
 
     // set temp directory for path_provider
     // // depending on test env you might need to override platform interface - else tests may fail
     // // PathProviderPlatform.instance = FakePathProvider(tempDir.path);
     await ChessGameStorageService.initForTest(
-        Directory.systemTemp.path,
+      Directory.systemTemp.path,
     ); // اضف دالة initForTest تأخذ المسار المؤقت
     // await ChessGameStorageService.init();
   });

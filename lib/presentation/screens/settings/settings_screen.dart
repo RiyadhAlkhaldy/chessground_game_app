@@ -11,11 +11,10 @@ class SettingsScreen extends GetView<SettingsController> {
   @override
   Widget build(BuildContext context) {
     // 1 استخراج مجموعة من رموز اللغة الفريدة (مثل: {'en', 'ar', 'fr'})
-    final uniqueLanguageCodes =
-        AppLocalizations.supportedLocales
-            .map((l) => l.languageCode)
-            .toSet() // تحويل إلى Set لإزالة أي تكرار
-            .toList(); // تحويلها مرة أخرى إلى قائمة لعرضها
+    final uniqueLanguageCodes = AppLocalizations.supportedLocales
+        .map((l) => l.languageCode)
+        .toSet() // تحويل إلى Set لإزالة أي تكرار
+        .toList(); // تحويلها مرة أخرى إلى قائمة لعرضها
 
     final currentLanguageCode = Get.locale?.languageCode;
 
@@ -31,13 +30,12 @@ class SettingsScreen extends GetView<SettingsController> {
             trailing: DropdownButton<String>(
               // القيمة الحالية يجب أن تكون موجودة في قائمة العناصر (items) مرة واحدة فقط
               value: currentLanguageCode,
-              items:
-                  uniqueLanguageCodes.map((code) {
-                    return DropdownMenuItem<String>(
-                      value: code, // <--- الآن كل قيمة (value) ستكون فريدة
-                      child: AutoSizeText(code),
-                    );
-                  }).toList(),
+              items: uniqueLanguageCodes.map((code) {
+                return DropdownMenuItem<String>(
+                  value: code, // <--- الآن كل قيمة (value) ستكون فريدة
+                  child: AutoSizeText(code),
+                );
+              }).toList(),
               onChanged: (val) {
                 if (val != null) controller.changeLocale(val);
               },

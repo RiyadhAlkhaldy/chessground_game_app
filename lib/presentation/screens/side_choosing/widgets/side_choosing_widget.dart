@@ -14,53 +14,50 @@ class SideChosingWidget extends StatelessWidget {
     return Obx(
       () => Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children:
-            SideChoosing.values.map((color) {
-              // if (SideChoosing.both == color) ;
-              Widget? widget;
-              String? label;
-              switch (color) {
-                case SideChoosing.white:
-                  label = 'White';
-                  widget = WhitePawn(size: 50);
-                  break;
-                case SideChoosing.random:
-                  label = 'Random';
-                  widget = Row(
-                    children: [BlackPawn(size: 30), WhitePawn(size: 30)],
-                  );
-                  break;
-                case SideChoosing.black:
-                  label = 'Black';
-                  widget = BlackPawn(size: 50);
-                  break;
-              }
-              return GestureDetector(
-                onTap: () => controller.playerColor.value = color,
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor:
-                          controller.playerColor.value == color
-                              ? Colors.blue.shade100
-                              : Colors.grey,
-                      radius: 30,
-                      child: widget,
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        color:
-                            controller.playerColor.value == color
-                                ? Colors.blue.shade200
-                                : Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
+        children: SideChoosing.values.map((color) {
+          // if (SideChoosing.both == color) ;
+          Widget? widget;
+          String? label;
+          switch (color) {
+            case SideChoosing.white:
+              label = 'White';
+              widget = WhitePawn(size: 50);
+              break;
+            case SideChoosing.random:
+              label = 'Random';
+              widget = Row(
+                children: [BlackPawn(size: 30), WhitePawn(size: 30)],
               );
-            }).toList(),
+              break;
+            case SideChoosing.black:
+              label = 'Black';
+              widget = BlackPawn(size: 50);
+              break;
+          }
+          return GestureDetector(
+            onTap: () => controller.playerColor.value = color,
+            child: Column(
+              children: [
+                CircleAvatar(
+                  backgroundColor: controller.playerColor.value == color
+                      ? Colors.blue.shade100
+                      : Colors.grey,
+                  radius: 30,
+                  child: widget,
+                ),
+                SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: controller.playerColor.value == color
+                        ? Colors.blue.shade200
+                        : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }

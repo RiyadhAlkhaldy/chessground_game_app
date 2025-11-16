@@ -139,7 +139,7 @@ class GameService {
   static String calculateResult(
     GameState gameState,
     GameTermination termination,
-  ) { 
+  ) {
     if (termination == GameTermination.ongoing) {
       return '*';
     }

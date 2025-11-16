@@ -31,7 +31,7 @@ class InitChessGameParams {
   final PlayerEntity? blackPlayer;
 
   @override
-  String toString() { 
+  String toString() {
     return "event";
   }
 }

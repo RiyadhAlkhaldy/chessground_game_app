@@ -13,7 +13,7 @@
 //       if (pv.isEmpty) {
 //         return const SizedBox(height: 24, child: Center(child: Text("...")));
 //       }
-      
+
 //       final bestMove = pv.split(' ').first;
 //       final continuation = pv.length > 1 ? pv.split('').take(4).join(' ') : '';
 

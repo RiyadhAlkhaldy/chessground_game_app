@@ -58,16 +58,17 @@ String relativeDate(
   final now = DateTime.now();
   final diff = date.difference(now);
 
-  final yearFormatter =
-      shortDate ? _dateFormatterWithYearShort : _dateFormatterWithYear;
+  final yearFormatter = shortDate
+      ? _dateFormatterWithYearShort
+      : _dateFormatterWithYear;
 
   if (diff.isNegative) {
     return diff.inDays == 0
         ? diff.inHours == 0
-            ? diff.inMinutes == 0
-                ? l10n.timeagoRightNow
-                : l10n.timeagoNbMinutesAgo(diff.inMinutes.abs())
-            : l10n.timeagoNbHoursAgo(diff.inHours.abs())
+              ? diff.inMinutes == 0
+                    ? l10n.timeagoRightNow
+                    : l10n.timeagoNbMinutesAgo(diff.inMinutes.abs())
+              : l10n.timeagoNbHoursAgo(diff.inHours.abs())
         : diff.inDays == 1
         ? l10n.yesterday
         : diff.inDays.abs() <= 7
@@ -80,10 +81,10 @@ String relativeDate(
   }
   return diff.inDays == 0
       ? diff.inHours == 0
-          ? diff.inMinutes == 0
-              ? l10n.timeagoInNbSeconds(diff.inSeconds)
-              : l10n.timeagoInNbMinutes(diff.inMinutes)
-          : l10n.timeagoInNbHours(diff.inHours)
+            ? diff.inMinutes == 0
+                  ? l10n.timeagoInNbSeconds(diff.inSeconds)
+                  : l10n.timeagoInNbMinutes(diff.inMinutes)
+            : l10n.timeagoInNbHours(diff.inHours)
       : diff.inDays.abs() <= 7
       ? l10n.timeagoInNbDays(diff.inDays)
       : diff.inDays.abs() <= 30

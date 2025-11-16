@@ -505,7 +505,7 @@ class ChessGameRepositoryImpl implements ChessGameRepository {
         tag: 'ChessGameRepository',
       );
 
-       yield* localDataSource.watchGame(uuid).map((model) {
+      yield* localDataSource.watchGame(uuid).map((model) {
         if (model == null) {
           return Left(NotFoundFailure(message: 'Game not found: $uuid'));
         }
@@ -523,7 +523,7 @@ class ChessGameRepositoryImpl implements ChessGameRepository {
       //       message: 'Failed to watch game: ${error.toString()}',
       //     ),
       //   );
-      // }); 
+      // });
     } catch (e, stackTrace) {
       AppLogger.error(
         'Repository: Failed to setup game watch',

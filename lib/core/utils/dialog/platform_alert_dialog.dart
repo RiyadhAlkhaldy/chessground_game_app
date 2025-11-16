@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'platform.dart'; 
+import 'platform.dart';
+
 /// Displays a [TextButton] for Android and a [CupertinoDialogAction] for iOS.
 ///
 /// To be used with [AlertDialog.adaptive].
@@ -29,7 +30,8 @@ class PlatformDialogAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlatformWidget(
-      androidBuilder: (context) => TextButton(onPressed: onPressed, child: child),
+      androidBuilder: (context) =>
+          TextButton(onPressed: onPressed, child: child),
       iosBuilder: (context) => CupertinoDialogAction(
         onPressed: onPressed,
         isDefaultAction: cupertinoIsDefaultAction,
