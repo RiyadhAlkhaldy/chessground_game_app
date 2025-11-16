@@ -70,7 +70,7 @@ class BuildPortrait extends StatelessWidget {
                     blackCapturedList: ctrl.blackCapturedList,
                     gameState: ctrl.gameState,
                   ),
-                  ChessBoardWidget(),
+                  const ChessBoardWidget(),
                   ShowCircleAvatarAndTimerInDown(
                     whitePlayer: ctrl.whitePlayer,
                     blackPlayer: ctrl.blackPlayer,
@@ -83,8 +83,8 @@ class BuildPortrait extends StatelessWidget {
             ),
 
             const SizedBox(height: screenPortraitSplitter),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: screenPadding),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: screenPadding),
               child: BuildControlButtons(),
             ),
           ],
@@ -106,7 +106,7 @@ class BuildLandScape extends StatelessWidget {
         children: [
           Expanded(
             child: GetBuilder<GameComputerController>(
-              builder: (_) => ChessBoardWidget(),
+              builder: (_) => const ChessBoardWidget(),
             ),
           ),
 
@@ -138,9 +138,9 @@ class BuildLandScape extends StatelessWidget {
                   blackCapturedList: ctrl.blackCapturedList,
                   gameState: ctrl.gameState,
                 ),
-                Expanded(child: ChessBoardSettingsWidgets()),
+                const Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),
-                BuildControlButtons(),
+                const BuildControlButtons(),
               ],
             ),
           ),
@@ -196,8 +196,8 @@ Widget buildMenuButton() => IconButton(
   icon: Icon(Symbols.menu, size: iconSize),
   onPressed: () {
     Get.dialog(
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: screenPadding),
+      const Padding(
+        padding: EdgeInsets.symmetric(horizontal: screenPadding),
         child: ChessBoardSettingsWidgets(),
       ),
       name: Get.context!.l10n.mobileBoardSettings,

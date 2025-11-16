@@ -9,7 +9,7 @@ class SideChoosingView extends StatelessWidget {
   final controller = Get.find<SideChoosingController>();
 
   SideChoosingView({super.key});
-  final sizedBox = SizedBox(height: 15);
+  final sizedBox = const SizedBox(height: 15);
   @override
   Widget build(BuildContext context) {
     return Scaffold(

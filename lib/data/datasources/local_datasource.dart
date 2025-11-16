@@ -46,7 +46,7 @@ class LocalDataSourceImpl implements LocalDataSource {
       }
       final model = ChessGameModel(
         id: Isar.autoIncrement,
-        uuid: Uuid().v4(),
+        uuid: const Uuid().v4(),
         event: chessParams.event ?? '',
         site: chessParams.site ?? '',
         date: chessParams.date ?? DateTime.now(),

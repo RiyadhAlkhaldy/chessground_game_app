@@ -13,7 +13,7 @@ class TodoService {
   static Future<void> adds() async {
     Todo todo;
     for (int i = 0; i < 5; i++) {
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(const Duration(seconds: 3));
       debugPrint("i+i======== add");
       todo = Todo()..content = "i+i========";
 

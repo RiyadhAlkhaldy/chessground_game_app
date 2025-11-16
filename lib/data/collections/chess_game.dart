@@ -11,7 +11,7 @@ part 'chess_game.g.dart';
 @Collection()
 class ChessGame {
   Id id = Isar.autoIncrement;
-  String uuid = Uuid().v4();
+  String uuid = const Uuid().v4();
 
   // Seven Tag Roster + إضافات
   @Index(type: IndexType.value)

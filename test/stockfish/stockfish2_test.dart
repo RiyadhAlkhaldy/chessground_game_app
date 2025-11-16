@@ -35,7 +35,7 @@ void main() {
       debugPrint(stockfish.state.value.toString());
       final x = await stockfish.stdout.single.then((v) => v);
       debugPrint(x);
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
       debugPrint(stockfish.state.value.toString());
       // stockfish
 

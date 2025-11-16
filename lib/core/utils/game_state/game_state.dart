@@ -219,7 +219,7 @@ class GameState {
     final wasCheck = _pos.isCheck;
     final wasCheckmate = _pos.isCheckmate;
 
-    int moveNumber = int.parse(_pos.fen.split(' ').last);
+    final int moveNumber = int.parse(_pos.fen.split(' ').last);
     debugPrint("moveNumber $moveNumber");
 
     /// last move metadata (used by controller to decide which sound to play, UI badges, etc.)

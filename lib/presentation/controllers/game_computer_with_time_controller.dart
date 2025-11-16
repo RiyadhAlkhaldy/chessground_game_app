@@ -257,7 +257,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
   }
 
   Future<void> playAiMove() async {
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 100));
     if (gameState.isGameOver) return;
 
     final allMoves = [
@@ -465,7 +465,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
   void _makeMoveAi(String best) async {
     debugPrint("best move from stockfish: $best");
 
-    var bestMove = NormalMove.fromUci(best);
+    final bestMove = NormalMove.fromUci(best);
     if (gameState.position.isLegal(bestMove) == false) return;
 
     if (gameState.position.isLegal(bestMove)) {

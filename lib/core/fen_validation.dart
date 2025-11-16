@@ -8,7 +8,7 @@ bool isStrictlyValidFEN(String fen) {
 
   final board = chess.fen.split(' ')[0];
 
-  Map<String, int> pieceCounts = {
+  final Map<String, int> pieceCounts = {
     'P': 'P'.allMatches(board).length,
     'N': 'N'.allMatches(board).length,
     'B': 'B'.allMatches(board).length,
@@ -23,7 +23,7 @@ bool isStrictlyValidFEN(String fen) {
     'k': 'k'.allMatches(board).length,
   };
 
-  Map<String, int> pieceLimits = {
+  final Map<String, int> pieceLimits = {
     'P': 8,
     'N': 10,
     'B': 10,

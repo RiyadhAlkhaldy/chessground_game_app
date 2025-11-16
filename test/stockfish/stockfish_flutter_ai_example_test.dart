@@ -63,7 +63,7 @@ class EngineService {
     _stockfish.stdin = 'uci';
     debugPrint(' befor _waitFor...');
 
-    await _waitFor((l) => l.contains('uciok'), Duration(seconds: 5));
+    await _waitFor((l) => l.contains('uciok'), const Duration(seconds: 5));
 
     await isReady();
   }
@@ -79,7 +79,7 @@ class EngineService {
 
   Future<void> isReady() async {
     _stockfish.stdin = 'isready';
-    await _waitFor((l) => l.contains('readyok'), Duration(seconds: 5));
+    await _waitFor((l) => l.contains('readyok'), const Duration(seconds: 5));
   }
 
   Future<void> ucinewgame() async {

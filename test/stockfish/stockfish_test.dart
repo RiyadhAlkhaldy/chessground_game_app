@@ -35,7 +35,7 @@ void main() {
       // print(x);
 
       stockfishErrorsSubscription.onData((data) => debugPrint(data));
-      await Future.delayed(Duration(seconds: 5));
+      await Future.delayed(const Duration(seconds: 5));
 
       // Get Stockfish ready
       // stockfish.stdin = 'isready';

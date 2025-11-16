@@ -139,7 +139,7 @@ void main() {
       });
 
       test('should correctly identify draw by insufficient material', () {
-        var fen1 = 'k7/8/K7/8/8/8/8/8 w - - 0 1';
+        final fen1 = 'k7/8/K7/8/8/8/8/8 w - - 0 1';
         gameState = GameState(initial: Chess.fromSetup(Setup.parseFen(fen1)));
         expect(
           gameState.isInsufficientMaterial,
@@ -147,7 +147,7 @@ void main() {
           reason: 'King vs King is a draw',
         );
 
-        var fen2 = 'k7/8/8/8/8/8/K1B5/8 w - - 0 1';
+        final fen2 = 'k7/8/8/8/8/8/K1B5/8 w - - 0 1';
         gameState = GameState(initial: Chess.fromSetup(Setup.parseFen(fen2)));
         expect(
           gameState.isInsufficientMaterial,
@@ -155,7 +155,7 @@ void main() {
           reason: 'King+Bishop vs King is a draw',
         );
 
-        var fen3 = 'k7/8/8/8/8/8/K1N5/8 w - - 0 1';
+        final fen3 = 'k7/8/8/8/8/8/K1N5/8 w - - 0 1';
         gameState = GameState(initial: Chess.fromSetup(Setup.parseFen(fen3)));
         expect(
           gameState.isInsufficientMaterial,
@@ -173,7 +173,7 @@ void main() {
       });
 
       test('should NOT identify draw if material is sufficient', () {
-        var fen1 = '8/8/8/1k6/8/8/8/K1R5 w - - 0 1';
+        final fen1 = '8/8/8/1k6/8/8/8/K1R5 w - - 0 1';
         gameState = GameState(initial: Chess.fromSetup(Setup.parseFen(fen1)));
         expect(
           gameState.isInsufficientMaterial,
@@ -181,7 +181,7 @@ void main() {
           reason: 'K+R vs K is a win',
         );
 
-        var fen2 = '8/8/8/1k6/8/8/8/K1Q5 w - - 0 1';
+        final fen2 = '8/8/8/1k6/8/8/8/K1Q5 w - - 0 1';
         gameState = GameState(initial: Chess.fromSetup(Setup.parseFen(fen2)));
         expect(
           gameState.isInsufficientMaterial,

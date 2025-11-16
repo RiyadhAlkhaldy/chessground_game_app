@@ -45,7 +45,7 @@ class SideChosingWidget extends StatelessWidget {
                   radius: 30,
                   child: widget,
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   label,
                   style: TextStyle(

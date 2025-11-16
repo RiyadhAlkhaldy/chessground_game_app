@@ -415,7 +415,7 @@ String _manualPgnFromSanList(
     // comment
     if (md.comment != null && md.comment!.trim().isNotEmpty) {
       // basic sanitization: remove '}' and '{' to avoid breaking PGN format
-      var safeComment = md.comment!
+      final safeComment = md.comment!
           .replaceAll('}', '')
           .replaceAll('{', '')
           .trim();

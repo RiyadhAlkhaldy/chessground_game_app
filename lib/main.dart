@@ -73,7 +73,7 @@ class MyApp extends StatelessWidget {
       // translations: AppLocalizations.delegate, // GetX Translations
       supportedLocales: AppLocalizations.supportedLocales,
       initialBinding: GameBinding(),
-      home: HomePage(),
+      home: const HomePage(),
       debugShowCheckedModeBanner: false,
       getPages: AppPages.routes,
     );

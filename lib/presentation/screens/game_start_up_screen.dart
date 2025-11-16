@@ -234,7 +234,7 @@ class _GameStartUpScreenState extends State<GameStartUpScreen> {
                           // navigate to game screen
                           playGame(controller: controller);
                         },
-                        child: Text('Play'),
+                        child: const Text('Play'),
                       ),
 
                 const SizedBox(height: 20),

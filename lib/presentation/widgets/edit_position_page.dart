@@ -48,7 +48,7 @@ class EditPositionPage extends StatelessWidget {
             onPressed: () {
               Get.back(result: positionController.currentPosition);
             },
-            child: Text('Validate position'),
+            child: const Text('Validate position'),
           ),
         ],
       ),

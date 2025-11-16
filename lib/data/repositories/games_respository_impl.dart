@@ -94,8 +94,8 @@ class GamesRepositoryImpl implements GamesRepository {
   Future<void> insertMockDataIfEmpty() async {
     // final count = await isar.chessGames.count();
     // if (count > 0) return;
-    final uuid1 = Uuid().v4();
-    final uuid2 = Uuid().v4();
+    final uuid1 = const Uuid().v4();
+    final uuid2 = const Uuid().v4();
     // داخل transaction نُدخل لاعبين ومباريات
     await isar.writeTxn(() async {
       // أنشئ لاعبين

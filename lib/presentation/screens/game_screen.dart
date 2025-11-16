@@ -120,7 +120,7 @@ class GameScreen extends GetView<GameController> {
         _buildPlayerSection(context, Side.black, isTop: true),
 
         // Chess board
-        Expanded(
+        const Expanded(
           child: Center(
             child: AspectRatio(aspectRatio: 1.2, child: ChessBoardWidget()),
           ),
@@ -144,15 +144,15 @@ class GameScreen extends GetView<GameController> {
     return Row(
       children: [
         // Left side: Game info and move list
-        Expanded(
+        const Expanded(
           flex: 3,
           child: Column(
             children: [
-              const GameInfoWidget(),
-              const Divider(),
-              const Expanded(child: MoveListWidget()),
-              const Divider(),
-              const GameControlsWidget(),
+              GameInfoWidget(),
+              Divider(),
+              Expanded(child: MoveListWidget()),
+              Divider(),
+              GameControlsWidget(),
             ],
           ),
         ),
@@ -163,7 +163,7 @@ class GameScreen extends GetView<GameController> {
           child: Column(
             children: [
               _buildPlayerSection(context, Side.black, isTop: true),
-              Expanded(
+              const Expanded(
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: 1.0,
@@ -177,11 +177,11 @@ class GameScreen extends GetView<GameController> {
         ),
 
         // Right side: Captured pieces
-        Expanded(
+        const Expanded(
           flex: 2,
           child: Column(
             children: [
-              const Padding(
+              Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Text(
                   'Captured Pieces',
@@ -189,7 +189,7 @@ class GameScreen extends GetView<GameController> {
                 ),
               ),
               Expanded(child: CapturedPiecesWidget(side: Side.white)),
-              const Divider(),
+              Divider(),
               Expanded(child: CapturedPiecesWidget(side: Side.black)),
             ],
           ),

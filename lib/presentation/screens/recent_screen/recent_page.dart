@@ -25,7 +25,7 @@ class RecentGamesPage extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('لا توجد مباريات بعد'),
+                  const Text('لا توجد مباريات بعد'),
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () => c.refresh(),

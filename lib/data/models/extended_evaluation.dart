@@ -23,7 +23,7 @@ abstract class ExtendedEvaluation with _$ExtendedEvaluation {
 
   factory ExtendedEvaluation.fromJson(Map<String, dynamic> json) =>
       _$ExtendedEvaluationFromJson(json);
-  factory ExtendedEvaluation.initial() => ExtendedEvaluation(depth: 0);
+  factory ExtendedEvaluation.initial() => const ExtendedEvaluation(depth: 0);
 }
 
 extension ExtendedEvaluationComplete on ExtendedEvaluation {

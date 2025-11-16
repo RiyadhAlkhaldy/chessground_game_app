@@ -19,7 +19,7 @@ class GetStorageControllerImp extends GetStorageController {
 
   @override
   String? getPlayer(String key) {
-    var hasData = instance.hasData(key);
+    final hasData = instance.hasData(key);
     final player = instance.read(key);
 
     return hasData ? player as String : null;
@@ -35,7 +35,7 @@ class GetStorageControllerImp extends GetStorageController {
 
   @override
   String? getUUid(String key) {
-    var hasData = instance.hasData(key);
+    final hasData = instance.hasData(key);
     final uuid = instance.read(key);
 
     return hasData ? uuid as String : null;

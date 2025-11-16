@@ -13,13 +13,13 @@ Future<Locale> getLocale() async {
 
   Locale? locale;
 
-  String? languageCode = storage.instance.read('locale');
+  final String? languageCode = storage.instance.read('locale');
   String? countryCode = storage.instance.read('countryCode');
 
   if (languageCode == null) {
     await storage.instance.write('locale', 'en');
     await storage.instance.write('countryCode', 'en-US');
-    locale = Locale('en', 'en-US');
+    locale = const Locale('en', 'en-US');
   } else {
     if (countryCode == null) {
       await storage.instance.write('countryCode', 'en-US');
@@ -39,11 +39,9 @@ Future<Player?> createOrGetGustPlayer([String key = uuidKeyForUser]) async {
   String? uuid = storage.getUUid(key);
 
   if (uuid == null || uuid.isEmpty) {
-    uuid = Uuid().v4();
+    uuid = const Uuid().v4();
     var newPlayer = Player(
-      name: key == uuidKeyForUser
-          ? 'Guest${uuid.substring(0, 5)}'
-          : 'stockfish',
+      name: key == uuidKeyForUser ? 'Guest${uuid.substring(0, 5)}' : 'stockfish',
       uuid: uuid,
       type: key == uuidKeyForUser ? 'guest' : 'AI',
       email: '',
@@ -101,10 +99,7 @@ void makeShowChoicesPicker<T extends Enum>(
               .toList(growable: false),
         ),
         actions: [
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
+          TextButton(child: const Text('Cancel'), onPressed: () => Navigator.of(context).pop()),
         ],
       );
     },
@@ -117,20 +112,20 @@ Future<bool?> showExitConfirmationDialog(BuildContext context) {
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: Text('إنهاء اللعبة؟'),
-        content: Text('هل أنت متأكد أنك تريد الاستسلام وإنهاء اللعبة؟'),
+        title: const Text('إنهاء اللعبة؟'),
+        content: const Text('هل أنت متأكد أنك تريد الاستسلام وإنهاء اللعبة؟'),
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(false); // لا تسمح بالخروج
             },
-            child: Text('إلغاء'),
+            child: const Text('إلغاء'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(true); // تسمح بالخروج
             },
-            child: Text('استسلام'),
+            child: const Text('استسلام'),
           ),
         ],
       );
@@ -145,14 +140,14 @@ Future<void> showGameOverDialog(BuildContext context, String outcome) {
     barrierDismissible: false, // يمنع إغلاقها بالضغط خارجها
     builder: (context) {
       return AlertDialog(
-        title: Text('انتهت اللعبة!'),
+        title: const Text('انتهت اللعبة!'),
         content: Text(outcome),
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // إغلاق النافذة المنبثقة
             },
-            child: Text('حسناً'),
+            child: const Text('حسناً'),
           ),
         ],
       );

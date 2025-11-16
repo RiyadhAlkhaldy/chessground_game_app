@@ -42,7 +42,7 @@ class StockfishEngineService {
 
     _stockfish?.stdin = 'uci';
 
-    await _waitFor((l) => l.contains('uciok'), Duration(seconds: 3));
+    await _waitFor((l) => l.contains('uciok'), const Duration(seconds: 3));
 
     // _stockfish.stdin = "setoption name UCI_ShowWDL value true";
 
@@ -111,7 +111,7 @@ class StockfishEngineService {
 
   Future<void> isReady() async {
     _stockfish?.stdin = 'isready';
-    await _waitFor((l) => l.contains('readyok'), Duration(seconds: 1));
+    await _waitFor((l) => l.contains('readyok'), const Duration(seconds: 1));
   }
 
   Future<void> ucinewgame() async {
