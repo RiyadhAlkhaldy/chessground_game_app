@@ -6,6 +6,7 @@ import 'package:chessground/chessground.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../core/utils/helper/helper_methodes.dart';
@@ -47,10 +48,7 @@ class GameScreen extends GetView<GameController> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Get.back(),
-                    child: const Text('Go Back'),
-                  ),
+                  ElevatedButton(onPressed: () => Get.back(), child: const Text('Go Back')),
                 ],
               ),
             );
@@ -114,27 +112,24 @@ class GameScreen extends GetView<GameController> {
   /// Build portrait layout
   /// بناء تخطيط الوضع العمودي
   Widget _buildPortraitLayout(BuildContext context) {
-    return Column(
-      children: [
-        // Top player info and captured pieces
-        _buildPlayerSection(context, Side.black, isTop: true),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Top player info and captured pieces
+          _buildPlayerSection(context, Side.black, isTop: true),
 
-        // Chess board
-        const Expanded(
-          child: Center(
-            child: AspectRatio(aspectRatio: 1.2, child: ChessBoardWidget()),
-          ),
-        ),
+          // Chess board
+          const Padding(padding: EdgeInsetsGeometry.all(1), child: ChessBoardWidget()),
 
-        // Bottom player info and captured pieces
-        _buildPlayerSection(context, Side.white, isTop: false),
+          // Bottom player info and captured pieces
+          _buildPlayerSection(context, Side.white, isTop: false),
+          // Game controls
+          const GameControlsWidget(),
 
-        // Game controls
-        const GameControlsWidget(),
-
-        // Move list (collapsible)
-        _buildMoveListSection(context),
-      ],
+          // Move list (collapsible)
+          _buildMoveListSection(context),
+        ],
+      ),
     );
   }
 
@@ -164,12 +159,7 @@ class GameScreen extends GetView<GameController> {
             children: [
               _buildPlayerSection(context, Side.black, isTop: true),
               const Expanded(
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio: 1.0,
-                    child: ChessBoardWidget(),
-                  ),
-                ),
+                child: Center(child: AspectRatio(aspectRatio: 1.0, child: ChessBoardWidget())),
               ),
               _buildPlayerSection(context, Side.white, isTop: false),
             ],
@@ -200,19 +190,13 @@ class GameScreen extends GetView<GameController> {
 
   /// Build player section with info and captured pieces
   /// بناء قسم اللاعب مع المعلومات والقطع المأسورة
-  Widget _buildPlayerSection(
-    BuildContext context,
-    Side side, {
-    required bool isTop,
-  }) {
+  Widget _buildPlayerSection(BuildContext context, Side side, {required bool isTop}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isTop ? Colors.grey[200] : Colors.grey[100],
         border: Border(
-          bottom: isTop
-              ? const BorderSide(color: Colors.grey)
-              : BorderSide.none,
+          bottom: isTop ? const BorderSide(color: Colors.grey) : BorderSide.none,
           top: !isTop ? const BorderSide(color: Colors.grey) : BorderSide.none,
         ),
       ),
@@ -235,9 +219,7 @@ class GameScreen extends GetView<GameController> {
           Expanded(
             child: Obx(() {
               final game = controller.currentGame;
-              final player = side == Side.white
-                  ? game?.whitePlayer
-                  : game?.blackPlayer;
+              final player = side == Side.white ? game?.whitePlayer : game?.blackPlayer;
 
               final isCurrentTurn = controller.currentTurn == side;
 
@@ -251,18 +233,13 @@ class GameScreen extends GetView<GameController> {
                         player?.name ?? 'Unknown',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: isCurrentTurn
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                          fontWeight: isCurrentTurn ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                       if (isCurrentTurn) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.green,
                             borderRadius: BorderRadius.circular(4),
@@ -295,10 +272,7 @@ class GameScreen extends GetView<GameController> {
               return const SizedBox(width: 100);
             }
 
-            return SizedBox(
-              width: 100,
-              child: CapturedPiecesWidget(side: side, compact: true),
-            );
+            return SizedBox(width: 100, child: CapturedPiecesWidget(side: side, compact: true));
           }),
         ],
       ),
@@ -365,9 +339,7 @@ class GameScreen extends GetView<GameController> {
             ),
           ],
         ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Close')),
-        ],
+        actions: [TextButton(onPressed: () => Get.back(), child: const Text('Close'))],
       ),
     );
   }
@@ -472,7 +444,7 @@ class GameScreen extends GetView<GameController> {
           TextButton(onPressed: () => Get.back(), child: const Text('Close')),
           ElevatedButton(
             onPressed: () {
-              // Copy to clipboard logic here
+              Clipboard.setData(ClipboardData(text: pgn));
               Get.back();
               Get.snackbar(
                 'PGN Copied',
@@ -498,9 +470,7 @@ class ChessBoardWidget extends GetView<GameController> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return PopScope(
-            canPop: controller
-                .gameState
-                .isGameOverExtended, // Prevents automatic exit
+            canPop: controller.gameState.isGameOverExtended, // Prevents automatic exit
 
             onPopInvokedWithResult: (didPop, result) async {
               if (didPop) {
@@ -509,22 +479,19 @@ class ChessBoardWidget extends GetView<GameController> {
               if (controller.getResult != null) {
                 Get.back();
               } else {
-                final shouldExit = await showExitConfirmationDialog(context)
-                    .then((value) {
-                      if (value != null && value == true) {
-                        controller.resign(controller.gameState.turn);
-                      }
-                      return value;
-                    });
+                final shouldExit = await showExitConfirmationDialog(context).then((value) {
+                  if (value != null && value == true) {
+                    controller.resign(controller.gameState.turn);
+                  }
+                  return value;
+                });
 
                 if (shouldExit == true) {
                   if (context.mounted) {
                     // controller.gameStatus;
                     // controller.plySound.executeResignSound();
                     controller.resign(
-                      controller.playerSide == PlayerSide.white
-                          ? Side.white
-                          : Side.black,
+                      controller.playerSide == PlayerSide.white ? Side.white : Side.black,
                     );
                     controller.gameResult;
                     // And then, after closing the second dialog, navigate back
@@ -544,14 +511,7 @@ class ChessBoardWidget extends GetView<GameController> {
                   border: ctrlBoardSettings.showBorder.value
                       ? BoardBorder(
                           width: 10.0,
-                          color: darken(
-                            ctrlBoardSettings
-                                .boardTheme
-                                .value
-                                .colors
-                                .darkSquare,
-                            0.2,
-                          ),
+                          color: darken(ctrlBoardSettings.boardTheme.value.colors.darkSquare, 0.2),
                         )
                       : null,
                   enableCoordinates: true,
@@ -560,9 +520,7 @@ class ChessBoardWidget extends GetView<GameController> {
                       ? const Duration(milliseconds: 200)
                       : Duration.zero,
 
-                  dragFeedbackScale: ctrlBoardSettings.dragMagnify.value
-                      ? 2.0
-                      : 1.0,
+                  dragFeedbackScale: ctrlBoardSettings.dragMagnify.value ? 2.0 : 1.0,
                   dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
                   drawShape: DrawShapeOptions(
                     enable: ctrlBoardSettings.drawMode,

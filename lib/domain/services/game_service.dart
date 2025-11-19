@@ -2,7 +2,7 @@
 
 import 'package:dartchess/dartchess.dart';
 import 'package:dartz/dartz.dart' hide IMap;
-import 'package:fast_immutable_collections/src/imap/imap.dart';
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 
 import '../../core/errors/failures.dart';
 import '../../core/game_termination_enum.dart';
