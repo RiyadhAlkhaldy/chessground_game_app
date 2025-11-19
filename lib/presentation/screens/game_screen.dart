@@ -8,6 +8,7 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/utils/helper/helper_methodes.dart';
 import '../../core/utils/styles/styles.dart';
@@ -358,7 +359,7 @@ class GameScreen extends GetView<GameController> {
         _confirmDraw(context);
         break;
       case 'export_pgn':
-        _exportPgn();
+        _exportPgn(context);
         break;
     }
   }
@@ -433,30 +434,50 @@ class GameScreen extends GetView<GameController> {
 
   /// Export PGN
   /// تصدير PGN
-  void _exportPgn() {
+  void _exportPgn(BuildContext context) {
     final pgn = controller.getPgnString();
 
+    if (pgn.isEmpty) {
+      Get.snackbar('Error', 'PGN not available.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    _showExportPgnDialog(context, pgn);
+  }
+
+  void _showExportPgnDialog(BuildContext context, String pgn) {
     Get.dialog(
       AlertDialog(
         title: const Text('Export PGN'),
         content: SingleChildScrollView(child: SelectableText(pgn)),
         actions: [
           TextButton(onPressed: () => Get.back(), child: const Text('Close')),
-          ElevatedButton(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: pgn));
-              Get.back();
-              Get.snackbar(
-                'PGN Copied',
-                'PGN copied to clipboard',
-                snackPosition: SnackPosition.BOTTOM,
-              );
-            },
-            child: const Text('Copy'),
+          ElevatedButton.icon(
+            onPressed: () => _copyPgn(pgn),
+            icon: const Icon(Icons.copy),
+            label: const Text('Copy'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => _sharePgn(pgn),
+            icon: const Icon(Icons.share),
+            label: const Text('Share'),
           ),
         ],
       ),
     );
+  }
+
+  void _copyPgn(String pgn) {
+    Clipboard.setData(ClipboardData(text: pgn));
+    Get.back();
+    Get.snackbar('PGN Copied', 'PGN copied to clipboard', snackPosition: SnackPosition.BOTTOM);
+  }
+
+  void _sharePgn(String pgn) async {
+    final result = await SharePlus.instance.share(ShareParams(text: pgn));
+    if (result.status == ShareResultStatus.success) {
+      Get.snackbar('Success', 'Thank you for sharing PGN..', snackPosition: SnackPosition.BOTTOM);
+    }
   }
 
   // lib/presentation/pages/game_screen.dart - تحديث buildChessBoard method

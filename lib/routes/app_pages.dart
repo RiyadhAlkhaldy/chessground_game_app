@@ -46,7 +46,10 @@ class AppPages {
     ),
     GetPage(name: RouteNames.sideChoosingView, page: () => SideChoosingView()),
     GetPage(name: RouteNames.aboutScreen, page: () => const AboutScreen()),
-    GetPage(name: RouteNames.settingsScreen, page: () => const SettingsScreen()),
+    GetPage(
+      name: RouteNames.settingsScreen,
+      page: () => const SettingsScreen(),
+    ),
     GetPage(
       name: RouteNames.gameTimeScreen,
       page: () => const GameTimeScreen(),
@@ -56,7 +59,10 @@ class AppPages {
       page: () => const GameStartUpScreen(isCustomTime: false, gameTime: '5'),
     ),
     GetPage(name: RouteNames.freeGameScreen, page: () => FreeGamePage()),
-    GetPage(name: RouteNames.recentGamesPage, page: () => const RecentGamesPage()),
+    GetPage(
+      name: RouteNames.recentGamesPage,
+      page: () => const RecentGamesPage(),
+    ),
     GetPage(
       name: RouteNames.gamesScreen,
       page: () => const GameScreen(),
