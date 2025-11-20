@@ -3,17 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/game_controller.dart';
+import '../controllers/base_game_controller.dart';
 
 /// Widget to display the list of moves in the game
 /// عنصر لعرض قائمة الحركات في اللعبة
-class MoveListWidget extends GetView<GameController> {
+class MoveListWidget extends GetView<BaseGameController> {
   const MoveListWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final moves = controller.gameState.getMoveTokens;
+      final moves = controller.getGameState.getMoveTokens;
 
       if (moves.isEmpty) {
         return const Center(
@@ -27,17 +27,9 @@ class MoveListWidget extends GetView<GameController> {
         itemBuilder: (context, index) {
           final moveNumber = index + 1;
           final whiteMove = moves[index * 2];
-          final blackMove = (index * 2 + 1) < moves.length
-              ? moves[index * 2 + 1]
-              : null;
+          final blackMove = (index * 2 + 1) < moves.length ? moves[index * 2 + 1] : null;
 
-          return _buildMoveRow(
-            context,
-            moveNumber,
-            whiteMove.san ?? '',
-            blackMove?.san,
-            index * 2,
-          );
+          return _buildMoveRow(context, moveNumber, whiteMove.san ?? '', blackMove?.san, index * 2);
         },
       );
     });
@@ -116,7 +108,7 @@ class MoveListWidget extends GetView<GameController> {
   /// Build move text with annotations
   /// بناء نص الحركة مع التعليقات
   Widget _buildMoveText(String move, int moveIndex) {
-    final currentIndex = controller.gameState.currentHalfmoveIndex;
+    final currentIndex = controller.getGameState.currentHalfmoveIndex;
     final isCurrentMove = moveIndex == currentIndex;
 
     return Text(

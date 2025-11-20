@@ -13,16 +13,17 @@ import '../../domain/usecases/play_move.dart';
 import '../../domain/usecases/save_game_usecase.dart';
 import '../../domain/usecases/save_player_usecase.dart';
 import '../../domain/usecases/update_game_usecase.dart';
-import '../controllers/game_controller.dart';
+import '../controllers/base_game_controller.dart';
+import '../controllers/offline_game_controller.dart';
 
 /// Binding for GameController dependencies
 /// ربط تبعيات GameController
-class GameRouteBinding extends Bindings {
+class OfflineGameRouteBinding extends Bindings {
   @override
   void dependencies() {
     // Register GameController with all its dependencies
-    Get.lazyPut<GameController>(
-      () => GameController(
+    Get.lazyPut<BaseGameController>(
+      () => OfflineGameController(
         playMoveUsecase: sl<PlayMove>(),
         initChessGame: sl<InitChessGame>(),
         plySound: sl<PlaySoundUseCase>(),

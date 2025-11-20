@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/game_controller.dart';
+import '../controllers/base_game_controller.dart';
 
 /// Widget for game control buttons (undo, redo, etc.)
 /// عنصر لأزرار التحكم في اللعبة (تراجع، إعادة، إلخ)
-class GameControlsWidget extends GetView<GameController> {
+class GameControlsWidget extends GetView<BaseGameController> {
   const GameControlsWidget({super.key});
 
   @override
@@ -26,9 +26,7 @@ class GameControlsWidget extends GetView<GameController> {
             () => _buildControlButton(
               icon: Icons.undo,
               label: 'Undo',
-              onPressed: controller.canUndo.value
-                  ? () => controller.undoMove()
-                  : null,
+              onPressed: controller.canUndo.value ? () => controller.undoMove() : null,
               enabled: controller.canUndo.value,
             ),
           ),
@@ -38,9 +36,7 @@ class GameControlsWidget extends GetView<GameController> {
             () => _buildControlButton(
               icon: Icons.redo,
               label: 'Redo',
-              onPressed: controller.canRedo.value
-                  ? () => controller.redoMove()
-                  : null,
+              onPressed: controller.canRedo.value ? () => controller.redoMove() : null,
               enabled: controller.canRedo.value,
             ),
           ),
@@ -91,13 +87,7 @@ class GameControlsWidget extends GetView<GameController> {
           iconSize: 24,
           tooltip: label,
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            color: enabled ? Colors.black87 : Colors.grey,
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 10, color: enabled ? Colors.black87 : Colors.grey)),
       ],
     );
   }

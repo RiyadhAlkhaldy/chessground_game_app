@@ -3,6 +3,7 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/presentation/controllers/offline_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +13,8 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../core/utils/helper/helper_methodes.dart';
 import '../../core/utils/styles/styles.dart';
+import '../controllers/base_game_controller.dart';
 import '../controllers/chess_board_settings_controller.dart';
-import '../controllers/game_controller.dart';
 import '../widgets/captured_pieces_widget.dart';
 import '../widgets/game_controls_widget.dart';
 import '../widgets/game_info_widget.dart';
@@ -21,7 +22,7 @@ import '../widgets/move_list_widget.dart';
 
 /// Main game screen displaying the chess board and game controls
 /// شاشة اللعبة الرئيسية التي تعرض رقعة الشطرنج وعناصر التحكم
-class GameScreen extends GetView<GameController> {
+class GameScreen extends GetView<BaseGameController> {
   const GameScreen({super.key});
 
   @override
@@ -31,12 +32,12 @@ class GameScreen extends GetView<GameController> {
       body: SafeArea(
         child: Obx(() {
           // Show loading indicator
-          if (controller.isLoading) {
+          if (controller.getIsLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
           // Show error message
-          if (controller.errorMessage.isNotEmpty) {
+          if (controller.getErrorMessage.isNotEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -44,7 +45,7 @@ class GameScreen extends GetView<GameController> {
                   const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
-                    controller.errorMessage,
+                    controller.getErrorMessage,
                     style: const TextStyle(fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
@@ -75,7 +76,7 @@ class GameScreen extends GetView<GameController> {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       title: Obx(() {
-        final game = controller.currentGame;
+        final game = controller.getCurrentGame;
         if (game == null) return const Text('Chess Game');
 
         return Text(
@@ -88,7 +89,7 @@ class GameScreen extends GetView<GameController> {
         IconButton(
           icon: const Icon(Icons.save),
           tooltip: 'Save Game',
-          onPressed: () => controller.saveGame(),
+          onPressed: () => (controller as OfflineGameController).saveGame(),
         ),
         // Settings button
         IconButton(
@@ -219,10 +220,10 @@ class GameScreen extends GetView<GameController> {
           // Player name and turn indicator
           Expanded(
             child: Obx(() {
-              final game = controller.currentGame;
+              final game = controller.getCurrentGame;
               final player = side == Side.white ? game?.whitePlayer : game?.blackPlayer;
 
-              final isCurrentTurn = controller.currentTurn == side;
+              final isCurrentTurn = controller.getCurrentTurn == side;
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,7 +303,7 @@ class GameScreen extends GetView<GameController> {
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 Obx(() {
-                  final moves = controller.gameState.getMoveTokens;
+                  final moves = controller.getGameState.getMoveTokens;
                   return Text(
                     '${moves.length} moves',
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
@@ -394,14 +395,14 @@ class GameScreen extends GetView<GameController> {
       AlertDialog(
         title: const Text('Resign'),
         content: Text(
-          'Are you sure ${controller.currentTurn == Side.white ? 'White' : 'Black'} wants to resign?',
+          'Are you sure ${controller.getCurrentTurn == Side.white ? 'White' : 'Black'} wants to resign?',
         ),
         actions: [
           TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () {
               Get.back();
-              controller.resign(controller.currentTurn);
+              controller.resign(controller.getCurrentTurn);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Resign'),
@@ -423,7 +424,7 @@ class GameScreen extends GetView<GameController> {
           ElevatedButton(
             onPressed: () {
               Get.back();
-              controller.agreeDrawn();
+              (controller as OfflineGameController).agreeDrawn();
             },
             child: const Text('Agree Draw'),
           ),
@@ -483,7 +484,7 @@ class GameScreen extends GetView<GameController> {
   // lib/presentation/pages/game_screen.dart - تحديث buildChessBoard method
 }
 
-class ChessBoardWidget extends GetView<GameController> {
+class ChessBoardWidget extends GetView<BaseGameController> {
   const ChessBoardWidget({super.key});
   @override
   Widget build(BuildContext context) {
@@ -491,7 +492,7 @@ class ChessBoardWidget extends GetView<GameController> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return PopScope(
-            canPop: controller.gameState.isGameOverExtended, // Prevents automatic exit
+            canPop: controller.getGameState.isGameOverExtended, // Prevents automatic exit
 
             onPopInvokedWithResult: (didPop, result) async {
               if (didPop) {
@@ -502,7 +503,7 @@ class ChessBoardWidget extends GetView<GameController> {
               } else {
                 final shouldExit = await showExitConfirmationDialog(context).then((value) {
                   if (value != null && value == true) {
-                    controller.resign(controller.gameState.turn);
+                    controller.resign(controller.getGameState.turn);
                   }
                   return value;
                 });
@@ -514,7 +515,7 @@ class ChessBoardWidget extends GetView<GameController> {
                     controller.resign(
                       controller.playerSide == PlayerSide.white ? Side.white : Side.black,
                     );
-                    controller.gameResult;
+                    controller.getGameResult;
                     // And then, after closing the second dialog, navigate back
                     // if (context.mounted) {
                     //   Get.back();
@@ -556,15 +557,15 @@ class ChessBoardWidget extends GetView<GameController> {
                 ),
                 orientation: ctrlBoardSettings.orientation.value,
 
-                fen: controller.currentFen,
+                fen: controller.getCurrentFen,
                 // lastMove: controller.lastMove,
                 game: GameData(
                   playerSide: PlayerSide.both,
-                  validMoves: controller.validMoves,
-                  sideToMove: controller.gameState.position.turn,
-                  isCheck: controller.gameState.position.isCheck,
+                  validMoves: controller.getValidMoves,
+                  sideToMove: controller.getGameState.position.turn,
+                  isCheck: controller.getGameState.position.isCheck,
                   promotionMove: controller.promotionMove.value,
-                  onMove: controller.onUserMoveAgainstAI,
+                  onMove: controller.onUserMove,
                   onPromotionSelection: controller.onPromotionSelection,
                   premovable: (
                     onSetPremove: controller.onSetPremove,

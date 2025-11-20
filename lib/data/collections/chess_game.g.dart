@@ -17,11 +17,31 @@ const ChessGameSchema = CollectionSchema(
   name: r'ChessGame',
   id: 6443583129619452760,
   properties: {
-    r'blackElo': PropertySchema(id: 0, name: r'blackElo', type: IsarType.long),
-    r'date': PropertySchema(id: 1, name: r'date', type: IsarType.dateTime),
-    r'eco': PropertySchema(id: 2, name: r'eco', type: IsarType.string),
-    r'event': PropertySchema(id: 3, name: r'event', type: IsarType.string),
-    r'fullPgn': PropertySchema(id: 4, name: r'fullPgn', type: IsarType.string),
+    r'blackElo': PropertySchema(
+      id: 0,
+      name: r'blackElo',
+      type: IsarType.long,
+    ),
+    r'date': PropertySchema(
+      id: 1,
+      name: r'date',
+      type: IsarType.dateTime,
+    ),
+    r'eco': PropertySchema(
+      id: 2,
+      name: r'eco',
+      type: IsarType.string,
+    ),
+    r'event': PropertySchema(
+      id: 3,
+      name: r'event',
+      type: IsarType.string,
+    ),
+    r'fullPgn': PropertySchema(
+      id: 4,
+      name: r'fullPgn',
+      type: IsarType.string,
+    ),
     r'moves': PropertySchema(
       id: 5,
       name: r'moves',
@@ -33,9 +53,21 @@ const ChessGameSchema = CollectionSchema(
       name: r'movesCount',
       type: IsarType.long,
     ),
-    r'result': PropertySchema(id: 7, name: r'result', type: IsarType.string),
-    r'round': PropertySchema(id: 8, name: r'round', type: IsarType.string),
-    r'site': PropertySchema(id: 9, name: r'site', type: IsarType.string),
+    r'result': PropertySchema(
+      id: 7,
+      name: r'result',
+      type: IsarType.string,
+    ),
+    r'round': PropertySchema(
+      id: 8,
+      name: r'round',
+      type: IsarType.string,
+    ),
+    r'site': PropertySchema(
+      id: 9,
+      name: r'site',
+      type: IsarType.string,
+    ),
     r'startingFen': PropertySchema(
       id: 10,
       name: r'startingFen',
@@ -52,9 +84,21 @@ const ChessGameSchema = CollectionSchema(
       name: r'timeControl',
       type: IsarType.string,
     ),
-    r'userId': PropertySchema(id: 13, name: r'userId', type: IsarType.string),
-    r'uuid': PropertySchema(id: 14, name: r'uuid', type: IsarType.string),
-    r'whiteElo': PropertySchema(id: 15, name: r'whiteElo', type: IsarType.long),
+    r'userId': PropertySchema(
+      id: 13,
+      name: r'userId',
+      type: IsarType.string,
+    ),
+    r'uuid': PropertySchema(
+      id: 14,
+      name: r'uuid',
+      type: IsarType.string,
+    ),
+    r'whiteElo': PropertySchema(
+      id: 15,
+      name: r'whiteElo',
+      type: IsarType.long,
+    )
   },
   estimateSize: _chessGameEstimateSize,
   serialize: _chessGameSerialize,
@@ -72,7 +116,7 @@ const ChessGameSchema = CollectionSchema(
           name: r'event',
           type: IndexType.value,
           caseSensitive: true,
-        ),
+        )
       ],
     ),
     r'result': IndexSchema(
@@ -85,9 +129,9 @@ const ChessGameSchema = CollectionSchema(
           name: r'result',
           type: IndexType.hash,
           caseSensitive: true,
-        ),
+        )
       ],
-    ),
+    )
   },
   links: {
     r'whitePlayer': LinkSchema(
@@ -101,7 +145,7 @@ const ChessGameSchema = CollectionSchema(
       name: r'blackPlayer',
       target: r'Player',
       single: true,
-    ),
+    )
   },
   embeddedSchemas: {r'MoveData': MoveDataSchema},
   getId: _chessGameGetId,
@@ -224,8 +268,7 @@ ChessGame _chessGameDeserialize(
   object.event = reader.readStringOrNull(offsets[3]);
   object.fullPgn = reader.readStringOrNull(offsets[4]);
   object.id = id;
-  object.moves =
-      reader.readObjectList<MoveData>(
+  object.moves = reader.readObjectList<MoveData>(
         offsets[5],
         MoveDataSchema.deserialize,
         allOffsets,
@@ -239,7 +282,7 @@ ChessGame _chessGameDeserialize(
   object.startingFen = reader.readStringOrNull(offsets[10]);
   object.termination =
       _ChessGameterminationValueEnumMap[reader.readByteOrNull(offsets[11])] ??
-      GameTermination.checkmate;
+          GameTermination.checkmate;
   object.timeControl = reader.readStringOrNull(offsets[12]);
   object.userId = reader.readStringOrNull(offsets[13]);
   object.uuid = reader.readString(offsets[14]);
@@ -266,13 +309,12 @@ P _chessGameDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 5:
       return (reader.readObjectList<MoveData>(
-                offset,
-                MoveDataSchema.deserialize,
-                allOffsets,
-                MoveData(),
-              ) ??
-              [])
-          as P;
+            offset,
+            MoveDataSchema.deserialize,
+            allOffsets,
+            MoveData(),
+          ) ??
+          []) as P;
     case 6:
       return (reader.readLong(offset)) as P;
     case 7:
@@ -284,11 +326,9 @@ P _chessGameDeserializeProp<P>(
     case 10:
       return (reader.readStringOrNull(offset)) as P;
     case 11:
-      return (_ChessGameterminationValueEnumMap[reader.readByteOrNull(
-                offset,
-              )] ??
-              GameTermination.checkmate)
-          as P;
+      return (_ChessGameterminationValueEnumMap[
+              reader.readByteOrNull(offset)] ??
+          GameTermination.checkmate) as P;
     case 12:
       return (reader.readStringOrNull(offset)) as P;
     case 13:
@@ -335,18 +375,10 @@ List<IsarLinkBase<dynamic>> _chessGameGetLinks(ChessGame object) {
 
 void _chessGameAttach(IsarCollection<dynamic> col, Id id, ChessGame object) {
   object.id = id;
-  object.whitePlayer.attach(
-    col,
-    col.isar.collection<Player>(),
-    r'whitePlayer',
-    id,
-  );
-  object.blackPlayer.attach(
-    col,
-    col.isar.collection<Player>(),
-    r'blackPlayer',
-    id,
-  );
+  object.whitePlayer
+      .attach(col, col.isar.collection<Player>(), r'whitePlayer', id);
+  object.blackPlayer
+      .attach(col, col.isar.collection<Player>(), r'blackPlayer', id);
 }
 
 extension ChessGameQueryWhereSort
@@ -370,7 +402,10 @@ extension ChessGameQueryWhere
     on QueryBuilder<ChessGame, ChessGame, QWhereClause> {
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
     });
   }
 
@@ -396,10 +431,8 @@ extension ChessGameQueryWhere
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> idGreaterThan(
-    Id id, {
-    bool include = false,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> idGreaterThan(Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -407,10 +440,8 @@ extension ChessGameQueryWhere
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> idLessThan(
-    Id id, {
-    bool include = false,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> idLessThan(Id id,
+      {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -425,88 +456,76 @@ extension ChessGameQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.between(
-          lower: lowerId,
-          includeLower: includeLower,
-          upper: upperId,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> eventIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'event', value: [null]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'event',
+        value: [null],
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> eventIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'event',
-          lower: [null],
-          includeLower: false,
-          upper: [],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'event',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> eventEqualTo(
-    String? event,
-  ) {
+      String? event) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'event', value: [event]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'event',
+        value: [event],
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> eventNotEqualTo(
-    String? event,
-  ) {
+      String? event) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'event',
-                lower: [],
-                upper: [event],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'event',
-                lower: [event],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'event',
+              lower: [],
+              upper: [event],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'event',
+              lower: [event],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'event',
-                lower: [event],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'event',
-                lower: [],
-                upper: [event],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'event',
+              lower: [event],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'event',
+              lower: [],
+              upper: [event],
+              includeUpper: false,
+            ));
       }
     });
   }
@@ -516,14 +535,12 @@ extension ChessGameQueryWhere
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'event',
-          lower: [event],
-          includeLower: include,
-          upper: [],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'event',
+        lower: [event],
+        includeLower: include,
+        upper: [],
+      ));
     });
   }
 
@@ -532,14 +549,12 @@ extension ChessGameQueryWhere
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'event',
-          lower: [],
-          upper: [event],
-          includeUpper: include,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'event',
+        lower: [],
+        upper: [event],
+        includeUpper: include,
+      ));
     });
   }
 
@@ -550,37 +565,33 @@ extension ChessGameQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'event',
-          lower: [lowerEvent],
-          includeLower: includeLower,
-          upper: [upperEvent],
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'event',
+        lower: [lowerEvent],
+        includeLower: includeLower,
+        upper: [upperEvent],
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> eventStartsWith(
-    String EventPrefix,
-  ) {
+      String EventPrefix) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'event',
-          lower: [EventPrefix],
-          upper: ['$EventPrefix\u{FFFFF}'],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'event',
+        lower: [EventPrefix],
+        upper: ['$EventPrefix\u{FFFFF}'],
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> eventIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'event', value: ['']),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'event',
+        value: [''],
+      ));
     });
   }
 
@@ -588,95 +599,89 @@ extension ChessGameQueryWhere
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.lessThan(indexName: r'event', upper: ['']),
-            )
-            .addWhereClause(
-              IndexWhereClause.greaterThan(indexName: r'event', lower: ['']),
-            );
+            .addWhereClause(IndexWhereClause.lessThan(
+              indexName: r'event',
+              upper: [''],
+            ))
+            .addWhereClause(IndexWhereClause.greaterThan(
+              indexName: r'event',
+              lower: [''],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.greaterThan(indexName: r'event', lower: ['']),
-            )
-            .addWhereClause(
-              IndexWhereClause.lessThan(indexName: r'event', upper: ['']),
-            );
+            .addWhereClause(IndexWhereClause.greaterThan(
+              indexName: r'event',
+              lower: [''],
+            ))
+            .addWhereClause(IndexWhereClause.lessThan(
+              indexName: r'event',
+              upper: [''],
+            ));
       }
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> resultIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'result', value: [null]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'result',
+        value: [null],
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> resultIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.between(
-          indexName: r'result',
-          lower: [null],
-          includeLower: false,
-          upper: [],
-        ),
-      );
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'result',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> resultEqualTo(
-    String? result,
-  ) {
+      String? result) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'result', value: [result]),
-      );
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'result',
+        value: [result],
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterWhereClause> resultNotEqualTo(
-    String? result,
-  ) {
+      String? result) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'result',
-                lower: [],
-                upper: [result],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'result',
-                lower: [result],
-                includeLower: false,
-                upper: [],
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'result',
+              lower: [],
+              upper: [result],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'result',
+              lower: [result],
+              includeLower: false,
+              upper: [],
+            ));
       } else {
         return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'result',
-                lower: [result],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'result',
-                lower: [],
-                upper: [result],
-                includeUpper: false,
-              ),
-            );
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'result',
+              lower: [result],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'result',
+              lower: [],
+              upper: [result],
+              includeUpper: false,
+            ));
       }
     });
   }
@@ -686,28 +691,28 @@ extension ChessGameQueryFilter
     on QueryBuilder<ChessGame, ChessGame, QFilterCondition> {
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> blackEloIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'blackElo'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'blackElo',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  blackEloIsNotNull() {
+      blackEloIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'blackElo'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'blackElo',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> blackEloEqualTo(
-    int? value,
-  ) {
+      int? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'blackElo', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'blackElo',
+        value: value,
+      ));
     });
   }
 
@@ -716,13 +721,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'blackElo',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'blackElo',
+        value: value,
+      ));
     });
   }
 
@@ -731,13 +734,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'blackElo',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'blackElo',
+        value: value,
+      ));
     });
   }
 
@@ -748,41 +749,39 @@ extension ChessGameQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'blackElo',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'blackElo',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> dateIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'date'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'date',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> dateIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'date'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'date',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> dateEqualTo(
-    DateTime? value,
-  ) {
+      DateTime? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'date', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'date',
+        value: value,
+      ));
     });
   }
 
@@ -791,13 +790,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'date',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'date',
+        value: value,
+      ));
     });
   }
 
@@ -806,13 +803,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'date',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'date',
+        value: value,
+      ));
     });
   }
 
@@ -823,31 +818,29 @@ extension ChessGameQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'date',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'date',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> ecoIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'eco'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'eco',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> ecoIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'eco'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'eco',
+      ));
     });
   }
 
@@ -856,13 +849,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'eco',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'eco',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -872,14 +863,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'eco',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'eco',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -889,14 +878,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'eco',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'eco',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -908,16 +895,14 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'eco',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'eco',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -926,13 +911,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'eco',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'eco',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -941,75 +924,69 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'eco',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'eco',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> ecoContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'eco',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'eco',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> ecoMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'eco',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'eco',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> ecoIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'eco', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'eco',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> ecoIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'eco', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'eco',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> eventIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'event'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'event',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> eventIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'event'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'event',
+      ));
     });
   }
 
@@ -1018,13 +995,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'event',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'event',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1034,14 +1009,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'event',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'event',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1051,14 +1024,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'event',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'event',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1070,16 +1041,14 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'event',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'event',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1088,13 +1057,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'event',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'event',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1103,75 +1070,69 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'event',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'event',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> eventContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'event',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'event',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> eventMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'event',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'event',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> eventIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'event', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'event',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> eventIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'event', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'event',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> fullPgnIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'fullPgn'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'fullPgn',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> fullPgnIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'fullPgn'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'fullPgn',
+      ));
     });
   }
 
@@ -1180,13 +1141,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'fullPgn',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fullPgn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1196,14 +1155,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'fullPgn',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fullPgn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1213,14 +1170,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'fullPgn',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fullPgn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1232,16 +1187,14 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'fullPgn',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fullPgn',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1250,13 +1203,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'fullPgn',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'fullPgn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1265,70 +1216,64 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'fullPgn',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'fullPgn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> fullPgnContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'fullPgn',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'fullPgn',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> fullPgnMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'fullPgn',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'fullPgn',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> fullPgnIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'fullPgn', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fullPgn',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  fullPgnIsNotEmpty() {
+      fullPgnIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'fullPgn', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'fullPgn',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> idEqualTo(
-    Id value,
-  ) {
+      Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'id', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
@@ -1337,13 +1282,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
@@ -1352,13 +1295,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'id',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
     });
   }
 
@@ -1369,35 +1310,50 @@ extension ChessGameQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'id',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> movesLengthEqualTo(
-    int length,
-  ) {
+      int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(r'moves', length, true, length, true);
+      return query.listLength(
+        r'moves',
+        length,
+        true,
+        length,
+        true,
+      );
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> movesIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(r'moves', 0, true, 0, true);
+      return query.listLength(
+        r'moves',
+        0,
+        true,
+        0,
+        true,
+      );
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> movesIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(r'moves', 0, false, 999999, true);
+      return query.listLength(
+        r'moves',
+        0,
+        false,
+        999999,
+        true,
+      );
     });
   }
 
@@ -1406,14 +1362,29 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(r'moves', 0, true, length, include);
+      return query.listLength(
+        r'moves',
+        0,
+        true,
+        length,
+        include,
+      );
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  movesLengthGreaterThan(int length, {bool include = false}) {
+      movesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(r'moves', length, include, 999999, true);
+      return query.listLength(
+        r'moves',
+        length,
+        include,
+        999999,
+        true,
+      );
     });
   }
 
@@ -1435,25 +1406,26 @@ extension ChessGameQueryFilter
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> movesCountEqualTo(
-    int value,
-  ) {
+      int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'movesCount', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'movesCount',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  movesCountGreaterThan(int value, {bool include = false}) {
+      movesCountGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'movesCount',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'movesCount',
+        value: value,
+      ));
     });
   }
 
@@ -1462,13 +1434,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'movesCount',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'movesCount',
+        value: value,
+      ));
     });
   }
 
@@ -1479,31 +1449,29 @@ extension ChessGameQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'movesCount',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'movesCount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> resultIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'result'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'result',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> resultIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'result'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'result',
+      ));
     });
   }
 
@@ -1512,13 +1480,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'result',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'result',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1528,14 +1494,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'result',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'result',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1545,14 +1509,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'result',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'result',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1564,16 +1526,14 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'result',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'result',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1582,13 +1542,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'result',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'result',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1597,75 +1555,69 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'result',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'result',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> resultContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'result',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'result',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> resultMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'result',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'result',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> resultIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'result', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'result',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> resultIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'result', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'result',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> roundIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'round'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'round',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> roundIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'round'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'round',
+      ));
     });
   }
 
@@ -1674,13 +1626,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'round',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'round',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1690,14 +1640,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'round',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'round',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1707,14 +1655,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'round',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'round',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1726,16 +1672,14 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'round',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'round',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1744,13 +1688,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'round',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'round',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1759,75 +1701,69 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'round',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'round',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> roundContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'round',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'round',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> roundMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'round',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'round',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> roundIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'round', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'round',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> roundIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'round', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'round',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> siteIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'site'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'site',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> siteIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'site'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'site',
+      ));
     });
   }
 
@@ -1836,13 +1772,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'site',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'site',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1852,14 +1786,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'site',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'site',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1869,14 +1801,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'site',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'site',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1888,16 +1818,14 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'site',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'site',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1906,13 +1834,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'site',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'site',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -1921,77 +1847,71 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'site',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'site',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> siteContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'site',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'site',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> siteMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'site',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'site',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> siteIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'site', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'site',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> siteIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'site', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'site',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  startingFenIsNull() {
+      startingFenIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'startingFen'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'startingFen',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  startingFenIsNotNull() {
+      startingFenIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'startingFen'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'startingFen',
+      ));
     });
   }
 
@@ -2000,31 +1920,27 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'startingFen',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'startingFen',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  startingFenGreaterThan(
+      startingFenGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'startingFen',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'startingFen',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2034,14 +1950,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'startingFen',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'startingFen',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2053,29 +1967,28 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'startingFen',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'startingFen',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  startingFenStartsWith(String value, {bool caseSensitive = true}) {
+      startingFenStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'startingFen',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'startingFen',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2084,84 +1997,79 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'startingFen',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'startingFen',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> startingFenContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'startingFen',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'startingFen',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> startingFenMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'startingFen',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'startingFen',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  startingFenIsEmpty() {
+      startingFenIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'startingFen', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'startingFen',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  startingFenIsNotEmpty() {
+      startingFenIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'startingFen', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'startingFen',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> terminationEqualTo(
-    GameTermination value,
-  ) {
+      GameTermination value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'termination', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'termination',
+        value: value,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  terminationGreaterThan(GameTermination value, {bool include = false}) {
+      terminationGreaterThan(
+    GameTermination value, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'termination',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'termination',
+        value: value,
+      ));
     });
   }
 
@@ -2170,13 +2078,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'termination',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'termination',
+        value: value,
+      ));
     });
   }
 
@@ -2187,33 +2093,31 @@ extension ChessGameQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'termination',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'termination',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  timeControlIsNull() {
+      timeControlIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'timeControl'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'timeControl',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  timeControlIsNotNull() {
+      timeControlIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'timeControl'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'timeControl',
+      ));
     });
   }
 
@@ -2222,31 +2126,27 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'timeControl',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'timeControl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  timeControlGreaterThan(
+      timeControlGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'timeControl',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'timeControl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2256,14 +2156,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'timeControl',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'timeControl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2275,29 +2173,28 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'timeControl',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'timeControl',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  timeControlStartsWith(String value, {bool caseSensitive = true}) {
+      timeControlStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'timeControl',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'timeControl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2306,77 +2203,71 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'timeControl',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'timeControl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> timeControlContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'timeControl',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'timeControl',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> timeControlMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'timeControl',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'timeControl',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  timeControlIsEmpty() {
+      timeControlIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'timeControl', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'timeControl',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  timeControlIsNotEmpty() {
+      timeControlIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'timeControl', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'timeControl',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> userIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'userId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'userId',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> userIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'userId'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'userId',
+      ));
     });
   }
 
@@ -2385,13 +2276,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'userId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2401,14 +2290,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'userId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2418,14 +2305,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'userId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2437,16 +2322,14 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'userId',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'userId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2455,13 +2338,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'userId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2470,59 +2351,53 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'userId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> userIdContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'userId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> userIdMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'userId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'userId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> userIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'userId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'userId',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> userIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'userId', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'userId',
+        value: '',
+      ));
     });
   }
 
@@ -2531,13 +2406,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2547,14 +2420,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2564,14 +2435,12 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2583,16 +2452,14 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'uuid',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'uuid',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2601,13 +2468,11 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
@@ -2616,86 +2481,80 @@ extension ChessGameQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'uuid',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'uuid',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'uuid',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'uuid',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'uuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'uuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> uuidIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'uuid', value: ''),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'uuid',
+        value: '',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> whiteEloIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'whiteElo'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'whiteElo',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  whiteEloIsNotNull() {
+      whiteEloIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'whiteElo'),
-      );
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'whiteElo',
+      ));
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> whiteEloEqualTo(
-    int? value,
-  ) {
+      int? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'whiteElo', value: value),
-      );
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'whiteElo',
+        value: value,
+      ));
     });
   }
 
@@ -2704,13 +2563,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'whiteElo',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'whiteElo',
+        value: value,
+      ));
     });
   }
 
@@ -2719,13 +2576,11 @@ extension ChessGameQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'whiteElo',
-          value: value,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'whiteElo',
+        value: value,
+      ));
     });
   }
 
@@ -2736,15 +2591,13 @@ extension ChessGameQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'whiteElo',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'whiteElo',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 }
@@ -2752,8 +2605,7 @@ extension ChessGameQueryFilter
 extension ChessGameQueryObject
     on QueryBuilder<ChessGame, ChessGame, QFilterCondition> {
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> movesElement(
-    FilterQuery<MoveData> q,
-  ) {
+      FilterQuery<MoveData> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'moves');
     });
@@ -2763,30 +2615,28 @@ extension ChessGameQueryObject
 extension ChessGameQueryLinks
     on QueryBuilder<ChessGame, ChessGame, QFilterCondition> {
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> whitePlayer(
-    FilterQuery<Player> q,
-  ) {
+      FilterQuery<Player> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'whitePlayer');
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  whitePlayerIsNull() {
+      whitePlayerIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'whitePlayer', 0, true, 0, true);
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition> blackPlayer(
-    FilterQuery<Player> q,
-  ) {
+      FilterQuery<Player> q) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'blackPlayer');
     });
   }
 
   QueryBuilder<ChessGame, ChessGame, QAfterFilterCondition>
-  blackPlayerIsNull() {
+      blackPlayerIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(r'blackPlayer', 0, true, 0, true);
     });
@@ -3184,25 +3034,22 @@ extension ChessGameQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByEco({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByEco(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'eco', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByEvent({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByEvent(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'event', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByFullPgn({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByFullPgn(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'fullPgn', caseSensitive: caseSensitive);
     });
@@ -3214,33 +3061,29 @@ extension ChessGameQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByResult({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByResult(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'result', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByRound({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByRound(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'round', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctBySite({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctBySite(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'site', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByStartingFen({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByStartingFen(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'startingFen', caseSensitive: caseSensitive);
     });
@@ -3252,25 +3095,22 @@ extension ChessGameQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByTimeControl({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByTimeControl(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'timeControl', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByUserId({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByUserId(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'userId', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByUuid({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<ChessGame, ChessGame, QDistinct> distinctByUuid(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'uuid', caseSensitive: caseSensitive);
     });
@@ -3358,7 +3198,7 @@ extension ChessGameQueryProperty
   }
 
   QueryBuilder<ChessGame, GameTermination, QQueryOperations>
-  terminationProperty() {
+      terminationProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'termination');
     });

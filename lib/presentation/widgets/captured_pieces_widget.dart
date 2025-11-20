@@ -4,19 +4,15 @@ import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/game_controller.dart';
+import '../controllers/offline_game_controller.dart';
 
 /// Widget to display captured pieces for a player
 /// عنصر لعرض القطع المأسورة للاعب
-class CapturedPiecesWidget extends GetView<GameController> {
+class CapturedPiecesWidget extends GetView<OfflineGameController> {
   final Side side;
   final bool compact;
 
-  const CapturedPiecesWidget({
-    super.key,
-    required this.side,
-    this.compact = false,
-  });
+  const CapturedPiecesWidget({super.key, required this.side, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +23,13 @@ class CapturedPiecesWidget extends GetView<GameController> {
         return Center(
           child: Text(
             compact ? '' : 'No captured pieces',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: compact ? 10 : 12,
-            ),
+            style: TextStyle(color: Colors.grey[600], fontSize: compact ? 10 : 12),
           ),
         );
       }
 
       // Calculate material advantage
-      final materialValue = controller.gameState.capturedValue(side);
+      final materialValue = controller.getGameState.capturedValue(side);
       final showAdvantage = materialValue > 0 && !compact;
 
       return Container(

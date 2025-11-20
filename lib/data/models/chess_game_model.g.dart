@@ -12,20 +12,17 @@ _$ChessGameModelImpl _$$ChessGameModelImplFromJson(Map<String, dynamic> json) =>
       uuid: json['uuid'] as String,
       event: json['event'] as String?,
       site: json['site'] as String?,
-      date: json['date'] == null
-          ? null
-          : DateTime.parse(json['date'] as String),
+      date:
+          json['date'] == null ? null : DateTime.parse(json['date'] as String),
       round: json['round'] as String?,
-      whitePlayer: PlayerModel.fromJson(
-        json['whitePlayer'] as Map<String, dynamic>,
-      ),
-      blackPlayer: PlayerModel.fromJson(
-        json['blackPlayer'] as Map<String, dynamic>,
-      ),
+      whitePlayer:
+          PlayerModel.fromJson(json['whitePlayer'] as Map<String, dynamic>),
+      blackPlayer:
+          PlayerModel.fromJson(json['blackPlayer'] as Map<String, dynamic>),
       result: json['result'] as String? ?? '*',
       termination:
           $enumDecodeNullable(_$GameTerminationEnumMap, json['termination']) ??
-          GameTermination.ongoing,
+              GameTermination.ongoing,
       eco: json['eco'] as String?,
       whiteElo: (json['whiteElo'] as num?)?.toInt(),
       blackElo: (json['blackElo'] as num?)?.toInt(),
@@ -33,35 +30,34 @@ _$ChessGameModelImpl _$$ChessGameModelImplFromJson(Map<String, dynamic> json) =>
       startingFen: json['startingFen'] as String?,
       fullPgn: json['fullPgn'] as String?,
       movesCount: (json['movesCount'] as num?)?.toInt() ?? 0,
-      moves:
-          (json['moves'] as List<dynamic>?)
+      moves: (json['moves'] as List<dynamic>?)
               ?.map((e) => MoveDataModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
     );
 
 Map<String, dynamic> _$$ChessGameModelImplToJson(
-  _$ChessGameModelImpl instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'uuid': instance.uuid,
-  'event': instance.event,
-  'site': instance.site,
-  'date': instance.date?.toIso8601String(),
-  'round': instance.round,
-  'whitePlayer': instance.whitePlayer,
-  'blackPlayer': instance.blackPlayer,
-  'result': instance.result,
-  'termination': _$GameTerminationEnumMap[instance.termination]!,
-  'eco': instance.eco,
-  'whiteElo': instance.whiteElo,
-  'blackElo': instance.blackElo,
-  'timeControl': instance.timeControl,
-  'startingFen': instance.startingFen,
-  'fullPgn': instance.fullPgn,
-  'movesCount': instance.movesCount,
-  'moves': instance.moves,
-};
+        _$ChessGameModelImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'uuid': instance.uuid,
+      'event': instance.event,
+      'site': instance.site,
+      'date': instance.date?.toIso8601String(),
+      'round': instance.round,
+      'whitePlayer': instance.whitePlayer,
+      'blackPlayer': instance.blackPlayer,
+      'result': instance.result,
+      'termination': _$GameTerminationEnumMap[instance.termination]!,
+      'eco': instance.eco,
+      'whiteElo': instance.whiteElo,
+      'blackElo': instance.blackElo,
+      'timeControl': instance.timeControl,
+      'startingFen': instance.startingFen,
+      'fullPgn': instance.fullPgn,
+      'movesCount': instance.movesCount,
+      'moves': instance.moves,
+    };
 
 const _$GameTerminationEnumMap = {
   GameTermination.checkmate: 'checkmate',

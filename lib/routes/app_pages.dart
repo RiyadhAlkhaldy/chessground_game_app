@@ -36,37 +36,22 @@ class AppPages {
   static final routes = [
     GetPage(name: RouteNames.home, page: () => const HomePage()),
     // GetPage(name: '/online', page: () => const OnlineView()),
-    GetPage(
-      name: RouteNames.gameComputerScreen,
-      page: () => GameComputerScreen(),
-    ),
-    GetPage(
-      name: RouteNames.gameComputerWithTimeScreen,
-      page: () => GameComputerWithTimeScreen(),
-    ),
+    GetPage(name: RouteNames.gameComputerScreen, page: () => GameComputerScreen()),
+    GetPage(name: RouteNames.gameComputerWithTimeScreen, page: () => GameComputerWithTimeScreen()),
     GetPage(name: RouteNames.sideChoosingView, page: () => SideChoosingView()),
     GetPage(name: RouteNames.aboutScreen, page: () => const AboutScreen()),
-    GetPage(
-      name: RouteNames.settingsScreen,
-      page: () => const SettingsScreen(),
-    ),
-    GetPage(
-      name: RouteNames.gameTimeScreen,
-      page: () => const GameTimeScreen(),
-    ),
+    GetPage(name: RouteNames.settingsScreen, page: () => const SettingsScreen()),
+    GetPage(name: RouteNames.gameTimeScreen, page: () => const GameTimeScreen()),
     GetPage(
       name: RouteNames.gameStartUpScreen,
       page: () => const GameStartUpScreen(isCustomTime: false, gameTime: '5'),
     ),
     GetPage(name: RouteNames.freeGameScreen, page: () => FreeGamePage()),
-    GetPage(
-      name: RouteNames.recentGamesPage,
-      page: () => const RecentGamesPage(),
-    ),
+    GetPage(name: RouteNames.recentGamesPage, page: () => const RecentGamesPage()),
     GetPage(
       name: RouteNames.gamesScreen,
       page: () => const GameScreen(),
-      binding: GameRouteBinding(),
+      binding: OfflineGameRouteBinding(),
     ),
 
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),

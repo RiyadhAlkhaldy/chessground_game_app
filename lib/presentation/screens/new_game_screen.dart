@@ -4,11 +4,11 @@ import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/game_controller.dart';
+import '../controllers/offline_game_controller.dart';
 
 /// Screen for creating a new game
 /// شاشة إنشاء لعبة جديدة
-class NewGameScreen extends GetView<GameController> {
+class NewGameScreen extends GetView<OfflineGameController> {
   const NewGameScreen({super.key});
 
   @override
@@ -88,7 +88,7 @@ class NewGameScreen extends GetView<GameController> {
             // Start game button
             Obx(
               () => ElevatedButton(
-                onPressed: controller.isLoading
+                onPressed: controller.getIsLoading
                     ? null
                     : () => _startGame(
                         context,
@@ -102,21 +102,15 @@ class NewGameScreen extends GetView<GameController> {
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                 ),
-                child: controller.isLoading
+                child: controller.getIsLoading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
                     : const Text(
                         'Start Game',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
               ),
             ),
@@ -155,7 +149,7 @@ class NewGameScreen extends GetView<GameController> {
     );
 
     // Navigate to game screen
-    if (!controller.isLoading && controller.errorMessage.isEmpty) {
+    if (!controller.getIsLoading && controller.getErrorMessage.isEmpty) {
       Get.toNamed(RouteNames.gamesScreen);
     }
   }

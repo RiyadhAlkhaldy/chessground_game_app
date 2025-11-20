@@ -12,8 +12,7 @@ part of 'game_state_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 GameStateModel _$GameStateModelFromJson(Map<String, dynamic> json) {
   return _GameStateModel.fromJson(json);
@@ -45,26 +44,24 @@ mixin _$GameStateModel {
 /// @nodoc
 abstract class $GameStateModelCopyWith<$Res> {
   factory $GameStateModelCopyWith(
-    GameStateModel value,
-    $Res Function(GameStateModel) then,
-  ) = _$GameStateModelCopyWithImpl<$Res, GameStateModel>;
+          GameStateModel value, $Res Function(GameStateModel) then) =
+      _$GameStateModelCopyWithImpl<$Res, GameStateModel>;
   @useResult
-  $Res call({
-    String gameUuid,
-    String currentFen,
-    List<String> fenHistory,
-    Map<String, int> fenCounts,
-    List<MoveDataModel> moves,
-    int currentHalfmoveIndex,
-    String? result,
-    GameTermination termination,
-    String? resignationSide,
-    String? timeoutSide,
-    bool agreementDraw,
-    int halfmoveClock,
-    int materialEvaluation,
-    DateTime lastUpdated,
-  });
+  $Res call(
+      {String gameUuid,
+      String currentFen,
+      List<String> fenHistory,
+      Map<String, int> fenCounts,
+      List<MoveDataModel> moves,
+      int currentHalfmoveIndex,
+      String? result,
+      GameTermination termination,
+      String? resignationSide,
+      String? timeoutSide,
+      bool agreementDraw,
+      int halfmoveClock,
+      int materialEvaluation,
+      DateTime lastUpdated});
 }
 
 /// @nodoc
@@ -95,95 +92,90 @@ class _$GameStateModelCopyWithImpl<$Res, $Val extends GameStateModel>
     Object? materialEvaluation = null,
     Object? lastUpdated = null,
   }) {
-    return _then(
-      _value.copyWith(
-            gameUuid: null == gameUuid
-                ? _value.gameUuid
-                : gameUuid // ignore: cast_nullable_to_non_nullable
-                      as String,
-            currentFen: null == currentFen
-                ? _value.currentFen
-                : currentFen // ignore: cast_nullable_to_non_nullable
-                      as String,
-            fenHistory: null == fenHistory
-                ? _value.fenHistory
-                : fenHistory // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            fenCounts: null == fenCounts
-                ? _value.fenCounts
-                : fenCounts // ignore: cast_nullable_to_non_nullable
-                      as Map<String, int>,
-            moves: null == moves
-                ? _value.moves
-                : moves // ignore: cast_nullable_to_non_nullable
-                      as List<MoveDataModel>,
-            currentHalfmoveIndex: null == currentHalfmoveIndex
-                ? _value.currentHalfmoveIndex
-                : currentHalfmoveIndex // ignore: cast_nullable_to_non_nullable
-                      as int,
-            result: freezed == result
-                ? _value.result
-                : result // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            termination: null == termination
-                ? _value.termination
-                : termination // ignore: cast_nullable_to_non_nullable
-                      as GameTermination,
-            resignationSide: freezed == resignationSide
-                ? _value.resignationSide
-                : resignationSide // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            timeoutSide: freezed == timeoutSide
-                ? _value.timeoutSide
-                : timeoutSide // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            agreementDraw: null == agreementDraw
-                ? _value.agreementDraw
-                : agreementDraw // ignore: cast_nullable_to_non_nullable
-                      as bool,
-            halfmoveClock: null == halfmoveClock
-                ? _value.halfmoveClock
-                : halfmoveClock // ignore: cast_nullable_to_non_nullable
-                      as int,
-            materialEvaluation: null == materialEvaluation
-                ? _value.materialEvaluation
-                : materialEvaluation // ignore: cast_nullable_to_non_nullable
-                      as int,
-            lastUpdated: null == lastUpdated
-                ? _value.lastUpdated
-                : lastUpdated // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      gameUuid: null == gameUuid
+          ? _value.gameUuid
+          : gameUuid // ignore: cast_nullable_to_non_nullable
+              as String,
+      currentFen: null == currentFen
+          ? _value.currentFen
+          : currentFen // ignore: cast_nullable_to_non_nullable
+              as String,
+      fenHistory: null == fenHistory
+          ? _value.fenHistory
+          : fenHistory // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      fenCounts: null == fenCounts
+          ? _value.fenCounts
+          : fenCounts // ignore: cast_nullable_to_non_nullable
+              as Map<String, int>,
+      moves: null == moves
+          ? _value.moves
+          : moves // ignore: cast_nullable_to_non_nullable
+              as List<MoveDataModel>,
+      currentHalfmoveIndex: null == currentHalfmoveIndex
+          ? _value.currentHalfmoveIndex
+          : currentHalfmoveIndex // ignore: cast_nullable_to_non_nullable
+              as int,
+      result: freezed == result
+          ? _value.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as String?,
+      termination: null == termination
+          ? _value.termination
+          : termination // ignore: cast_nullable_to_non_nullable
+              as GameTermination,
+      resignationSide: freezed == resignationSide
+          ? _value.resignationSide
+          : resignationSide // ignore: cast_nullable_to_non_nullable
+              as String?,
+      timeoutSide: freezed == timeoutSide
+          ? _value.timeoutSide
+          : timeoutSide // ignore: cast_nullable_to_non_nullable
+              as String?,
+      agreementDraw: null == agreementDraw
+          ? _value.agreementDraw
+          : agreementDraw // ignore: cast_nullable_to_non_nullable
+              as bool,
+      halfmoveClock: null == halfmoveClock
+          ? _value.halfmoveClock
+          : halfmoveClock // ignore: cast_nullable_to_non_nullable
+              as int,
+      materialEvaluation: null == materialEvaluation
+          ? _value.materialEvaluation
+          : materialEvaluation // ignore: cast_nullable_to_non_nullable
+              as int,
+      lastUpdated: null == lastUpdated
+          ? _value.lastUpdated
+          : lastUpdated // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+    ) as $Val);
   }
 }
 
 /// @nodoc
 abstract class _$$GameStateModelImplCopyWith<$Res>
     implements $GameStateModelCopyWith<$Res> {
-  factory _$$GameStateModelImplCopyWith(
-    _$GameStateModelImpl value,
-    $Res Function(_$GameStateModelImpl) then,
-  ) = __$$GameStateModelImplCopyWithImpl<$Res>;
+  factory _$$GameStateModelImplCopyWith(_$GameStateModelImpl value,
+          $Res Function(_$GameStateModelImpl) then) =
+      __$$GameStateModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    String gameUuid,
-    String currentFen,
-    List<String> fenHistory,
-    Map<String, int> fenCounts,
-    List<MoveDataModel> moves,
-    int currentHalfmoveIndex,
-    String? result,
-    GameTermination termination,
-    String? resignationSide,
-    String? timeoutSide,
-    bool agreementDraw,
-    int halfmoveClock,
-    int materialEvaluation,
-    DateTime lastUpdated,
-  });
+  $Res call(
+      {String gameUuid,
+      String currentFen,
+      List<String> fenHistory,
+      Map<String, int> fenCounts,
+      List<MoveDataModel> moves,
+      int currentHalfmoveIndex,
+      String? result,
+      GameTermination termination,
+      String? resignationSide,
+      String? timeoutSide,
+      bool agreementDraw,
+      int halfmoveClock,
+      int materialEvaluation,
+      DateTime lastUpdated});
 }
 
 /// @nodoc
@@ -191,9 +183,8 @@ class __$$GameStateModelImplCopyWithImpl<$Res>
     extends _$GameStateModelCopyWithImpl<$Res, _$GameStateModelImpl>
     implements _$$GameStateModelImplCopyWith<$Res> {
   __$$GameStateModelImplCopyWithImpl(
-    _$GameStateModelImpl _value,
-    $Res Function(_$GameStateModelImpl) _then,
-  ) : super(_value, _then);
+      _$GameStateModelImpl _value, $Res Function(_$GameStateModelImpl) _then)
+      : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -213,90 +204,88 @@ class __$$GameStateModelImplCopyWithImpl<$Res>
     Object? materialEvaluation = null,
     Object? lastUpdated = null,
   }) {
-    return _then(
-      _$GameStateModelImpl(
-        gameUuid: null == gameUuid
-            ? _value.gameUuid
-            : gameUuid // ignore: cast_nullable_to_non_nullable
-                  as String,
-        currentFen: null == currentFen
-            ? _value.currentFen
-            : currentFen // ignore: cast_nullable_to_non_nullable
-                  as String,
-        fenHistory: null == fenHistory
-            ? _value._fenHistory
-            : fenHistory // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        fenCounts: null == fenCounts
-            ? _value._fenCounts
-            : fenCounts // ignore: cast_nullable_to_non_nullable
-                  as Map<String, int>,
-        moves: null == moves
-            ? _value._moves
-            : moves // ignore: cast_nullable_to_non_nullable
-                  as List<MoveDataModel>,
-        currentHalfmoveIndex: null == currentHalfmoveIndex
-            ? _value.currentHalfmoveIndex
-            : currentHalfmoveIndex // ignore: cast_nullable_to_non_nullable
-                  as int,
-        result: freezed == result
-            ? _value.result
-            : result // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        termination: null == termination
-            ? _value.termination
-            : termination // ignore: cast_nullable_to_non_nullable
-                  as GameTermination,
-        resignationSide: freezed == resignationSide
-            ? _value.resignationSide
-            : resignationSide // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        timeoutSide: freezed == timeoutSide
-            ? _value.timeoutSide
-            : timeoutSide // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        agreementDraw: null == agreementDraw
-            ? _value.agreementDraw
-            : agreementDraw // ignore: cast_nullable_to_non_nullable
-                  as bool,
-        halfmoveClock: null == halfmoveClock
-            ? _value.halfmoveClock
-            : halfmoveClock // ignore: cast_nullable_to_non_nullable
-                  as int,
-        materialEvaluation: null == materialEvaluation
-            ? _value.materialEvaluation
-            : materialEvaluation // ignore: cast_nullable_to_non_nullable
-                  as int,
-        lastUpdated: null == lastUpdated
-            ? _value.lastUpdated
-            : lastUpdated // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-      ),
-    );
+    return _then(_$GameStateModelImpl(
+      gameUuid: null == gameUuid
+          ? _value.gameUuid
+          : gameUuid // ignore: cast_nullable_to_non_nullable
+              as String,
+      currentFen: null == currentFen
+          ? _value.currentFen
+          : currentFen // ignore: cast_nullable_to_non_nullable
+              as String,
+      fenHistory: null == fenHistory
+          ? _value._fenHistory
+          : fenHistory // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      fenCounts: null == fenCounts
+          ? _value._fenCounts
+          : fenCounts // ignore: cast_nullable_to_non_nullable
+              as Map<String, int>,
+      moves: null == moves
+          ? _value._moves
+          : moves // ignore: cast_nullable_to_non_nullable
+              as List<MoveDataModel>,
+      currentHalfmoveIndex: null == currentHalfmoveIndex
+          ? _value.currentHalfmoveIndex
+          : currentHalfmoveIndex // ignore: cast_nullable_to_non_nullable
+              as int,
+      result: freezed == result
+          ? _value.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as String?,
+      termination: null == termination
+          ? _value.termination
+          : termination // ignore: cast_nullable_to_non_nullable
+              as GameTermination,
+      resignationSide: freezed == resignationSide
+          ? _value.resignationSide
+          : resignationSide // ignore: cast_nullable_to_non_nullable
+              as String?,
+      timeoutSide: freezed == timeoutSide
+          ? _value.timeoutSide
+          : timeoutSide // ignore: cast_nullable_to_non_nullable
+              as String?,
+      agreementDraw: null == agreementDraw
+          ? _value.agreementDraw
+          : agreementDraw // ignore: cast_nullable_to_non_nullable
+              as bool,
+      halfmoveClock: null == halfmoveClock
+          ? _value.halfmoveClock
+          : halfmoveClock // ignore: cast_nullable_to_non_nullable
+              as int,
+      materialEvaluation: null == materialEvaluation
+          ? _value.materialEvaluation
+          : materialEvaluation // ignore: cast_nullable_to_non_nullable
+              as int,
+      lastUpdated: null == lastUpdated
+          ? _value.lastUpdated
+          : lastUpdated // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$GameStateModelImpl implements _GameStateModel {
-  const _$GameStateModelImpl({
-    required this.gameUuid,
-    required this.currentFen,
-    required final List<String> fenHistory,
-    required final Map<String, int> fenCounts,
-    required final List<MoveDataModel> moves,
-    this.currentHalfmoveIndex = 0,
-    this.result,
-    this.termination = GameTermination.ongoing,
-    this.resignationSide,
-    this.timeoutSide,
-    this.agreementDraw = false,
-    this.halfmoveClock = 0,
-    this.materialEvaluation = 0,
-    required this.lastUpdated,
-  }) : _fenHistory = fenHistory,
-       _fenCounts = fenCounts,
-       _moves = moves;
+  const _$GameStateModelImpl(
+      {required this.gameUuid,
+      required this.currentFen,
+      required final List<String> fenHistory,
+      required final Map<String, int> fenCounts,
+      required final List<MoveDataModel> moves,
+      this.currentHalfmoveIndex = 0,
+      this.result,
+      this.termination = GameTermination.ongoing,
+      this.resignationSide,
+      this.timeoutSide,
+      this.agreementDraw = false,
+      this.halfmoveClock = 0,
+      this.materialEvaluation = 0,
+      required this.lastUpdated})
+      : _fenHistory = fenHistory,
+        _fenCounts = fenCounts,
+        _moves = moves;
 
   factory _$GameStateModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$GameStateModelImplFromJson(json);
@@ -367,14 +356,10 @@ class _$GameStateModelImpl implements _GameStateModel {
                 other.gameUuid == gameUuid) &&
             (identical(other.currentFen, currentFen) ||
                 other.currentFen == currentFen) &&
-            const DeepCollectionEquality().equals(
-              other._fenHistory,
-              _fenHistory,
-            ) &&
-            const DeepCollectionEquality().equals(
-              other._fenCounts,
-              _fenCounts,
-            ) &&
+            const DeepCollectionEquality()
+                .equals(other._fenHistory, _fenHistory) &&
+            const DeepCollectionEquality()
+                .equals(other._fenCounts, _fenCounts) &&
             const DeepCollectionEquality().equals(other._moves, _moves) &&
             (identical(other.currentHalfmoveIndex, currentHalfmoveIndex) ||
                 other.currentHalfmoveIndex == currentHalfmoveIndex) &&
@@ -398,55 +383,53 @@ class _$GameStateModelImpl implements _GameStateModel {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    gameUuid,
-    currentFen,
-    const DeepCollectionEquality().hash(_fenHistory),
-    const DeepCollectionEquality().hash(_fenCounts),
-    const DeepCollectionEquality().hash(_moves),
-    currentHalfmoveIndex,
-    result,
-    termination,
-    resignationSide,
-    timeoutSide,
-    agreementDraw,
-    halfmoveClock,
-    materialEvaluation,
-    lastUpdated,
-  );
+      runtimeType,
+      gameUuid,
+      currentFen,
+      const DeepCollectionEquality().hash(_fenHistory),
+      const DeepCollectionEquality().hash(_fenCounts),
+      const DeepCollectionEquality().hash(_moves),
+      currentHalfmoveIndex,
+      result,
+      termination,
+      resignationSide,
+      timeoutSide,
+      agreementDraw,
+      halfmoveClock,
+      materialEvaluation,
+      lastUpdated);
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$GameStateModelImplCopyWith<_$GameStateModelImpl> get copyWith =>
       __$$GameStateModelImplCopyWithImpl<_$GameStateModelImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$GameStateModelImplToJson(this);
+    return _$$GameStateModelImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _GameStateModel implements GameStateModel {
-  const factory _GameStateModel({
-    required final String gameUuid,
-    required final String currentFen,
-    required final List<String> fenHistory,
-    required final Map<String, int> fenCounts,
-    required final List<MoveDataModel> moves,
-    final int currentHalfmoveIndex,
-    final String? result,
-    final GameTermination termination,
-    final String? resignationSide,
-    final String? timeoutSide,
-    final bool agreementDraw,
-    final int halfmoveClock,
-    final int materialEvaluation,
-    required final DateTime lastUpdated,
-  }) = _$GameStateModelImpl;
+  const factory _GameStateModel(
+      {required final String gameUuid,
+      required final String currentFen,
+      required final List<String> fenHistory,
+      required final Map<String, int> fenCounts,
+      required final List<MoveDataModel> moves,
+      final int currentHalfmoveIndex,
+      final String? result,
+      final GameTermination termination,
+      final String? resignationSide,
+      final String? timeoutSide,
+      final bool agreementDraw,
+      final int halfmoveClock,
+      final int materialEvaluation,
+      required final DateTime lastUpdated}) = _$GameStateModelImpl;
 
   factory _GameStateModel.fromJson(Map<String, dynamic> json) =
       _$GameStateModelImpl.fromJson;

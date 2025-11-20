@@ -6,17 +6,17 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/game_termination_enum.dart';
-import '../controllers/game_controller.dart';
+import '../controllers/base_game_controller.dart';
 
 /// Widget to display game information
 /// عنصر لعرض معلومات اللعبة
-class GameInfoWidget extends GetView<GameController> {
+class GameInfoWidget extends GetView<BaseGameController> {
   const GameInfoWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final game = controller.currentGame;
+      final game = controller.getCurrentGame;
 
       if (game == null) {
         return const Center(child: Text('No game loaded'));
@@ -51,23 +51,13 @@ class GameInfoWidget extends GetView<GameController> {
             _buildInfoRow(
               icon: Icons.calendar_today,
               label: 'Date',
-              value: game.date != null
-                  ? DateFormat('yyyy-MM-dd').format(game.date!)
-                  : 'Unknown',
+              value: game.date != null ? DateFormat('yyyy-MM-dd').format(game.date!) : 'Unknown',
             ),
 
-            _buildInfoRow(
-              icon: Icons.location_on,
-              label: 'Site',
-              value: game.site ?? 'Local',
-            ),
+            _buildInfoRow(icon: Icons.location_on, label: 'Site', value: game.site ?? 'Local'),
 
             if (game.timeControl != null)
-              _buildInfoRow(
-                icon: Icons.timer,
-                label: 'Time Control',
-                value: game.timeControl!,
-              ),
+              _buildInfoRow(icon: Icons.timer, label: 'Time Control', value: game.timeControl!),
 
             const Divider(height: 16),
 
@@ -86,21 +76,14 @@ class GameInfoWidget extends GetView<GameController> {
 
   /// Build info row
   /// بناء صف المعلومات
-  Widget _buildInfoRow({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
+  Widget _buildInfoRow({required IconData icon, required String label, required String value}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Icon(icon, size: 16, color: Colors.grey[600]),
           const SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-          ),
+          Text('$label: ', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
           Expanded(
             child: Text(
               value,
@@ -120,10 +103,7 @@ class GameInfoWidget extends GetView<GameController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Game Status',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
+        const Text('Game Status', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
 
         // Status indicator
@@ -149,7 +129,7 @@ class GameInfoWidget extends GetView<GameController> {
         if (controller.isGameOver) ...[
           const SizedBox(height: 4),
           Text(
-            'Result: ${controller.gameResult}',
+            'Result: ${controller.getGameResult}',
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
           Text(
@@ -162,7 +142,7 @@ class GameInfoWidget extends GetView<GameController> {
         if (!controller.isGameOver) ...[
           const SizedBox(height: 4),
           Text(
-            'Turn: ${controller.currentTurn == Side.white ? 'White' : 'Black'}',
+            'Turn: ${controller.getCurrentTurn == Side.white ? 'White' : 'Black'}',
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ],
@@ -184,11 +164,7 @@ class GameInfoWidget extends GetView<GameController> {
                 SizedBox(width: 4),
                 Text(
                   'Check!',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange,
-                  ),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange),
                 ),
               ],
             ),
@@ -205,10 +181,7 @@ class GameInfoWidget extends GetView<GameController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          'Material Balance',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
+        const Text('Material Balance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
 
         Row(
@@ -217,10 +190,7 @@ class GameInfoWidget extends GetView<GameController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'White',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-                  ),
+                  const Text('White', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
                   Text(
                     '${controller.getMaterialOnBoard(Side.white)} points',
                     style: TextStyle(fontSize: 11, color: Colors.grey[600]),
@@ -250,10 +220,7 @@ class GameInfoWidget extends GetView<GameController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
-                    'Black',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-                  ),
+                  const Text('Black', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
                   Text(
                     '${controller.getMaterialOnBoard(Side.black)} points',
                     style: TextStyle(fontSize: 11, color: Colors.grey[600]),
@@ -270,7 +237,7 @@ class GameInfoWidget extends GetView<GameController> {
   /// Get termination text
   /// الحصول على نص الإنهاء
   String _getTerminationText() {
-    switch (controller.termination) {
+    switch (controller.getTermination) {
       case GameTermination.checkmate:
         return 'Checkmate';
       case GameTermination.stalemate:
@@ -295,7 +262,7 @@ class GameInfoWidget extends GetView<GameController> {
   /// Get advantage color
   /// الحصول على لون الميزة
   Color _getAdvantageColor() {
-    final advantage = controller.materialAdvantage;
+    final advantage = controller.getMaterialAdvantage;
     if (advantage > 0) return Colors.green;
     if (advantage < 0) return Colors.blue;
     return Colors.grey;
@@ -304,7 +271,7 @@ class GameInfoWidget extends GetView<GameController> {
   /// Get advantage text
   /// الحصول على نص الميزة
   String _getAdvantageText() {
-    final advantage = controller.materialAdvantage;
+    final advantage = controller.getMaterialAdvantage;
     if (advantage == 0) return '=';
     if (advantage > 0) return '+$advantage';
     return '$advantage';

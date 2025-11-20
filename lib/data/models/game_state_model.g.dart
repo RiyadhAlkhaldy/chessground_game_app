@@ -22,7 +22,7 @@ _$GameStateModelImpl _$$GameStateModelImplFromJson(Map<String, dynamic> json) =>
       result: json['result'] as String?,
       termination:
           $enumDecodeNullable(_$GameTerminationEnumMap, json['termination']) ??
-          GameTermination.ongoing,
+              GameTermination.ongoing,
       resignationSide: json['resignationSide'] as String?,
       timeoutSide: json['timeoutSide'] as String?,
       agreementDraw: json['agreementDraw'] as bool? ?? false,
@@ -32,23 +32,23 @@ _$GameStateModelImpl _$$GameStateModelImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$$GameStateModelImplToJson(
-  _$GameStateModelImpl instance,
-) => <String, dynamic>{
-  'gameUuid': instance.gameUuid,
-  'currentFen': instance.currentFen,
-  'fenHistory': instance.fenHistory,
-  'fenCounts': instance.fenCounts,
-  'moves': instance.moves,
-  'currentHalfmoveIndex': instance.currentHalfmoveIndex,
-  'result': instance.result,
-  'termination': _$GameTerminationEnumMap[instance.termination]!,
-  'resignationSide': instance.resignationSide,
-  'timeoutSide': instance.timeoutSide,
-  'agreementDraw': instance.agreementDraw,
-  'halfmoveClock': instance.halfmoveClock,
-  'materialEvaluation': instance.materialEvaluation,
-  'lastUpdated': instance.lastUpdated.toIso8601String(),
-};
+        _$GameStateModelImpl instance) =>
+    <String, dynamic>{
+      'gameUuid': instance.gameUuid,
+      'currentFen': instance.currentFen,
+      'fenHistory': instance.fenHistory,
+      'fenCounts': instance.fenCounts,
+      'moves': instance.moves,
+      'currentHalfmoveIndex': instance.currentHalfmoveIndex,
+      'result': instance.result,
+      'termination': _$GameTerminationEnumMap[instance.termination]!,
+      'resignationSide': instance.resignationSide,
+      'timeoutSide': instance.timeoutSide,
+      'agreementDraw': instance.agreementDraw,
+      'halfmoveClock': instance.halfmoveClock,
+      'materialEvaluation': instance.materialEvaluation,
+      'lastUpdated': instance.lastUpdated.toIso8601String(),
+    };
 
 const _$GameTerminationEnumMap = {
   GameTermination.checkmate: 'checkmate',

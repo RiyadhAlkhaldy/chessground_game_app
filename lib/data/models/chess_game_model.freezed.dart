@@ -12,8 +12,7 @@ part of 'chess_game_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 ChessGameModel _$ChessGameModelFromJson(Map<String, dynamic> json) {
   return _ChessGameModel.fromJson(json);
@@ -53,30 +52,28 @@ mixin _$ChessGameModel {
 /// @nodoc
 abstract class $ChessGameModelCopyWith<$Res> {
   factory $ChessGameModelCopyWith(
-    ChessGameModel value,
-    $Res Function(ChessGameModel) then,
-  ) = _$ChessGameModelCopyWithImpl<$Res, ChessGameModel>;
+          ChessGameModel value, $Res Function(ChessGameModel) then) =
+      _$ChessGameModelCopyWithImpl<$Res, ChessGameModel>;
   @useResult
-  $Res call({
-    int? id,
-    String uuid,
-    String? event,
-    String? site,
-    DateTime? date,
-    String? round,
-    PlayerModel whitePlayer,
-    PlayerModel blackPlayer,
-    String result,
-    GameTermination termination,
-    String? eco,
-    int? whiteElo,
-    int? blackElo,
-    String? timeControl,
-    String? startingFen,
-    String? fullPgn,
-    int movesCount,
-    List<MoveDataModel> moves,
-  });
+  $Res call(
+      {int? id,
+      String uuid,
+      String? event,
+      String? site,
+      DateTime? date,
+      String? round,
+      PlayerModel whitePlayer,
+      PlayerModel blackPlayer,
+      String result,
+      GameTermination termination,
+      String? eco,
+      int? whiteElo,
+      int? blackElo,
+      String? timeControl,
+      String? startingFen,
+      String? fullPgn,
+      int movesCount,
+      List<MoveDataModel> moves});
 
   $PlayerModelCopyWith<$Res> get whitePlayer;
   $PlayerModelCopyWith<$Res> get blackPlayer;
@@ -114,83 +111,80 @@ class _$ChessGameModelCopyWithImpl<$Res, $Val extends ChessGameModel>
     Object? movesCount = null,
     Object? moves = null,
   }) {
-    return _then(
-      _value.copyWith(
-            id: freezed == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as int?,
-            uuid: null == uuid
-                ? _value.uuid
-                : uuid // ignore: cast_nullable_to_non_nullable
-                      as String,
-            event: freezed == event
-                ? _value.event
-                : event // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            site: freezed == site
-                ? _value.site
-                : site // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            date: freezed == date
-                ? _value.date
-                : date // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
-            round: freezed == round
-                ? _value.round
-                : round // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            whitePlayer: null == whitePlayer
-                ? _value.whitePlayer
-                : whitePlayer // ignore: cast_nullable_to_non_nullable
-                      as PlayerModel,
-            blackPlayer: null == blackPlayer
-                ? _value.blackPlayer
-                : blackPlayer // ignore: cast_nullable_to_non_nullable
-                      as PlayerModel,
-            result: null == result
-                ? _value.result
-                : result // ignore: cast_nullable_to_non_nullable
-                      as String,
-            termination: null == termination
-                ? _value.termination
-                : termination // ignore: cast_nullable_to_non_nullable
-                      as GameTermination,
-            eco: freezed == eco
-                ? _value.eco
-                : eco // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            whiteElo: freezed == whiteElo
-                ? _value.whiteElo
-                : whiteElo // ignore: cast_nullable_to_non_nullable
-                      as int?,
-            blackElo: freezed == blackElo
-                ? _value.blackElo
-                : blackElo // ignore: cast_nullable_to_non_nullable
-                      as int?,
-            timeControl: freezed == timeControl
-                ? _value.timeControl
-                : timeControl // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            startingFen: freezed == startingFen
-                ? _value.startingFen
-                : startingFen // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            fullPgn: freezed == fullPgn
-                ? _value.fullPgn
-                : fullPgn // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            movesCount: null == movesCount
-                ? _value.movesCount
-                : movesCount // ignore: cast_nullable_to_non_nullable
-                      as int,
-            moves: null == moves
-                ? _value.moves
-                : moves // ignore: cast_nullable_to_non_nullable
-                      as List<MoveDataModel>,
-          )
-          as $Val,
-    );
+    return _then(_value.copyWith(
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      uuid: null == uuid
+          ? _value.uuid
+          : uuid // ignore: cast_nullable_to_non_nullable
+              as String,
+      event: freezed == event
+          ? _value.event
+          : event // ignore: cast_nullable_to_non_nullable
+              as String?,
+      site: freezed == site
+          ? _value.site
+          : site // ignore: cast_nullable_to_non_nullable
+              as String?,
+      date: freezed == date
+          ? _value.date
+          : date // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      round: freezed == round
+          ? _value.round
+          : round // ignore: cast_nullable_to_non_nullable
+              as String?,
+      whitePlayer: null == whitePlayer
+          ? _value.whitePlayer
+          : whitePlayer // ignore: cast_nullable_to_non_nullable
+              as PlayerModel,
+      blackPlayer: null == blackPlayer
+          ? _value.blackPlayer
+          : blackPlayer // ignore: cast_nullable_to_non_nullable
+              as PlayerModel,
+      result: null == result
+          ? _value.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as String,
+      termination: null == termination
+          ? _value.termination
+          : termination // ignore: cast_nullable_to_non_nullable
+              as GameTermination,
+      eco: freezed == eco
+          ? _value.eco
+          : eco // ignore: cast_nullable_to_non_nullable
+              as String?,
+      whiteElo: freezed == whiteElo
+          ? _value.whiteElo
+          : whiteElo // ignore: cast_nullable_to_non_nullable
+              as int?,
+      blackElo: freezed == blackElo
+          ? _value.blackElo
+          : blackElo // ignore: cast_nullable_to_non_nullable
+              as int?,
+      timeControl: freezed == timeControl
+          ? _value.timeControl
+          : timeControl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      startingFen: freezed == startingFen
+          ? _value.startingFen
+          : startingFen // ignore: cast_nullable_to_non_nullable
+              as String?,
+      fullPgn: freezed == fullPgn
+          ? _value.fullPgn
+          : fullPgn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      movesCount: null == movesCount
+          ? _value.movesCount
+          : movesCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      moves: null == moves
+          ? _value.moves
+          : moves // ignore: cast_nullable_to_non_nullable
+              as List<MoveDataModel>,
+    ) as $Val);
   }
 
   @override
@@ -213,32 +207,30 @@ class _$ChessGameModelCopyWithImpl<$Res, $Val extends ChessGameModel>
 /// @nodoc
 abstract class _$$ChessGameModelImplCopyWith<$Res>
     implements $ChessGameModelCopyWith<$Res> {
-  factory _$$ChessGameModelImplCopyWith(
-    _$ChessGameModelImpl value,
-    $Res Function(_$ChessGameModelImpl) then,
-  ) = __$$ChessGameModelImplCopyWithImpl<$Res>;
+  factory _$$ChessGameModelImplCopyWith(_$ChessGameModelImpl value,
+          $Res Function(_$ChessGameModelImpl) then) =
+      __$$ChessGameModelImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    int? id,
-    String uuid,
-    String? event,
-    String? site,
-    DateTime? date,
-    String? round,
-    PlayerModel whitePlayer,
-    PlayerModel blackPlayer,
-    String result,
-    GameTermination termination,
-    String? eco,
-    int? whiteElo,
-    int? blackElo,
-    String? timeControl,
-    String? startingFen,
-    String? fullPgn,
-    int movesCount,
-    List<MoveDataModel> moves,
-  });
+  $Res call(
+      {int? id,
+      String uuid,
+      String? event,
+      String? site,
+      DateTime? date,
+      String? round,
+      PlayerModel whitePlayer,
+      PlayerModel blackPlayer,
+      String result,
+      GameTermination termination,
+      String? eco,
+      int? whiteElo,
+      int? blackElo,
+      String? timeControl,
+      String? startingFen,
+      String? fullPgn,
+      int movesCount,
+      List<MoveDataModel> moves});
 
   @override
   $PlayerModelCopyWith<$Res> get whitePlayer;
@@ -251,9 +243,8 @@ class __$$ChessGameModelImplCopyWithImpl<$Res>
     extends _$ChessGameModelCopyWithImpl<$Res, _$ChessGameModelImpl>
     implements _$$ChessGameModelImplCopyWith<$Res> {
   __$$ChessGameModelImplCopyWithImpl(
-    _$ChessGameModelImpl _value,
-    $Res Function(_$ChessGameModelImpl) _then,
-  ) : super(_value, _then);
+      _$ChessGameModelImpl _value, $Res Function(_$ChessGameModelImpl) _then)
+      : super(_value, _then);
 
   @pragma('vm:prefer-inline')
   @override
@@ -277,108 +268,106 @@ class __$$ChessGameModelImplCopyWithImpl<$Res>
     Object? movesCount = null,
     Object? moves = null,
   }) {
-    return _then(
-      _$ChessGameModelImpl(
-        id: freezed == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as int?,
-        uuid: null == uuid
-            ? _value.uuid
-            : uuid // ignore: cast_nullable_to_non_nullable
-                  as String,
-        event: freezed == event
-            ? _value.event
-            : event // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        site: freezed == site
-            ? _value.site
-            : site // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        date: freezed == date
-            ? _value.date
-            : date // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
-        round: freezed == round
-            ? _value.round
-            : round // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        whitePlayer: null == whitePlayer
-            ? _value.whitePlayer
-            : whitePlayer // ignore: cast_nullable_to_non_nullable
-                  as PlayerModel,
-        blackPlayer: null == blackPlayer
-            ? _value.blackPlayer
-            : blackPlayer // ignore: cast_nullable_to_non_nullable
-                  as PlayerModel,
-        result: null == result
-            ? _value.result
-            : result // ignore: cast_nullable_to_non_nullable
-                  as String,
-        termination: null == termination
-            ? _value.termination
-            : termination // ignore: cast_nullable_to_non_nullable
-                  as GameTermination,
-        eco: freezed == eco
-            ? _value.eco
-            : eco // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        whiteElo: freezed == whiteElo
-            ? _value.whiteElo
-            : whiteElo // ignore: cast_nullable_to_non_nullable
-                  as int?,
-        blackElo: freezed == blackElo
-            ? _value.blackElo
-            : blackElo // ignore: cast_nullable_to_non_nullable
-                  as int?,
-        timeControl: freezed == timeControl
-            ? _value.timeControl
-            : timeControl // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        startingFen: freezed == startingFen
-            ? _value.startingFen
-            : startingFen // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        fullPgn: freezed == fullPgn
-            ? _value.fullPgn
-            : fullPgn // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        movesCount: null == movesCount
-            ? _value.movesCount
-            : movesCount // ignore: cast_nullable_to_non_nullable
-                  as int,
-        moves: null == moves
-            ? _value._moves
-            : moves // ignore: cast_nullable_to_non_nullable
-                  as List<MoveDataModel>,
-      ),
-    );
+    return _then(_$ChessGameModelImpl(
+      id: freezed == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as int?,
+      uuid: null == uuid
+          ? _value.uuid
+          : uuid // ignore: cast_nullable_to_non_nullable
+              as String,
+      event: freezed == event
+          ? _value.event
+          : event // ignore: cast_nullable_to_non_nullable
+              as String?,
+      site: freezed == site
+          ? _value.site
+          : site // ignore: cast_nullable_to_non_nullable
+              as String?,
+      date: freezed == date
+          ? _value.date
+          : date // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      round: freezed == round
+          ? _value.round
+          : round // ignore: cast_nullable_to_non_nullable
+              as String?,
+      whitePlayer: null == whitePlayer
+          ? _value.whitePlayer
+          : whitePlayer // ignore: cast_nullable_to_non_nullable
+              as PlayerModel,
+      blackPlayer: null == blackPlayer
+          ? _value.blackPlayer
+          : blackPlayer // ignore: cast_nullable_to_non_nullable
+              as PlayerModel,
+      result: null == result
+          ? _value.result
+          : result // ignore: cast_nullable_to_non_nullable
+              as String,
+      termination: null == termination
+          ? _value.termination
+          : termination // ignore: cast_nullable_to_non_nullable
+              as GameTermination,
+      eco: freezed == eco
+          ? _value.eco
+          : eco // ignore: cast_nullable_to_non_nullable
+              as String?,
+      whiteElo: freezed == whiteElo
+          ? _value.whiteElo
+          : whiteElo // ignore: cast_nullable_to_non_nullable
+              as int?,
+      blackElo: freezed == blackElo
+          ? _value.blackElo
+          : blackElo // ignore: cast_nullable_to_non_nullable
+              as int?,
+      timeControl: freezed == timeControl
+          ? _value.timeControl
+          : timeControl // ignore: cast_nullable_to_non_nullable
+              as String?,
+      startingFen: freezed == startingFen
+          ? _value.startingFen
+          : startingFen // ignore: cast_nullable_to_non_nullable
+              as String?,
+      fullPgn: freezed == fullPgn
+          ? _value.fullPgn
+          : fullPgn // ignore: cast_nullable_to_non_nullable
+              as String?,
+      movesCount: null == movesCount
+          ? _value.movesCount
+          : movesCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      moves: null == moves
+          ? _value._moves
+          : moves // ignore: cast_nullable_to_non_nullable
+              as List<MoveDataModel>,
+    ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ChessGameModelImpl implements _ChessGameModel {
-  const _$ChessGameModelImpl({
-    required this.id,
-    required this.uuid,
-    this.event,
-    this.site,
-    this.date,
-    this.round,
-    required this.whitePlayer,
-    required this.blackPlayer,
-    this.result = '*',
-    this.termination = GameTermination.ongoing,
-    this.eco,
-    this.whiteElo,
-    this.blackElo,
-    this.timeControl,
-    this.startingFen,
-    this.fullPgn,
-    this.movesCount = 0,
-    final List<MoveDataModel> moves = const [],
-  }) : _moves = moves;
+  const _$ChessGameModelImpl(
+      {required this.id,
+      required this.uuid,
+      this.event,
+      this.site,
+      this.date,
+      this.round,
+      required this.whitePlayer,
+      required this.blackPlayer,
+      this.result = '*',
+      this.termination = GameTermination.ongoing,
+      this.eco,
+      this.whiteElo,
+      this.blackElo,
+      this.timeControl,
+      this.startingFen,
+      this.fullPgn,
+      this.movesCount = 0,
+      final List<MoveDataModel> moves = const []})
+      : _moves = moves;
 
   factory _$ChessGameModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$ChessGameModelImplFromJson(json);
@@ -402,11 +391,11 @@ class _$ChessGameModelImpl implements _ChessGameModel {
   @override
   @JsonKey()
   final String result;
-  // "1-0", "0-1", "1/2-1/2", "*"
+// "1-0", "0-1", "1/2-1/2", "*"
   @override
   @JsonKey()
   final GameTermination termination;
-  // إضافات تحليلية ووصفية
+// إضافات تحليلية ووصفية
   @override
   final String? eco;
   @override
@@ -417,10 +406,10 @@ class _$ChessGameModelImpl implements _ChessGameModel {
   final String? timeControl;
   @override
   final String? startingFen;
-  // للـ non-standard start
+// للـ non-standard start
   @override
   final String? fullPgn;
-  // النص الكامل للمباراة (مصدر)
+// النص الكامل للمباراة (مصدر)
   @override
   @JsonKey()
   final int movesCount;
@@ -474,63 +463,61 @@ class _$ChessGameModelImpl implements _ChessGameModel {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-    runtimeType,
-    id,
-    uuid,
-    event,
-    site,
-    date,
-    round,
-    whitePlayer,
-    blackPlayer,
-    result,
-    termination,
-    eco,
-    whiteElo,
-    blackElo,
-    timeControl,
-    startingFen,
-    fullPgn,
-    movesCount,
-    const DeepCollectionEquality().hash(_moves),
-  );
+      runtimeType,
+      id,
+      uuid,
+      event,
+      site,
+      date,
+      round,
+      whitePlayer,
+      blackPlayer,
+      result,
+      termination,
+      eco,
+      whiteElo,
+      blackElo,
+      timeControl,
+      startingFen,
+      fullPgn,
+      movesCount,
+      const DeepCollectionEquality().hash(_moves));
 
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$ChessGameModelImplCopyWith<_$ChessGameModelImpl> get copyWith =>
       __$$ChessGameModelImplCopyWithImpl<_$ChessGameModelImpl>(
-        this,
-        _$identity,
-      );
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ChessGameModelImplToJson(this);
+    return _$$ChessGameModelImplToJson(
+      this,
+    );
   }
 }
 
 abstract class _ChessGameModel implements ChessGameModel {
-  const factory _ChessGameModel({
-    required final int? id,
-    required final String uuid,
-    final String? event,
-    final String? site,
-    final DateTime? date,
-    final String? round,
-    required final PlayerModel whitePlayer,
-    required final PlayerModel blackPlayer,
-    final String result,
-    final GameTermination termination,
-    final String? eco,
-    final int? whiteElo,
-    final int? blackElo,
-    final String? timeControl,
-    final String? startingFen,
-    final String? fullPgn,
-    final int movesCount,
-    final List<MoveDataModel> moves,
-  }) = _$ChessGameModelImpl;
+  const factory _ChessGameModel(
+      {required final int? id,
+      required final String uuid,
+      final String? event,
+      final String? site,
+      final DateTime? date,
+      final String? round,
+      required final PlayerModel whitePlayer,
+      required final PlayerModel blackPlayer,
+      final String result,
+      final GameTermination termination,
+      final String? eco,
+      final int? whiteElo,
+      final int? blackElo,
+      final String? timeControl,
+      final String? startingFen,
+      final String? fullPgn,
+      final int movesCount,
+      final List<MoveDataModel> moves}) = _$ChessGameModelImpl;
 
   factory _ChessGameModel.fromJson(Map<String, dynamic> json) =
       _$ChessGameModelImpl.fromJson;

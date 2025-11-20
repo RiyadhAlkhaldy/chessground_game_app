@@ -11,14 +11,12 @@ _$MoveDataModelImpl _$$MoveDataModelImplFromJson(Map<String, dynamic> json) =>
       san: json['san'] as String?,
       lan: json['lan'] as String?,
       comment: json['comment'] as String?,
-      nags:
-          (json['nags'] as List<dynamic>?)
+      nags: (json['nags'] as List<dynamic>?)
               ?.map((e) => (e as num).toInt())
               .toList() ??
           const [],
       fenAfter: json['fenAfter'] as String?,
-      variations:
-          (json['variations'] as List<dynamic>?)
+      variations: (json['variations'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const [],
