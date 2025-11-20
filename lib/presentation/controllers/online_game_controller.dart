@@ -14,19 +14,14 @@ class OnlineGameController extends BaseGameController implements OnlineFeatures 
   int getMaterialOnBoard(Side side) {
     throw UnimplementedError();
   }
-  
+
   @override
   List<Role> getCapturedPieces(Side side) {
     throw UnimplementedError();
   }
-  
+
   @override
   String getPgnString() {
-    throw UnimplementedError();
-  }
-  
-  @override
-  Future<void> startNewGame({required String whitePlayerName, required String blackPlayerName, String? event, String? site, String? timeControl}) {
     throw UnimplementedError();
   }
 }

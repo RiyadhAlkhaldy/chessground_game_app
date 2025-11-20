@@ -16,7 +16,7 @@ class GameInfoWidget extends GetView<BaseGameController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final game = controller.getCurrentGame;
+      final game = controller.currentGame;
 
       if (game == null) {
         return const Center(child: Text('No game loaded'));
@@ -129,7 +129,7 @@ class GameInfoWidget extends GetView<BaseGameController> {
         if (controller.isGameOver) ...[
           const SizedBox(height: 4),
           Text(
-            'Result: ${controller.getGameResult}',
+            'Result: ${controller.gameResult}',
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
           Text(
@@ -142,7 +142,7 @@ class GameInfoWidget extends GetView<BaseGameController> {
         if (!controller.isGameOver) ...[
           const SizedBox(height: 4),
           Text(
-            'Turn: ${controller.getCurrentTurn == Side.white ? 'White' : 'Black'}',
+            'Turn: ${controller.currentTurn == Side.white ? 'White' : 'Black'}',
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ],
@@ -237,7 +237,7 @@ class GameInfoWidget extends GetView<BaseGameController> {
   /// Get termination text
   /// الحصول على نص الإنهاء
   String _getTerminationText() {
-    switch (controller.getTermination) {
+    switch (controller.termination) {
       case GameTermination.checkmate:
         return 'Checkmate';
       case GameTermination.stalemate:
@@ -262,7 +262,7 @@ class GameInfoWidget extends GetView<BaseGameController> {
   /// Get advantage color
   /// الحصول على لون الميزة
   Color _getAdvantageColor() {
-    final advantage = controller.getMaterialAdvantage;
+    final advantage = controller.materialAdvantage;
     if (advantage > 0) return Colors.green;
     if (advantage < 0) return Colors.blue;
     return Colors.grey;
@@ -271,7 +271,7 @@ class GameInfoWidget extends GetView<BaseGameController> {
   /// Get advantage text
   /// الحصول على نص الميزة
   String _getAdvantageText() {
-    final advantage = controller.getMaterialAdvantage;
+    final advantage = controller.materialAdvantage;
     if (advantage == 0) return '=';
     if (advantage > 0) return '+$advantage';
     return '$advantage';

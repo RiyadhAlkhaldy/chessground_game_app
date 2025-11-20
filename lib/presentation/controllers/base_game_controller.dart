@@ -27,11 +27,10 @@ abstract class BaseGameController extends GetxController {
   String fen = Chess.initial.fen;
 
   /// Valid moves for chessground (IMap format)
-  final Rx<ValidMoves> validMoves = ValidMoves(const {}).obs;
-
-  ValidMoves get getValidMoves => validMoves.value;
-
-  bool get isCheckmate => gameState.value.isCheckmate;
+  final Rx<ValidMoves> _validMoves = ValidMoves(const {}).obs;
+  set validMoves(ValidMoves validMoves) => _validMoves.value = validMoves;
+  ValidMoves get validMoves => _validMoves.value;
+  bool get isCheckmate => gameState.isCheckmate;
 
   Rxn<PlayerEntity> whitePlayer = Rxn();
   Rxn<PlayerEntity> blackPlayer = Rxn();
@@ -51,82 +50,97 @@ abstract class BaseGameController extends GetxController {
 
   /// Current game state
   /// حالة اللعبة الحالية
-  final Rx<GameState> gameState = GameState().obs;
-  GameState get getGameState => gameState.value;
+  final Rx<GameState> _gameState = GameState().obs;
+  set gameState(GameState gameState) => _gameState.value = gameState;
+  GameState get gameState => _gameState.value;
 
   /// Current chess game entity
   /// كيان لعبة الشطرنج الحالي
-  final Rx<ChessGameEntity?> currentGame = Rx<ChessGameEntity?>(null);
-  ChessGameEntity? get getCurrentGame => currentGame.value;
+  final Rx<ChessGameEntity?> _currentGame = Rx<ChessGameEntity?>(null);
+  set currentGame(ChessGameEntity chessGameEntity) => _currentGame.value = chessGameEntity;
+  ChessGameEntity? get currentGame => _currentGame.value;
 
   /// Loading state
   /// حالة التحميل
-  final RxBool isLoading = false.obs;
-  bool get getIsLoading => isLoading.value;
+  final RxBool _isLoading = false.obs;
+  set isLoading(bool islooding) => _isLoading.value = islooding;
+  bool get isLoading => _isLoading.value;
 
   /// Error message
   /// رسالة الخطأ
-  final RxString errorMessage = ''.obs;
-  String get getErrorMessage => errorMessage.value;
+  final RxString _errorMessage = ''.obs;
+  set errorMessage(String message) => _errorMessage.value = message;
+  String get errorMessage => _errorMessage.value;
 
   /// Current position FEN (reactive)
   /// FEN الموضع الحالي (تفاعلي)
-  final RxString currentFen = Chess.initial.fen.obs;
-  String get getCurrentFen => currentFen.value;
+  final RxString _currentFen = Chess.initial.fen.obs;
+  set currentFen(String fen) => _currentFen.value = fen;
+  String get currentFen => _currentFen.value;
 
   /// Current turn (reactive)
   /// الدور الحالي (تفاعلي)
-  final Rx<Side> currentTurn = Side.white.obs;
-  Side get getCurrentTurn => currentTurn.value;
+  final Rx<Side> _currentTurn = Side.white.obs;
+  set currentTurn(Side turn) => _currentTurn.value = turn;
+  Side get currentTurn => _currentTurn.value;
 
   /// Is game over (reactive)
   /// هل انتهت اللعبة (تفاعلي)
-  final RxBool setIsGameOver = false.obs;
-  bool get isGameOver => setIsGameOver.value;
+  final RxBool _isGameOver = false.obs;
+  set isGameOver(bool isGameOver) => _isGameOver.value = isGameOver;
+  bool get isGameOver => _isGameOver.value;
 
   /// Game result (reactive)
   /// نتيجة اللعبة (تفاعلية)
-  final RxString gameResult = '*'.obs;
-  String get getGameResult => gameResult.value;
+  final RxString _gameResult = '*'.obs;
+  set gameResult(String result) => _gameResult.value = result;
+  String get gameResult => _gameResult.value;
 
   /// Game termination reason (reactive)
   /// سبب إنهاء اللعبة (تفاعلي)
-  final Rx<GameTermination> termination = GameTermination.ongoing.obs;
-  GameTermination get getTermination => termination.value;
+  final Rx<GameTermination> _termination = GameTermination.ongoing.obs;
+  set termination(GameTermination termination) => _termination.value = termination;
+  GameTermination get termination => _termination.value;
 
-  final Rx<GameStatus> gameStatus = GameStatus.ongoing.obs;
-  GameStatus get getGameStatus => gameStatus.value;
+  final Rx<GameStatus> _gameStatus = GameStatus.ongoing.obs;
+  set gameStatus(GameStatus gameStatus) => _gameStatus.value = gameStatus;
+  GameStatus get gameStatus => _gameStatus.value;
 
   /// Last move metadata (reactive)
   /// بيانات آخر حركة (تفاعلية)
-  final Rx<MoveDataModel?> lastMove = Rx<MoveDataModel?>(null);
-  MoveDataModel? get getLastMove => lastMove.value;
+  final Rx<MoveDataModel?> _lastMove = Rx<MoveDataModel?>(null);
+  set lastMove(MoveDataModel? lastMvoe) => _lastMove.value = lastMvoe;
+  MoveDataModel? get lastMove => _lastMove.value;
 
   /// Can undo (reactive)
   /// إمكانية التراجع (تفاعلي)
-  final RxBool setCanUndo = false.obs;
-  RxBool get canUndo => setCanUndo;
+  final RxBool _canUndo = false.obs;
+  set canUndo(bool canUndo) => _canUndo.value = canUndo;
+  RxBool get canUndo => _canUndo;
 
   /// Can redo (reactive)
   /// إمكانية الإعادة (تفاعلي)
-  final RxBool setCanRedo = false.obs;
-  RxBool get canRedo => setCanRedo;
+  final RxBool _canRedo = false.obs;
+  set canRedo(bool canRedo) => _canRedo.value = canRedo;
+  RxBool get canRedo => _canRedo;
 
   /// Material advantage for white (reactive)
   /// ميزة المواد للأبيض (تفاعلي)
-  final RxInt materialAdvantage = 0.obs;
-  int get getMaterialAdvantage => materialAdvantage.value;
+  final RxInt _materialAdvantage = 0.obs;
+  set materialAdvantage(int materialAdvant) => _materialAdvantage.value = materialAdvant;
+  int get materialAdvantage => _materialAdvantage.value;
 
   /// Is position in check (reactive)
   /// هل الموضع في كش (تفاعلي)
-  final RxBool setIsCheck = false.obs;
-  bool get isCheck => setIsCheck.value;
+  final RxBool _isCheck = false.obs;
+  set isCheck(bool isCheck) => _isCheck.value = isCheck;
+  bool get isCheck => _isCheck.value;
 
   //   /// Auto-save enabled
   /// التخزين التلقائي مفعّل
-  final RxBool setAutoSaveEnabled = true.obs;
-  bool get autoSaveEnabled => setAutoSaveEnabled.value;
-  set autoSaveEnabled(bool value) => setAutoSaveEnabled.value = value;
+  final RxBool _autoSaveEnabled = true.obs;
+  bool get autoSaveEnabled => _autoSaveEnabled.value;
+  set autoSaveEnabled(bool value) => _autoSaveEnabled.value = value;
 
   // usecases
   final PlaySoundUseCase plySound;
@@ -143,26 +157,26 @@ abstract class BaseGameController extends GetxController {
   });
 
   void listenToGameStatus() {
-    gameState.value.gameStatus.listen((status) {
-      if (gameState.value.turn == Side.white) {
+    gameState.gameStatus.listen((status) {
+      if (gameState.turn == Side.white) {
         statusText.value = "دور الأبيض";
-      } else if (gameState.value.turn == Side.black) {
+      } else if (gameState.turn == Side.black) {
         statusText.value = "دور الأسود";
       }
-      if (gameState.value.isCheck) {
+      if (gameState.isCheck) {
         statusText.value += '(كش)';
       }
       if (status != GameStatus.ongoing) {
         statusText.value =
-            "${gameStatusL10n(Get.context!, gameStatus: getGameStatus, lastPosition: gameState.value.position, winner: gameState.value.result?.winner, isThreefoldRepetition: gameState.value.isThreefoldRepetition())} ";
-        Get.dialog(GameResultDialog(gameState: gameState.value, gameStatus: status, reset: reset));
+            "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.position, winner: gameState.result?.winner, isThreefoldRepetition: gameState.isThreefoldRepetition())} ";
+        Get.dialog(GameResultDialog(gameState: gameState, gameStatus: status, reset: reset));
       }
     });
   }
 
   // // النسخة المعدلة من getResult
   Outcome? get getResult {
-    return gameState.value.result;
+    return gameState.result;
   }
 
   Side? get winner {
@@ -172,16 +186,16 @@ abstract class BaseGameController extends GetxController {
   RxString statusText = "free Play".obs;
 
   /// Agreement draw: set result to draw.
-  void setAgreementDraw() => {gameState.value.setAgreementDraw(), update()};
+  void setAgreementDraw() => {gameState.setAgreementDraw(), update()};
 
   /// Resign: if side resigns, winner is the other side.
-  void resign(Side side) => {gameState.value.resign(side), plySound.executeResignSound(), update()};
+  void resign(Side side) => {gameState.resign(side), plySound.executeResignSound(), update()};
 
   ///reset
   void reset() {
-    gameState.value = GameState(initial: initail);
-    fen = gameState.value.position.fen;
-    validMoves.value = makeLegalMoves(gameState.value.position);
+    gameState = GameState(initial: initail);
+    fen = gameState.position.fen;
+    validMoves = makeLegalMoves(gameState.position);
     promotionMove.value = null;
     plySound.executeDongSound();
     statusText.value = "free Play";
@@ -219,7 +233,7 @@ abstract class BaseGameController extends GetxController {
   /// This is the main method called by chessground
   void onUserMove(NormalMove move, {bool? isDrop, bool? isPremove}) async {
     try {
-      if (setIsGameOver.value) {
+      if (isGameOver) {
         Get.snackbar(
           'Game Over',
           'Cannot make moves in a finished game',
@@ -235,7 +249,7 @@ abstract class BaseGameController extends GetxController {
       }
 
       // Validate and execute move
-      if (gameState.value.position.isLegal(move)) {
+      if (gameState.position.isLegal(move)) {
         applyMove(move);
         promotionMove.value = null;
         update();
@@ -258,17 +272,17 @@ abstract class BaseGameController extends GetxController {
   void applyMove(NormalMove move) async {
     try {
       // Play the move
-      gameState.value.play(move, nags: []);
+      gameState.play(move, nags: []);
 
       // Update reactive state
       updateReactiveState();
 
-      fen = gameState.value.position.fen;
-      validMoves.value = makeLegalMoves(gameState.value.position);
-      // validMoves.value = gameState.value.position.legalMoves ;
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
+      // validMoves = gameState.position.legalMoves ;
 
       // decide which sound to play based on metadata
-      final meta = gameState.value.lastMoveMeta;
+      final meta = gameState.lastMoveMeta;
       if (meta != null) {
         // capture has priority (play capture instead of plain move)
         if (meta.wasCapture) {
@@ -285,11 +299,11 @@ abstract class BaseGameController extends GetxController {
           plySound.executeCheckSound();
         }
       }
-      // update observed gameState.value! (GameState mutated in-place)
-      gameState.refresh();
-      getGameStatus; // to update statusText
+      // update observed gameState! (GameState mutated in-place)
+      _gameState.refresh();
+      gameStatus; // to update statusText
 
-      AppLogger.move(meta?.san ?? move.uci, fen: currentFen.value, isCheck: setIsCheck.value);
+      AppLogger.move(meta?.san ?? move.uci, fen: currentFen, isCheck: isCheck);
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error executing move',
@@ -303,18 +317,18 @@ abstract class BaseGameController extends GetxController {
 
   bool isPromotionPawnMove(NormalMove move) {
     return move.promotion == null &&
-        gameState.value.position.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == Rank.first && gameState.value.position.turn == Side.black) ||
-            (move.to.rank == Rank.eighth && gameState.value.position.turn == Side.white));
+        gameState.position.board.roleAt(move.from) == Role.pawn &&
+        ((move.to.rank == Rank.first && gameState.position.turn == Side.black) ||
+            (move.to.rank == Rank.eighth && gameState.position.turn == Side.white));
   }
 
   // if can undo return true , if can redo return true
 
   void undoMove() {
     if (canUndo.value) {
-      gameState.value.undoMove();
-      fen = gameState.value.position.fen;
-      validMoves.value = makeLegalMoves(gameState.value.position);
+      gameState.undoMove();
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
       // play a feedback sound (optional)
       plySound.executeMoveSound();
       update();
@@ -323,79 +337,76 @@ abstract class BaseGameController extends GetxController {
 
   void redoMove() {
     if (canRedo.value) {
-      gameState.value.redoMove();
-      fen = gameState.value.position.fen;
-      validMoves.value = makeLegalMoves(gameState.value.position);
+      gameState.redoMove();
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
       plySound.executeMoveSound();
       update();
     }
   }
 
   /// expose PGN tokens for the UI
-  List<MoveDataModel> get pgnTokens => gameState.value.getMoveTokens;
+  List<MoveDataModel> get pgnTokens => gameState.getMoveTokens;
 
-  int get currentHalfmoveIndex => gameState.value.currentHalfmoveIndex;
+  int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
 
   void jumpToHalfmove(int index) {
-    final allMoves = gameState.value.getMoveObjectsCopy();
+    final allMoves = gameState.getMoveObjectsCopy();
     final newState = GameState(initial: initail);
     for (int i = 0; i <= index && i < allMoves.length; i++) {
       newState.play(allMoves[i]);
     }
-    gameState.value = newState;
-    fen = gameState.value.position.fen;
-    validMoves.value = makeLegalMoves(gameState.value.position);
+    gameState = newState;
+    fen = gameState.position.fen;
+    validMoves = makeLegalMoves(gameState.position);
     update();
   }
 
-  Map<Role, int> get whiteCaptured => gameState.value.getCapturedPieces(Side.white);
-  Map<Role, int> get blackCaptured => gameState.value.getCapturedPieces(Side.black);
-  String get whiteCapturedText => gameState.value.capturedPiecesAsString(Side.white);
-  String get whiteCapturedIcons => gameState.value.capturedPiecesAsUnicode(Side.white);
-  String get blackCapturedIcons => gameState.value.capturedPiecesAsUnicode(Side.black);
+  Map<Role, int> get whiteCaptured => gameState.getCapturedPieces(Side.white);
+  Map<Role, int> get blackCaptured => gameState.getCapturedPieces(Side.black);
+  String get whiteCapturedText => gameState.capturedPiecesAsString(Side.white);
+  String get whiteCapturedIcons => gameState.capturedPiecesAsUnicode(Side.white);
+  String get blackCapturedIcons => gameState.capturedPiecesAsUnicode(Side.black);
 
   List<Role> get whiteCapturedList =>
-      gameState.value.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
-  List<Role> get blackCapturedList => gameState.value.getCapturedPiecesList(Side.black);
+      gameState.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
+  List<Role> get blackCapturedList => gameState.getCapturedPiecesList(Side.black);
 
   /// Update all reactive state variables
   void updateReactiveState() {
-    currentFen.value = gameState.value.position.fen;
-    currentTurn.value = gameState.value.turn;
-    setIsGameOver.value = gameState.value.isGameOverExtended;
-    if (currentGame.value != null) {
-      gameResult.value = GameService.calculateResult(
-        gameState.value,
-        currentGame.value!.termination,
-      );
-      termination.value = currentGame.value!.termination;
+    currentFen = gameState.position.fen;
+    currentTurn = gameState.turn;
+    isGameOver = gameState.isGameOverExtended;
+    if (currentGame != null) {
+      gameResult = GameService.calculateResult(gameState, currentGame!.termination);
+      termination = currentGame!.termination;
     }
-    lastMove.value = gameState.value.lastMoveMeta;
-    setCanUndo.value = gameState.value.canUndo;
-    setCanRedo.value = gameState.value.canRedo;
-    materialAdvantage.value = gameState.value.getMaterialAdvantageSignedForWhite;
-    setIsCheck.value = gameState.value.isCheck;
+    lastMove = gameState.lastMoveMeta!;
+    canUndo = gameState.canUndo;
+    canRedo = gameState.canRedo;
+    materialAdvantage = gameState.getMaterialAdvantageSignedForWhite;
+    isCheck = gameState.isCheck;
   }
 
   /// Set loading state
   void setLoading(bool value) {
-    isLoading.value = value;
+    isLoading = value;
   }
 
   /// Set error message
   void setError(String message) {
-    errorMessage.value = message;
+    errorMessage = message;
     AppLogger.error(message, tag: 'GameController');
   }
 
   /// Clear error message
   void clearError() {
-    errorMessage.value = '';
+    errorMessage = '';
   }
 
   @override
   void dispose() {
-    gameState.value.dispose();
+    gameState.dispose();
     super.dispose();
   }
 

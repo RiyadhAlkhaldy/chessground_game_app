@@ -88,7 +88,7 @@ class NewGameScreen extends GetView<OfflineGameController> {
             // Start game button
             Obx(
               () => ElevatedButton(
-                onPressed: controller.getIsLoading
+                onPressed: controller.isLoading
                     ? null
                     : () => _startGame(
                         context,
@@ -102,7 +102,7 @@ class NewGameScreen extends GetView<OfflineGameController> {
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                 ),
-                child: controller.getIsLoading
+                child: controller.isLoading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
@@ -149,7 +149,7 @@ class NewGameScreen extends GetView<OfflineGameController> {
     );
 
     // Navigate to game screen
-    if (!controller.getIsLoading && controller.getErrorMessage.isEmpty) {
+    if (!controller.isLoading && controller.errorMessage.isEmpty) {
       Get.toNamed(RouteNames.gamesScreen);
     }
   }

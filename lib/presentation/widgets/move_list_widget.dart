@@ -13,7 +13,7 @@ class MoveListWidget extends GetView<BaseGameController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final moves = controller.getGameState.getMoveTokens;
+      final moves = controller.gameState.getMoveTokens;
 
       if (moves.isEmpty) {
         return const Center(
@@ -108,7 +108,7 @@ class MoveListWidget extends GetView<BaseGameController> {
   /// Build move text with annotations
   /// بناء نص الحركة مع التعليقات
   Widget _buildMoveText(String move, int moveIndex) {
-    final currentIndex = controller.getGameState.currentHalfmoveIndex;
+    final currentIndex = controller.gameState.currentHalfmoveIndex;
     final isCurrentMove = moveIndex == currentIndex;
 
     return Text(

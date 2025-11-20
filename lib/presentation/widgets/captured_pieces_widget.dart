@@ -29,7 +29,7 @@ class CapturedPiecesWidget extends GetView<OfflineGameController> {
       }
 
       // Calculate material advantage
-      final materialValue = controller.getGameState.capturedValue(side);
+      final materialValue = controller.gameState.capturedValue(side);
       final showAdvantage = materialValue > 0 && !compact;
 
       return Container(

@@ -60,8 +60,8 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
     startNewGame(whitePlayerName: uuidKeyForUser, blackPlayerName: uuidKeyForAI).then((_) {
       plySound.executeDongSound();
     });
-    fen = getGameState.position.fen;
-    validMoves.value = makeLegalMoves(getGameState.position);
+    fen = gameState.position.fen;
+    validMoves = makeLegalMoves(gameState.position);
     listenToGameStatus();
     AppLogger.info('GameController initialized', tag: 'GameController');
   }
@@ -69,13 +69,13 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   @override
   void onClose() {
     AppLogger.info('GameController disposed', tag: 'GameController');
-    getGameState.dispose();
+    gameState.dispose();
     super.onClose();
   }
 
   @override
   Outcome? get getResult {
-    return getGameState.result;
+    return gameState.result;
   }
   // ========== Public Methods ==========
 
@@ -117,7 +117,7 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
       final gameUuid = const Uuid().v4();
 
       // Initialize GameState
-      gameState.value = GameState(initial: Chess.initial);
+      gameState = GameState(initial: Chess.initial);
 
       // Create ChessGameEntity
       final newGame = ChessGameEntity(
@@ -145,10 +145,10 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
           AppLogger.error('Failed to save game', tag: 'GameController');
         },
         (savedGame) async {
-          currentGame.value = savedGame;
+          currentGame = savedGame;
 
           // Cache game state
-          final stateEntity = GameStateConverter.toEntity(getGameState, gameUuid);
+          final stateEntity = GameStateConverter.toEntity(gameState, gameUuid);
           await _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
 
           updateReactiveState();
@@ -189,13 +189,13 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
 
       if (cachedResult.isRight()) {
         final cachedState = cachedResult.getOrElse(() => throw Exception());
-        gameState.value = GameStateConverter.fromEntity(cachedState);
+        gameState = GameStateConverter.fromEntity(cachedState);
 
         // Also load the game entity from database
         final gameResult = await _getGameByUuidUseCase(GetGameByUuidParams(uuid: gameUuid));
 
         gameResult.fold((failure) => setError('Failed to load game: ${failure.message}'), (game) {
-          currentGame.value = game;
+          currentGame = game;
           updateReactiveState();
           AppLogger.gameEvent('GameLoadedFromCache', data: {'uuid': gameUuid});
         });
@@ -206,18 +206,18 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
       final gameResult = await _getGameByUuidUseCase(GetGameByUuidParams(uuid: gameUuid));
 
       gameResult.fold((failure) => setError('Failed to load game: ${failure.message}'), (game) {
-        currentGame.value = game;
+        currentGame = game;
 
         // Restore GameState from entity
         final restoreResult = GameService.restoreGameStateFromEntity(game);
         restoreResult.fold(
           (failure) => setError('Failed to restore game state: ${failure.message}'),
           (restoredState) {
-            gameState.value = restoredState;
+            gameState = restoredState;
             updateReactiveState();
 
             // Cache the state
-            final stateEntity = GameStateConverter.toEntity(getGameState, gameUuid);
+            final stateEntity = GameStateConverter.toEntity(gameState, gameUuid);
             _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
 
             AppLogger.gameEvent('GameLoaded', data: {'uuid': gameUuid});
@@ -254,12 +254,12 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   @override
   Future<void> undoMove() async {
     try {
-      if (!getGameState.canUndo) {
+      if (!gameState.canUndo) {
         Get.snackbar('Cannot Undo', 'No moves to undo', snackPosition: SnackPosition.BOTTOM);
         return;
       }
 
-      final success = getGameState.undoMove();
+      final success = gameState.undoMove();
 
       if (success) {
         updateReactiveState();
@@ -285,12 +285,12 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   @override
   Future<void> redoMove() async {
     try {
-      if (!getGameState.canRedo) {
+      if (!gameState.canRedo) {
         Get.snackbar('Cannot Redo', 'No moves to redo', snackPosition: SnackPosition.BOTTOM);
         return;
       }
 
-      final success = getGameState.redoMove();
+      final success = gameState.redoMove();
 
       if (success) {
         updateReactiveState();
@@ -316,7 +316,7 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   @override
   Future<void> resign(Side side) async {
     try {
-      getGameState.resign(side);
+      gameState.resign(side);
       updateReactiveState();
 
       await _saveGameToDatabase();
@@ -337,7 +337,7 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   @override
   Future<void> agreeDrawn() async {
     try {
-      getGameState.setAgreementDraw();
+      gameState.setAgreementDraw();
       updateReactiveState();
 
       await _saveGameToDatabase();
@@ -358,7 +358,7 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
 
   @override
   void reset() {
-    gameState.value = GameState(initial: Chess.initial);
+    gameState = GameState(initial: Chess.initial);
     updateReactiveState();
     promotionMove.value = null;
     premove.value = null;
@@ -367,28 +367,28 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
 
   @override
   String getPgnString() {
-    if (getCurrentGame == null) return '';
+    if (currentGame == null) return '';
 
-    return getGameState.pgnString(
+    return gameState.pgnString(
       headers: {
-        'Event': getCurrentGame!.event ?? '?',
-        'Site': getCurrentGame!.site ?? '?',
-        'Date': getCurrentGame!.date?.toString().split(' ')[0] ?? '????.??.??',
-        'Round': getCurrentGame!.round ?? '?',
-        'White': getCurrentGame!.whitePlayer.name,
-        'Black': getCurrentGame!.blackPlayer.name,
+        'Event': currentGame!.event ?? '?',
+        'Site': currentGame!.site ?? '?',
+        'Date': currentGame!.date?.toString().split(' ')[0] ?? '????.??.??',
+        'Round': currentGame!.round ?? '?',
+        'White': currentGame!.whitePlayer.name,
+        'Black': currentGame!.blackPlayer.name,
       },
     );
   }
 
   @override
   List<Role> getCapturedPieces(Side side) {
-    return getGameState.getCapturedPiecesList(side);
+    return gameState.getCapturedPiecesList(side);
   }
 
   @override
   int getMaterialOnBoard(Side side) {
-    return getGameState.materialOnBoard(side);
+    return gameState.materialOnBoard(side);
   }
 
   @override
@@ -399,22 +399,22 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
 
   @override
   void jumpToHalfmove(int index) {
-    final allMoves = getGameState.getMoveObjectsCopy();
+    final allMoves = gameState.getMoveObjectsCopy();
     final newState = GameState(initial: Chess.initial);
 
     for (int i = 0; i <= index && i < allMoves.length; i++) {
       newState.play(allMoves[i]);
     }
 
-    gameState.value = newState;
+    gameState = newState;
     updateReactiveState();
   }
 
   @override
-  List<MoveDataModel> get pgnTokens => getGameState.getMoveTokens;
+  List<MoveDataModel> get pgnTokens => gameState.getMoveTokens;
 
   @override
-  int get currentHalfmoveIndex => getGameState.currentHalfmoveIndex;
+  int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
 
   // ========== Private Methods ==========
 
@@ -429,11 +429,11 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   }
 
   Future<void> _saveGameToDatabase() async {
-    if (getCurrentGame == null) return;
+    if (currentGame == null) return;
 
     try {
       // Sync GameState to Entity
-      final syncResult = GameService.syncGameStateToEntity(getGameState, getCurrentGame!);
+      final syncResult = GameService.syncGameStateToEntity(gameState, currentGame!);
 
       syncResult.fold(
         (failure) {
@@ -448,10 +448,10 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
               AppLogger.error('Failed to update game: ${failure.message}', tag: 'GameController');
             },
             (savedGame) {
-              currentGame.value = savedGame;
+              currentGame = savedGame;
 
               // Cache state
-              final stateEntity = GameStateConverter.toEntity(getGameState, savedGame.uuid);
+              final stateEntity = GameStateConverter.toEntity(gameState, savedGame.uuid);
               _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
 
               AppLogger.database('Game updated successfully');
