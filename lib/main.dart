@@ -1,15 +1,14 @@
+import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
+import 'package:chessground_game_app/core/utils/logger.dart';
+import 'package:chessground_game_app/di/ingection_container.dart';
+import 'package:chessground_game_app/l10n/l10n.dart';
+import 'package:chessground_game_app/presentation/screens/home/home_page.dart';
+import 'package:chessground_game_app/routes/app_pages.dart';
+import 'package:chessground_game_app/routes/game_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:l10n_esperanto/l10n_esperanto.dart';
-
-import 'core/utils/helper/helper_methodes.dart';
-import 'core/utils/logger.dart';
-import 'di/ingection_container.dart';
-import 'l10n/l10n.dart';
-import 'presentation/screens/home/home_page.dart';
-import 'routes/app_pages.dart';
-import 'routes/game_binding.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,12 +29,7 @@ void main() async {
     // Run the app
     runApp(MyApp(locale: await getLocale()));
   } catch (e, stackTrace) {
-    AppLogger.error(
-      'Failed to start application',
-      error: e,
-      stackTrace: stackTrace,
-      tag: 'Main',
-    );
+    AppLogger.error('Failed to start application', error: e, stackTrace: stackTrace, tag: 'Main');
 
     // Show error screen or rethrow
     rethrow;
@@ -52,16 +46,10 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Chessground Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-          brightness: Brightness.light,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo, brightness: Brightness.light),
       ),
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-          brightness: Brightness.dark,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo, brightness: Brightness.dark),
       ),
       localizationsDelegates: const [
         ...AppLocalizations.localizationsDelegates,

@@ -1,7 +1,6 @@
+import 'package:chessground_game_app/core/utils/dialog/platform.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'platform.dart';
 
 /// Displays a [TextButton] for Android and a [CupertinoDialogAction] for iOS.
 ///
@@ -30,8 +29,7 @@ class PlatformDialogAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlatformWidget(
-      androidBuilder: (context) =>
-          TextButton(onPressed: onPressed, child: child),
+      androidBuilder: (context) => TextButton(onPressed: onPressed, child: child),
       iosBuilder: (context) => CupertinoDialogAction(
         onPressed: onPressed,
         isDefaultAction: cupertinoIsDefaultAction,

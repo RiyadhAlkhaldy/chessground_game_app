@@ -1,11 +1,10 @@
 // lib/presentation/widgets/captured_pieces_widget.dart
 
 import 'package:chessground_game_app/presentation/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/presentation/controllers/offline_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../controllers/offline_game_controller.dart';
 
 /// Widget to display captured pieces for a player
 /// عنصر لعرض القطع المأسورة للاعب

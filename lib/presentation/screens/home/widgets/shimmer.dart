@@ -1,8 +1,7 @@
 import 'dart:math' show max;
 
+import 'package:chessground_game_app/core/utils/styles/styles.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../core/utils/styles/styles.dart';
 
 class Shimmer extends StatefulWidget {
   static ShimmerState? of(BuildContext context) {
@@ -61,23 +60,17 @@ class ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
     stops: _defaultGradient.stops,
     begin: _defaultGradient.begin,
     end: _defaultGradient.end,
-    transform: _SlidingGradientTransform(
-      slidePercent: _shimmerController.value,
-    ),
+    transform: _SlidingGradientTransform(slidePercent: _shimmerController.value),
   );
 
   Listenable get shimmerChanges => _shimmerController;
 
-  bool get isSized =>
-      (context.findRenderObject() as RenderBox?)?.hasSize ?? false;
+  bool get isSized => (context.findRenderObject() as RenderBox?)?.hasSize ?? false;
 
   // ignore: cast_nullable_to_non_nullable
   Size get size => (context.findRenderObject() as RenderBox).size;
 
-  Offset getDescendantOffset({
-    required RenderBox descendant,
-    Offset offset = Offset.zero,
-  }) {
+  Offset getDescendantOffset({required RenderBox descendant, Offset offset = Offset.zero}) {
     // ignore: cast_nullable_to_non_nullable
     final shimmerBox = context.findRenderObject() as RenderBox;
     return descendant.localToGlobal(offset, ancestor: shimmerBox);
@@ -104,11 +97,7 @@ class ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
 }
 
 class ShimmerLoading extends StatefulWidget {
-  const ShimmerLoading({
-    super.key,
-    required this.isLoading,
-    required this.child,
-  });
+  const ShimmerLoading({super.key, required this.isLoading, required this.child});
 
   final bool isLoading;
   final Widget child;

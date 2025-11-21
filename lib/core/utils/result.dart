@@ -1,9 +1,8 @@
 // lib/core/utils/result.dart
 // 2. Core Layer - Result Type (Either Pattern)
 
+import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:dartz/dartz.dart';
-
-import '../errors/failures.dart';
 
 /// Type alias for standard result type
 // ignore: unintended_html_in_doc_comment

@@ -1,8 +1,7 @@
 import 'package:chess_vectors_flutter/chess_vectors_flutter.dart';
+import 'package:chessground_game_app/presentation/controllers/side_choosing_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../controllers/side_choosing_controller.dart';
 
 class SideChosingWidget extends StatelessWidget {
   final SideChoosingController controller;
@@ -25,9 +24,7 @@ class SideChosingWidget extends StatelessWidget {
               break;
             case SideChoosing.random:
               label = 'Random';
-              widget = Row(
-                children: [BlackPawn(size: 30), WhitePawn(size: 30)],
-              );
+              widget = Row(children: [BlackPawn(size: 30), WhitePawn(size: 30)]);
               break;
             case SideChoosing.black:
               label = 'Black';

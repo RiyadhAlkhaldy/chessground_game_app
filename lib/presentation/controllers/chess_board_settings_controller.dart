@@ -1,11 +1,10 @@
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/board_theme.dart';
+import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../core/board_theme.dart';
-import '../../core/utils/helper/helper_methodes.dart';
 
 class ChessBoardSettingsController extends GetxController {
   Rx<Side> orientation = Side.white.obs;

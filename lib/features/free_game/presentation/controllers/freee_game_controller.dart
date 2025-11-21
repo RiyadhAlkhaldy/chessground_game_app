@@ -1,22 +1,21 @@
 import 'dart:async';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/domain/entities/player_entity.dart';
+import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/init_chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/play_move.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/play_sound_usecase.dart';
+import 'package:chessground_game_app/core/params/params.dart';
+import 'package:chessground_game_app/core/utils/dialog/game_result_dialog.dart';
+import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
+import 'package:chessground_game_app/core/utils/dialog/status_l10n.dart';
+import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../core/params/params.dart';
-import '../../../../core/utils/dialog/game_result_dialog.dart';
-import '../../../../core/utils/dialog/game_status.dart';
-import '../../../../core/utils/dialog/status_l10n.dart';
-import '../../../../core/utils/game_state/game_state.dart';
-import '../../../../data/models/move_data_model.dart';
-import '../../../../domain/entities/chess_game_entity.dart';
-import '../../../../domain/usecases/init_chess_game.dart';
-import '../../../../domain/usecases/play_move.dart';
-import '../../../../domain/usecases/play_sound_usecase.dart';
 
 mixin GameControllerMixin {}
 mixin InitGameMixin {
@@ -60,16 +59,11 @@ mixin InitGameMixin {
   }
 }
 
-class FreeGameController extends GetxController
-    with InitGameMixin, GameControllerMixin {
+class FreeGameController extends GetxController with InitGameMixin, GameControllerMixin {
   final PlaySoundUseCase plySound;
   final PlayMove playMoveUsecase;
 
-  FreeGameController(
-    this.plySound,
-    this.playMoveUsecase,
-    InitChessGame initChessGame,
-  ) {
+  FreeGameController(this.plySound, this.playMoveUsecase, InitChessGame initChessGame) {
     super.initChessGame = initChessGame;
   }
 
@@ -98,13 +92,7 @@ class FreeGameController extends GetxController
       if (status != GameStatus.ongoing) {
         statusText.value =
             "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.value!.position, winner: gameState.value!.result?.winner, isThreefoldRepetition: gameState.value!.isThreefoldRepetition())} ";
-        Get.dialog(
-          GameResultDialog(
-            gameState: gameState.value!,
-            gameStatus: status,
-            reset: reset,
-          ),
-        );
+        Get.dialog(GameResultDialog(gameState: gameState.value!, gameStatus: status, reset: reset));
       }
     });
   }
@@ -161,11 +149,7 @@ class FreeGameController extends GetxController
     update();
   }
 
-  void onUserMoveAgainstAI(
-    NormalMove move, {
-    bool? isDrop,
-    bool? isPremove,
-  }) async {
+  void onUserMoveAgainstAI(NormalMove move, {bool? isDrop, bool? isPremove}) async {
     if (isPromotionPawnMove(move)) {
       promotionMove = move;
       update();
@@ -173,9 +157,7 @@ class FreeGameController extends GetxController
       _applyMove(move);
       // validMoves = IMap(const {});
       promotionMove = null;
-      debugPrint(
-        "gameState.value!.position.fen: ${gameState.value!.position.fen}",
-      );
+      debugPrint("gameState.value!.position.fen: ${gameState.value!.position.fen}");
       update();
     }
     tryPlayPremove();
@@ -233,17 +215,13 @@ class FreeGameController extends GetxController
   bool isPromotionPawnMove(NormalMove move) {
     return move.promotion == null &&
         gameState.value!.position.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == Rank.first &&
-                gameState.value!.position.turn == Side.black) ||
-            (move.to.rank == Rank.eighth &&
-                gameState.value!.position.turn == Side.white));
+        ((move.to.rank == Rank.first && gameState.value!.position.turn == Side.black) ||
+            (move.to.rank == Rank.eighth && gameState.value!.position.turn == Side.white));
   }
 
   // if can undo return true , if can redo return true
-  RxBool get canUndo =>
-      (!gameState.value!.isGameOverExtended && gameState.value!.canUndo).obs;
-  RxBool get canRedo =>
-      (!gameState.value!.isGameOverExtended && gameState.value!.canRedo).obs;
+  RxBool get canUndo => (!gameState.value!.isGameOverExtended && gameState.value!.canUndo).obs;
+  RxBool get canRedo => (!gameState.value!.isGameOverExtended && gameState.value!.canRedo).obs;
 
   void undoMove() {
     if (canUndo.value) {
@@ -286,22 +264,16 @@ class FreeGameController extends GetxController
     update();
   }
 
-  Map<Role, int> get whiteCaptured =>
-      gameState.value!.getCapturedPieces(Side.white);
-  Map<Role, int> get blackCaptured =>
-      gameState.value!.getCapturedPieces(Side.black);
-  String get whiteCapturedText =>
-      gameState.value!.capturedPiecesAsString(Side.white);
-  String get whiteCapturedIcons =>
-      gameState.value!.capturedPiecesAsUnicode(Side.white);
-  String get blackCapturedIcons =>
-      gameState.value!.capturedPiecesAsUnicode(Side.black);
+  Map<Role, int> get whiteCaptured => gameState.value!.getCapturedPieces(Side.white);
+  Map<Role, int> get blackCaptured => gameState.value!.getCapturedPieces(Side.black);
+  String get whiteCapturedText => gameState.value!.capturedPiecesAsString(Side.white);
+  String get whiteCapturedIcons => gameState.value!.capturedPiecesAsUnicode(Side.white);
+  String get blackCapturedIcons => gameState.value!.capturedPiecesAsUnicode(Side.black);
 
   // في controller أو widget بعد استدعاء setState/update
   List<Role> get whiteCapturedList =>
       gameState.value!.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
-  List<Role> get blackCapturedList =>
-      gameState.value!.getCapturedPiecesList(Side.black);
+  List<Role> get blackCapturedList => gameState.value!.getCapturedPiecesList(Side.black);
 
   @override
   void dispose() {

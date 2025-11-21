@@ -1,13 +1,12 @@
+// import 'package:flutter_chess/providers/authentication_provider.dart';
+
+import 'package:chessground_game_app/core/utils/helper/constants.dart';
+import 'package:chessground_game_app/presentation/controllers/game_controllerr.dart';
+import 'package:chessground_game_app/presentation/widgets/widgets.dart';
+import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-// import 'package:flutter_chess/providers/authentication_provider.dart';
-
-import '../../core/utils/helper/constants.dart';
-import '../../routes/app_pages.dart';
-import '../controllers/game_controllerr.dart';
-import '../widgets/widgets.dart';
 
 class GameStartUpScreen extends StatefulWidget {
   const GameStartUpScreen({

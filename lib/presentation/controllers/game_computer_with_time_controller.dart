@@ -2,30 +2,29 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/data/collections/player.dart';
+import 'package:chessground_game_app/core/game_termination_enum.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
+import 'package:chessground_game_app/core/global_feature/data/models/extended_evaluation.dart';
+import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
+import 'package:chessground_game_app/core/global_feature/data/models/player_model.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/chess_clock_service.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/play_sound_usecase.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
+import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
+import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
+import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
+import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/presentation/controllers/game_controllerr.dart';
+import 'package:chessground_game_app/presentation/controllers/get_storage_controller.dart';
+import 'package:chessground_game_app/presentation/controllers/side_choosing_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
-
-import '../../core/game_termination_enum.dart';
-import '../../core/utils/dialog/constants/const.dart';
-import '../../core/utils/dialog/game_status.dart';
-import '../../core/utils/game_state/game_state.dart';
-import '../../core/utils/helper/helper_methodes.dart';
-import '../../data/collections/chess_game.dart';
-import '../../data/models/extended_evaluation.dart';
-import '../../data/models/move_data_model.dart';
-import '../../data/models/player_model.dart';
-import '../../domain/services/chess_clock_service.dart';
-import '../../domain/services/chess_game_storage_service.dart';
-import '../../domain/services/stockfish_engine_service.dart';
-import '../../domain/usecases/play_sound_usecase.dart';
-import 'chess_board_settings_controller.dart';
-import 'get_storage_controller.dart';
-import 'side_choosing_controller.dart';
 
 class GameAiController extends GetxController with WidgetsBindingObserver {
   GameState gameState = GameState();
@@ -135,8 +134,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _startStockfishIfNecessary();
-    } else if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
       engineService.stopStockfish();
     }
   }
@@ -160,9 +158,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
     if (choosingCtrl.playerColor.value == SideChoosing.white) {
       playerSide = PlayerSide.white;
       ctrlBoardSettings.orientation.value = Side.white;
-      await createOrGetGustPlayer().then(
-        (value) => whitePlayer.value = value!.toModel(),
-      );
+      await createOrGetGustPlayer().then((value) => whitePlayer.value = value!.toModel());
       await createOrGetGustPlayer(
         uuidKeyForAI,
       ).then((value) => blackPlayer.value = value!.toModel());
@@ -173,9 +169,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
         uuidKeyForAI,
       ).then((value) => whitePlayer.value = value!.toModel());
 
-      await createOrGetGustPlayer().then(
-        (value) => blackPlayer.value = value!.toModel(),
-      );
+      await createOrGetGustPlayer().then((value) => blackPlayer.value = value!.toModel());
     }
   }
 
@@ -230,11 +224,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
     for (final move in gameState.allMoves) {
       root.children.add(PgnChildNode<PgnNodeData>(PgnNodeData(san: move.san!)));
     }
-    final pgnGame = PgnGame<PgnNodeData>(
-      headers: _headers,
-      moves: root,
-      comments: [],
-    );
+    final pgnGame = PgnGame<PgnNodeData>(headers: _headers, moves: root, comments: []);
     final pgnText = pgnGame.makePgn();
 
     chessGame = chessGame
@@ -262,8 +252,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
 
     final allMoves = [
       for (final entry in gameState.position.legalMoves.entries)
-        for (final dest in entry.value.squares)
-          NormalMove(from: entry.key, to: dest),
+        for (final dest in entry.value.squares) NormalMove(from: entry.key, to: dest),
     ];
 
     if (allMoves.isNotEmpty) {
@@ -334,8 +323,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
           return GameStatus.insufficientMaterialClaim;
         }
         if (gameState.isThreefoldRepetition()) {
-          statusText.value =
-              "${statusText.value} cause is threefold Repetition";
+          statusText.value = "${statusText.value} cause is threefold Repetition";
           await showGameOverDialog(Get.context!, statusText.value);
           return GameStatus.threefoldRepetition;
         }
@@ -365,11 +353,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
   void setAgreementDraw() => {gameState.setAgreementDraw(), update()};
 
   /// Resign: if side resigns, winner is the other side.
-  void resign(Side side) => {
-    gameState.resign(side),
-    plySound.executeResignSound(),
-    update(),
-  };
+  void resign(Side side) => {gameState.resign(side), plySound.executeResignSound(), update()};
 
   ///reset
   void reset() {
@@ -412,11 +396,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
     update();
   }
 
-  void onUserMoveAgainstAI(
-    NormalMove move, {
-    bool? isDrop,
-    bool? isPremove,
-  }) async {
+  void onUserMoveAgainstAI(NormalMove move, {bool? isDrop, bool? isPremove}) async {
     if (isPromotionPawnMove(move)) {
       promotionMove = move;
       update();
@@ -478,17 +458,13 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
   bool isPromotionPawnMove(NormalMove move) {
     return move.promotion == null &&
         gameState.position.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == Rank.first &&
-                gameState.position.turn == Side.black) ||
-            (move.to.rank == Rank.eighth &&
-                gameState.position.turn == Side.white));
+        ((move.to.rank == Rank.first && gameState.position.turn == Side.black) ||
+            (move.to.rank == Rank.eighth && gameState.position.turn == Side.white));
   }
 
   // if can undo return true , if can redo return true
-  RxBool get canUndo =>
-      (!gameState.isGameOverExtended && gameState.canUndo).obs;
-  RxBool get canRedo =>
-      (!gameState.isGameOverExtended && gameState.canRedo).obs;
+  RxBool get canUndo => (!gameState.isGameOverExtended && gameState.canUndo).obs;
+  RxBool get canRedo => (!gameState.isGameOverExtended && gameState.canRedo).obs;
 
   void undoMove() {
     if (canUndo.value) {
@@ -528,10 +504,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
       engineService.setOption('UCI_Elo', uciElo);
       // Optional: Set depth to a low value as it's not the primary control
       // when UCI_LimitStrength is true
-      engineService.setOption(
-        'Skill Level',
-        20,
-      ); // Setting a high skill level by default
+      engineService.setOption('Skill Level', 20); // Setting a high skill level by default
     } else {
       // Use Skill Level and Depth if UCI_LimitStrength is disabled
       engineService.setOption('Skill Level', skillLevel);
@@ -555,9 +528,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
       debugPrint('  Skill Level: ${choosingCtrl.skillLevel.value}');
       debugPrint('  Depth: ${choosingCtrl.depth.value}');
     }
-    debugPrint(
-      'Thinking Time for AI (ms): ${choosingCtrl.thinkingTimeForAI.value}',
-    );
+    debugPrint('Thinking Time for AI (ms): ${choosingCtrl.thinkingTimeForAI.value}');
   }
 
   /// expose PGN tokens for the UI
@@ -583,10 +554,8 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
   Map<Role, int> get whiteCaptured => gameState.getCapturedPieces(Side.white);
   Map<Role, int> get blackCaptured => gameState.getCapturedPieces(Side.black);
   String get whiteCapturedText => gameState.capturedPiecesAsString(Side.white);
-  String get whiteCapturedIcons =>
-      gameState.capturedPiecesAsUnicode(Side.white);
-  String get blackCapturedIcons =>
-      gameState.capturedPiecesAsUnicode(Side.black);
+  String get whiteCapturedIcons => gameState.capturedPiecesAsUnicode(Side.white);
+  String get blackCapturedIcons => gameState.capturedPiecesAsUnicode(Side.black);
 
   ///
   ///
@@ -594,8 +563,7 @@ class GameAiController extends GetxController with WidgetsBindingObserver {
   // في controller أو widget بعد استدعاء setState/update
   List<Role> get whiteCapturedList =>
       gameState.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
-  List<Role> get blackCapturedList =>
-      gameState.getCapturedPiecesList(Side.black);
+  List<Role> get blackCapturedList => gameState.getCapturedPiecesList(Side.black);
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -626,8 +594,7 @@ class GameComputerWithTimeController extends GameAiController {
   /// حفظ اللعبة الحالية في Isar
   @override
   Future<void> saveCurrentGame() async {
-    _headers['TimeControl'] =
-        "${gameCtrl!.whitesTime.inMinutes}+${gameCtrl!.incrementalValue}";
+    _headers['TimeControl'] = "${gameCtrl!.whitesTime.inMinutes}+${gameCtrl!.incrementalValue}";
     super.saveCurrentGame();
   }
 
@@ -660,9 +627,7 @@ class GameComputerWithTimeController extends GameAiController {
     if (gameCtrl?.playerColor.value == Side.white) {
       playerSide = PlayerSide.white;
       ctrlBoardSettings.orientation.value = Side.white;
-      await createOrGetGustPlayer().then(
-        (value) => whitePlayer.value = value!.toModel(),
-      );
+      await createOrGetGustPlayer().then((value) => whitePlayer.value = value!.toModel());
       await createOrGetGustPlayer(
         uuidKeyForAI,
       ).then((value) => blackPlayer.value = value!.toModel());
@@ -673,9 +638,7 @@ class GameComputerWithTimeController extends GameAiController {
         uuidKeyForAI,
       ).then((value) => whitePlayer.value = value!.toModel());
 
-      await createOrGetGustPlayer().then(
-        (value) => blackPlayer.value = value!.toModel(),
-      );
+      await createOrGetGustPlayer().then((value) => blackPlayer.value = value!.toModel());
     }
   }
 
@@ -709,8 +672,7 @@ class GameComputerWithTimeController extends GameAiController {
     engineService.stop();
     clockCtrl.stop();
 
-    statusText.value =
-        'انتهى وقت ${timedOutSide == Side.white ? "الأبيض" : "الأسود"}.';
+    statusText.value = 'انتهى وقت ${timedOutSide == Side.white ? "الأبيض" : "الأسود"}.';
     update();
 
     // احفظ اللعبة في الـ DB عبر GameStorageService
@@ -743,8 +705,7 @@ class GameComputerWithTimeController extends GameAiController {
 void handleTimeout(Side timedOutSide) async {
   final clockCtrl = Get.find<ChessClockService>();
   final engineService = Get.find<StockfishEngineService>();
-  final gameComputerWithTimeController =
-      Get.find<GameComputerWithTimeController>();
+  final gameComputerWithTimeController = Get.find<GameComputerWithTimeController>();
   debugPrint('Handling timeout for side: $timedOutSide');
   // من انتهى وقته يخسر، والآخر يفوز (ما لم تكن الحالة تمنع ذلك)
   final winnerSide = timedOutSide == Side.white ? Side.black : Side.white;

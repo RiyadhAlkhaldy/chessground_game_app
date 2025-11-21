@@ -1,7 +1,6 @@
+import 'package:chessground_game_app/core/utils/helper/constants.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
-
-import '../../core/utils/helper/constants.dart';
 
 class PlayerColorRadioButton extends StatelessWidget {
   const PlayerColorRadioButton({
@@ -57,10 +56,7 @@ class GameLevelRadioButton extends StatelessWidget {
           onChanged: onChanged,
           value: value,
           groupValue: groupValue,
-          child: Text(
-            capitalizedTitle,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          child: Text(capitalizedTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
       ),
     );
@@ -107,10 +103,7 @@ class BuildCustomTime extends StatelessWidget {
             ),
           ),
         ),
-        InkWell(
-          onTap: onRightArrowCricked,
-          child: const Icon(Icons.arrow_forward),
-        ),
+        InkWell(onTap: onRightArrowCricked, child: const Icon(Icons.arrow_forward)),
       ],
     );
   }

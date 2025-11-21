@@ -1,10 +1,9 @@
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/board_theme.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
+import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../core/board_theme.dart';
-import '../controllers/chess_board_settings_controller.dart';
 
 const screenPadding = 16.0;
 const screenPortraitSplitter = screenPadding / 2;
@@ -38,34 +37,31 @@ class ChessBoardSettingsWidgets extends StatelessWidget {
                     value: controller.dragMagnify.value ? 'ON' : 'OFF',
                     onPressed: () {
                       // setState(() {
-                      controller.dragMagnify.value =
-                          !controller.dragMagnify.value;
+                      controller.dragMagnify.value = !controller.dragMagnify.value;
                       // });
                     },
                   ),
                   buildSettingsButton(
                     label: 'Drag target',
                     value: controller.dragTargetKind.value.name,
-                    onPressed: () =>
-                        controller.showChoicesPicker<DragTargetKind>(
-                          context,
-                          choices: DragTargetKind.values,
-                          selectedItem: controller.dragTargetKind.value,
-                          labelBuilder: (t) => Text(t.name),
-                          onSelectedItemChanged: (DragTargetKind value) {
-                            // setState(() {
-                            controller.dragTargetKind.value = value;
-                            // });
-                          },
-                        ),
+                    onPressed: () => controller.showChoicesPicker<DragTargetKind>(
+                      context,
+                      choices: DragTargetKind.values,
+                      selectedItem: controller.dragTargetKind.value,
+                      labelBuilder: (t) => Text(t.name),
+                      onSelectedItemChanged: (DragTargetKind value) {
+                        // setState(() {
+                        controller.dragTargetKind.value = value;
+                        // });
+                      },
+                    ),
                   ),
                   buildSettingsButton(
                     label: 'Show border',
                     value: controller.showBorder.value ? 'ON' : 'OFF',
                     onPressed: () {
                       // setState(() {
-                      controller.showBorder.value =
-                          !controller.showBorder.value;
+                      controller.showBorder.value = !controller.showBorder.value;
                       // });
                     },
                   ),
@@ -108,30 +104,26 @@ class ChessBoardSettingsWidgets extends StatelessWidget {
                     value: controller.pieceAnimation.value ? 'ON' : 'OFF',
                     onPressed: () {
                       // setState(() {
-                      controller.pieceAnimation.value =
-                          !controller.pieceAnimation.value;
+                      controller.pieceAnimation.value = !controller.pieceAnimation.value;
                       // });
                     },
                   ),
                   buildSettingsButton(
                     label: 'Piece Shift',
-                    value: pieceShiftMethodLabel(
-                      controller.pieceShiftMethod.value,
+                    value: pieceShiftMethodLabel(controller.pieceShiftMethod.value),
+                    onPressed: () => controller.showChoicesPicker<PieceShiftMethod>(
+                      context,
+                      choices: PieceShiftMethod.values,
+                      selectedItem: controller.pieceShiftMethod.value,
+                      labelBuilder: (t) => Text(pieceShiftMethodLabel(t)),
+                      onSelectedItemChanged: (PieceShiftMethod? value) {
+                        // setState(() {
+                        if (value != null) {
+                          controller.pieceShiftMethod.value = value;
+                        }
+                        // });
+                      },
                     ),
-                    onPressed: () =>
-                        controller.showChoicesPicker<PieceShiftMethod>(
-                          context,
-                          choices: PieceShiftMethod.values,
-                          selectedItem: controller.pieceShiftMethod.value,
-                          labelBuilder: (t) => Text(pieceShiftMethodLabel(t)),
-                          onSelectedItemChanged: (PieceShiftMethod? value) {
-                            // setState(() {
-                            if (value != null) {
-                              controller.pieceShiftMethod.value = value;
-                            }
-                            // });
-                          },
-                        ),
                   ),
                 ],
               ),

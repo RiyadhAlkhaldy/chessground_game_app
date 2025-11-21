@@ -1,7 +1,6 @@
+import 'package:chessground_game_app/presentation/controllers/get_storage_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import 'get_storage_controller.dart';
 
 class SettingsController extends GetxController {
   final storage = Get.put(GetStorageControllerImp());

@@ -1,8 +1,7 @@
 import 'dart:async';
 
+import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
 import 'package:flutter/material.dart';
-
-import '../../data/models/move_data_model.dart';
 
 typedef JumpCallback = void Function(int halfmoveIndex);
 
@@ -20,9 +19,7 @@ String pieceSymbolFromSan(String san, {required bool isWhiteMove}) {
   debugPrint('san : $san');
   if (whiteMap.containsKey(pieceLetter)) {
     var char = san.substring(1, san.length);
-    char = isWhiteMove
-        ? whiteMap[pieceLetter]! + char
-        : blackMap[pieceLetter]! + char;
+    char = isWhiteMove ? whiteMap[pieceLetter]! + char : blackMap[pieceLetter]! + char;
     debugPrint('char: $char');
     return char;
   }
@@ -66,12 +63,8 @@ String pieceSymbolFromSan(String san, {required bool isWhiteMove}) {
 // }
 Widget _buildToken(BuildContext context, MoveDataModel t, bool isCurrent) {
   final theme = Theme.of(context);
-  final bg = isCurrent
-      ? theme.colorScheme.primary.withValues(alpha: 0.15)
-      : Colors.transparent;
-  final borderColor = isCurrent
-      ? theme.colorScheme.primary
-      : Colors.transparent;
+  final bg = isCurrent ? theme.colorScheme.primary.withValues(alpha: 0.15) : Colors.transparent;
+  final borderColor = isCurrent ? theme.colorScheme.primary : Colors.transparent;
   final pieceSymbol = pieceSymbolFromSan(t.san!, isWhiteMove: t.isWhiteMove!);
   //   // نص الـ SAN قد يبدأ مثلاً "Bxf2" أو "exd6" أو "O-O"
   //   // سنعرض الرمز فقط إن كان غير فارغ
@@ -163,15 +156,11 @@ class _PgnHorizontalRowState extends State<PgnHorizontalRow> {
 
     // if tokens length increased or current index changed, attempt auto-scroll
     final tokensChanged = widget.tokens.length != oldWidget.tokens.length;
-    final indexChanged =
-        widget.currentHalfmoveIndex != oldWidget.currentHalfmoveIndex;
+    final indexChanged = widget.currentHalfmoveIndex != oldWidget.currentHalfmoveIndex;
 
     if (tokensChanged || indexChanged) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _maybeAutoScrollTo(
-          widget.currentHalfmoveIndex,
-          tokensAppended: tokensChanged,
-        );
+        _maybeAutoScrollTo(widget.currentHalfmoveIndex, tokensAppended: tokensChanged);
       });
     }
   }
@@ -195,10 +184,7 @@ class _PgnHorizontalRowState extends State<PgnHorizontalRow> {
     });
   }
 
-  Future<void> _maybeAutoScrollTo(
-    int? halfmoveIndex, {
-    bool tokensAppended = false,
-  }) async {
+  Future<void> _maybeAutoScrollTo(int? halfmoveIndex, {bool tokensAppended = false}) async {
     if (halfmoveIndex == null) return;
     if (_userInteracting) return;
 
@@ -251,11 +237,7 @@ class _PgnHorizontalRowState extends State<PgnHorizontalRow> {
       }
     }
     final target = (offset - 120).clamp(0.0, scroll.position.maxScrollExtent);
-    await scroll.animateTo(
-      target,
-      duration: widget.autoScrollDuration,
-      curve: Curves.easeOutCubic,
-    );
+    await scroll.animateTo(target, duration: widget.autoScrollDuration, curve: Curves.easeOutCubic);
   }
 
   @override
@@ -263,9 +245,7 @@ class _PgnHorizontalRowState extends State<PgnHorizontalRow> {
     if (widget.tokens.isEmpty) {
       return SizedBox(
         height: 56,
-        child: Center(
-          child: Text('No moves', style: Theme.of(context).textTheme.bodySmall),
-        ),
+        child: Center(child: Text('No moves', style: Theme.of(context).textTheme.bodySmall)),
       );
     }
 

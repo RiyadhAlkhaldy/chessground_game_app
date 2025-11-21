@@ -1,26 +1,25 @@
 import 'dart:async';
 
+import 'package:chessground_game_app/core/game_termination_enum.dart';
+import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
+import 'package:chessground_game_app/core/global_feature/domain/converters/game_state_converter.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/get_cached_game_state_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/get_game_by_uuid_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/get_or_create_gust_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/save_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/save_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/update_game_usecase.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
+import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
+import 'package:chessground_game_app/core/utils/logger.dart';
+import 'package:chessground_game_app/presentation/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/presentation/controllers/offline_features.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
-
-import '../../core/game_termination_enum.dart';
-import '../../core/utils/dialog/constants/const.dart';
-import '../../core/utils/game_state/game_state.dart';
-import '../../core/utils/logger.dart';
-import '../../data/models/move_data_model.dart';
-import '../../domain/converters/game_state_converter.dart';
-import '../../domain/entities/chess_game_entity.dart';
-import '../../domain/services/game_service.dart';
-import '../../domain/usecases/game_state/cache_game_state_usecase.dart';
-import '../../domain/usecases/game_state/get_cached_game_state_usecase.dart';
-import '../../domain/usecases/get_game_by_uuid_usecase.dart';
-import '../../domain/usecases/get_or_create_gust_player_usecase.dart';
-import '../../domain/usecases/save_game_usecase.dart';
-import '../../domain/usecases/save_player_usecase.dart';
-import '../../domain/usecases/update_game_usecase.dart';
-import 'base_game_controller.dart';
-import 'offline_features.dart';
 
 class OfflineGameController extends BaseGameController implements OfflineFeatures {
   // ========== Dependencies (Use Cases) ==========

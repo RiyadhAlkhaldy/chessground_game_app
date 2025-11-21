@@ -2,15 +2,14 @@ import 'dart:math';
 
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
+import 'package:chessground_game_app/core/utils/styles/styles.dart';
+import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/presentation/controllers/game_computer_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
-
-import '../../../../core/utils/styles/styles.dart';
-import '../../../controllers/chess_board_settings_controller.dart';
 
 class ChessBoardWidget extends GetView<GameComputerController> {
   const ChessBoardWidget({super.key});
@@ -20,9 +19,7 @@ class ChessBoardWidget extends GetView<GameComputerController> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return PopScope(
-            canPop: controller
-                .gameState
-                .isGameOverExtended, // Prevents automatic exit
+            canPop: controller.gameState.isGameOverExtended, // Prevents automatic exit
 
             onPopInvokedWithResult: (didPop, result) async {
               if (didPop) {
@@ -31,22 +28,19 @@ class ChessBoardWidget extends GetView<GameComputerController> {
               if (controller.getResult != null) {
                 Get.back();
               } else {
-                final shouldExit = await showExitConfirmationDialog(context)
-                    .then((value) {
-                      if (value != null && value == true) {
-                        controller.resign(controller.gameState.turn);
-                      }
-                      return value;
-                    });
+                final shouldExit = await showExitConfirmationDialog(context).then((value) {
+                  if (value != null && value == true) {
+                    controller.resign(controller.gameState.turn);
+                  }
+                  return value;
+                });
 
                 if (shouldExit == true) {
                   if (context.mounted) {
                     // controller.gameStatus;
                     // controller.plySound.executeResignSound();
                     controller.resign(
-                      controller.playerSide == PlayerSide.white
-                          ? Side.white
-                          : Side.black,
+                      controller.playerSide == PlayerSide.white ? Side.white : Side.black,
                     );
                     controller.gameStatus;
                     // And then, after closing the second dialog, navigate back
@@ -70,11 +64,7 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                             ? BoardBorder(
                                 width: 10.0,
                                 color: darken(
-                                  ctrlBoardSettings
-                                      .boardTheme
-                                      .value
-                                      .colors
-                                      .darkSquare,
+                                  ctrlBoardSettings.boardTheme.value.colors.darkSquare,
                                   0.2,
                                 ),
                               )
@@ -85,14 +75,11 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                         // enablePremoveCastling: true,
                         // showValidMoves: true,
                         autoQueenPromotion: false,
-                        animationDuration:
-                            ctrlBoardSettings.pieceAnimation.value
+                        animationDuration: ctrlBoardSettings.pieceAnimation.value
                             ? const Duration(milliseconds: 200)
                             : Duration.zero,
 
-                        dragFeedbackScale: ctrlBoardSettings.dragMagnify.value
-                            ? 2.0
-                            : 1.0,
+                        dragFeedbackScale: ctrlBoardSettings.dragMagnify.value ? 2.0 : 1.0,
                         dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
                         drawShape: DrawShapeOptions(
                           enable: ctrlBoardSettings.drawMode,
@@ -101,8 +88,7 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                             ctrlBoardSettings.shapes.value = ISet<Shape>();
                           },
                         ),
-                        pieceShiftMethod:
-                            ctrlBoardSettings.pieceShiftMethod.value,
+                        pieceShiftMethod: ctrlBoardSettings.pieceShiftMethod.value,
                         autoQueenPromotionOnPremove: false,
                         pieceOrientationBehavior:
                             // controller.playMode == Mode.freePlay

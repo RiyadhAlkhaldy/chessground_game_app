@@ -1,13 +1,12 @@
 // import 'package:chess_vectors_flutter/chess_vectors_flutter.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/core/utils/dialog/platform.dart';
+import 'package:chessground_game_app/core/utils/helper/helper_methods.dart';
 import 'package:chessground_game_app/presentation/controllers/game_controllerr.dart';
+import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
-
-import '../../../core/utils/helper/helper_methods.dart';
-import '../../../routes/app_pages.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -16,9 +15,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<GameControllerr>();
     return Scaffold(
-      appBar: PlatformAppBar(
-        title: Text(context.l10n.mobileSettingsHomeWidgets),
-      ),
+      appBar: PlatformAppBar(title: Text(context.l10n.mobileSettingsHomeWidgets)),
       body: Stack(
         children: [
           // AnimatedBackground(),
@@ -36,10 +33,7 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       controller.setVsComputer(value: true);
                       // navigate to setup game time screen
-                      Get.toNamed(
-                        RouteNames.gameTimeScreen,
-                        arguments: {"withTime": false},
-                      );
+                      Get.toNamed(RouteNames.gameTimeScreen, arguments: {"withTime": false});
                     },
                   ),
                   buildGameType(
@@ -48,10 +42,7 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       controller.setVsComputer(value: false);
                       // navigate to setup game time screen
-                      Get.toNamed(
-                        RouteNames.gameTimeScreen,
-                        arguments: {"withTime": false},
-                      );
+                      Get.toNamed(RouteNames.gameTimeScreen, arguments: {"withTime": false});
                     },
                   ),
                   buildGameType(
@@ -60,10 +51,7 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       controller.setVsComputer(value: true);
                       // navigate to setup game time screen
-                      Get.toNamed(
-                        RouteNames.sideChoosingView,
-                        arguments: {"withTime": false},
-                      );
+                      Get.toNamed(RouteNames.sideChoosingView, arguments: {"withTime": false});
                     },
                   ),
                   buildGameType(

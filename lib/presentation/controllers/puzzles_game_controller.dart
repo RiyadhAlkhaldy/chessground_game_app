@@ -1,7 +1,6 @@
+import 'package:chessground_game_app/presentation/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/presentation/controllers/puzzle_features.dart';
 import 'package:dartchess/dartchess.dart';
-
-import 'base_game_controller.dart';
-import 'puzzle_features.dart';
 
 class PuzzlesGameController extends BaseGameController implements PuzzleFeatures {
   PuzzlesGameController({

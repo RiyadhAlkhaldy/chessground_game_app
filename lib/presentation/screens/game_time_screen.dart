@@ -1,10 +1,9 @@
+import 'package:chessground_game_app/core/utils/helper/constants.dart';
+import 'package:chessground_game_app/core/utils/helper/helper_methods.dart';
+import 'package:chessground_game_app/presentation/controllers/game_controllerr.dart';
+import 'package:chessground_game_app/presentation/screens/game_start_up_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../core/utils/helper/constants.dart';
-import '../../core/utils/helper/helper_methods.dart';
-import '../controllers/game_controllerr.dart';
-import 'game_start_up_screen.dart';
 
 class GameTimeScreen extends StatefulWidget {
   const GameTimeScreen({super.key});
@@ -22,10 +21,7 @@ class _GameTimeScreenState extends State<GameTimeScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: const Text(
-          'Choose Game time',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Choose Game time', style: TextStyle(color: Colors.white)),
         leading: IconButton(
           onPressed: Get.back,
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -51,13 +47,9 @@ class _GameTimeScreenState extends State<GameTimeScreen> {
               gameTime: gameTime,
               onTap: () {
                 if (lable == Constants.custom) {
-                  Get.to(
-                    GameStartUpScreen(isCustomTime: true, gameTime: gameTime),
-                  );
+                  Get.to(GameStartUpScreen(isCustomTime: true, gameTime: gameTime));
                 } else {
-                  Get.to(
-                    GameStartUpScreen(isCustomTime: false, gameTime: gameTime),
-                  );
+                  Get.to(GameStartUpScreen(isCustomTime: false, gameTime: gameTime));
                 }
               },
             );

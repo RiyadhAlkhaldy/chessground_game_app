@@ -6,11 +6,10 @@
 
 import 'dart:async';
 
+import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
-
-import '../../../data/models/move_data_model.dart';
 
 /// A lightweight mutable controller for a game built on top of dartchess immutable Position.
 /// - Keeps fenHistory and fenCounts for repetition detection.

@@ -1,8 +1,7 @@
+import 'package:chessground_game_app/core/databases/api/api_consumer.dart';
+import 'package:chessground_game_app/core/databases/api/end_points.dart';
+import 'package:chessground_game_app/core/errors/expentions.dart';
 import 'package:dio/dio.dart';
-
-import '../../errors/expentions.dart';
-import 'api_consumer.dart';
-import 'end_points.dart';
 
 class DioConsumer extends ApiConsumer {
   final Dio dio;
@@ -32,17 +31,9 @@ class DioConsumer extends ApiConsumer {
 
   //!GET
   @override
-  Future get(
-    String path, {
-    Object? data,
-    Map<String, dynamic>? queryParameters,
-  }) async {
+  Future get(String path, {Object? data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final res = await dio.get(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-      );
+      final res = await dio.get(path, data: data, queryParameters: queryParameters);
       return res.data;
     } on DioException catch (e) {
       handleDioException(e);
@@ -51,17 +42,9 @@ class DioConsumer extends ApiConsumer {
 
   //!DELETE
   @override
-  Future delete(
-    String path, {
-    Object? data,
-    Map<String, dynamic>? queryParameters,
-  }) async {
+  Future delete(String path, {Object? data, Map<String, dynamic>? queryParameters}) async {
     try {
-      final res = await dio.delete(
-        path,
-        data: data,
-        queryParameters: queryParameters,
-      );
+      final res = await dio.delete(path, data: data, queryParameters: queryParameters);
       return res.data;
     } on DioException catch (e) {
       handleDioException(e);

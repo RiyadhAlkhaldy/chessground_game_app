@@ -1,9 +1,8 @@
+import 'package:chessground_game_app/presentation/controllers/recent_games_controller.dart';
+import 'package:chessground_game_app/presentation/screens/recent_screen/widgets/game_card_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-
-import '../../controllers/recent_games_controller.dart';
-import 'widgets/game_card_widget.dart';
 
 class RecentGamesPage extends StatelessWidget {
   const RecentGamesPage({super.key});
@@ -27,10 +26,7 @@ class RecentGamesPage extends StatelessWidget {
                 children: [
                   const Text('لا توجد مباريات بعد'),
                   const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: () => c.refresh(),
-                    child: const Text('إعادة المحاولة'),
-                  ),
+                  ElevatedButton(onPressed: () => c.refresh(), child: const Text('إعادة المحاولة')),
                 ],
               ),
             );

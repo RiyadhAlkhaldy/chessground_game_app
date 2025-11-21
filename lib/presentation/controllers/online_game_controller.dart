@@ -1,7 +1,6 @@
+import 'package:chessground_game_app/presentation/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/presentation/controllers/online_features.dart';
 import 'package:dartchess/dartchess.dart';
-
-import 'base_game_controller.dart';
-import 'online_features.dart';
 
 class OnlineGameController extends BaseGameController implements OnlineFeatures {
   OnlineGameController({
@@ -59,9 +58,15 @@ class OnlineGameController extends BaseGameController implements OnlineFeatures 
   Future<void> sendMove(NormalMove move) {
     throw UnimplementedError();
   }
-  
+
   @override
-  Future<void> startNewGame({required String whitePlayerName, required String blackPlayerName, String? event, String? site, String? timeControl}) {
+  Future<void> startNewGame({
+    required String whitePlayerName,
+    required String blackPlayerName,
+    String? event,
+    String? site,
+    String? timeControl,
+  }) {
     throw UnimplementedError();
   }
 }

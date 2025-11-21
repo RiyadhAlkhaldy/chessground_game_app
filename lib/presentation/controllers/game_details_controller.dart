@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:chessground_game_app/core/global_feature/data/collections/chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/domain/repositories/games_repository.dart';
 import 'package:get/get.dart';
-
-import '../../data/collections/chess_game.dart';
-import '../../domain/repositories/games_repository.dart';
+ 
 
 class GameDetailsController extends GetxController {
   final GamesRepository repository = Get.find<GamesRepository>();

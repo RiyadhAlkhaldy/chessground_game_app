@@ -1,15 +1,14 @@
 import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
+import 'package:chessground_game_app/features/free_game/presentation/controllers/freee_game_controller.dart';
+import 'package:chessground_game_app/features/free_game/presentation/widgets/chess_board_widget.dart';
+import 'package:chessground_game_app/features/free_game/presentation/widgets/chess_clock_widget.dart';
+import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
+import 'package:chessground_game_app/presentation/widgets/chess_board_settings_widgets.dart';
+import 'package:chessground_game_app/presentation/widgets/pgn_horizontal_row.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
-
-import '../../../../presentation/controllers/chess_board_settings_controller.dart';
-import '../../../../presentation/widgets/chess_board_settings_widgets.dart';
-import '../../../../presentation/widgets/pgn_horizontal_row.dart';
-import '../controllers/freee_game_controller.dart';
-import '../widgets/chess_board_widget.dart';
-import '../widgets/chess_clock_widget.dart';
 
 class FreeGamePage extends StatelessWidget {
   FreeGamePage({super.key});
@@ -22,18 +21,14 @@ class FreeGamePage extends StatelessWidget {
       appBar: AppBar(
         title: GetX<FreeGameController>(
           builder: (_) {
-            return Text(
-              ctrl.statusText.value,
-              style: Theme.of(context).textTheme.titleMedium,
-            );
+            return Text(ctrl.statusText.value, style: Theme.of(context).textTheme.titleMedium);
           },
         ),
       ),
 
       body: OrientationBuilder(
-        builder: (context, orientation) => orientation == Orientation.portrait
-            ? BuildPortrait()
-            : BuildLandScape(),
+        builder: (context, orientation) =>
+            orientation == Orientation.portrait ? BuildPortrait() : BuildLandScape(),
       ),
     );
   }
@@ -104,11 +99,7 @@ class BuildLandScape extends StatelessWidget {
       padding: const EdgeInsets.all(screenPadding),
       child: Row(
         children: [
-          Expanded(
-            child: GetBuilder<FreeGameController>(
-              builder: (_) => const ChessBoardWidget(),
-            ),
-          ),
+          Expanded(child: GetBuilder<FreeGameController>(builder: (_) => const ChessBoardWidget())),
 
           const SizedBox(width: screenLandscapeSplitter),
           Expanded(
@@ -177,9 +168,7 @@ class BuildControlButtons extends StatelessWidget {
 
 Widget buildNewRoundButton(FreeGameController ctrl) => IconButton(
   icon: Icon(Symbols.refresh, size: iconSize),
-  onPressed: ctrl.gameState.value!.isGameOverExtended || !ctrl.canUndo.value
-      ? null
-      : ctrl.reset,
+  onPressed: ctrl.gameState.value!.isGameOverExtended || !ctrl.canUndo.value ? null : ctrl.reset,
 );
 
 Widget buildUndoButton() => GetX<FreeGameController>(

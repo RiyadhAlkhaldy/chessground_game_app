@@ -1,17 +1,16 @@
 import 'package:chessground_game_app/features/free_game/presentation/pages/free_game_page.dart';
 import 'package:chessground_game_app/presentation/biniding.dart/game_bindings.dart';
+import 'package:chessground_game_app/presentation/screens/about_screen.dart';
+import 'package:chessground_game_app/presentation/screens/game_computer/game_computer_screen.dart';
+import 'package:chessground_game_app/presentation/screens/game_computer/game_computer_with_time_screen.dart';
+import 'package:chessground_game_app/presentation/screens/game_screen.dart';
+import 'package:chessground_game_app/presentation/screens/game_start_up_screen.dart';
+import 'package:chessground_game_app/presentation/screens/game_time_screen.dart';
+import 'package:chessground_game_app/presentation/screens/home/home_page.dart';
 import 'package:chessground_game_app/presentation/screens/recent_screen/recent_page.dart';
+import 'package:chessground_game_app/presentation/screens/settings/settings_screen.dart';
+import 'package:chessground_game_app/presentation/screens/side_choosing/side_choosing_view.dart';
 import 'package:get/get.dart';
-
-import '../presentation/screens/about_screen.dart';
-import '../presentation/screens/game_computer/game_computer_screen.dart';
-import '../presentation/screens/game_computer/game_computer_with_time_screen.dart';
-import '../presentation/screens/game_screen.dart';
-import '../presentation/screens/game_start_up_screen.dart';
-import '../presentation/screens/game_time_screen.dart';
-import '../presentation/screens/home/home_page.dart';
-import '../presentation/screens/settings/settings_screen.dart';
-import '../presentation/screens/side_choosing/side_choosing_view.dart';
 
 abstract class RouteNames {
   static String home = '/';

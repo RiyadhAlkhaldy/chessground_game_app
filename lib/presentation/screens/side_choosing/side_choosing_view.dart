@@ -1,9 +1,8 @@
 import 'package:chessground_game_app/presentation/controllers/side_choosing_controller.dart';
 import 'package:chessground_game_app/presentation/screens/side_choosing/widgets/side_choosing_widget.dart';
+import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../routes/app_pages.dart';
 
 class SideChoosingView extends StatelessWidget {
   final controller = Get.find<SideChoosingController>();
@@ -38,19 +37,12 @@ class SideChoosingView extends StatelessWidget {
                 const Text(
                   "اختر خيارات اللعب",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 sizedBox,
 
                 // Player Color Selector
-                const Text(
-                  "اختر لونك",
-                  style: TextStyle(fontSize: 18, color: Colors.white70),
-                ),
+                const Text("اختر لونك", style: TextStyle(fontSize: 18, color: Colors.white70)),
                 sizedBox,
                 SideChosingWidget(controller: controller),
                 sizedBox,
@@ -58,9 +50,7 @@ class SideChoosingView extends StatelessWidget {
                 // UCI_LimitStrength toggle
                 Obx(
                   () => CheckboxListTile(
-                    title: const Text(
-                      'Limit Engine Strength UCI_LimitStrength',
-                    ),
+                    title: const Text('Limit Engine Strength UCI_LimitStrength'),
                     value: controller.uciLimitStrength.value,
                     onChanged: (bool? value) {
                       controller.uciLimitStrength.value = value!;
@@ -89,9 +79,7 @@ class SideChoosingView extends StatelessWidget {
                               controller.uciElo.value = value.toInt();
                             },
                             activeColor: Colors.orangeAccent,
-                            inactiveColor: Colors.orange.shade200.withValues(
-                              alpha: 0.3,
-                            ),
+                            inactiveColor: Colors.orange.shade200.withValues(alpha: 0.3),
                           ),
                         ],
                       ),
@@ -118,9 +106,7 @@ class SideChoosingView extends StatelessWidget {
                               controller.skillLevel.value = value.toInt();
                             },
                             activeColor: Colors.tealAccent,
-                            inactiveColor: Colors.teal.shade200.withValues(
-                              alpha: 0.3,
-                            ),
+                            inactiveColor: Colors.teal.shade200.withValues(alpha: 0.3),
                           ),
                         ],
                       ),
@@ -143,13 +129,9 @@ class SideChoosingView extends StatelessWidget {
                           controller.depth.value = value.toInt();
                         },
                         activeColor: Colors.deepPurpleAccent,
-                        inactiveColor: Colors.deepPurple.shade200.withValues(
-                          alpha: 0.3,
-                        ),
+                        inactiveColor: Colors.deepPurple.shade200.withValues(alpha: 0.3),
                       ),
-                      Text(
-                        'Thinking Time for AI (ms): ${controller.thinkingTimeForAI.value}',
-                      ),
+                      Text('Thinking Time for AI (ms): ${controller.thinkingTimeForAI.value}'),
                       Slider(
                         value: controller.thinkingTimeForAI.value.toDouble(),
                         min: 100,
@@ -160,9 +142,7 @@ class SideChoosingView extends StatelessWidget {
                           controller.thinkingTimeForAI.value = value.toInt();
                         },
                         activeColor: Colors.cyanAccent,
-                        inactiveColor: Colors.cyan.shade200.withValues(
-                          alpha: 0.3,
-                        ),
+                        inactiveColor: Colors.cyan.shade200.withValues(alpha: 0.3),
                       ),
                     ],
                   ),
@@ -172,14 +152,10 @@ class SideChoosingView extends StatelessWidget {
                   () => Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "إظهار المساعدات",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                      const Text("إظهار المساعدات", style: TextStyle(color: Colors.white)),
                       Switch(
                         value: controller.showMoveHints.value,
-                        onChanged: (val) =>
-                            controller.showMoveHints.value = val,
+                        onChanged: (val) => controller.showMoveHints.value = val,
                         activeThumbColor: Colors.green,
                       ),
                     ],
@@ -190,24 +166,16 @@ class SideChoosingView extends StatelessWidget {
                 // Play button
                 ElevatedButton(
                   onPressed: () {
-                    controller.changeValuecolorPlayer(
-                      controller.playerColor.value,
-                    );
+                    controller.changeValuecolorPlayer(controller.playerColor.value);
                     Get.toNamed(RouteNames.gameComputerScreen);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     shape: const StadiumBorder(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 40,
-                      vertical: 12,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
-                  child: Text(
-                    "ابدأ اللعب",
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                  child: Text("ابدأ اللعب", style: Theme.of(context).textTheme.titleLarge),
                 ),
               ],
             ),

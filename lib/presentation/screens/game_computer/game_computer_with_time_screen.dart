@@ -2,21 +2,20 @@ import 'dart:math';
 
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
+import 'package:chessground_game_app/core/utils/styles/styles.dart';
+import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
+import 'package:chessground_game_app/presentation/controllers/game_computer_with_time_controller.dart';
+import 'package:chessground_game_app/presentation/screens/game_computer/widgets/chess_clock_widget.dart';
+import 'package:chessground_game_app/presentation/widgets/chess_board_settings_widgets.dart';
+import 'package:chessground_game_app/presentation/widgets/pgn_horizontal_row.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
-
-import '../../../core/utils/dialog/constants/const.dart';
-import '../../../core/utils/styles/styles.dart';
-import '../../controllers/chess_board_settings_controller.dart';
-import '../../controllers/game_computer_with_time_controller.dart';
-import '../../widgets/chess_board_settings_widgets.dart';
-import '../../widgets/pgn_horizontal_row.dart';
-import 'widgets/chess_clock_widget.dart';
 
 class GameComputerWithTimeScreen extends StatelessWidget {
   GameComputerWithTimeScreen({super.key});
@@ -35,9 +34,8 @@ class GameComputerWithTimeScreen extends StatelessWidget {
       ),
 
       body: OrientationBuilder(
-        builder: (context, orientation) => orientation == Orientation.portrait
-            ? BuildPortrait()
-            : BuildLandScape(),
+        builder: (context, orientation) =>
+            orientation == Orientation.portrait ? BuildPortrait() : BuildLandScape(),
       ),
     );
   }
@@ -188,9 +186,7 @@ class ChessBoardWidget extends GetView<GameComputerWithTimeController> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return PopScope(
-            canPop: controller
-                .gameState
-                .isGameOverExtended, // Prevents automatic exit
+            canPop: controller.gameState.isGameOverExtended, // Prevents automatic exit
 
             onPopInvokedWithResult: (didPop, result) async {
               if (didPop) {
@@ -199,22 +195,19 @@ class ChessBoardWidget extends GetView<GameComputerWithTimeController> {
               if (controller.getResult != null) {
                 Get.back();
               } else {
-                final shouldExit = await showExitConfirmationDialog(context)
-                    .then((value) {
-                      if (value != null && value == true) {
-                        controller.resign(controller.gameState.turn);
-                      }
-                      return value;
-                    });
+                final shouldExit = await showExitConfirmationDialog(context).then((value) {
+                  if (value != null && value == true) {
+                    controller.resign(controller.gameState.turn);
+                  }
+                  return value;
+                });
 
                 if (shouldExit == true) {
                   if (context.mounted) {
                     // controller.gameStatus;
                     // controller.plySound.executeResignSound();
                     controller.resign(
-                      controller.playerSide == PlayerSide.white
-                          ? Side.white
-                          : Side.black,
+                      controller.playerSide == PlayerSide.white ? Side.white : Side.black,
                     );
                     await controller.gameStatus;
                     // And then, after closing the second dialog, navigate back
@@ -238,11 +231,7 @@ class ChessBoardWidget extends GetView<GameComputerWithTimeController> {
                             ? BoardBorder(
                                 width: 10.0,
                                 color: darken(
-                                  ctrlBoardSettings
-                                      .boardTheme
-                                      .value
-                                      .colors
-                                      .darkSquare,
+                                  ctrlBoardSettings.boardTheme.value.colors.darkSquare,
                                   0.2,
                                 ),
                               )
@@ -253,14 +242,11 @@ class ChessBoardWidget extends GetView<GameComputerWithTimeController> {
                         // enablePremoveCastling: true,
                         // showValidMoves: true,
                         autoQueenPromotion: false,
-                        animationDuration:
-                            ctrlBoardSettings.pieceAnimation.value
+                        animationDuration: ctrlBoardSettings.pieceAnimation.value
                             ? const Duration(milliseconds: 200)
                             : Duration.zero,
 
-                        dragFeedbackScale: ctrlBoardSettings.dragMagnify.value
-                            ? 2.0
-                            : 1.0,
+                        dragFeedbackScale: ctrlBoardSettings.dragMagnify.value ? 2.0 : 1.0,
                         dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
                         drawShape: DrawShapeOptions(
                           enable: ctrlBoardSettings.drawMode,
@@ -269,8 +255,7 @@ class ChessBoardWidget extends GetView<GameComputerWithTimeController> {
                             ctrlBoardSettings.shapes.value = ISet<Shape>();
                           },
                         ),
-                        pieceShiftMethod:
-                            ctrlBoardSettings.pieceShiftMethod.value,
+                        pieceShiftMethod: ctrlBoardSettings.pieceShiftMethod.value,
                         autoQueenPromotionOnPremove: false,
                         pieceOrientationBehavior:
                             // controller.playMode == Mode.freePlay
@@ -311,9 +296,7 @@ class ChessBoardWidget extends GetView<GameComputerWithTimeController> {
 
 Widget buildNewRoundButton(GameComputerWithTimeController ctrl) => IconButton(
   icon: Icon(Symbols.refresh, size: iconSize),
-  onPressed: ctrl.gameState.isGameOverExtended || !ctrl.canUndo.value
-      ? null
-      : ctrl.reset,
+  onPressed: ctrl.gameState.isGameOverExtended || !ctrl.canUndo.value ? null : ctrl.reset,
 );
 Widget buildUndoButton() => GetX<GameComputerWithTimeController>(
   builder: (controller) => IconButton(

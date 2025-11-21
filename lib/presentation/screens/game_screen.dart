@@ -3,22 +3,21 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
+import 'package:chessground_game_app/core/utils/styles/styles.dart';
+import 'package:chessground_game_app/presentation/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/presentation/controllers/offline_game_controller.dart';
+import 'package:chessground_game_app/presentation/widgets/captured_pieces_widget.dart';
+import 'package:chessground_game_app/presentation/widgets/game_controls_widget.dart';
+import 'package:chessground_game_app/presentation/widgets/game_info_widget.dart';
+import 'package:chessground_game_app/presentation/widgets/move_list_widget.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
-
-import '../../core/utils/helper/helper_methodes.dart';
-import '../../core/utils/styles/styles.dart';
-import '../controllers/base_game_controller.dart';
-import '../controllers/chess_board_settings_controller.dart';
-import '../widgets/captured_pieces_widget.dart';
-import '../widgets/game_controls_widget.dart';
-import '../widgets/game_info_widget.dart';
-import '../widgets/move_list_widget.dart';
 
 /// Main game screen displaying the chess board and game controls
 /// شاشة اللعبة الرئيسية التي تعرض رقعة الشطرنج وعناصر التحكم

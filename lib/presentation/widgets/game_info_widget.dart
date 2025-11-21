@@ -1,13 +1,12 @@
 // lib/presentation/widgets/game_info_widget.dart
 
+import 'package:chessground_game_app/core/game_termination_enum.dart';
+import 'package:chessground_game_app/presentation/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/presentation/controllers/offline_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
-import '../../core/game_termination_enum.dart';
-import '../controllers/base_game_controller.dart';
-import '../controllers/offline_game_controller.dart';
 
 /// Widget to display game information
 /// عنصر لعرض معلومات اللعبة

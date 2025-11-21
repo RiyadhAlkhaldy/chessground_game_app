@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:chessground_game_app/data/collections/chess_game.dart';
-import 'package:chessground_game_app/data/collections/move_data.dart';
-import 'package:chessground_game_app/data/collections/player.dart';
-import 'package:chessground_game_app/domain/services/chess_game_storage_service.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/move_data.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
@@ -31,9 +31,7 @@ void main() async {
     PathProviderPlatform.instance = TestPathProviderPlatform();
 
     await ChessGameStorageService.initForTest(
-      await PathProviderPlatform.instance.getApplicationSupportPath().then(
-        (value) => value!,
-      ),
+      await PathProviderPlatform.instance.getApplicationSupportPath().then((value) => value!),
     ); // استخدم المسار من mock
     await ChessGameStorageService.init();
     storage = ChessGameStorageService();
@@ -77,10 +75,7 @@ void main() async {
           rating: 1200,
           type: 'guest',
         );
-        final second = await storage.createOrGetPlayerByUuid(
-          uuid,
-          name: 'Updated',
-        );
+        final second = await storage.createOrGetPlayerByUuid(uuid, name: 'Updated');
 
         expect(first.id, equals(second.id));
         expect(second.name, equals('Updated'));
@@ -89,12 +84,7 @@ void main() async {
 
     group('♟️ Game Lifecycle', () {
       setUp(() async {
-        white = Player(
-          uuid: const Uuid().v4(),
-          name: 'Riyadh',
-          type: 'human',
-          playerRating: 1500,
-        );
+        white = Player(uuid: const Uuid().v4(), name: 'Riyadh', type: 'human', playerRating: 1500);
         black = Player(
           uuid: const Uuid().v4(),
           name: 'Stockfish-17',
@@ -104,11 +94,7 @@ void main() async {
       });
 
       test('بدء لعبة جديدة وتخزينها', () async {
-        final headers = <String, String>{
-          'Event': 'Casual Game',
-          'Site': 'MyApp',
-          'Round': '1',
-        };
+        final headers = <String, String>{'Event': 'Casual Game', 'Site': 'MyApp', 'Round': '1'};
 
         game = ChessGame();
         final created = await storage.startNewGame(

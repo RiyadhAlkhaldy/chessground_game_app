@@ -1,9 +1,8 @@
 // lib/presentation/widgets/move_list_widget.dart
 
+import 'package:chessground_game_app/presentation/controllers/base_game_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../controllers/base_game_controller.dart';
 
 /// Widget to display the list of moves in the game
 /// عنصر لعرض قائمة الحركات في اللعبة

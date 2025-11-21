@@ -1,10 +1,9 @@
 // lib/presentation/pages/new_game_screen.dart
 
+import 'package:chessground_game_app/presentation/controllers/offline_game_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../controllers/offline_game_controller.dart';
 
 /// Screen for creating a new game
 /// شاشة إنشاء لعبة جديدة

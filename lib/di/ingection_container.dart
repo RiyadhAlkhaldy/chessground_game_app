@@ -1,43 +1,42 @@
 // lib/di/injection_container.dart
 
+import 'package:chessground_game_app/core/global_feature/data/collections/chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
+import 'package:chessground_game_app/core/global_feature/data/datasources/chess_game_local_datasource.dart';
+import 'package:chessground_game_app/core/global_feature/data/datasources/game_state_cache_datasource.dart';
+import 'package:chessground_game_app/core/global_feature/data/datasources/local_datasource.dart';
+import 'package:chessground_game_app/core/global_feature/data/datasources/player_local_datasource.dart';
+import 'package:chessground_game_app/core/global_feature/data/datasources/stockfish_datasource.dart';
+import 'package:chessground_game_app/core/global_feature/data/repositories/chess_game_repository_impl.dart';
+import 'package:chessground_game_app/core/global_feature/data/repositories/game_repository_impl.dart';
+import 'package:chessground_game_app/core/global_feature/data/repositories/game_state_repository_impl.dart';
+import 'package:chessground_game_app/core/global_feature/data/repositories/player_repository_impl.dart';
+import 'package:chessground_game_app/core/global_feature/domain/repositories/chess_game_repository.dart';
+import 'package:chessground_game_app/core/global_feature/domain/repositories/game_repository.dart';
+import 'package:chessground_game_app/core/global_feature/domain/repositories/game_state_repository.dart';
+import 'package:chessground_game_app/core/global_feature/domain/repositories/player_repository.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/service/sound_effect_service.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/delete_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/get_cached_game_state_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/remove_cached_game_state_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/get_all_games_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/get_game_by_uuid_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/get_or_create_gust_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/get_player_by_uuid_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/get_recent_games_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/init_chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/play_move.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/play_sound_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/save_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/save_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/update_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/update_player_rating_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/update_player_usecase.dart';
+import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:get_it/get_it.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-
-import '../core/utils/logger.dart';
-import '../data/collections/chess_game.dart';
-import '../data/collections/player.dart';
-import '../data/datasources/chess_game_local_datasource.dart';
-import '../data/datasources/game_state_cache_datasource.dart';
-import '../data/datasources/local_datasource.dart';
-import '../data/datasources/player_local_datasource.dart';
-import '../data/datasources/stockfish_datasource.dart';
-import '../data/repositories/chess_game_repository_impl.dart';
-import '../data/repositories/game_repository_impl.dart';
-import '../data/repositories/game_state_repository_impl.dart';
-import '../data/repositories/player_repository_impl.dart';
-import '../domain/repositories/chess_game_repository.dart';
-import '../domain/repositories/game_repository.dart';
-import '../domain/repositories/game_state_repository.dart';
-import '../domain/repositories/player_repository.dart';
-import '../domain/services/service/sound_effect_service.dart';
-import '../domain/usecases/delete_game_usecase.dart';
-import '../domain/usecases/game_state/cache_game_state_usecase.dart';
-import '../domain/usecases/game_state/get_cached_game_state_usecase.dart';
-import '../domain/usecases/game_state/remove_cached_game_state_usecase.dart';
-import '../domain/usecases/get_all_games_usecase.dart';
-import '../domain/usecases/get_game_by_uuid_usecase.dart';
-import '../domain/usecases/get_or_create_gust_player_usecase.dart';
-import '../domain/usecases/get_player_by_uuid_usecase.dart';
-import '../domain/usecases/get_recent_games_usecase.dart';
-import '../domain/usecases/init_chess_game.dart';
-import '../domain/usecases/play_move.dart';
-import '../domain/usecases/play_sound_usecase.dart';
-import '../domain/usecases/save_game_usecase.dart';
-import '../domain/usecases/save_player_usecase.dart';
-import '../domain/usecases/update_game_usecase.dart';
-import '../domain/usecases/update_player_rating_usecase.dart';
-import '../domain/usecases/update_player_usecase.dart';
 
 /// Service locator instance
 /// مثيل محدد موقع الخدمة
@@ -67,10 +66,7 @@ class InjectionContainer {
       // ========== Controllers (will be initialized via GetX) ==========
       // Controllers are registered on-demand by GetX
 
-      AppLogger.info(
-        'Dependency injection initialized successfully',
-        tag: 'DI',
-      );
+      AppLogger.info('Dependency injection initialized successfully', tag: 'DI');
     } catch (e, stackTrace) {
       AppLogger.error(
         'Failed to initialize dependency injection',
@@ -113,18 +109,14 @@ class InjectionContainer {
       () => ChessGameLocalDataSourceImpl(isar: sl<Isar>()),
     );
 
-    sl.registerLazySingleton<PlayerLocalDataSource>(
-      () => PlayerLocalDataSourceImpl(isar: sl()),
-    );
+    sl.registerLazySingleton<PlayerLocalDataSource>(() => PlayerLocalDataSourceImpl(isar: sl()));
     //LocalDataSource
     sl.registerLazySingleton<LocalDataSource>(() => LocalDataSourceImpl(sl()));
     // StockfishDataSource
     sl.registerLazySingleton<StockfishDataSource>(() => StockfishDataSource());
 
     // Cache data source
-    sl.registerLazySingleton<GameStateCacheDataSource>(
-      () => GameStateCacheDataSourceImpl(),
-    );
+    sl.registerLazySingleton<GameStateCacheDataSource>(() => GameStateCacheDataSourceImpl());
 
     AppLogger.debug('Data sources registered', tag: 'DI');
   }
@@ -138,9 +130,7 @@ class InjectionContainer {
       () => ChessGameRepositoryImpl(localDataSource: sl()),
     );
 
-    sl.registerLazySingleton<PlayerRepository>(
-      () => PlayerRepositoryImpl(localDataSource: sl()),
-    );
+    sl.registerLazySingleton<PlayerRepository>(() => PlayerRepositoryImpl(localDataSource: sl()));
 
     sl.registerLazySingleton<GameStateRepository>(
       () => GameStateRepositoryImpl(cacheDataSource: sl()),

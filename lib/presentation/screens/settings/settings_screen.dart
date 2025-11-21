@@ -1,10 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
+import 'package:chessground_game_app/l10n/l10n.dart';
+import 'package:chessground_game_app/presentation/controllers/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../l10n/l10n.dart';
-import '../../controllers/settings_controller.dart';
 
 class SettingsScreen extends GetView<SettingsController> {
   const SettingsScreen({super.key, superkey});

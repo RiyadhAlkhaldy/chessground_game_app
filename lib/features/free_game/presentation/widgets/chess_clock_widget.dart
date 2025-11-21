@@ -1,12 +1,11 @@
-import 'package:chessground_game_app/domain/services/chess_clock_service.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/chess_clock_service.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/assets_images.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
+import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../../core/utils/dialog/constants/assets_images.dart';
-import '../../../../domain/entities/player_entity.dart';
-import '../../../../presentation/controllers/chess_board_settings_controller.dart';
 
 String formatMsToClock(int ms) {
   final Duration d = Duration(milliseconds: ms);
@@ -117,16 +116,11 @@ class WhitePlayerClockWidget extends StatelessWidget {
               ? const SizedBox()
               : ListTile(
                   leading: whitePlayer.value!.image == null
-                      ? CircleAvatar(
-                          radius: 25,
-                          backgroundImage: AssetImage(AssetsImages.userIcon),
-                        )
+                      ? CircleAvatar(radius: 25, backgroundImage: AssetImage(AssetsImages.userIcon))
                       : CircleAvatar(
                           radius: 25,
 
-                          backgroundImage: NetworkImage(
-                            whitePlayer.value!.image!,
-                          ),
+                          backgroundImage: NetworkImage(whitePlayer.value!.image!),
                         ),
                   title: Text(whitePlayer.value!.name.substring(0, 6)),
                   subtitle: Row(
@@ -175,16 +169,11 @@ class BlackPlayerClockWidget extends StatelessWidget {
               ? const SizedBox()
               : ListTile(
                   leading: blackPlayer.value!.image == null
-                      ? CircleAvatar(
-                          radius: 25,
-                          backgroundImage: AssetImage(AssetsImages.userIcon),
-                        )
+                      ? CircleAvatar(radius: 25, backgroundImage: AssetImage(AssetsImages.userIcon))
                       : CircleAvatar(
                           radius: 25,
 
-                          backgroundImage: NetworkImage(
-                            blackPlayer.value!.image!,
-                          ),
+                          backgroundImage: NetworkImage(blackPlayer.value!.image!),
                         ),
                   title: Text(blackPlayer.value!.name.substring(0, 6)),
                   subtitle: Row(
@@ -230,8 +219,7 @@ Widget _controls(ChessClockService chessClock) {
       ),
       const SizedBox(width: 2),
       ElevatedButton(
-        onPressed: () =>
-            chessClock.reset(newInitialMs: chessClock.initialTimeMs),
+        onPressed: () => chessClock.reset(newInitialMs: chessClock.initialTimeMs),
         child: const Text('Reset'),
       ),
     ],

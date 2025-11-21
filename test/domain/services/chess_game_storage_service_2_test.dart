@@ -1,10 +1,10 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:chessground_game_app/data/collections/chess_game.dart';
-import 'package:chessground_game_app/data/collections/move_data.dart';
-import 'package:chessground_game_app/data/collections/player.dart';
-import 'package:chessground_game_app/domain/services/chess_game_storage_service.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/move_data.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart'; 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart';

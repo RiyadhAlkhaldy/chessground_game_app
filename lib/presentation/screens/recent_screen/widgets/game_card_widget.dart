@@ -1,8 +1,8 @@
-import 'package:chessground_game_app/data/collections/chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/data/collections/chess_game.dart';
+import 'package:chessground_game_app/presentation/screens/recent_screen/widgets/mini_board_widget.dart'
+    as mbw;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import 'mini_board_widget.dart' as mbw;
 
 class GameCardWidget extends StatelessWidget {
   final ChessGame game;
@@ -22,9 +22,7 @@ class GameCardWidget extends StatelessWidget {
     final whiteName = game.whitePlayer.value?.name ?? 'لاعب';
     final blackName = game.blackPlayer.value?.name ?? 'خصم';
 
-    final dateStr = game.date != null
-        ? DateFormat.yMd().add_Hm().format(game.date!)
-        : '';
+    final dateStr = game.date != null ? DateFormat.yMd().add_Hm().format(game.date!) : '';
 
     // الواجهة: بطاقة مع مصغّر رقعة وأرقام وتصنيف ونتيجة
     return Card(
@@ -55,40 +53,25 @@ class GameCardWidget extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                         decoration: BoxDecoration(
                           color: _tagColor(game), // لون للـ tag
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(
-                          _tagText(game),
-                          style: const TextStyle(color: Colors.white),
-                        ),
+                        child: Text(_tagText(game), style: const TextStyle(color: Colors.white)),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         game.result ?? '-',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(width: 8),
                       if (game.eco != null)
-                        Text(
-                          game.eco!,
-                          style: const TextStyle(color: Colors.blueGrey),
-                        ),
+                        Text(game.eco!, style: const TextStyle(color: Colors.blueGrey)),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    dateStr,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
+                  Text(dateStr, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),

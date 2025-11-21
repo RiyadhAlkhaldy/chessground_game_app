@@ -1,22 +1,21 @@
 import 'dart:async';
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/game_termination_enum.dart';
+import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/init_chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/play_move.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/play_sound_usecase.dart';
+import 'package:chessground_game_app/core/utils/dialog/game_result_dialog.dart';
+import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
+import 'package:chessground_game_app/core/utils/dialog/status_l10n.dart';
+import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
+import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
-
-import '../../core/game_termination_enum.dart';
-import '../../core/utils/dialog/game_result_dialog.dart';
-import '../../core/utils/dialog/game_status.dart';
-import '../../core/utils/dialog/status_l10n.dart';
-import '../../core/utils/game_state/game_state.dart';
-import '../../core/utils/logger.dart';
-import '../../data/models/move_data_model.dart';
-import '../../domain/entities/chess_game_entity.dart';
-import '../../domain/entities/player_entity.dart';
-import '../../domain/services/game_service.dart';
-import '../../domain/usecases/init_chess_game.dart';
-import '../../domain/usecases/play_move.dart';
-import '../../domain/usecases/play_sound_usecase.dart';
 
 abstract class BaseGameController extends GetxController {
   // ========== Observable State ==========

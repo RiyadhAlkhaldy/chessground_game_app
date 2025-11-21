@@ -1,12 +1,11 @@
+import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
+import 'package:chessground_game_app/core/utils/logger.dart';
+import 'package:chessground_game_app/presentation/controllers/get_storage_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
-
-import '../../../data/collections/player.dart';
-import '../../../domain/services/chess_game_storage_service.dart';
-import '../../../presentation/controllers/get_storage_controller.dart';
-import '../dialog/constants/const.dart';
-import '../logger.dart';
 
 Future<Locale> getLocale() async {
   final storage = Get.find<GetStorageControllerImp>();

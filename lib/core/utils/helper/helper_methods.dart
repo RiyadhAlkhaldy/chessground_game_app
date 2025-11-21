@@ -1,12 +1,9 @@
+import 'package:chessground_game_app/core/utils/helper/constants.dart';
+import 'package:chessground_game_app/presentation/controllers/game_controllerr.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:flutter_chess/providers/game_provider.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../../../presentation/controllers/game_controllerr.dart';
-import 'constants.dart';
-// import 'package:squares/squares.dart';
 
 Widget buildGameType({
   required String lable,
@@ -27,9 +24,7 @@ Widget buildGameType({
               ? const SizedBox.shrink()
               : Text(
                   gameTime,
-                  style: Theme.of(
-                    Get.context!,
-                  ).textTheme.bodyMedium!.copyWith(),
+                  style: Theme.of(Get.context!).textTheme.bodyMedium!.copyWith(),
                   textAlign: TextAlign.center,
                 ),
           const SizedBox(height: 10),
@@ -40,10 +35,7 @@ Widget buildGameType({
   );
 }
 
-String getTimerToDisplay({
-  required GameControllerr gameProvider,
-  required bool isUser,
-}) {
+String getTimerToDisplay({required GameControllerr gameProvider, required bool isUser}) {
   String timer = '';
   // check if is user
   if (isUser) {
@@ -99,16 +91,11 @@ var textFormDecoration = InputDecoration(
 );
 
 // pick an image
-Future<File?> pickImage({
-  required bool fromCamera,
-  required Function(String) onFail,
-}) async {
+Future<File?> pickImage({required bool fromCamera, required Function(String) onFail}) async {
   File? fileImage;
   if (fromCamera) {
     try {
-      final takenPhoto = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-      );
+      final takenPhoto = await ImagePicker().pickImage(source: ImageSource.camera);
 
       if (takenPhoto != null) {
         fileImage = File(takenPhoto.path as int);
@@ -118,9 +105,7 @@ Future<File?> pickImage({
     }
   } else {
     try {
-      final choosenImage = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-      );
+      final choosenImage = await ImagePicker().pickImage(source: ImageSource.gallery);
 
       if (choosenImage != null) {
         fileImage = File(choosenImage.path as int);
@@ -136,9 +121,7 @@ Future<File?> pickImage({
 // validate email method
 bool validateEmail(String email) {
   // Regular expression for email validation
-  final RegExp emailRegex = RegExp(
-    r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$',
-  );
+  final RegExp emailRegex = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
 
   // Check if the email matches the regular expression
   return emailRegex.hasMatch(email);

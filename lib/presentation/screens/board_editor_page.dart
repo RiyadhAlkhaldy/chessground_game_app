@@ -1,10 +1,9 @@
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/board_theme.dart';
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
-
-import '../../core/board_theme.dart';
 
 class BoardEditorPage extends StatefulWidget {
   const BoardEditorPage({super.key});
@@ -61,9 +60,7 @@ class _BoardEditorPageState extends State<BoardEditorPage> {
       pieceSet: pieceSet,
       squareSize: boardEditor.squareSize,
       settings: settings,
-      pieceEdition: pointerMode == EditorPointerMode.edit
-          ? pieceToAddOnTouch
-          : null,
+      pieceEdition: pointerMode == EditorPointerMode.edit ? pieceToAddOnTouch : null,
       pieceTapped: (role) => setState(() {
         pieceToAddOnTouch = Piece(role: role, color: side);
         pointerMode = EditorPointerMode.edit;
@@ -89,10 +86,7 @@ class _BoardEditorPageState extends State<BoardEditorPage> {
             makePieceMenu(Side.white),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: SizedBox(
-                height: 50,
-                child: Text('FEN: ${writeFen(pieces)}'),
-              ),
+              child: SizedBox(height: 50, child: Text('FEN: ${writeFen(pieces)}')),
             ),
           ],
         ),
@@ -138,9 +132,7 @@ class PieceMenu extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            color: pointerMode == EditorPointerMode.drag
-                ? Colors.green
-                : Colors.transparent,
+            color: pointerMode == EditorPointerMode.drag ? Colors.green : Colors.transparent,
             child: GestureDetector(
               onTap: () => pointerModeTapped(),
               child: Icon(Icons.pan_tool_alt_outlined, size: squareSize),
