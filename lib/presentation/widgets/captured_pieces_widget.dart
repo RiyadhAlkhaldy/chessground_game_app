@@ -1,5 +1,6 @@
 // lib/presentation/widgets/captured_pieces_widget.dart
 
+import 'package:chessground_game_app/presentation/controllers/base_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,7 +9,7 @@ import '../controllers/offline_game_controller.dart';
 
 /// Widget to display captured pieces for a player
 /// عنصر لعرض القطع المأسورة للاعب
-class CapturedPiecesWidget extends GetView<OfflineGameController> {
+class CapturedPiecesWidget extends GetView<BaseGameController> {
   final Side side;
   final bool compact;
 
@@ -17,7 +18,7 @@ class CapturedPiecesWidget extends GetView<OfflineGameController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final capturedPieces = controller.getCapturedPieces(side);
+      final capturedPieces = (controller as OfflineGameController).getCapturedPieces(side);
 
       if (capturedPieces.isEmpty) {
         return Center(

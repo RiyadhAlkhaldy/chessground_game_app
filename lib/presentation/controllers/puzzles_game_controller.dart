@@ -1,4 +1,3 @@
-
 import 'package:dartchess/dartchess.dart';
 
 import 'base_game_controller.dart';
@@ -12,19 +11,37 @@ class PuzzlesGameController extends BaseGameController implements PuzzleFeatures
   });
 
   @override
-  int getMaterialOnBoard(Side side) { 
+  int getMaterialOnBoard(Side side) {
     throw UnimplementedError();
   }
-  
+
   @override
   List<Role> getCapturedPieces(Side side) {
     throw UnimplementedError();
   }
-  
+
   @override
   String getPgnString() {
     throw UnimplementedError();
   }
-  
-  
+
+  @override
+  Future<bool> checkSolution(List<String> moves) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String> getHint() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> loadPuzzle(String puzzleId) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> showSolution() {
+    throw UnimplementedError();
+  }
 }

@@ -104,7 +104,7 @@ abstract class BaseGameController extends GetxController {
 
   final Rx<GameStatus> _gameStatus = GameStatus.ongoing.obs;
   set gameStatus(GameStatus gameStatus) => _gameStatus.value = gameStatus;
-  GameStatus get gameStatus => _gameStatus.value;
+  GameStatus get gameStatus => gameState.status();
 
   /// Last move metadata (reactive)
   /// بيانات آخر حركة (تفاعلية)
@@ -156,8 +156,15 @@ abstract class BaseGameController extends GetxController {
     required this.initChessGame,
   });
 
+  /// initial game
+  @override
+  void onInit() {
+    super.onInit();
+  }
+
   void listenToGameStatus() {
-    gameState.gameStatus.listen((status) {
+    _gameState.value.gameStatus.listen((status) {
+      AppLogger.debug('status:$status');
       if (gameState.turn == Side.white) {
         statusText.value = "دور الأبيض";
       } else if (gameState.turn == Side.black) {
@@ -273,7 +280,7 @@ abstract class BaseGameController extends GetxController {
     try {
       // Play the move
       gameState.play(move, nags: []);
-
+      AppLogger.info('event status: ${gameState.status()}');
       // Update reactive state
       updateReactiveState();
 
@@ -381,7 +388,7 @@ abstract class BaseGameController extends GetxController {
       gameResult = GameService.calculateResult(gameState, currentGame!.termination);
       termination = currentGame!.termination;
     }
-    lastMove = gameState.lastMoveMeta!;
+    lastMove = gameState.lastMoveMeta;
     canUndo = gameState.canUndo;
     canRedo = gameState.canRedo;
     materialAdvantage = gameState.getMaterialAdvantageSignedForWhite;
@@ -409,10 +416,4 @@ abstract class BaseGameController extends GetxController {
     gameState.dispose();
     super.dispose();
   }
-
-  String getPgnString();
-
-  List<Role> getCapturedPieces(Side side);
-
-  int getMaterialOnBoard(Side side);
 }

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/game_termination_enum.dart';
 import '../controllers/base_game_controller.dart';
+import '../controllers/offline_game_controller.dart';
 
 /// Widget to display game information
 /// عنصر لعرض معلومات اللعبة
@@ -192,7 +193,7 @@ class GameInfoWidget extends GetView<BaseGameController> {
                 children: [
                   const Text('White', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
                   Text(
-                    '${controller.getMaterialOnBoard(Side.white)} points',
+                    '${(controller as OfflineGameController).getMaterialOnBoard(Side.white)} points',
                     style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
                 ],
@@ -222,7 +223,7 @@ class GameInfoWidget extends GetView<BaseGameController> {
                 children: [
                   const Text('Black', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
                   Text(
-                    '${controller.getMaterialOnBoard(Side.black)} points',
+                    '${(controller as OfflineGameController).getMaterialOnBoard(Side.black)} points',
                     style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
                 ],

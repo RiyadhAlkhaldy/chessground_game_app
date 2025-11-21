@@ -97,7 +97,7 @@ class GameState {
 
   /// Create GameState with an initial Position (defaults to standard initial).
   GameState({Position? initial}) : _pos = initial ?? Chess.initial {
-    _gameStatus.add(GameStatus.ongoing);
+    _gameStatus.sink.add(GameStatus.ongoing);
 
     _pushPosition(_pos);
     if (_pos.isGameOver) {
@@ -174,9 +174,7 @@ class GameState {
     final String san = record.$2;
 
     // when playing a new move after undo, clear redo stacks
-    if (_redoPositonStack.isNotEmpty ||
-        _redoMoveStack.isNotEmpty ||
-        _redoMoveObjStack.isNotEmpty) {
+    if (_redoPositonStack.isNotEmpty || _redoMoveStack.isNotEmpty || _redoMoveObjStack.isNotEmpty) {
       _redoPositonStack.clear();
       _redoMoveStack.clear();
       _redoMoveObjStack.clear();
@@ -195,13 +193,7 @@ class GameState {
     bool wasCapture = false;
     // simple detection: any role count decreased for the side that lost material
     // determine which side lost material by comparing totals
-    for (final r in [
-      Role.pawn,
-      Role.knight,
-      Role.bishop,
-      Role.rook,
-      Role.queen,
-    ]) {
+    for (final r in [Role.pawn, Role.knight, Role.bishop, Role.rook, Role.queen]) {
       final beforeW = beforeCounts[r] ?? 0;
       final afterW = afterWhiteCounts[r] ?? 0;
       final beforeB = beforeBlackCounts[r] ?? 0;
@@ -242,7 +234,7 @@ class GameState {
     _moves.add(_lastMoveMeta!);
     allMoves.add(_lastMoveMeta!);
     _moveObjects.add(move);
-    _gameStatus.add(status());
+    _gameStatus.sink.add(status());
   }
 
   /// Return true if current position has occurred 3 or more times.
@@ -267,7 +259,7 @@ class GameState {
   void setAgreementDraw() {
     agreementFlag = true;
     result = Outcome.draw;
-    _gameStatus.add(status());
+    _gameStatus.sink.add(status());
   }
 
   bool isAgreedDraw() => agreementFlag; // 3. EndGame  isAgreedDraw
@@ -277,7 +269,7 @@ class GameState {
     resignationSide = side;
     final winner = side == Side.white ? Side.black : Side.white;
     result = Outcome(winner: winner);
-    _gameStatus.add(status());
+    _gameStatus.sink.add(status());
   }
 
   bool isResigned() => resignationSide != null; // 4. EndGame  isResigned
@@ -287,7 +279,7 @@ class GameState {
     timeoutSide = side;
     final winner = side == Side.white ? Side.black : Side.white;
     result = Outcome(winner: winner);
-    _gameStatus.add(status());
+    _gameStatus.sink.add(status());
   }
 
   bool isTimeout() => timeoutSide != null; // 5. EndGame  isTimeout
@@ -474,11 +466,7 @@ class GameState {
     return true;
   }
 
-  void replayToHalfmove(
-    int halfmoveIndex, {
-    Position? initial,
-    List<Move>? moves,
-  }) {
+  void replayToHalfmove(int halfmoveIndex, {Position? initial, List<Move>? moves}) {
     final start = initial ?? Chess.initial;
 
     _pos = start;
@@ -498,9 +486,7 @@ class GameState {
 
     if (halfmoveIndex < 0 || moves == null || moves.isEmpty) return;
 
-    final upto = (halfmoveIndex < moves.length)
-        ? halfmoveIndex
-        : moves.length - 1;
+    final upto = (halfmoveIndex < moves.length) ? halfmoveIndex : moves.length - 1;
 
     for (int i = 0; i <= upto; i++) {
       play(moves[i]);

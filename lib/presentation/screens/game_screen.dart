@@ -76,6 +76,8 @@ class GameScreen extends GetView<BaseGameController> {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       title: Obx(() {
+        final result = controller.getResult;
+        if (result != null) return Text(controller.gameResult);
         final game = controller.currentGame;
         if (game == null) return const Text('Chess Game');
 
@@ -269,7 +271,7 @@ class GameScreen extends GetView<BaseGameController> {
 
           // Captured pieces preview
           Obx(() {
-            final capturedPieces = controller.getCapturedPieces(side);
+            final capturedPieces = (controller as OfflineGameController).getCapturedPieces(side);
             if (capturedPieces.isEmpty) {
               return const SizedBox(width: 100);
             }
@@ -436,7 +438,7 @@ class GameScreen extends GetView<BaseGameController> {
   /// Export PGN
   /// تصدير PGN
   void _exportPgn(BuildContext context) {
-    final pgn = controller.getPgnString();
+    final pgn = (controller as OfflineGameController).getPgnString();
 
     if (pgn.isEmpty) {
       Get.snackbar('Error', 'PGN not available.', snackPosition: SnackPosition.BOTTOM);
@@ -560,7 +562,11 @@ class ChessBoardWidget extends GetView<BaseGameController> {
                 fen: controller.currentFen,
                 // lastMove: controller.lastMove,
                 game: GameData(
-                  playerSide: PlayerSide.both,
+                  playerSide: controller.gameState.isGameOverExtended
+                      ? PlayerSide.none
+                      : controller.gameState.position.turn == Side.white
+                      ? PlayerSide.white
+                      : PlayerSide.black,
                   validMoves: controller.validMoves,
                   sideToMove: controller.gameState.position.turn,
                   isCheck: controller.gameState.position.isCheck,
