@@ -3,7 +3,7 @@
 import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/game_state_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/repositories/game_state_repository.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/base/usecase.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart'; 

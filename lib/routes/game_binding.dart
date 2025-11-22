@@ -8,18 +8,18 @@ import 'package:chessground_game_app/core/global_feature/domain/services/chess_c
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/service/sound_effect_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/init_chess_game.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/play_move.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/play_sound_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_move.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:chessground_game_app/features/free_game/presentation/controllers/freee_game_controller.dart';
-import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
-import 'package:chessground_game_app/presentation/controllers/game_computer_controller.dart';
-import 'package:chessground_game_app/presentation/controllers/game_computer_with_time_controller.dart';
-import 'package:chessground_game_app/presentation/controllers/game_controllerr.dart';
-import 'package:chessground_game_app/presentation/controllers/get_storage_controller.dart';
-import 'package:chessground_game_app/presentation/controllers/settings_controller.dart';
-import 'package:chessground_game_app/presentation/controllers/side_choosing_controller.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_controller.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_with_time_controller.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
+import 'package:chessground_game_app/features/offline_game/presentation/controllers/freee_game_controller.dart';
+import 'package:chessground_game_app/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:chessground_game_app/features/home/presentation/controllers/game_start_up_controller.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 
@@ -53,7 +53,7 @@ class GameBinding extends Bindings {
     Get.lazyPut(() => SoundEffectService(), fenix: true);
     Get.lazyPut<StockfishEngineService>(() => StockfishEngineService(), fenix: true);
     Get.lazyPut(() {
-      final gameCtrl = Get.find<GameControllerr>();
+      final gameCtrl = Get.find<GameStartUpController>();
       return ChessClockService(
         initialTimeMs: (gameCtrl.whitesTime.inMinutes * 60 * 1000).toInt(),
         incrementMs: gameCtrl.incrementalValue * 1000,
@@ -85,7 +85,7 @@ class GameBinding extends Bindings {
       fenix: true,
     );
     // تسجيل المتحكم (GameControllerr)
-    Get.lazyPut(() => GameControllerr(), fenix: true);
+    Get.lazyPut(() => GameStartUpController(), fenix: true);
     // // تسجيل المتحكم (GameComputerWithTimeController)
     Get.lazyPut<GameComputerWithTimeController>(
       () => GameComputerWithTimeController(

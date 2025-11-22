@@ -2,7 +2,7 @@ import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/di/ingection_container.dart';
 import 'package:chessground_game_app/l10n/l10n.dart';
-import 'package:chessground_game_app/presentation/screens/home/home_page.dart';
+import 'package:chessground_game_app/features/home/presentation/pages/home_page.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:chessground_game_app/routes/game_binding.dart';
 import 'package:flutter/material.dart';

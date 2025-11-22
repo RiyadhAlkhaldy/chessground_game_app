@@ -2,7 +2,7 @@ import 'package:chessground_game_app/core/global_feature/data/collections/player
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:chessground_game_app/presentation/controllers/get_storage_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';

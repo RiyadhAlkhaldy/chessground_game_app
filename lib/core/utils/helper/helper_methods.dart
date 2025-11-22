@@ -1,5 +1,5 @@
 import 'package:chessground_game_app/core/utils/helper/constants.dart';
-import 'package:chessground_game_app/presentation/controllers/game_controllerr.dart';
+import 'package:chessground_game_app/features/home/presentation/controllers/game_start_up_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -35,7 +35,7 @@ Widget buildGameType({
   );
 }
 
-String getTimerToDisplay({required GameControllerr gameProvider, required bool isUser}) {
+String getTimerToDisplay({required GameStartUpController gameProvider, required bool isUser}) {
   String timer = '';
   // check if is user
   if (isUser) {

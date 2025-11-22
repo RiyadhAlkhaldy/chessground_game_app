@@ -3,10 +3,10 @@ import 'package:chessground_game_app/core/global_feature/data/datasources/stockf
 import 'package:chessground_game_app/core/global_feature/data/repositories/game_repository_impl.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/service/sound_effect_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/play_move.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/play_sound_usecase.dart'; 
-import 'package:chessground_game_app/features/free_game/presentation/controllers/freee_game_controller.dart';
-import 'package:chessground_game_app/presentation/controllers/chess_board_settings_controller.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_move.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart'; 
+import 'package:chessground_game_app/features/offline_game/presentation/controllers/freee_game_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
