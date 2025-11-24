@@ -21,7 +21,8 @@ import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
 
-class OfflineGameController extends BaseGameController implements OfflineFeatures {
+class OfflineGameController extends BaseGameController
+    implements OfflineFeatures {
   // ========== Dependencies (Use Cases) ==========
   final SaveGameUseCase _saveGameUseCase;
   final UpdateGameUseCase _updateGameUseCase;
@@ -56,13 +57,16 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   @override
   void onInit() {
     super.onInit();
-    startNewGame(whitePlayerName: uuidKeyForUser, blackPlayerName: uuidKeyForAI).then((_) {
+    startNewGame(
+      whitePlayerName: uuidKeyForUser,
+      blackPlayerName: uuidKeyForAI,
+    ).then((_) {
       plySound.executeDongSound();
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
+      listenToGameStatus();
+      AppLogger.info('GameController initialized', tag: 'GameController');
     });
-    fen = gameState.position.fen;
-    validMoves = makeLegalMoves(gameState.position);
-    listenToGameStatus();
-    AppLogger.info('GameController initialized', tag: 'GameController');
   }
 
   @override
@@ -148,7 +152,9 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
 
           // Cache game state
           final stateEntity = GameStateConverter.toEntity(gameState, gameUuid);
-          await _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
+          await _cacheGameStateUseCase(
+            CacheGameStateParams(state: stateEntity),
+          );
 
           updateReactiveState();
 
@@ -191,43 +197,60 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
         gameState = GameStateConverter.fromEntity(cachedState);
 
         // Also load the game entity from database
-        final gameResult = await _getGameByUuidUseCase(GetGameByUuidParams(uuid: gameUuid));
+        final gameResult = await _getGameByUuidUseCase(
+          GetGameByUuidParams(uuid: gameUuid),
+        );
 
-        gameResult.fold((failure) => setError('Failed to load game: ${failure.message}'), (game) {
-          currentGame = game;
-          updateReactiveState();
-          AppLogger.gameEvent('GameLoadedFromCache', data: {'uuid': gameUuid});
-        });
+        gameResult.fold(
+          (failure) => setError('Failed to load game: ${failure.message}'),
+          (game) {
+            currentGame = game;
+            updateReactiveState();
+            AppLogger.gameEvent(
+              'GameLoadedFromCache',
+              data: {'uuid': gameUuid},
+            );
+          },
+        );
         return;
       }
 
       // Load from database
-      final gameResult = await _getGameByUuidUseCase(GetGameByUuidParams(uuid: gameUuid));
+      final gameResult = await _getGameByUuidUseCase(
+        GetGameByUuidParams(uuid: gameUuid),
+      );
 
-      gameResult.fold((failure) => setError('Failed to load game: ${failure.message}'), (game) {
-        currentGame = game;
+      gameResult.fold(
+        (failure) => setError('Failed to load game: ${failure.message}'),
+        (game) {
+          currentGame = game;
 
-        // Restore GameState from entity
-        final restoreResult = GameService.restoreGameStateFromEntity(game);
-        restoreResult.fold(
-          (failure) => setError('Failed to restore game state: ${failure.message}'),
-          (restoredState) {
-            gameState = restoredState;
-            updateReactiveState();
+          // Restore GameState from entity
+          final restoreResult = GameService.restoreGameStateFromEntity(game);
+          restoreResult.fold(
+            (failure) =>
+                setError('Failed to restore game state: ${failure.message}'),
+            (restoredState) {
+              gameState = restoredState;
+              updateReactiveState();
 
-            // Cache the state
-            final stateEntity = GameStateConverter.toEntity(gameState, gameUuid);
-            _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
+              // Cache the state
+              final stateEntity = GameStateConverter.toEntity(
+                gameState,
+                gameUuid,
+              );
+              _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
 
-            AppLogger.gameEvent('GameLoaded', data: {'uuid': gameUuid});
-            Get.snackbar(
-              'Game Loaded',
-              'Loaded game: ${game.event ?? 'Untitled'}',
-              snackPosition: SnackPosition.BOTTOM,
-            );
-          },
-        );
-      });
+              AppLogger.gameEvent('GameLoaded', data: {'uuid': gameUuid});
+              Get.snackbar(
+                'Game Loaded',
+                'Loaded game: ${game.event ?? 'Untitled'}',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            },
+          );
+        },
+      );
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error loading game',
@@ -254,7 +277,11 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   Future<void> undoMove() async {
     try {
       if (!gameState.canUndo) {
-        Get.snackbar('Cannot Undo', 'No moves to undo', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Cannot Undo',
+          'No moves to undo',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
@@ -285,7 +312,11 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   Future<void> redoMove() async {
     try {
       if (!gameState.canRedo) {
-        Get.snackbar('Cannot Redo', 'No moves to redo', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Cannot Redo',
+          'No moves to redo',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
 
@@ -328,7 +359,12 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (e, stackTrace) {
-      AppLogger.error('Error resigning', error: e, stackTrace: stackTrace, tag: 'GameController');
+      AppLogger.error(
+        'Error resigning',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
       setError('Failed to resign: ${e.toString()}');
     }
   }
@@ -343,7 +379,11 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
 
       AppLogger.gameEvent('DrawByAgreement');
 
-      Get.snackbar('Game Over', 'Draw by agreement', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Game Over',
+        'Draw by agreement',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error setting draw',
@@ -393,7 +433,11 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
   @override
   Future<void> saveGame() async {
     await _saveGameToDatabase();
-    Get.snackbar('Game Saved', 'Game saved successfully', snackPosition: SnackPosition.BOTTOM);
+    Get.snackbar(
+      'Game Saved',
+      'Game saved successfully',
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 
   @override
@@ -422,7 +466,10 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
       await _saveGameToDatabase();
       AppLogger.debug('Game auto-saved', tag: 'GameController');
     } catch (e) {
-      AppLogger.warning('Auto-save failed: ${e.toString()}', tag: 'GameController');
+      AppLogger.warning(
+        'Auto-save failed: ${e.toString()}',
+        tag: 'GameController',
+      );
       // Don't show error to user for auto-save failures
     }
   }
@@ -432,25 +479,39 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
 
     try {
       // Sync GameState to Entity
-      final syncResult = GameService.syncGameStateToEntity(gameState, currentGame!);
+      final syncResult = GameService.syncGameStateToEntity(
+        gameState,
+        currentGame!,
+      );
 
       syncResult.fold(
         (failure) {
-          AppLogger.error('Failed to sync game state: ${failure.message}', tag: 'GameController');
+          AppLogger.error(
+            'Failed to sync game state: ${failure.message}',
+            tag: 'GameController',
+          );
         },
         (updatedGame) async {
           // Update game in database
-          final updateResult = await _updateGameUseCase(UpdateGameParams(game: updatedGame));
+          final updateResult = await _updateGameUseCase(
+            UpdateGameParams(game: updatedGame),
+          );
 
           updateResult.fold(
             (failure) {
-              AppLogger.error('Failed to update game: ${failure.message}', tag: 'GameController');
+              AppLogger.error(
+                'Failed to update game: ${failure.message}',
+                tag: 'GameController',
+              );
             },
             (savedGame) {
               currentGame = savedGame;
 
               // Cache state
-              final stateEntity = GameStateConverter.toEntity(gameState, savedGame.uuid);
+              final stateEntity = GameStateConverter.toEntity(
+                gameState,
+                savedGame.uuid,
+              );
               _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
 
               AppLogger.database('Game updated successfully');
@@ -459,7 +520,12 @@ class OfflineGameController extends BaseGameController implements OfflineFeature
         },
       );
     } catch (e, stackTrace) {
-      AppLogger.error('Error saving game', error: e, stackTrace: stackTrace, tag: 'GameController');
+      AppLogger.error(
+        'Error saving game',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
     }
   }
 }

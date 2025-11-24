@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/game_termination_enum.dart';
 import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
+
 import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
@@ -33,7 +34,6 @@ abstract class BaseGameController extends GetxController {
 
   Rxn<PlayerEntity> whitePlayer = Rxn();
   Rxn<PlayerEntity> blackPlayer = Rxn();
-  ChessGameEntity? chessGameEntity;
 
   bool canPop = false;
 
@@ -280,6 +280,7 @@ abstract class BaseGameController extends GetxController {
       // Play the move
       gameState.play(move, nags: []);
       AppLogger.info('event status: ${gameState.status()}');
+      // currentGame = GameStateConverter.fromEntity(entity);
       // Update reactive state
       updateReactiveState();
 

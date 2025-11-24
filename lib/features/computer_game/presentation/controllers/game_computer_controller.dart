@@ -25,7 +25,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
-class GameComputerController extends GetxController with WidgetsBindingObserver {
+class GameComputerController extends GetxController
+    with WidgetsBindingObserver {
   GameState gameState = GameState();
   Position get initail => Chess.fromSetup(Setup.parseFen(_initailLocalFen));
   String get _initailLocalFen => Chess.initial.fen;
@@ -116,7 +117,8 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _startStockfishIfNecessary();
-    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
       engineService.stopStockfish();
     }
   }
@@ -140,7 +142,9 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
     if (choosingCtrl.playerColor.value == SideChoosing.white) {
       playerSide = PlayerSide.white;
       ctrlBoardSettings.orientation.value = Side.white;
-      await createOrGetGustPlayer().then((value) => whitePlayer.value = value!.toModel());
+      await createOrGetGustPlayer().then(
+        (value) => whitePlayer.value = value!.toModel(),
+      );
       await createOrGetGustPlayer(
         uuidKeyForAI,
       ).then((value) => blackPlayer.value = value!.toModel());
@@ -151,7 +155,9 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
         uuidKeyForAI,
       ).then((value) => whitePlayer.value = value!.toModel());
 
-      await createOrGetGustPlayer().then((value) => blackPlayer.value = value!.toModel());
+      await createOrGetGustPlayer().then(
+        (value) => blackPlayer.value = value!.toModel(),
+      );
     }
   }
 
@@ -206,7 +212,11 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
     for (final move in gameState.allMoves) {
       root.children.add(PgnChildNode<PgnNodeData>(PgnNodeData(san: move.san!)));
     }
-    final pgnGame = PgnGame<PgnNodeData>(headers: _headers, moves: root, comments: []);
+    final pgnGame = PgnGame<PgnNodeData>(
+      headers: _headers,
+      moves: root,
+      comments: [],
+    );
     final pgnText = pgnGame.makePgn();
 
     chessGame = chessGame
@@ -234,7 +244,8 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
 
     final allMoves = [
       for (final entry in gameState.position.legalMoves.entries)
-        for (final dest in entry.value.squares) NormalMove(from: entry.key, to: dest),
+        for (final dest in entry.value.squares)
+          NormalMove(from: entry.key, to: dest),
     ];
 
     if (allMoves.isNotEmpty) {
@@ -273,19 +284,27 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
       }
       if (status != GameStatus.ongoing) {
         statusText.value =
-            "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.position, winner: gameState.result?.winner, isThreefoldRepetition: gameState.isThreefoldRepetition())} ";
-        Get.dialog(GameResultDialog(gameState: gameState, gameStatus: status, reset: reset));
+            "${gameStatusL10n(Get.context!, gameStatus: status, lastPosition: gameState.position, winner: gameState.result?.winner, isThreefoldRepetition: gameState.isThreefoldRepetition())} ";
+        Get.dialog(
+          GameResultDialog(
+            gameState: gameState,
+            gameStatus: status,
+            reset: reset,
+          ),
+        );
         _gameStorageService.endGame(
           chessGame,
           result: winner == Side.white ? '1-0' : '0-1',
-          movesData: gameState.getMoveTokens.map((e) => e.toCollection()).toList(),
+          movesData: gameState.getMoveTokens
+              .map((e) => e.toCollection())
+              .toList(),
           headers: _headers,
         );
       }
     });
   }
 
-  RxString statusText = "Play vs AI".obs;
+  final RxString statusText = "Play vs AI".obs;
 
   GameStatus get gameStatus => gameState.status();
 
@@ -343,7 +362,11 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
     update();
   }
 
-  void onUserMoveAgainstAI(NormalMove move, {bool? isDrop, bool? isPremove}) async {
+  void onUserMoveAgainstAI(
+    NormalMove move, {
+    bool? isDrop,
+    bool? isPremove,
+  }) async {
     if (isPromotionPawnMove(move)) {
       promotionMove = move;
       update();
@@ -405,13 +428,17 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
   bool isPromotionPawnMove(NormalMove move) {
     return move.promotion == null &&
         gameState.position.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == Rank.first && gameState.position.turn == Side.black) ||
-            (move.to.rank == Rank.eighth && gameState.position.turn == Side.white));
+        ((move.to.rank == Rank.first &&
+                gameState.position.turn == Side.black) ||
+            (move.to.rank == Rank.eighth &&
+                gameState.position.turn == Side.white));
   }
 
   // if can undo return true , if can redo return true
-  RxBool get canUndo => (!gameState.isGameOverExtended && gameState.canUndo).obs;
-  RxBool get canRedo => (!gameState.isGameOverExtended && gameState.canRedo).obs;
+  RxBool get canUndo =>
+      (!gameState.isGameOverExtended && gameState.canUndo).obs;
+  RxBool get canRedo =>
+      (!gameState.isGameOverExtended && gameState.canRedo).obs;
 
   void undoMove() {
     if (canUndo.value) {
@@ -451,7 +478,10 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
       engineService.setOption('UCI_Elo', uciElo);
       // Optional: Set depth to a low value as it's not the primary control
       // when UCI_LimitStrength is true
-      engineService.setOption('Skill Level', 20); // Setting a high skill level by default
+      engineService.setOption(
+        'Skill Level',
+        20,
+      ); // Setting a high skill level by default
     } else {
       // Use Skill Level and Depth if UCI_LimitStrength is disabled
       engineService.setOption('Skill Level', skillLevel);
@@ -475,7 +505,9 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
       debugPrint('  Skill Level: ${choosingCtrl.skillLevel.value}');
       debugPrint('  Depth: ${choosingCtrl.depth.value}');
     }
-    debugPrint('Thinking Time for AI (ms): ${choosingCtrl.thinkingTimeForAI.value}');
+    debugPrint(
+      'Thinking Time for AI (ms): ${choosingCtrl.thinkingTimeForAI.value}',
+    );
   }
 
   /// expose PGN tokens for the UI
@@ -501,8 +533,10 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
   Map<Role, int> get whiteCaptured => gameState.getCapturedPieces(Side.white);
   Map<Role, int> get blackCaptured => gameState.getCapturedPieces(Side.black);
   String get whiteCapturedText => gameState.capturedPiecesAsString(Side.white);
-  String get whiteCapturedIcons => gameState.capturedPiecesAsUnicode(Side.white);
-  String get blackCapturedIcons => gameState.capturedPiecesAsUnicode(Side.black);
+  String get whiteCapturedIcons =>
+      gameState.capturedPiecesAsUnicode(Side.white);
+  String get blackCapturedIcons =>
+      gameState.capturedPiecesAsUnicode(Side.black);
 
   ///
   ///
@@ -510,7 +544,8 @@ class GameComputerController extends GetxController with WidgetsBindingObserver 
   // في controller أو widget بعد استدعاء setState/update
   List<Role> get whiteCapturedList =>
       gameState.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
-  List<Role> get blackCapturedList => gameState.getCapturedPiecesList(Side.black);
+  List<Role> get blackCapturedList =>
+      gameState.getCapturedPiecesList(Side.black);
 
   @override
   void dispose() {
