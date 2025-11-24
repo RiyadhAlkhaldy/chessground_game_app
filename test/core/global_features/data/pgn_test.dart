@@ -6,7 +6,7 @@ import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import './pgn_fixtures.dart';
+import 'pgn_fixtures.dart';
 
 void main() {
   group('Pgn', () {
