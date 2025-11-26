@@ -1,5 +1,4 @@
 import 'package:chessground_game_app/core/errors/failures.dart';
-import 'package:chessground_game_app/core/game_termination_enum.dart';
 import 'package:chessground_game_app/core/global_feature/data/datasources/game_state_cache_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/data/models/game_state_model.dart';
 import 'package:chessground_game_app/core/global_feature/data/repositories/game_state_repository_impl.dart';

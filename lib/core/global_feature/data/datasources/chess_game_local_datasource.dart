@@ -127,7 +127,10 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
     try {
       AppLogger.database('Fetching game by UUID: $uuid');
 
-      final collection = await isar.chessGames.filter().uuidEqualTo(uuid).findFirst();
+      final collection = await isar.chessGames
+          .filter()
+          .uuidEqualTo(uuid)
+          .findFirst();
 
       if (collection == null) {
         throw Exception('Game not found with UUID: $uuid');
@@ -213,7 +216,10 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
       AppLogger.database('Fetching games for player: $playerUuid');
 
       // Find player first
-      final player = await isar.players.filter().uuidEqualTo(playerUuid).findFirst();
+      final player = await isar.players
+          .filter()
+          .uuidEqualTo(playerUuid)
+          .findFirst();
 
       if (player == null) {
         return [];
@@ -233,7 +239,10 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
         }
       }
 
-      AppLogger.database('Fetched games for player', result: playerGames.length);
+      AppLogger.database(
+        'Fetched games for player',
+        result: playerGames.length,
+      );
 
       return playerGames.map((c) => c.toModel()).toList();
     } catch (e, stackTrace) {
@@ -252,7 +261,11 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
     try {
       AppLogger.database('Fetching recent games (limit: $limit)');
 
-      final collections = await isar.chessGames.where().sortByDateDesc().limit(limit).findAll();
+      final collections = await isar.chessGames
+          .where()
+          .sortByDateDesc()
+          .limit(limit)
+          .findAll();
 
       // Load relationships
       for (final collection in collections) {
@@ -279,7 +292,10 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
     try {
       AppLogger.database('Fetching ongoing games');
 
-      final collections = await isar.chessGames.filter().resultEqualTo('*').findAll();
+      final collections = await isar.chessGames
+          .filter()
+          .resultEqualTo('*')
+          .findAll();
 
       // Load relationships
       for (final collection in collections) {
@@ -306,7 +322,11 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
     try {
       AppLogger.database('Fetching completed games');
 
-      final collections = await isar.chessGames.filter().not().resultEqualTo('*').findAll();
+      final collections = await isar.chessGames
+          .filter()
+          .not()
+          .resultEqualTo('*')
+          .findAll();
 
       // Load relationships
       for (final collection in collections) {
@@ -333,7 +353,10 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
     try {
       AppLogger.database('Deleting game: $uuid');
 
-      final collection = await isar.chessGames.filter().uuidEqualTo(uuid).findFirst();
+      final collection = await isar.chessGames
+          .filter()
+          .uuidEqualTo(uuid)
+          .findFirst();
 
       if (collection == null) {
         return false;
@@ -471,17 +494,19 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
     try {
       AppLogger.database('Watching game: $uuid');
 
-      return isar.chessGames.filter().uuidEqualTo(uuid).watch(fireImmediately: true).asyncMap((
-        collections,
-      ) async {
-        if (collections.isEmpty) return null;
+      return isar.chessGames
+          .filter()
+          .uuidEqualTo(uuid)
+          .watch(fireImmediately: true)
+          .asyncMap((collections) async {
+            if (collections.isEmpty) return null;
 
-        final collection = collections.first;
-        await collection.whitePlayer.load();
-        await collection.blackPlayer.load();
+            final collection = collections.first;
+            await collection.whitePlayer.load();
+            await collection.blackPlayer.load();
 
-        return collection.toModel();
-      });
+            return collection.toModel();
+          });
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error watching game',
@@ -498,7 +523,9 @@ class ChessGameLocalDataSourceImpl implements ChessGameLocalDataSource {
     try {
       AppLogger.database('Watching all games');
 
-      return isar.chessGames.where().watch(fireImmediately: true).asyncMap((collections) async {
+      return isar.chessGames.where().watch(fireImmediately: true).asyncMap((
+        collections,
+      ) async {
         // Load relationships
         for (final collection in collections) {
           await collection.whitePlayer.load();

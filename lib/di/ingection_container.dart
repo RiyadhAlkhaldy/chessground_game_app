@@ -1,5 +1,7 @@
 // lib/di/injection_container.dart
 
+import 'dart:io';
+
 import 'package:chessground_game_app/core/global_feature/data/collections/chess_game.dart';
 import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
 import 'package:chessground_game_app/core/global_feature/data/datasources/chess_game_local_datasource.dart';
@@ -45,6 +47,9 @@ final sl = GetIt.instance;
 /// Initialize all dependencies
 /// تهيئة جميع التبعيات
 class InjectionContainer {
+  static bool get isInTestMode =>
+      Platform.environment.containsKey('FLUTTER_TEST');
+
   /// Setup all dependencies
   /// إعداد جميع التبعيات
   static Future<void> init() async {
@@ -66,7 +71,10 @@ class InjectionContainer {
       // ========== Controllers (will be initialized via GetX) ==========
       // Controllers are registered on-demand by GetX
 
-      AppLogger.info('Dependency injection initialized successfully', tag: 'DI');
+      AppLogger.info(
+        'Dependency injection initialized successfully',
+        tag: 'DI',
+      );
     } catch (e, stackTrace) {
       AppLogger.error(
         'Failed to initialize dependency injection',
@@ -84,12 +92,17 @@ class InjectionContainer {
     AppLogger.info('Initializing Isar database', tag: 'DI');
 
     // Get application directory
-    final dir = await getApplicationDocumentsDirectory();
-
+    Directory? dir;
+    if (!isInTestMode) {
+      dir = await getApplicationDocumentsDirectory();
+    }
+    if (isInTestMode) {
+      await Isar.initializeIsarCore(download: true);
+    }
     // Open Isar instance
     final isar = await Isar.open(
-      [PlayerSchema, ChessGameSchema],
-      directory: dir.path,
+      [ChessGameSchema, PlayerSchema],
+      directory: dir != null ? dir.path : '',
       name: 'chess_game_db',
     );
 
@@ -109,14 +122,18 @@ class InjectionContainer {
       () => ChessGameLocalDataSourceImpl(isar: sl<Isar>()),
     );
 
-    sl.registerLazySingleton<PlayerLocalDataSource>(() => PlayerLocalDataSourceImpl(isar: sl()));
+    sl.registerLazySingleton<PlayerLocalDataSource>(
+      () => PlayerLocalDataSourceImpl(isar: sl()),
+    );
     //LocalDataSource
     sl.registerLazySingleton<LocalDataSource>(() => LocalDataSourceImpl(sl()));
     // StockfishDataSource
     sl.registerLazySingleton<StockfishDataSource>(() => StockfishDataSource());
 
     // Cache data source
-    sl.registerLazySingleton<GameStateCacheDataSource>(() => GameStateCacheDataSourceImpl());
+    sl.registerLazySingleton<GameStateCacheDataSource>(
+      () => GameStateCacheDataSourceImpl(),
+    );
 
     AppLogger.debug('Data sources registered', tag: 'DI');
   }
@@ -127,10 +144,14 @@ class InjectionContainer {
     AppLogger.debug('Registering repositories', tag: 'DI');
 
     sl.registerLazySingleton<ChessGameRepository>(
-      () => ChessGameRepositoryImpl(localDataSource: sl()),
+      () => ChessGameRepositoryImpl(
+        localDataSource: sl<ChessGameLocalDataSource>(),
+      ),
     );
 
-    sl.registerLazySingleton<PlayerRepository>(() => PlayerRepositoryImpl(localDataSource: sl()));
+    sl.registerLazySingleton<PlayerRepository>(
+      () => PlayerRepositoryImpl(localDataSource: sl()),
+    );
 
     sl.registerLazySingleton<GameStateRepository>(
       () => GameStateRepositoryImpl(cacheDataSource: sl()),
