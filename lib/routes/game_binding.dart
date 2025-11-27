@@ -9,7 +9,7 @@ import 'package:chessground_game_app/core/global_feature/domain/services/chess_g
 import 'package:chessground_game_app/core/global_feature/domain/services/service/sound_effect_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_move.dart';
+import 'package:chessground_game_app/features/online_game/domain/usecases/play_move.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
@@ -51,7 +51,10 @@ class GameBinding extends Bindings {
 
     /// services
     Get.lazyPut(() => SoundEffectService(), fenix: true);
-    Get.lazyPut<StockfishEngineService>(() => StockfishEngineService(), fenix: true);
+    Get.lazyPut<StockfishEngineService>(
+      () => StockfishEngineService(),
+      fenix: true,
+    );
     Get.lazyPut(() {
       final gameCtrl = Get.find<GameStartUpController>();
       return ChessClockService(
@@ -62,14 +65,23 @@ class GameBinding extends Bindings {
     }, fenix: true);
 
     /// usecases
-    Get.lazyPut(() => PlaySoundUseCase(Get.find<SoundEffectService>()), fenix: true);
+    Get.lazyPut(
+      () => PlaySoundUseCase(Get.find<SoundEffectService>()),
+      fenix: true,
+    );
     Get.lazyPut(() => PlayMove(Get.find<GameRepository>()), fenix: true);
     Get.lazyPut(() => InitChessGame(Get.find()), fenix: true);
 
     /// controllers
-    Get.lazyPut<GetStorageController>(() => GetStorageControllerImp(), fenix: true);
+    Get.lazyPut<GetStorageController>(
+      () => GetStorageControllerImp(),
+      fenix: true,
+    );
 
-    Get.lazyPut<SideChoosingController>(() => SideChoosingController(), fenix: true);
+    Get.lazyPut<SideChoosingController>(
+      () => SideChoosingController(),
+      fenix: true,
+    );
     // chess board settings controller
     Get.lazyPut(() => ChessBoardSettingsController(), fenix: true);
     // settings controller
@@ -98,11 +110,14 @@ class GameBinding extends Bindings {
     );
 
     /// تسجيل المتحكم (FreeGameController)
-    Get.lazyPut(() => FreeGameController(Get.find(), Get.find(), Get.find()), fenix: true);
+    Get.lazyPut(() => FreeGameController(Get.find(), Get.find()), fenix: true);
 
     /// repositories
     Get.lazyPut<GamesRepository>(
-      () => GamesRepositoryImpl(isar: Get.find<Isar>(), storageService: Get.find()),
+      () => GamesRepositoryImpl(
+        isar: Get.find<Isar>(),
+        storageService: Get.find(),
+      ),
       fenix: true,
     );
 

@@ -35,7 +35,6 @@ class OfflineGameController extends BaseGameController
 
   OfflineGameController({
     required super.plySound,
-    required super.playMoveUsecase,
     required super.initChessGame,
     required SaveGameUseCase saveGameUseCase,
     required UpdateGameUseCase updateGameUseCase,

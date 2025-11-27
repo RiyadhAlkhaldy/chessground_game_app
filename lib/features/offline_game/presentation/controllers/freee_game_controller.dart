@@ -5,7 +5,6 @@ import 'package:chessground_game_app/core/global_feature/data/models/move_data_m
 import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_move.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/params/params.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_result_dialog.dart';
@@ -59,11 +58,11 @@ mixin InitGameMixin {
   }
 }
 
-class FreeGameController extends GetxController with InitGameMixin, GameControllerMixin {
+class FreeGameController extends GetxController
+    with InitGameMixin, GameControllerMixin {
   final PlaySoundUseCase plySound;
-  final PlayMove playMoveUsecase;
 
-  FreeGameController(this.plySound, this.playMoveUsecase, InitChessGame initChessGame) {
+  FreeGameController(this.plySound, InitChessGame initChessGame) {
     super.initChessGame = initChessGame;
   }
 
@@ -92,7 +91,13 @@ class FreeGameController extends GetxController with InitGameMixin, GameControll
       if (status != GameStatus.ongoing) {
         statusText.value =
             "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.value!.position, winner: gameState.value!.result?.winner, isThreefoldRepetition: gameState.value!.isThreefoldRepetition())} ";
-        Get.dialog(GameResultDialog(gameState: gameState.value!, gameStatus: status, reset: reset));
+        Get.dialog(
+          GameResultDialog(
+            gameState: gameState.value!,
+            gameStatus: status,
+            reset: reset,
+          ),
+        );
       }
     });
   }
@@ -149,7 +154,11 @@ class FreeGameController extends GetxController with InitGameMixin, GameControll
     update();
   }
 
-  void onUserMoveAgainstAI(NormalMove move, {bool? isDrop, bool? isPremove}) async {
+  void onUserMoveAgainstAI(
+    NormalMove move, {
+    bool? isDrop,
+    bool? isPremove,
+  }) async {
     if (isPromotionPawnMove(move)) {
       promotionMove = move;
       update();
@@ -157,7 +166,9 @@ class FreeGameController extends GetxController with InitGameMixin, GameControll
       _applyMove(move);
       // validMoves = IMap(const {});
       promotionMove = null;
-      debugPrint("gameState.value!.position.fen: ${gameState.value!.position.fen}");
+      debugPrint(
+        "gameState.value!.position.fen: ${gameState.value!.position.fen}",
+      );
       update();
     }
     tryPlayPremove();
@@ -165,63 +176,25 @@ class FreeGameController extends GetxController with InitGameMixin, GameControll
 
   // --- [دالة جديدة] لتطبيق النقلة وتحديث التاريخ ---
   void _applyMove(NormalMove move) async {
-    final state = gameState.value!;
     // isLoading.value = true;
-    final res = await playMoveUsecase(
-      chessGameEntity: chessGameEntity!,
-      state: state,
-      move: move,
-      comment: null,
-      nags: [],
-      // persist: true,
-    );
-    res.fold(
-      (f) {
-        error.value = f.toString();
-      },
-      (_) {
-        // update observed gameState.value! (GameState mutated in-place)
-        gameState.refresh();
-        fen = gameState.value!.position.fen;
-        validMoves = makeLegalMoves(gameState.value!.position);
-
-        // decide which sound to play based on metadata
-        final meta = gameState.value!.lastMoveMeta;
-        if (meta != null) {
-          // capture has priority (play capture instead of plain move)
-          if (meta.wasCapture) {
-            plySound.executeCaptureSound();
-          } else {
-            plySound.executeMoveSound();
-          }
-          if (meta.wasPromotion) {
-            plySound.executePromoteSound();
-          }
-          if (meta.wasCheckmate) {
-            plySound.executeCheckmateSound();
-          } else if (meta.wasCheck) {
-            plySound.executeCheckSound();
-          }
-        } else {
-          // fallback
-          plySound.executeMoveSound();
-        }
-        gameStatus; // to update statusText
-      },
-    );
+    gameState.value!.play(move);
     // isLoading.value = false;
   }
 
   bool isPromotionPawnMove(NormalMove move) {
     return move.promotion == null &&
         gameState.value!.position.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == Rank.first && gameState.value!.position.turn == Side.black) ||
-            (move.to.rank == Rank.eighth && gameState.value!.position.turn == Side.white));
+        ((move.to.rank == Rank.first &&
+                gameState.value!.position.turn == Side.black) ||
+            (move.to.rank == Rank.eighth &&
+                gameState.value!.position.turn == Side.white));
   }
 
   // if can undo return true , if can redo return true
-  RxBool get canUndo => (!gameState.value!.isGameOverExtended && gameState.value!.canUndo).obs;
-  RxBool get canRedo => (!gameState.value!.isGameOverExtended && gameState.value!.canRedo).obs;
+  RxBool get canUndo =>
+      (!gameState.value!.isGameOverExtended && gameState.value!.canUndo).obs;
+  RxBool get canRedo =>
+      (!gameState.value!.isGameOverExtended && gameState.value!.canRedo).obs;
 
   void undoMove() {
     if (canUndo.value) {
@@ -264,16 +237,22 @@ class FreeGameController extends GetxController with InitGameMixin, GameControll
     update();
   }
 
-  Map<Role, int> get whiteCaptured => gameState.value!.getCapturedPieces(Side.white);
-  Map<Role, int> get blackCaptured => gameState.value!.getCapturedPieces(Side.black);
-  String get whiteCapturedText => gameState.value!.capturedPiecesAsString(Side.white);
-  String get whiteCapturedIcons => gameState.value!.capturedPiecesAsUnicode(Side.white);
-  String get blackCapturedIcons => gameState.value!.capturedPiecesAsUnicode(Side.black);
+  Map<Role, int> get whiteCaptured =>
+      gameState.value!.getCapturedPieces(Side.white);
+  Map<Role, int> get blackCaptured =>
+      gameState.value!.getCapturedPieces(Side.black);
+  String get whiteCapturedText =>
+      gameState.value!.capturedPiecesAsString(Side.white);
+  String get whiteCapturedIcons =>
+      gameState.value!.capturedPiecesAsUnicode(Side.white);
+  String get blackCapturedIcons =>
+      gameState.value!.capturedPiecesAsUnicode(Side.black);
 
   // في controller أو widget بعد استدعاء setState/update
   List<Role> get whiteCapturedList =>
       gameState.value!.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
-  List<Role> get blackCapturedList => gameState.value!.getCapturedPiecesList(Side.black);
+  List<Role> get blackCapturedList =>
+      gameState.value!.getCapturedPiecesList(Side.black);
 
   @override
   void dispose() {

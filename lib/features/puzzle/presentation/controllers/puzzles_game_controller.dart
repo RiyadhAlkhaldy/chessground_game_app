@@ -2,10 +2,10 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/features/puzzle/presentation/controllers/puzzle_features.dart';
 import 'package:dartchess/dartchess.dart';
 
-class PuzzlesGameController extends BaseGameController implements PuzzleFeatures {
+class PuzzlesGameController extends BaseGameController
+    implements PuzzleFeatures {
   PuzzlesGameController({
     required super.plySound,
-    required super.playMoveUsecase,
     required super.initChessGame,
   });
 

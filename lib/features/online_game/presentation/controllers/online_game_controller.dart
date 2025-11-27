@@ -1,11 +1,15 @@
+import 'package:chessground_game_app/features/online_game/domain/usecases/play_move.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/features/online_game/presentation/controllers/online_features.dart';
 import 'package:dartchess/dartchess.dart';
 
-class OnlineGameController extends BaseGameController implements OnlineFeatures {
+class OnlineGameController extends BaseGameController
+    implements OnlineFeatures {
+  final PlayMove playMoveUsecase;
+
   OnlineGameController({
     required super.plySound,
-    required super.playMoveUsecase,
+    required this.playMoveUsecase,
     required super.initChessGame,
   });
 

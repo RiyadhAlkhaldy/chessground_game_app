@@ -8,7 +8,6 @@ import 'package:chessground_game_app/core/global_feature/domain/entities/chess_g
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_move.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_result_dialog.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
@@ -56,7 +55,8 @@ abstract class BaseGameController extends GetxController {
   /// Current chess game entity
   /// كيان لعبة الشطرنج الحالي
   final Rx<ChessGameEntity?> _currentGame = Rx<ChessGameEntity?>(null);
-  set currentGame(ChessGameEntity chessGameEntity) => _currentGame.value = chessGameEntity;
+  set currentGame(ChessGameEntity chessGameEntity) =>
+      _currentGame.value = chessGameEntity;
   ChessGameEntity? get currentGame => _currentGame.value;
 
   /// Loading state
@@ -98,7 +98,8 @@ abstract class BaseGameController extends GetxController {
   /// Game termination reason (reactive)
   /// سبب إنهاء اللعبة (تفاعلي)
   final Rx<GameTermination> _termination = GameTermination.ongoing.obs;
-  set termination(GameTermination termination) => _termination.value = termination;
+  set termination(GameTermination termination) =>
+      _termination.value = termination;
   GameTermination get termination => _termination.value;
 
   final Rx<GameStatus> _gameStatus = GameStatus.ongoing.obs;
@@ -126,7 +127,8 @@ abstract class BaseGameController extends GetxController {
   /// Material advantage for white (reactive)
   /// ميزة المواد للأبيض (تفاعلي)
   final RxInt _materialAdvantage = 0.obs;
-  set materialAdvantage(int materialAdvant) => _materialAdvantage.value = materialAdvant;
+  set materialAdvantage(int materialAdvant) =>
+      _materialAdvantage.value = materialAdvant;
   int get materialAdvantage => _materialAdvantage.value;
 
   /// Is position in check (reactive)
@@ -143,17 +145,12 @@ abstract class BaseGameController extends GetxController {
 
   // usecases
   final PlaySoundUseCase plySound;
-  final PlayMove playMoveUsecase;
   final InitChessGame initChessGame;
 
   // final RxBool isLoading = false.obs;
   final RxnString error = RxnString();
 
-  BaseGameController({
-    required this.plySound,
-    required this.playMoveUsecase,
-    required this.initChessGame,
-  });
+  BaseGameController({required this.plySound, required this.initChessGame});
 
   /// initial game
   @override
@@ -175,7 +172,13 @@ abstract class BaseGameController extends GetxController {
       if (status != GameStatus.ongoing) {
         statusText.value =
             "${gameStatusL10n(Get.context!, gameStatus: gameStatus, lastPosition: gameState.position, winner: gameState.result?.winner, isThreefoldRepetition: gameState.isThreefoldRepetition())} ";
-        Get.dialog(GameResultDialog(gameState: gameState, gameStatus: status, reset: reset));
+        Get.dialog(
+          GameResultDialog(
+            gameState: gameState,
+            gameStatus: status,
+            reset: reset,
+          ),
+        );
       }
     });
   }
@@ -195,7 +198,11 @@ abstract class BaseGameController extends GetxController {
   void setAgreementDraw() => {gameState.setAgreementDraw(), update()};
 
   /// Resign: if side resigns, winner is the other side.
-  void resign(Side side) => {gameState.resign(side), plySound.executeResignSound(), update()};
+  void resign(Side side) => {
+    gameState.resign(side),
+    plySound.executeResignSound(),
+    update(),
+  };
 
   ///reset
   void reset() {
@@ -261,7 +268,11 @@ abstract class BaseGameController extends GetxController {
         update();
         tryPlayPremove();
       } else {
-        Get.snackbar('Invalid Move', 'This move is not legal', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Invalid Move',
+          'This move is not legal',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e, stackTrace) {
       AppLogger.error(
@@ -325,8 +336,10 @@ abstract class BaseGameController extends GetxController {
   bool isPromotionPawnMove(NormalMove move) {
     return move.promotion == null &&
         gameState.position.board.roleAt(move.from) == Role.pawn &&
-        ((move.to.rank == Rank.first && gameState.position.turn == Side.black) ||
-            (move.to.rank == Rank.eighth && gameState.position.turn == Side.white));
+        ((move.to.rank == Rank.first &&
+                gameState.position.turn == Side.black) ||
+            (move.to.rank == Rank.eighth &&
+                gameState.position.turn == Side.white));
   }
 
   // if can undo return true , if can redo return true
@@ -372,12 +385,15 @@ abstract class BaseGameController extends GetxController {
   Map<Role, int> get whiteCaptured => gameState.getCapturedPieces(Side.white);
   Map<Role, int> get blackCaptured => gameState.getCapturedPieces(Side.black);
   String get whiteCapturedText => gameState.capturedPiecesAsString(Side.white);
-  String get whiteCapturedIcons => gameState.capturedPiecesAsUnicode(Side.white);
-  String get blackCapturedIcons => gameState.capturedPiecesAsUnicode(Side.black);
+  String get whiteCapturedIcons =>
+      gameState.capturedPiecesAsUnicode(Side.white);
+  String get blackCapturedIcons =>
+      gameState.capturedPiecesAsUnicode(Side.black);
 
   List<Role> get whiteCapturedList =>
       gameState.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
-  List<Role> get blackCapturedList => gameState.getCapturedPiecesList(Side.black);
+  List<Role> get blackCapturedList =>
+      gameState.getCapturedPiecesList(Side.black);
 
   /// Update all reactive state variables
   void updateReactiveState() {
@@ -385,7 +401,10 @@ abstract class BaseGameController extends GetxController {
     currentTurn = gameState.turn;
     isGameOver = gameState.isGameOverExtended;
     if (currentGame != null) {
-      gameResult = GameService.calculateResult(gameState, currentGame!.termination);
+      gameResult = GameService.calculateResult(
+        gameState,
+        currentGame!.termination,
+      );
       termination = currentGame!.termination;
     }
     lastMove = gameState.lastMoveMeta;

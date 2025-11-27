@@ -20,8 +20,6 @@ class PlayMove {
     // bool persist = true,
   }) async {
     state.play(move, comment: comment, nags: nags);
-
-    final saved = repository.persistGameState(chessGameEntity, state);
-    return saved;
+    return Right(chessGameEntity);
   }
 }

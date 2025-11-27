@@ -28,7 +28,7 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_player_by_uuid_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_recent_games_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_move.dart';
+import 'package:chessground_game_app/features/online_game/domain/usecases/play_move.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';

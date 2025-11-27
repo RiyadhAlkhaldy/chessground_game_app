@@ -3,7 +3,6 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/game_st
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/get_cached_game_state_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_game_by_uuid_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_move.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
@@ -22,7 +21,6 @@ class OfflineGameBindings extends Bindings {
     // Register GameController with all its dependencies
     Get.lazyPut<BaseGameController>(
       () => OfflineGameController(
-        playMoveUsecase: sl<PlayMove>(),
         initChessGame: sl<InitChessGame>(),
         plySound: sl<PlaySoundUseCase>(),
         saveGameUseCase: sl<SaveGameUseCase>(),
