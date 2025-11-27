@@ -87,32 +87,26 @@ class GameBinding extends Bindings {
     // settings controller
     Get.lazyPut(() => SettingsController(), fenix: true);
 
-    // // تسجيل المتحكم (GameComputerController)
     Get.lazyPut<GameComputerController>(
       () => GameComputerController(
         Get.find<SideChoosingController>(),
         Get.find<StockfishEngineService>(),
         Get.find<PlaySoundUseCase>(),
+        Get.find<InitChessGame>(),
       ),
       fenix: true,
     );
-    // تسجيل المتحكم (GameControllerr)
-    Get.lazyPut(() => GameStartUpController(), fenix: true);
-    // // تسجيل المتحكم (GameComputerWithTimeController)
+
     Get.lazyPut<GameComputerWithTimeController>(
       () => GameComputerWithTimeController(
         Get.find<SideChoosingController>(),
         Get.find<StockfishEngineService>(),
         Get.find<PlaySoundUseCase>(),
+        Get.find<InitChessGame>(),
         Get.find<ChessClockService>(),
       ),
       fenix: true,
     );
-
-    /// تسجيل المتحكم (FreeGameController)
-    Get.lazyPut(() => FreeGameController(Get.find(), Get.find()), fenix: true);
-
-    /// repositories
     Get.lazyPut<GamesRepository>(
       () => GamesRepositoryImpl(
         isar: Get.find<Isar>(),

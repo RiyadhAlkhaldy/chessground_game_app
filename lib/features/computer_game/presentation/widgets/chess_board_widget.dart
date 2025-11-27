@@ -19,7 +19,9 @@ class ChessBoardWidget extends GetView<GameComputerController> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return PopScope(
-            canPop: controller.gameState.isGameOverExtended, // Prevents automatic exit
+            canPop: controller
+                .gameState
+                .isGameOverExtended, // Prevents automatic exit
 
             onPopInvokedWithResult: (didPop, result) async {
               if (didPop) {
@@ -28,19 +30,22 @@ class ChessBoardWidget extends GetView<GameComputerController> {
               if (controller.getResult != null) {
                 Get.back();
               } else {
-                final shouldExit = await showExitConfirmationDialog(context).then((value) {
-                  if (value != null && value == true) {
-                    controller.resign(controller.gameState.turn);
-                  }
-                  return value;
-                });
+                final shouldExit = await showExitConfirmationDialog(context)
+                    .then((value) {
+                      if (value != null && value == true) {
+                        controller.resign(controller.gameState.turn);
+                      }
+                      return value;
+                    });
 
                 if (shouldExit == true) {
                   if (context.mounted) {
                     // controller.gameStatus;
                     // controller.plySound.executeResignSound();
                     controller.resign(
-                      controller.playerSide == PlayerSide.white ? Side.white : Side.black,
+                      controller.playerSide == PlayerSide.white
+                          ? Side.white
+                          : Side.black,
                     );
                     controller.gameStatus;
                     // And then, after closing the second dialog, navigate back
@@ -64,7 +69,11 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                             ? BoardBorder(
                                 width: 10.0,
                                 color: darken(
-                                  ctrlBoardSettings.boardTheme.value.colors.darkSquare,
+                                  ctrlBoardSettings
+                                      .boardTheme
+                                      .value
+                                      .colors
+                                      .darkSquare,
                                   0.2,
                                 ),
                               )
@@ -75,11 +84,14 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                         // enablePremoveCastling: true,
                         // showValidMoves: true,
                         autoQueenPromotion: false,
-                        animationDuration: ctrlBoardSettings.pieceAnimation.value
+                        animationDuration:
+                            ctrlBoardSettings.pieceAnimation.value
                             ? const Duration(milliseconds: 200)
                             : Duration.zero,
 
-                        dragFeedbackScale: ctrlBoardSettings.dragMagnify.value ? 2.0 : 1.0,
+                        dragFeedbackScale: ctrlBoardSettings.dragMagnify.value
+                            ? 2.0
+                            : 1.0,
                         dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
                         drawShape: DrawShapeOptions(
                           enable: ctrlBoardSettings.drawMode,
@@ -88,7 +100,8 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                             ctrlBoardSettings.shapes.value = ISet<Shape>();
                           },
                         ),
-                        pieceShiftMethod: ctrlBoardSettings.pieceShiftMethod.value,
+                        pieceShiftMethod:
+                            ctrlBoardSettings.pieceShiftMethod.value,
                         autoQueenPromotionOnPremove: false,
                         pieceOrientationBehavior:
                             // controller.playMode == Mode.freePlay
@@ -106,12 +119,12 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                         validMoves: controller.validMoves,
                         sideToMove: controller.gameState.position.turn,
                         isCheck: controller.gameState.position.isCheck,
-                        promotionMove: controller.promotionMove,
+                        promotionMove: controller.promotionMove.value,
                         onMove: controller.onUserMoveAgainstAI,
                         onPromotionSelection: controller.onPromotionSelection,
                         premovable: (
                           onSetPremove: controller.onSetPremove,
-                          premove: controller.premove,
+                          premove: controller.premove.value,
                         ),
                       ),
 
