@@ -24,7 +24,7 @@ enum LogLevel {
 }
 
 /// A simple, static logger utility for controlled and structured logging.
-class AppLogger {
+class AppLoggerr {
   /// The minimum log level that will be printed to the console.
   ///
   /// Example: If set to [LogLevel.warning], only warnings, errors, and fatal
@@ -171,7 +171,7 @@ class AppLoggers {
 
 /// Centralized logging utility
 /// أداة مركزية للتسجيل والتتبع
-class AppLoggerr {
+class AppLogger {
   static const String _tag = 'ChessApp';
 
   /// Log info messages

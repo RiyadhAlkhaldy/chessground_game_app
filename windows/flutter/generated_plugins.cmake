@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   dynamic_system_colors
   file_selector_windows
   isar_flutter_libs
+  share_plus
   url_launcher_windows
 )
 

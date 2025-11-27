@@ -1,10 +1,11 @@
 // ignore_for_file: prefer_single_quotes
 class Assets {
   Assets._();
-  
+
   /// Assets for soundsFuturisticCapture
   /// assets/sounds/futuristic/capture
-  static const String soundsFuturisticCapture = "assets/sounds/futuristic/capture";
+  static const String soundsFuturisticCapture =
+      "assets/sounds/futuristic/capture";
 
   /// Assets for soundsFuturisticDong
   /// assets/sounds/futuristic/dong
@@ -12,7 +13,8 @@ class Assets {
 
   /// Assets for soundsFuturisticLowTime
   /// assets/sounds/futuristic/lowTime
-  static const String soundsFuturisticLowTime = "assets/sounds/futuristic/lowTime";
+  static const String soundsFuturisticLowTime =
+      "assets/sounds/futuristic/lowTime";
 
   /// Assets for soundsFuturisticMove
   /// assets/sounds/futuristic/move
@@ -24,7 +26,8 @@ class Assets {
 
   /// Assets for soundsLispConfirmation
   /// assets/sounds/lisp/confirmation
-  static const String soundsLispConfirmation = "assets/sounds/lisp/confirmation";
+  static const String soundsLispConfirmation =
+      "assets/sounds/lisp/confirmation";
 
   /// Assets for soundsLispDong
   /// assets/sounds/lisp/dong
@@ -100,7 +103,8 @@ class Assets {
 
   /// Assets for soundsStandardConfirmation
   /// assets/sounds/standard/confirmation
-  static const String soundsStandardConfirmation = "assets/sounds/standard/confirmation";
+  static const String soundsStandardConfirmation =
+      "assets/sounds/standard/confirmation";
 
   /// Assets for soundsStandardDong
   /// assets/sounds/standard/dong
@@ -120,6 +124,6 @@ class Assets {
 
   /// Assets for soundsStandardPuzzleStormEnd
   /// assets/sounds/standard/puzzleStormEnd
-  static const String soundsStandardPuzzleStormEnd = "assets/sounds/standard/puzzleStormEnd";
+  static const String soundsStandardPuzzleStormEnd =
+      "assets/sounds/standard/puzzleStormEnd";
 }
-

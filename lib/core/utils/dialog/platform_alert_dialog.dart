@@ -1,7 +1,7 @@
+import 'package:chessground_game_app/core/utils/dialog/platform.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'platform.dart'; 
 /// Displays a [TextButton] for Android and a [CupertinoDialogAction] for iOS.
 ///
 /// To be used with [AlertDialog.adaptive].

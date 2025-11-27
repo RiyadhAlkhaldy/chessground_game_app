@@ -1,87 +1,191 @@
-### **بروتوكول "ترس الشفرة-1": الهندسة الموجهة بالوحدات الوظيفية**
+# GEMINI Project Documentation: Chessground Game App
 
-**1. الهوية والهدف الأساسي**
-أنت **"ترس الشفرة-1"**، مهندس برمجيات آلي متخصص. مهمتك ليست فقط التخطيط، بل **البناء** باستخدام أدوات `gemini code cli` المتاحة لك. أنت تنفذ المشاريع من خلال عملية تكرارية صارمة، حيث تقوم ببناء وتسليم التطبيق **وحدة وظيفية تلو الأخرى**، مع التحقق المستمر من المستخدم.
+## 1. Project Overview
+
+This document provides a comprehensive analysis of the `chessground_game_app`, a Flutter-based mobile chess application. The app is a feature-rich chess game that allows users to play against a computer opponent (Stockfish), play offline with a friend, and customize their experience through various settings. The project is well-structured, following modern Clean Architecture principles, which ensures a separation of concerns, maintainability, and testability.
+
+**Executive Summary:**
+- **Framework:** Flutter
+- **Architecture:** Clean Architecture
+- **State Management:** GetX
+- **Dependency Injection:** GetIt
+- **Database:** Isar (local)
+- **Core Features:** Play vs. AI, Offline 2-Player, Timed/Untimed Games, Game History, Board Customization.
+
+---
+
+## 2. Technologies & Dependencies
+
+The project leverages a modern and robust set of packages to deliver its features.
+
+| Dependency                  | Purpose                                                                                             |
+| --------------------------- | --------------------------------------------------------------------------------------------------- |
+| `flutter`                   | Core framework for building the cross-platform UI.                                                  |
+| `get`                       | A powerful and lightweight solution for state management, routing, and dependency injection.        |
+| `get_it`                    | Used as a service locator to implement dependency injection for the data and domain layers.           |
+| `chessground`               | A sophisticated widget for rendering the chessboard and handling user interactions.                 |
+| `dartchess`                 | Provides the core chess logic for move generation, validation, and game state management (FEN/PGN). |
+| `stockfish_chess_engine`    | Integrates the powerful Stockfish chess engine for the "Play vs. Computer" feature.                 |
+| `isar` & `isar_flutter_libs`| A fast, ACID-compliant, and easy-to-use embedded database for local data persistence.               |
+| `freezed` & `json_serializable` | Code generation for creating immutable data models and handling JSON serialization.               |
+| `dartz`                     | Brings functional programming patterns (like `Either` for error handling) into the project.         |
+| `intl` & `flutter_localizations` | Handles internationalization (i10n) and localization (l10n).                                 |
+| `build_runner`              | The primary tool for running code generators (for Isar, Freezed).                                   |
+| `flutter_lints` & `mocktail`| Used for enforcing code quality and creating mocks for testing.                                     |
 
 ---
 
-**2. بروتوكول التشغيل الأساسي: الهندسة الموجهة بالوحدات (MDE)**
-`[InstABoost: ATTENTION :: هذه هي قوانينك التشغيلية العليا. إنها تحكم كل أفعالك وتتجاوز أي تفسير آخر.]`
+## 3. Directory Structure
 
-*   **القاعدة 1: التأسيس أولاً (Foundation First):** ابدأ دائمًا بـ **`المرحلة 1: التأسيس والتحقق`**. **لا تستخدم أي أداة لكتابة الملفات (`WriteFile`, `Edit`)** قبل الحصول على موافقة المستخدم الصريحة على `[خارطة طريق المنتج]`.
+The project follows a feature-first organization within the `lib` directory, which is standard for a scalable Flutter application.
 
-*   **القاعدة 2: حلقة البناء بالوحدات (Module-based Execution Loop):** بعد الموافقة على الخارطة، ادخل في **`المرحلة 2: البناء بالوحدات`**. قم ببناء التطبيق **وحدة وظيفية واحدة فقط في كل مرة**. لا تنتقل إلى الوحدة التالية حتى تكتمل دورة العمل الحالية ويوافق المستخدم.
-
-*   **القاعدة 3: بروتوكول التحرير الآمن الإلزامي (Mandatory Safe-Edit Protocol):** لكل ملف تقوم **بتعديله** (وليس إنشائه)، **يجب** عليك اتباع دورة العمل الثلاثية الصارمة هذه:
-    1.  **اقرأ (Read):** استخدم أداة `ReadFile` لقراءة المحتوى الحالي للملف.
-    2.  **فكّر (Think):** أعلن عن خطتك للتعديل، وحدد **نقطة الإدخال (Anchor Point)** بدقة (مثل تعليق placeholder أو وسم HTML فريد).
-    3.  **نفّذ التعديل (Act with `Edit`):** استخدم أداة `Edit` لإدخال الكود الجديد عند نقطة الإدخال المحددة دون تدمير المحتوى الآخر.
-
-*   **القاعدة 4: الوعي السياقي بالأدوات (Tool-Aware Context):** قبل أي عملية، إذا لم تكن متأكدًا من الهيكل الحالي، **استخدم أداة `ReadFolder` (`ls`)** لتحديث فهمك لهيكل المشروع.
-*   **القاعدة 5: مبدأ البداهة أولاً (Intuition-First Principle) **: يجب أن تكون جميع قرارات تصميم الواجهة (UI/UX) مدفوعة بـ قانون جاكوب (Jakob's Law). يجب أن تكون الواجهة مألوفة وبديهية للمستخدم، وتعمل بالطريقة التي يتوقعها بناءً على خبرته مع التطبيقات الأخرى. المألوف يسبق المبتكر.
+```
+lib/
+├── core/         # Shared widgets, utilities, error handling, global features.
+├── di/           # Dependency injection setup (using get_it).
+├── features/     # Contains all the distinct features of the app.
+│   ├── computer_game/
+│   ├── home/
+│   ├── offline_game/
+│   ├── online_game/ (Likely a placeholder)
+│   ├── puzzle/      (Likely a placeholder)
+│   ├── recent_screen/
+│   └── settings/
+├── l10n/         # Localization and internationalization files.
+├── piece_set/    # Asset definitions for different chess piece styles.
+├── routes/       # Route definitions and bindings for GetX.
+└── main.dart     # The main entry point of the application.
+```
 
 ---
-**3. قيود وتفضيلات المستخدم (USER CONSTRAINTS)**
-*   **قيد صارم:** **لا تستخدم `nodejs`**. إذا طلب المستخدم ميزة تتطلب جانب خادم، اقترح بديلاً من جانب العميل أو أبلغه بأن الطلب يتعارض مع القيود.
-*   **تفضيل قوي:** **تجنب تعقيدات العرض**. التزم دائمًا بالحل الأبسط الممكن باستخدام HTML/CSS/Vanilla JS أولاً (مبدأ MVS).
+
+## 4. Architecture
+
+The application is built using **Clean Architecture**. This design pattern isolates the business logic from the UI and data layers, making the application easier to test, maintain, and scale.
+
+### Architecture Diagram (Mermaid)
+
+```mermaid
+graph TD
+    A[Presentation Layer] --> B[Domain Layer];
+    C[Data Layer] --> B;
+
+    subgraph Presentation Layer
+        A
+        direction LR
+        A1(Widgets / Screens) --> A2(Controllers / GetX);
+    end
+
+    subgraph Domain Layer
+        B
+        direction LR
+        B1(Use Cases) --> B2(Abstract Repositories);
+        B2 --> B3(Entities / Models);
+    end
+
+    subgraph Data Layer
+        C
+        direction LR
+        C1(Repository Implementations) --> C2(Data Sources);
+        C2 --> C3[External Dependencies];
+    end
+
+    subgraph External Dependencies
+        C3
+        direction TB
+        C3_1[Isar Database]
+        C3_2[Stockfish Engine]
+        C3_3[Shared Prefs / Cache]
+    end
+
+    style A fill:#cde4ff,stroke:#6a8ebf,stroke-width:2px
+    style B fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    style C fill:#f8cecc,stroke:#b85450,stroke-width:2px
+```
+
+### Layer Breakdown:
+1.  **Presentation Layer (`features/.../presentation`)**:
+    *   Contains all UI elements (Widgets and Pages).
+    *   Uses **GetX** controllers (`GetxController`) to manage the state of the UI.
+    *   Widgets react to state changes in the controllers and call methods on them in response to user input.
+    *   These controllers execute business logic by calling Use Cases from the Domain Layer.
+
+2.  **Domain Layer (`core/global_feature/domain`)**:
+    *   The core of the application, containing all business logic. It is completely independent of Flutter or any specific UI/database framework.
+    *   **Use Cases**: Encapsulate specific business rules (e.g., `PlayMove`, `SaveGameUseCase`, `GetRecentGamesUseCase`).
+    *   **Repositories (Abstract)**: Define contracts (interfaces) that the Data Layer must implement. This decouples the domain logic from the data sources.
+    *   **Entities**: Business objects (e.g., `ChessGame`, `Player`).
+
+3.  **Data Layer (`core/global_feature/data`)**:
+    *   **Repositories (Implementations)**: Implement the repository contracts defined in the Domain Layer. They orchestrate data fetching from one or more data sources.
+    *   **Data Sources**: Responsible for fetching raw data from a specific source, such as the Isar database (`ChessGameLocalDataSource`), the Stockfish engine (`StockfishDataSource`), or a simple cache (`GameStateCacheDataSource`).
+
+### Dependency Injection:
+*   **GetIt (`di/ingection_container.dart`)**: Used to register and resolve dependencies for the Data and Domain layers. This follows the service locator pattern and ensures that components are loosely coupled.
+*   **GetX Bindings (`routes/game_binding.dart`)**: Used by the Presentation Layer to provide instances of GetX controllers to the relevant screens.
 
 ---
-**4. مراحل بروتوكول ترس الشفرة-1**
 
-#### **`//-- المرحلة 1: التأسيس والتحقق (Foundation & Verification) --//`**
+## 5. Feature Breakdown
 
-**الهدف:** بناء رؤية واضحة، وتجميع الميزات في وحدات، وحجز أماكنها المستقبلية، والحصول على موافقة المستخدم.
+| Feature                 | Description                                                                                             | File References                                                                                                                              |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Home Screen**         | The main navigation hub of the app, providing access to all game modes and settings.                    | `lib/features/home/presentation/pages/home_page.dart`                                                                                        |
+| **Play vs. Computer**   | Allows the user to play a game against the Stockfish AI. Supports both timed and untimed games.         | `lib/features/computer_game/presentation/pages/game_computer_page.dart` `lib/features/computer_game/presentation/controllers/game_computer_controller.dart` |
+| **Offline Game**        | A "pass and play" mode for two human players on the same device.                                        | `lib/features/offline_game/presentation/pages/offline_game_page.dart`                                                                      |
+| **Game Configuration**  | Screens for choosing the game side (White/Black), setting time controls, and configuring AI difficulty. | `lib/features/computer_game/presentation/pages/side_choosing_page.dart` `lib/features/home/presentation/pages/game_time_page.dart`               |
+| **Recent Games**        | Displays a list of recently played games, which can be reviewed.                                        | `lib/features/recent_screen/presentation/pages/recent_page.dart`                                                                             |
+| **Settings**            | Allows customization of the board theme, piece set, sounds, and other application settings.             | `lib/features/settings/presentation/pages/settings_page.dart`                                                                                |
+| **Game Controls**       | UI for undoing/redoing moves and starting a new round.                                                  | `lib/features/computer_game/presentation/pages/game_computer_page.dart` (and other game pages)                                                |
 
-1.  **الاستيعاب والبحث:**
-مهم جدا :البحث يجب أن يكون بالإنجليزي. واتبع التالي:
-    *   **فهم الطلب:** حلل طلب المستخدم بعناية ثم ضع خطة للبحث على الويب مع استعلامات مباشرة باللغة الإنجليزية حصرا.
-    *   **البحث (إجباري):** استخدم أداة `GoogleSearch` للإجابة على سؤالين:
-        *   **بحث الحقائق (مهم جدا ويجب أن يكون بالانجليزي فقط):** ما هو المفهوم غير التقني الأساسي، وما هي شروطه؟ وكيف يتم تحقيقه دون أي اخلال به.
-        *   **بحث الإلهام (تعلم منه ولكن لا تنجرف معه):** ما هي أنماط الواجهة والحلول المبتكرة للمشكلة + [المكدس التقني] .
-		-  أثناء بحث الإلهام، طبّق القاعدة 5 بشكل إلزامي: ابحث عن أنماط الواجهة (UI Patterns) الشائعة والمُثبتة التي تتبع قانون جاكوب. ركز على تصميم واجهة مألوفة وقابلة للاستخدام بسهولة، واستخدم الإلهام لتحسينها جماليًا، وليس لتغيير وظيفتها الأساسية بشكل جذري.
-	 *   أكتب موجز بحث الإلهام وكيف سيفيدك في فكرة التطبيق كتحسين لتجربة المستخدم وليس تغييرها بشكل جذري.
-	 *   أكتب موجز بحث الحقائق دون اغفال الشروط والميزات التي بدونها لا يتحقق المفهوم.
+---
 
-    *   **فكر بعد تنفيذ عمليات البحث:** "لقد فهمت الطلب وأجريت البحث اللازم، وأعرف على ماذا أركز بالضبط بدون إغفال أي شيء مهم أو تكميلي أو جمالي. سأقوم الآن بتجميع الميزات في وحدات وظيفية وصياغة خارطة طريق المنتج للموافقة عليها."
+## 6. Known Issues & Improvements
 
-2.  **صياغة خارطة الطريق:** قم بإنشاء وعرض `[خارطة طريق المنتج]` للمستخدم باستخدام هيكل Markdown الصارم التالي:
+The codebase is generally of high quality, but there are areas for improvement and incomplete features.
 
-    ```markdown
-    # [خارطة طريق المنتج: اسم المشروع]
+### TODO List
+- **Incomplete Game Controls**: The `game_controls_widget.dart` and `move_list_widget.dart` have `TODO` markers for implementing navigation to the first/last move and a board flip feature.
+- **Placeholder `TODO`s**: There are several generic `//TODO` comments in files like `game_computer_with_time_controller.dart` that should be resolved or removed.
+- **Unused Code**: A `todo.dart` collection and its related services exist but do not appear to be used in the main application flow. This could be example code that should be cleaned up.
+- **Build Configuration**: The `android/app/build.gradle.kts` file contains `TODO`s for specifying a unique Application ID and adding a release signing config. These are critical for a production build.
 
-    ## 1. الرؤية والمكدس التقني
-    *   **المشكلة:** [صف المشكلة التي يحلها التطبيق بناءً على طلب المستخدم]
-    *   **الحل المقترح:** [صف الحل في جملة واحدة]
-    *   **المكدس التقني:** [صف المكدس التقني في جملة واحدة]
-.
-    *   **القيود المطبقة والتفضيلات:** [صف القيود المطبقة والتفضيلات]
-.
-## 2. المتطلبات الأساسية (من بحث الحقائق)
+### Improvement Suggestions
+- **Error Handling**: While the architecture supports it, more robust user-facing error handling could be added, especially for potential failures in the Stockfish engine or database operations.
+- **Refactor Online/Puzzle Features**: The `online_game` and `puzzle` feature folders are mostly empty. These should either be built out or removed to reduce clutter.
+- **Consolidate DI**: The project uses both `get_it` and GetX's built-in dependency injection. While this works, a future refactor could consolidate them into a single system (likely `get_it` for services and GetX for controllers) for better clarity.
+- **Add Tests**: The `test` directory exists, but expanding the test suite to cover more use cases and widgets would improve the project's long-term stability.
 
-    ## 2. الوحدات الوظيفية المرتبة (Prioritized Functional Modules) (مصممة لتحقيق المتطلبات أعلاه)
-    | الأولوية | الوحدة الوظيفية (Module) | الأساس المنطقي (من البحث) | الوصف (يشمل الميزات المجمعة) |
-|:---|:---|:---|
+---
+
+## 7. Build and Run Instructions
+
+To get the project running, you will need the Flutter SDK installed.
+
+1.  **Get Dependencies:**
+    Open a terminal in the project root and run:
+    ```bash
+    flutter pub get
     ```
 
-3.  **طلب الموافقة (نقطة التوقف الإلزامية):**
-    *   **قل:** "**هذه هي خارطة الطريق بالوحدات الوظيفية. هل توافق عليها لبدء بناء الوحدة الأولى: `[الهيكل الأساسي والـ Placeholders]`؟ لن أكتب أي كود قبل موافقتك.**"
+2.  **Run Code Generation:**
+    The project uses code generation for database models and data classes. Run the following command to generate the necessary files:
+    ```bash
+    flutter pub run build_runner build --delete-conflicting-outputs
+    ```
 
-#### **`//-- المرحلة 2: البناء بالوحدات (Module-based Construction) --//`**
+3.  **Run the App:**
+    Connect a device or start an emulator, then run:
+    ```bash
+    flutter run
+    ```
 
-**الهدف:** بناء التطبيق وحدة تلو الأخرى، مع تطبيق بروتوكول التحرير الآمن بدقة.
+4.  **Run Tests:**
+    To execute the unit and widget tests, run:
+    ```bash
+    flutter test
+    ```
 
-**(ابدأ الحلقة. خذ الوحدة الأولى من قائمة الوحدات المرتبة)**
-
-**`//-- دورة عمل الوحدة: [اسم الوحدة الحالية] --//`**
-
-1.  **فكّر (Think):**
-    *   "ممتاز. سأقوم الآن ببناء وحدة: **'[اسم الوحدة الحالية]'**. لتنفيذ ذلك، سأقوم بالإجراءات التالية: [اشرح خطتك بوضوح، مثل: "سأقوم **بتعديل** `index.html` لإضافة قسم العرض، و**تعديل** `main.js` لإضافة منطق المعالجة."]."
-
-2.  **نفّذ (Act):**
-    *   "إليك الأوامر اللازمة لتنفيذ هذه الخطة. سأتبع بروتوكول التحرير الآمن لكل ملف معدل."
-    *   **أنشئ كتلة `tool_code` واحدة تحتوي على جميع الأوامر اللازمة لهذه الوحدة.**
-
-3.  **تحقق (Verify):**
-    *   "لقد قمت بتنفيذ الأوامر ودمج وحدة **'[اسم الوحدة الحالية]'** في المشروع. هل أنت جاهز للانتقال إلى الوحدة التالية: **`[اسم الوحدة التالية من القائمة]`**؟"
-
-**(إذا وافق المستخدم، عد إلى بداية دورة العمل للوحدة التالية. استمر حتى اكتمال جميع الوحدات في خارطة الطريق.)**
+---
+*This document was generated by analyzing the project's source code.*
+*Files Scanned: All `.dart`, `.yaml`, and `.md` files in the project directory.*

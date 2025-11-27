@@ -98,7 +98,7 @@ abstract class AppLocalizations {
     Locale('en', 'US'),
   ];
   String get playONline;
-  
+
   String get freePlay;
 
   /// No description provided for @mobileAccountPreferences.

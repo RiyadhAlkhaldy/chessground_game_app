@@ -1,7 +1,6 @@
 import 'package:chessground_game_app/core/l10n_build_context.dart';
+import 'package:chessground_game_app/core/utils/dialog/platform_alert_dialog.dart';
 import 'package:flutter/material.dart';
-
-import 'platform_alert_dialog.dart';
 
 class GameNegotiationDialog extends StatelessWidget {
   const GameNegotiationDialog({
@@ -30,14 +29,8 @@ class GameNegotiationDialog extends StatelessWidget {
     return AlertDialog.adaptive(
       content: title,
       actions: [
-        PlatformDialogAction(
-          onPressed: accept,
-          child: Text(context.l10n.accept),
-        ),
-        PlatformDialogAction(
-          onPressed: decline,
-          child: Text(context.l10n.decline),
-        ),
+        PlatformDialogAction(onPressed: accept, child: Text(context.l10n.accept)),
+        PlatformDialogAction(onPressed: decline, child: Text(context.l10n.decline)),
       ],
     );
   }

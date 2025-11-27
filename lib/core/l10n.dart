@@ -1,7 +1,6 @@
+import 'package:chessground_game_app/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../l10n/l10n.dart';
 
 /// Returns a localized string with a single placeholder replaced by a widget.
 ///
@@ -34,13 +33,8 @@ Text l10nWithWidget<T extends Widget>(
       children: <InlineSpan>[
         if (parts[0].isNotEmpty) TextSpan(text: parts[0], style: textStyle),
         if (parts[0] != localizedStringWithPlaceholder)
-          WidgetSpan(
-            child: widget,
-            alignment: PlaceholderAlignment.middle,
-            style: textStyle,
-          ),
-        if (parts.length > 1 && parts[1].isNotEmpty)
-          TextSpan(text: parts[1], style: textStyle),
+          WidgetSpan(child: widget, alignment: PlaceholderAlignment.middle, style: textStyle),
+        if (parts.length > 1 && parts[1].isNotEmpty) TextSpan(text: parts[1], style: textStyle),
       ],
     ),
   );
@@ -50,24 +44,19 @@ final _dateFormatterWithYear = DateFormat.yMMMMd();
 final _dateFormatterWithYearShort = DateFormat.yMMMd();
 
 /// Formats a date as a relative date string from now.
-String relativeDate(
-  AppLocalizations l10n,
-  DateTime date, {
-  bool shortDate = true,
-}) {
+String relativeDate(AppLocalizations l10n, DateTime date, {bool shortDate = true}) {
   final now = DateTime.now();
   final diff = date.difference(now);
 
-  final yearFormatter =
-      shortDate ? _dateFormatterWithYearShort : _dateFormatterWithYear;
+  final yearFormatter = shortDate ? _dateFormatterWithYearShort : _dateFormatterWithYear;
 
   if (diff.isNegative) {
     return diff.inDays == 0
         ? diff.inHours == 0
-            ? diff.inMinutes == 0
-                ? l10n.timeagoRightNow
-                : l10n.timeagoNbMinutesAgo(diff.inMinutes.abs())
-            : l10n.timeagoNbHoursAgo(diff.inHours.abs())
+              ? diff.inMinutes == 0
+                    ? l10n.timeagoRightNow
+                    : l10n.timeagoNbMinutesAgo(diff.inMinutes.abs())
+              : l10n.timeagoNbHoursAgo(diff.inHours.abs())
         : diff.inDays == 1
         ? l10n.yesterday
         : diff.inDays.abs() <= 7
@@ -80,10 +69,10 @@ String relativeDate(
   }
   return diff.inDays == 0
       ? diff.inHours == 0
-          ? diff.inMinutes == 0
-              ? l10n.timeagoInNbSeconds(diff.inSeconds)
-              : l10n.timeagoInNbMinutes(diff.inMinutes)
-          : l10n.timeagoInNbHours(diff.inHours)
+            ? diff.inMinutes == 0
+                  ? l10n.timeagoInNbSeconds(diff.inSeconds)
+                  : l10n.timeagoInNbMinutes(diff.inMinutes)
+            : l10n.timeagoInNbHours(diff.inHours)
       : diff.inDays.abs() <= 7
       ? l10n.timeagoInNbDays(diff.inDays)
       : diff.inDays.abs() <= 30
