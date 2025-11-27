@@ -62,8 +62,8 @@ class UnknownException extends ServerException {
 }
 
 /// for me
-class DatabaseException extends CacheException {
-  DatabaseException({required super.errorMessage});
+class DatabaseFailure extends CacheException {
+  DatabaseFailure({required super.errorMessage});
 }
 
 class IsarException extends CacheException {

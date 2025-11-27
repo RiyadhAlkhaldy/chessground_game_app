@@ -1,24 +1,25 @@
-import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
-import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
-import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:uuid/uuid.dart';
+
+import '../../../data/collections/player.dart';
+import '../../../domain/services/chess_game_storage_service.dart';
+import '../../../presentation/controllers/get_storage_controller.dart';
+import '../dialog/constants/const.dart';
+import '../logger.dart';
 
 Future<Locale> getLocale() async {
   final storage = Get.find<GetStorageControllerImp>();
 
   Locale? locale;
 
-  final String? languageCode = storage.instance.read('locale');
+  String? languageCode = storage.instance.read('locale');
   String? countryCode = storage.instance.read('countryCode');
 
   if (languageCode == null) {
     await storage.instance.write('locale', 'en');
     await storage.instance.write('countryCode', 'en-US');
-    locale = const Locale('en', 'en-US');
+    locale = Locale('en', 'en-US');
   } else {
     if (countryCode == null) {
       await storage.instance.write('countryCode', 'en-US');
@@ -38,9 +39,11 @@ Future<Player?> createOrGetGustPlayer([String key = uuidKeyForUser]) async {
   String? uuid = storage.getUUid(key);
 
   if (uuid == null || uuid.isEmpty) {
-    uuid = const Uuid().v4();
+    uuid = Uuid().v4();
     var newPlayer = Player(
-      name: key == uuidKeyForUser ? 'Guest${uuid.substring(0, 5)}' : 'stockfish',
+      name: key == uuidKeyForUser
+          ? 'Guest${uuid.substring(0, 5)}'
+          : 'stockfish',
       uuid: uuid,
       type: key == uuidKeyForUser ? 'guest' : 'AI',
       email: '',
@@ -77,28 +80,23 @@ void makeShowChoicesPicker<T extends Enum>(
           mainAxisSize: MainAxisSize.min,
           children: choices
               .map((value) {
-                return RadioGroup<T>(
-                  groupValue: selectedItem, // Managed by RadioGroup now
+                return RadioListTile<T>(
+                  title: labelBuilder(value),
+                  value: value,
+                  groupValue: selectedItem,
                   onChanged: (value) {
                     if (value != null) onSelectedItemChanged(value);
                     Navigator.of(context).pop();
                   },
-                  child: RadioMenuButton<T>(
-                    onChanged: (value) {
-                      if (value != null) onSelectedItemChanged(value);
-                      Navigator.of(context).pop();
-                    },
-                    value: value,
-                    groupValue: selectedItem,
-
-                    child: labelBuilder(value),
-                  ),
                 );
               })
               .toList(growable: false),
         ),
         actions: [
-          TextButton(child: const Text('Cancel'), onPressed: () => Navigator.of(context).pop()),
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ],
       );
     },
@@ -111,20 +109,20 @@ Future<bool?> showExitConfirmationDialog(BuildContext context) {
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('إنهاء اللعبة؟'),
-        content: const Text('هل أنت متأكد أنك تريد الاستسلام وإنهاء اللعبة؟'),
+        title: Text('إنهاء اللعبة؟'),
+        content: Text('هل أنت متأكد أنك تريد الاستسلام وإنهاء اللعبة؟'),
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(false); // لا تسمح بالخروج
             },
-            child: const Text('إلغاء'),
+            child: Text('إلغاء'),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(true); // تسمح بالخروج
             },
-            child: const Text('استسلام'),
+            child: Text('استسلام'),
           ),
         ],
       );
@@ -139,14 +137,14 @@ Future<void> showGameOverDialog(BuildContext context, String outcome) {
     barrierDismissible: false, // يمنع إغلاقها بالضغط خارجها
     builder: (context) {
       return AlertDialog(
-        title: const Text('انتهت اللعبة!'),
+        title: Text('انتهت اللعبة!'),
         content: Text(outcome),
         actions: <Widget>[
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // إغلاق النافذة المنبثقة
             },
-            child: const Text('حسناً'),
+            child: Text('حسناً'),
           ),
         ],
       );

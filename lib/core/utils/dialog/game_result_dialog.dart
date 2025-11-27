@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
-import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
+import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/core/utils/dialog/status_l10n.dart';
-import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../../../domain/services/game_state/game_state.dart';
+import 'game_status.dart';
 
 class GameResultDialog extends StatefulWidget {
   const GameResultDialog({
@@ -53,7 +54,10 @@ class _GameResultDialogState extends State<GameResultDialog> {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
-          child: GameResult(gameState: widget.gameState, gameStatus: widget.gameStatus),
+          child: GameResult(
+            gameState: widget.gameState,
+            gameStatus: widget.gameStatus,
+          ),
         ),
         AnimatedCrossFade(
           duration: const Duration(milliseconds: 400),
@@ -184,7 +188,11 @@ class _GameResultDialogState extends State<GameResultDialog> {
 }
 
 class GameResult extends StatelessWidget {
-  const GameResult({super.key, required this.gameState, required this.gameStatus});
+  const GameResult({
+    super.key,
+    required this.gameState,
+    required this.gameStatus,
+  });
   final GameState gameState;
   final GameStatus gameStatus;
 
@@ -226,7 +234,10 @@ class _ResultDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final paddedContent = Padding(padding: const EdgeInsets.all(16.0), child: child);
+    final paddedContent = Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: child,
+    );
     final sizedContent = SizedBox(
       width: min(screenWidth, kMaterialPopupMenuMaxWidth),
       child: paddedContent,

@@ -1,12 +1,17 @@
 import 'dart:ui';
 
-import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
-import 'package:chessground_game_app/core/utils/dialog/tab_scaffold.dart';
 import 'package:flutter/material.dart';
+
+import 'constants/const.dart';
+import 'tab_scaffold.dart';
 
 /// A simple widget that builds different things on different platforms.
 class PlatformWidget extends StatelessWidget {
-  const PlatformWidget({super.key, required this.androidBuilder, required this.iosBuilder});
+  const PlatformWidget({
+    super.key,
+    required this.androidBuilder,
+    required this.iosBuilder,
+  });
 
   final WidgetBuilder androidBuilder;
   final WidgetBuilder iosBuilder;
@@ -82,7 +87,8 @@ class PlatformScaffold extends StatelessWidget {
     // Check if a parent Scaffold has extendBody set to true.
     // This is the case if this scaffold is built inside a root tab where the main scaffold holds
     // the bottom navigation bar.
-    final hasExtendedBodyParentScaffold = MainTabScaffoldProperties.hasExtendedBody(context);
+    final hasExtendedBodyParentScaffold =
+        MainTabScaffoldProperties.hasExtendedBody(context);
 
     return Scaffold(
       extendBodyBehindAppBar: Theme.of(context).platform == TargetPlatform.iOS,
@@ -97,10 +103,10 @@ class PlatformScaffold extends StatelessWidget {
           bottomNavigationBar ??
           (hasExtendedBodyParentScaffold
               ? Container(
-                  color: Colors.transparent,
-                  height: MediaQuery.paddingOf(context).bottom,
-                  width: double.infinity,
-                )
+                color: Colors.transparent,
+                height: MediaQuery.paddingOf(context).bottom,
+                width: double.infinity,
+              )
               : null),
     );
   }
@@ -115,7 +121,10 @@ class PlatformAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.bottom,
     this.centerTitle,
     this.automaticallyImplyLeading = true,
-  }) : preferredSize = _PreferredAppBarSize(kToolbarHeight, bottom?.preferredSize.height);
+  }) : preferredSize = _PreferredAppBarSize(
+         kToolbarHeight,
+         bottom?.preferredSize.height,
+       );
 
   final Widget? leading;
   final Widget? title;
@@ -141,14 +150,14 @@ class PlatformAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return isIOS
         ? ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: kCupertinoBarBlurSigma,
-                sigmaY: kCupertinoBarBlurSigma,
-              ),
-              child: appBar,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: kCupertinoBarBlurSigma,
+              sigmaY: kCupertinoBarBlurSigma,
             ),
-          )
+            child: appBar,
+          ),
+        )
         : appBar;
   }
 }

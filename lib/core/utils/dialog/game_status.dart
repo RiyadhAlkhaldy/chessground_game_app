@@ -43,6 +43,18 @@ enum GameStatus {
   final int value;
 }
 
+// enum GameStatus {
+//   ongoing,
+//   checkmate,
+//   timeout,
+//   resignation,
+//   stalemate,
+//   // draw,
+//   agreement,
+//   threefoldRepetition,
+//   fiftyMoveRule,
+//   insufficientMaterial,
+// }
 extension GameExtension on Pick {
   GameStatus asGameStatusOrThrow() {
     final value = required().value;

@@ -1,27 +1,28 @@
-import 'package:chessground_game_app/core/global_feature/data/datasources/local_datasource.dart';
-import 'package:chessground_game_app/core/global_feature/data/datasources/stockfish_datasource.dart';
-import 'package:chessground_game_app/core/global_feature/data/repositories/game_repository_impl.dart';
-import 'package:chessground_game_app/core/global_feature/data/repositories/games_respository_impl.dart';
-import 'package:chessground_game_app/core/global_feature/domain/repositories/game_repository.dart';
-import 'package:chessground_game_app/core/global_feature/domain/repositories/games_repository.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/chess_clock_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/service/sound_effect_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_move.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
-import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_with_time_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
-import 'package:chessground_game_app/features/offline_game/presentation/controllers/freee_game_controller.dart';
-import 'package:chessground_game_app/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:chessground_game_app/features/home/presentation/controllers/game_start_up_controller.dart';
+import 'package:chessground_game_app/domain/repositories/games_repository.dart';
+import 'package:chessground_game_app/domain/services/chess_game_storage_service.dart';
+import 'package:chessground_game_app/domain/services/service/sound_effect_service.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
+
+import '../core/utils/logger.dart';
+import '../data/datasources/local_datasource.dart';
+import '../data/datasources/stockfish_datasource.dart';
+import '../data/repositories/game_repository_impl.dart';
+import '../data/repositories/games_respository_impl.dart';
+import '../domain/repositories/game_repository.dart';
+import '../domain/services/chess_clock_service.dart';
+import '../domain/services/stockfish_engine_service.dart';
+import '../domain/usecases/init_chess_game.dart';
+import '../domain/usecases/play_move.dart';
+import '../domain/usecases/play_sound_usecase.dart';
+import '../features/free_game/presentation/controllers/freee_game_controller.dart';
+import '../presentation/controllers/chess_board_settings_controller.dart';
+import '../presentation/controllers/game_computer_controller.dart';
+import '../presentation/controllers/game_computer_with_time_controller.dart';
+import '../presentation/controllers/game_controller.dart';
+import '../presentation/controllers/get_storage_controller.dart';
+import '../presentation/controllers/settings_controller.dart';
+import '../presentation/controllers/side_choosing_controller.dart';
 
 Future<void> initFirstDependencies() async {
   await Get.putAsync<Isar>(() async {
@@ -30,7 +31,7 @@ Future<void> initFirstDependencies() async {
   }, permanent: true);
   Get.put(ChessGameStorageService(), permanent: true);
   Get.lazyPut(() => GetStorageControllerImp(), fenix: true);
-  Get.put<AppLoggerr>(AppLoggerr(), permanent: true);
+  Get.put<AppLogger>(AppLogger(), permanent: true);
   // Get.put<NetworkInfo>(
   //   NetworkInfoImpl(DataConnectionChecker()),
   //   permanent: true,
@@ -51,9 +52,12 @@ class GameBinding extends Bindings {
 
     /// services
     Get.lazyPut(() => SoundEffectService(), fenix: true);
-    Get.lazyPut<StockfishEngineService>(() => StockfishEngineService(), fenix: true);
+    Get.lazyPut<StockfishEngineService>(
+      () => StockfishEngineService(),
+      fenix: true,
+    );
     Get.lazyPut(() {
-      final gameCtrl = Get.find<GameStartUpController>();
+      final gameCtrl = Get.find<GameController>();
       return ChessClockService(
         initialTimeMs: (gameCtrl.whitesTime.inMinutes * 60 * 1000).toInt(),
         incrementMs: gameCtrl.incrementalValue * 1000,
@@ -62,14 +66,23 @@ class GameBinding extends Bindings {
     }, fenix: true);
 
     /// usecases
-    Get.lazyPut(() => PlaySoundUseCase(Get.find<SoundEffectService>()), fenix: true);
+    Get.lazyPut(
+      () => PlaySoundUseCase(Get.find<SoundEffectService>()),
+      fenix: true,
+    );
     Get.lazyPut(() => PlayMove(Get.find<GameRepository>()), fenix: true);
     Get.lazyPut(() => InitChessGame(Get.find()), fenix: true);
 
     /// controllers
-    Get.lazyPut<GetStorageController>(() => GetStorageControllerImp(), fenix: true);
+    Get.lazyPut<GetStorageController>(
+      () => GetStorageControllerImp(),
+      fenix: true,
+    );
 
-    Get.lazyPut<SideChoosingController>(() => SideChoosingController(), fenix: true);
+    Get.lazyPut<SideChoosingController>(
+      () => SideChoosingController(),
+      fenix: true,
+    );
     // chess board settings controller
     Get.lazyPut(() => ChessBoardSettingsController(), fenix: true);
     // settings controller
@@ -84,8 +97,8 @@ class GameBinding extends Bindings {
       ),
       fenix: true,
     );
-    // تسجيل المتحكم (GameControllerr)
-    Get.lazyPut(() => GameStartUpController(), fenix: true);
+    // تسجيل المتحكم (GameController)
+    Get.lazyPut(() => GameController(), fenix: true);
     // // تسجيل المتحكم (GameComputerWithTimeController)
     Get.lazyPut<GameComputerWithTimeController>(
       () => GameComputerWithTimeController(
@@ -98,11 +111,17 @@ class GameBinding extends Bindings {
     );
 
     /// تسجيل المتحكم (FreeGameController)
-    Get.lazyPut(() => FreeGameController(Get.find(), Get.find(), Get.find()), fenix: true);
+    Get.lazyPut(
+      () => FreeGameController(Get.find(), Get.find(), Get.find()),
+      fenix: true,
+    );
 
     /// repositories
     Get.lazyPut<GamesRepository>(
-      () => GamesRepositoryImpl(isar: Get.find<Isar>(), storageService: Get.find()),
+      () => GamesRepositoryImpl(
+        isar: Get.find<Isar>(),
+        storageService: Get.find(),
+      ),
       fenix: true,
     );
 

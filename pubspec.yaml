@@ -72,10 +72,6 @@ dependencies:
   dio: ^5.9.0
   shared_preferences: ^2.5.3
   dartz: ^0.10.1
-  equatable: ^2.0.7
-  get_it: ^9.0.5
-  dynamic_system_colors: ^1.8.0
-  share_plus: ^12.0.1
   # flutter_local_notifications: ^19.5.0
   # meta: ^1.16.0
 
@@ -87,6 +83,7 @@ dev_dependencies:
   flutter_lints: ^ 5.0.0
   freezed: any
   # freezed: ^3.2.3
+  dynamic_system_colors: ^1.8.0
   build_runner: any
   # build_runner: ^2.10.1
   json_serializable: any
@@ -94,6 +91,7 @@ dev_dependencies:
   # freezed_lint: ^0.0.12
   # isar_generator: ^3.1.0+1
   isar_generator: any
+ 
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

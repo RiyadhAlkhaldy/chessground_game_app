@@ -18,7 +18,7 @@ void main() async {
   await GetStorage.init();
   initFirstDependencies();
   // تأكد أaن تُنشئ الـ Guest مبكراً
-  final Locale locale = await getLocale();
+  Locale? locale = await getLocale();
 
   await createOrGetGustPlayer();
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
