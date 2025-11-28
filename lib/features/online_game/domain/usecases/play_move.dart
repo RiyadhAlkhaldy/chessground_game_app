@@ -1,13 +1,13 @@
 // lib/domain/usecases/play_move.dart
 import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
-import 'package:chessground_game_app/core/global_feature/domain/repositories/game_repository.dart';
+import 'package:chessground_game_app/core/global_feature/domain/repositories/games_repository.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:dartz/dartz.dart';
 
 class PlayMove {
-  final GameRepository repository;
+  final GamesRepository repository;
   PlayMove(this.repository);
 
   /// يلعب الحركة داخلياً على GameState ثم يحفظ الحالة في الـ repository

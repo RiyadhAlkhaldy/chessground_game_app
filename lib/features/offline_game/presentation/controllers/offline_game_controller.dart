@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:chessground_game_app/core/game_termination_enum.dart';
 import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
 import 'package:chessground_game_app/core/global_feature/domain/converters/game_state_converter.dart';
-import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/get_cached_game_state_usecase.dart';
@@ -12,6 +10,7 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
 import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
@@ -19,37 +18,31 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_features.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
-import 'package:uuid/uuid.dart';
 
 class OfflineGameController extends BaseGameController
+    with StorageFeatures
     implements OfflineFeatures {
   // ========== Dependencies (Use Cases) ==========
-  final SaveGameUseCase _saveGameUseCase;
-  final UpdateGameUseCase _updateGameUseCase;
-  final GetGameByUuidUseCase _getGameByUuidUseCase;
-  final CacheGameStateUseCase _cacheGameStateUseCase;
-  final GetCachedGameStateUseCase _getCachedGameStateUseCase;
+  final UpdateGameUseCase updateGameUseCase;
+  final GetGameByUuidUseCase getGameByUuidUseCase;
+  final GetCachedGameStateUseCase getCachedGameStateUseCase;
   // ignore: unused_field
-  final SavePlayerUseCase _savePlayerUseCase;
-  final GetOrCreateGuestPlayerUseCase _getOrCreateGuestPlayerUseCase;
+  final SavePlayerUseCase savePlayerUseCase;
 
   OfflineGameController({
     required super.plySound,
-    required super.initChessGame,
     required SaveGameUseCase saveGameUseCase,
-    required UpdateGameUseCase updateGameUseCase,
-    required GetGameByUuidUseCase getGameByUuidUseCase,
+    required this.updateGameUseCase,
+    required this.getGameByUuidUseCase,
     required CacheGameStateUseCase cacheGameStateUseCase,
-    required GetCachedGameStateUseCase getCachedGameStateUseCase,
-    required SavePlayerUseCase savePlayerUseCase,
+    required this.getCachedGameStateUseCase,
+    required this.savePlayerUseCase,
     required GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase,
-  }) : _saveGameUseCase = saveGameUseCase,
-       _updateGameUseCase = updateGameUseCase,
-       _getGameByUuidUseCase = getGameByUuidUseCase,
-       _cacheGameStateUseCase = cacheGameStateUseCase,
-       _getCachedGameStateUseCase = getCachedGameStateUseCase,
-       _savePlayerUseCase = savePlayerUseCase,
-       _getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
+  }) {
+    this.saveGameUseCase = saveGameUseCase;
+    this.cacheGameStateUseCase = cacheGameStateUseCase;
+    this.getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
+  }
 
   // ========== Lifecycle Methods ==========
 
@@ -82,103 +75,6 @@ class OfflineGameController extends BaseGameController
   // ========== Public Methods ==========
 
   @override
-  Future<void> startNewGame({
-    required String whitePlayerName,
-    required String blackPlayerName,
-    String? event,
-    String? site,
-    String? timeControl,
-  }) async {
-    try {
-      setLoading(true);
-      clearError();
-
-      AppLogger.gameEvent(
-        'StartNewGame',
-        data: {'white': whitePlayerName, 'black': blackPlayerName},
-      );
-
-      // Create or get players
-      final whitePlayerResult = await _getOrCreateGuestPlayerUseCase(
-        GetOrCreateGuestPlayerParams(name: whitePlayerName),
-      );
-
-      final blackPlayerResult = await _getOrCreateGuestPlayerUseCase(
-        GetOrCreateGuestPlayerParams(name: blackPlayerName),
-      );
-
-      if (whitePlayerResult.isLeft() || blackPlayerResult.isLeft()) {
-        setError('Failed to create players');
-        return;
-      }
-
-      final whitePlayer = whitePlayerResult.getOrElse(() => throw Exception());
-      final blackPlayer = blackPlayerResult.getOrElse(() => throw Exception());
-
-      // Generate UUID for new game
-      final gameUuid = const Uuid().v4();
-
-      // Initialize GameState
-      gameState = GameState(initial: Chess.initial);
-
-      // Create ChessGameEntity
-      final newGame = ChessGameEntity(
-        uuid: gameUuid,
-        event: event ?? 'Casual Game',
-        site: site ?? 'Local',
-        date: DateTime.now(),
-        round: '1',
-        whitePlayer: whitePlayer,
-        blackPlayer: blackPlayer,
-        result: '*',
-        termination: GameTermination.ongoing,
-        timeControl: timeControl,
-        startingFen: Chess.initial.fen,
-        moves: const [],
-        movesCount: 0,
-      );
-
-      // Save game to database
-      final saveResult = await _saveGameUseCase(SaveGameParams(game: newGame));
-
-      saveResult.fold(
-        (failure) {
-          setError('Failed to save game: ${failure.message}');
-          AppLogger.error('Failed to save game', tag: 'GameController');
-        },
-        (savedGame) async {
-          currentGame = savedGame;
-
-          // Cache game state
-          final stateEntity = GameStateConverter.toEntity(gameState, gameUuid);
-          await _cacheGameStateUseCase(
-            CacheGameStateParams(state: stateEntity),
-          );
-
-          updateReactiveState();
-
-          AppLogger.gameEvent('NewGameStarted', data: {'uuid': gameUuid});
-          Get.snackbar(
-            'Game Started',
-            'New game between $whitePlayerName vs $blackPlayerName',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        },
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error starting new game',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'GameController',
-      );
-      setError('Unexpected error: ${e.toString()}');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  @override
   Future<void> loadGame(String gameUuid) async {
     try {
       setLoading(true);
@@ -187,7 +83,7 @@ class OfflineGameController extends BaseGameController
       AppLogger.gameEvent('LoadGame', data: {'uuid': gameUuid});
 
       // Try to get from cache first
-      final cachedResult = await _getCachedGameStateUseCase(
+      final cachedResult = await getCachedGameStateUseCase(
         GetCachedGameStateParams(gameUuid: gameUuid),
       );
 
@@ -196,7 +92,7 @@ class OfflineGameController extends BaseGameController
         gameState = GameStateConverter.fromEntity(cachedState);
 
         // Also load the game entity from database
-        final gameResult = await _getGameByUuidUseCase(
+        final gameResult = await getGameByUuidUseCase(
           GetGameByUuidParams(uuid: gameUuid),
         );
 
@@ -215,7 +111,7 @@ class OfflineGameController extends BaseGameController
       }
 
       // Load from database
-      final gameResult = await _getGameByUuidUseCase(
+      final gameResult = await getGameByUuidUseCase(
         GetGameByUuidParams(uuid: gameUuid),
       );
 
@@ -238,7 +134,7 @@ class OfflineGameController extends BaseGameController
                 gameState,
                 gameUuid,
               );
-              _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
+              cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
 
               AppLogger.gameEvent('GameLoaded', data: {'uuid': gameUuid});
               Get.snackbar(
@@ -492,7 +388,7 @@ class OfflineGameController extends BaseGameController
         },
         (updatedGame) async {
           // Update game in database
-          final updateResult = await _updateGameUseCase(
+          final updateResult = await updateGameUseCase(
             UpdateGameParams(game: updatedGame),
           );
 
@@ -511,7 +407,7 @@ class OfflineGameController extends BaseGameController
                 gameState,
                 savedGame.uuid,
               );
-              _cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
+              cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
 
               AppLogger.database('Game updated successfully');
             },

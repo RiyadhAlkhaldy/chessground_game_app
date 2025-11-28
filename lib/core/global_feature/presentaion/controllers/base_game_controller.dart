@@ -7,7 +7,6 @@ import 'package:chessground_game_app/core/global_feature/data/models/move_data_m
 import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_result_dialog.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
@@ -145,12 +144,11 @@ abstract class BaseGameController extends GetxController {
 
   // usecases
   final PlaySoundUseCase plySound;
-  final InitChessGame initChessGame;
 
   // final RxBool isLoading = false.obs;
   final RxnString error = RxnString();
 
-  BaseGameController({required this.plySound, required this.initChessGame});
+  BaseGameController({required this.plySound});
 
   /// initial game
   @override

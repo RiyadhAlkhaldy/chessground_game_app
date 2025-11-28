@@ -4,10 +4,7 @@ import 'package:dartchess/dartchess.dart';
 
 class PuzzlesGameController extends BaseGameController
     implements PuzzleFeatures {
-  PuzzlesGameController({
-    required super.plySound,
-    required super.initChessGame,
-  });
+  PuzzlesGameController({required super.plySound});
 
   @override
   int getMaterialOnBoard(Side side) {

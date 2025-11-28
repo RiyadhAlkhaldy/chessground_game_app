@@ -1,15 +1,8 @@
 import 'dart:async';
 
-import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_clock_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
-import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
-import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
 import 'package:chessground_game_app/features/home/presentation/controllers/game_start_up_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
@@ -19,15 +12,15 @@ class GameComputerWithTimeController extends GameComputerController {
   final ChessClockService clockCtrl;
   GameStartUpController? gameCtrl;
 
-  GameComputerWithTimeController(
-    SideChoosingController choosingCtrl,
-    StockfishEngineService engineService,
-    PlaySoundUseCase plySound,
-    InitChessGame initChessGame,
-    this.clockCtrl,
-  ) : super(choosingCtrl, engineService, plySound, initChessGame) {
-    gameCtrl = Get.find<GameStartUpController>();
-  }
+  GameComputerWithTimeController({
+    required super.choosingCtrl,
+    required super.engineService,
+    required super.plySound,
+    required this.clockCtrl,
+    required super.saveGameUseCase,
+    required super.cacheGameStateUseCase,
+    required super.getOrCreateGuestPlayerUseCase,
+  });
 
   @override
   void onInit() {
@@ -39,58 +32,6 @@ class GameComputerWithTimeController extends GameComputerController {
   void onClose() {
     clockCtrl.onClose();
     super.onClose();
-  }
-
-  @override
-  Future<void> initPlayers() async {
-    if (gameCtrl?.playerColor.value == Side.white) {
-      playerSide = PlayerSide.white;
-      ctrlBoardSettings.orientation.value = Side.white;
-      await createOrGetGustPlayer().then(
-        (value) => whitePlayer.value = value!.toModel(),
-      );
-      await createOrGetGustPlayer(
-        uuidKeyForAI,
-      ).then((value) => blackPlayer.value = value!.toModel());
-    } else if (gameCtrl?.playerColor.value == Side.black) {
-      playerSide = PlayerSide.black;
-      ctrlBoardSettings.orientation.value = Side.black;
-      await createOrGetGustPlayer(
-        uuidKeyForAI,
-      ).then((value) => whitePlayer.value = value!.toModel());
-
-      await createOrGetGustPlayer().then(
-        (value) => blackPlayer.value = value!.toModel(),
-      );
-    }
-  }
-
-  @override
-  void onUserMoveAgainstAI(
-    NormalMove move, {
-    bool? isDrop,
-    bool? isPremove,
-  }) async {
-    if (isPromotionPawnMove(move)) {
-      promotionMove.value = move;
-      update();
-    } else if (gameState.position.isLegal(move)) {
-      // Use base class applyMove method
-      applyMove(move);
-      validMoves = ValidMoves(const {});
-      promotionMove.value = null;
-
-      // Update Stockfish position
-      engineService.setPosition(fen: fen);
-      update();
-
-      // Switch clock
-      clockCtrl.switchTurn(gameState.turn.opposite);
-
-      await playAiMove();
-      update();
-    }
-    tryPlayPremove();
   }
 
   @override

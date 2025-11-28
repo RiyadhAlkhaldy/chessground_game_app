@@ -9,17 +9,14 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/di/ingection_container.dart';
-import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
+import 'package:chessground_game_app/features/offline_game/presentation/controllers/freee_game_controller.dart';
 import 'package:get/get.dart';
 
-/// Binding for GameController dependencies
-/// ربط تبعيات GameController
-class OfflineGameBindings extends Bindings {
+class FreeGameBindings extends Bindings {
   @override
   void dependencies() {
-    // Register GameController with all its dependencies
     Get.lazyPut<BaseGameController>(
-      () => OfflineGameController(
+      () => FreeGameController(
         plySound: sl<PlaySoundUseCase>(),
         saveGameUseCase: sl<SaveGameUseCase>(),
         updateGameUseCase: sl<UpdateGameUseCase>(),

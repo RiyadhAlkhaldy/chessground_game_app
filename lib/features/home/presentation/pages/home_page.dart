@@ -15,7 +15,9 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = Get.find<GameStartUpController>();
     return Scaffold(
-      appBar: PlatformAppBar(title: Text(context.l10n.mobileSettingsHomeWidgets)),
+      appBar: PlatformAppBar(
+        title: Text(context.l10n.mobileSettingsHomeWidgets),
+      ),
       body: Stack(
         children: [
           // AnimatedBackground(),
@@ -33,7 +35,10 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       controller.setVsComputer(value: true);
                       // navigate to setup game time screen
-                      Get.toNamed(RouteNames.gameTimePage, arguments: {"withTime": false});
+                      Get.toNamed(
+                        RouteNames.gameTimePage,
+                        arguments: {"withTime": false},
+                      );
                     },
                   ),
                   buildGameType(
@@ -42,7 +47,10 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       controller.setVsComputer(value: false);
                       // navigate to setup game time screen
-                      Get.toNamed(RouteNames.gameTimePage, arguments: {"withTime": false});
+                      Get.toNamed(
+                        RouteNames.gameTimePage,
+                        arguments: {"withTime": false},
+                      );
                     },
                   ),
                   buildGameType(
@@ -51,7 +59,10 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       controller.setVsComputer(value: true);
                       // navigate to setup game time screen
-                      Get.toNamed(RouteNames.sideChoosingPage, arguments: {"withTime": false});
+                      Get.toNamed(
+                        RouteNames.sideChoosingPage,
+                        arguments: {"withTime": false},
+                      );
                     },
                   ),
                   buildGameType(

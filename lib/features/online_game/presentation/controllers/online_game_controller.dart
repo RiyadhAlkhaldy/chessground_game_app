@@ -10,7 +10,6 @@ class OnlineGameController extends BaseGameController
   OnlineGameController({
     required super.plySound,
     required this.playMoveUsecase,
-    required super.initChessGame,
   });
 
   @override

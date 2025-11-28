@@ -1,17 +1,16 @@
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/core/utils/styles/styles.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
-class ChessBoardWidget extends GetView<GameComputerController> {
+class ChessBoardWidget extends GetView<BaseGameController> {
   const ChessBoardWidget({super.key});
   @override
   Widget build(BuildContext context) {
@@ -57,8 +56,7 @@ class ChessBoardWidget extends GetView<GameComputerController> {
               }
             },
             child: GetX<ChessBoardSettingsController>(
-              builder: (ctrlBoardSettings) =>
-                  controller.stockfishState.value != StockfishState.ready
+              builder: (ctrlBoardSettings) => controller.isLoading
                   ? const CircularProgressIndicator()
                   : Chessboard(
                       size: min(constraints.maxWidth, constraints.maxHeight),
@@ -120,7 +118,7 @@ class ChessBoardWidget extends GetView<GameComputerController> {
                         sideToMove: controller.gameState.position.turn,
                         isCheck: controller.gameState.position.isCheck,
                         promotionMove: controller.promotionMove.value,
-                        onMove: controller.onUserMoveAgainstAI,
+                        onMove: controller.onUserMove,
                         onPromotionSelection: controller.onPromotionSelection,
                         premovable: (
                           onSetPremove: controller.onSetPremove,

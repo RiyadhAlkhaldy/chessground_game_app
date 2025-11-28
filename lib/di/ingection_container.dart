@@ -6,15 +6,12 @@ import 'package:chessground_game_app/core/global_feature/data/collections/chess_
 import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
 import 'package:chessground_game_app/core/global_feature/data/datasources/chess_game_local_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/data/datasources/game_state_cache_datasource.dart';
-import 'package:chessground_game_app/core/global_feature/data/datasources/local_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/data/datasources/player_local_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/data/datasources/stockfish_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/data/repositories/chess_game_repository_impl.dart';
-import 'package:chessground_game_app/core/global_feature/data/repositories/game_repository_impl.dart';
 import 'package:chessground_game_app/core/global_feature/data/repositories/game_state_repository_impl.dart';
 import 'package:chessground_game_app/core/global_feature/data/repositories/player_repository_impl.dart';
 import 'package:chessground_game_app/core/global_feature/domain/repositories/chess_game_repository.dart';
-import 'package:chessground_game_app/core/global_feature/domain/repositories/game_repository.dart';
 import 'package:chessground_game_app/core/global_feature/domain/repositories/game_state_repository.dart';
 import 'package:chessground_game_app/core/global_feature/domain/repositories/player_repository.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/service/sound_effect_service.dart';
@@ -27,7 +24,6 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/game_us
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_player_by_uuid_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_recent_games_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
 import 'package:chessground_game_app/features/online_game/domain/usecases/play_move.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
@@ -46,6 +42,7 @@ final sl = GetIt.instance;
 
 /// Initialize all dependencies
 /// تهيئة جميع التبعيات
+/// InectionContainer
 class InjectionContainer {
   static bool get isInTestMode =>
       Platform.environment.containsKey('FLUTTER_TEST');
@@ -125,8 +122,6 @@ class InjectionContainer {
     sl.registerLazySingleton<PlayerLocalDataSource>(
       () => PlayerLocalDataSourceImpl(isar: sl()),
     );
-    //LocalDataSource
-    sl.registerLazySingleton<LocalDataSource>(() => LocalDataSourceImpl(sl()));
     // StockfishDataSource
     sl.registerLazySingleton<StockfishDataSource>(() => StockfishDataSource());
 
@@ -159,9 +154,7 @@ class InjectionContainer {
 
     ///
     sl.registerLazySingleton<SoundEffectService>(() => SoundEffectService());
-    sl.registerLazySingleton<GameRepository>(
-      () => GameRepositoryImpl(local: sl(), stockfish: sl()),
-    );
+   
     AppLogger.debug('Repositories registered', tag: 'DI');
   }
 
@@ -193,7 +186,6 @@ class InjectionContainer {
     ///
     sl.registerLazySingleton(() => PlaySoundUseCase(sl()));
     sl.registerLazySingleton(() => PlayMove(sl()));
-    sl.registerLazySingleton(() => InitChessGame(sl()));
 
     AppLogger.debug('Use cases registered', tag: 'DI');
   }

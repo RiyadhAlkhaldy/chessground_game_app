@@ -2,24 +2,17 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/core/global_feature/data/collections/chess_game.dart';
-import 'package:chessground_game_app/core/global_feature/data/collections/player.dart';
 import 'package:chessground_game_app/core/global_feature/data/models/extended_evaluation.dart';
-import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
-import 'package:chessground_game_app/core/global_feature/data/models/player_model.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/init_chess_game.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
-import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
-import 'package:chessground_game_app/core/utils/dialog/game_result_dialog.dart';
-import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
-import 'package:chessground_game_app/core/utils/dialog/status_l10n.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
-import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
@@ -27,23 +20,7 @@ import 'package:get/get.dart';
 import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
 
 class GameComputerController extends BaseGameController
-    with WidgetsBindingObserver {
-  // Computer-specific player handling (using PlayerModel instead of inherited PlayerEntity)
-  Rx<PlayerModel> whitePlayer = PlayerModel(
-    id: 1,
-    uuid: 'White_Player',
-    name: 'White Player',
-    type: 'player',
-    createdAt: DateTime.now(),
-  ).obs;
-  Rx<PlayerModel> blackPlayer = PlayerModel(
-    id: 2,
-    uuid: 'Black Player',
-    name: 'Black Player',
-    type: 'player',
-    createdAt: DateTime.now(),
-  ).obs;
-
+    with StorageFeatures, WidgetsBindingObserver {
   // Computer-specific dependencies
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
   final storage = Get.find<GetStorageControllerImp>();
@@ -60,12 +37,18 @@ class GameComputerController extends BaseGameController
   Rx<ExtendedEvaluation?> evaluation = null.obs;
 
   // Constructor - call super with required parameters
-  GameComputerController(
-    this.choosingCtrl,
-    this.engineService,
-    PlaySoundUseCase plySound,
-    InitChessGame initChessGame,
-  ) : super(plySound: plySound, initChessGame: initChessGame);
+  GameComputerController({
+    required this.choosingCtrl,
+    required this.engineService,
+    required PlaySoundUseCase plySound,
+    required SaveGameUseCase saveGameUseCase,
+    required CacheGameStateUseCase cacheGameStateUseCase,
+    required GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase,
+  }) : super(plySound: plySound) {
+    this.saveGameUseCase = saveGameUseCase;
+    this.cacheGameStateUseCase = cacheGameStateUseCase;
+    this.getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
+  }
 
   @override
   void onInit() {
@@ -76,14 +59,12 @@ class GameComputerController extends BaseGameController
     validMoves = makeLegalMoves(gameState.position);
     plySound.executeDongSound();
 
-    onstartVsEngine().then((_) {
-      engineService.start().then((_) {
-        applyStockfishSettings();
-        engineService.setPosition(fen: fen);
-        stockfishState.value = StockfishState.ready;
-        // if the player is black, let the AI play the first move
-        playerSide == PlayerSide.black ? playAiMove() : null;
-      });
+    engineService.start().then((_) {
+      applyStockfishSettings();
+      engineService.setPosition(fen: fen);
+      stockfishState.value = StockfishState.ready;
+      // if the player is black, let the AI play the first move
+      playerSide == PlayerSide.black ? playAiMove() : null;
     });
     //
     engineService.evaluations.listen((ev) {
@@ -97,8 +78,6 @@ class GameComputerController extends BaseGameController
       makeMoveAi(event);
       update();
     });
-    update();
-    _listenToGameStatus();
   }
 
   @override
@@ -121,111 +100,28 @@ class GameComputerController extends BaseGameController
         : null;
   }
 
-  Future<void> onstartVsEngine() async {
-    await initPlayers();
-    // storage new game
-    await _storageStartNewGame();
-  }
+  // Future<void> initPlayers() async {
+  //   if (choosingCtrl.playerColor.value == SideChoosing.white) {
+  //     playerSide = PlayerSide.white;
+  //     ctrlBoardSettings.orientation.value = Side.white;
+  //     await createOrGetGustPlayer().then(
+  //       (value) => whitePlayer.value = value!.toModel().toEntity(),
+  //     );
+  //     await createOrGetGustPlayer(
+  //       uuidKeyForAI,
+  //     ).then((value) => blackPlayer.value = value!.toModel().toEntity());
+  //   } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
+  //     playerSide = PlayerSide.black;
+  //     ctrlBoardSettings.orientation.value = Side.black;
+  //     await createOrGetGustPlayer(
+  //       uuidKeyForAI,
+  //     ).then((value) => whitePlayer.value = value!.toModel().toEntity());
 
-  Future<void> initPlayers() async {
-    if (choosingCtrl.playerColor.value == SideChoosing.white) {
-      playerSide = PlayerSide.white;
-      ctrlBoardSettings.orientation.value = Side.white;
-      await createOrGetGustPlayer().then(
-        (value) => whitePlayer.value = value!.toModel(),
-      );
-      await createOrGetGustPlayer(
-        uuidKeyForAI,
-      ).then((value) => blackPlayer.value = value!.toModel());
-    } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
-      playerSide = PlayerSide.black;
-      ctrlBoardSettings.orientation.value = Side.black;
-      await createOrGetGustPlayer(
-        uuidKeyForAI,
-      ).then((value) => whitePlayer.value = value!.toModel());
-
-      await createOrGetGustPlayer().then(
-        (value) => blackPlayer.value = value!.toModel(),
-      );
-    }
-  }
-
-  /// save game to isar
-  ChessGame chessGame = ChessGame();
-
-  final ChessGameStorageService _gameStorageService = ChessGameStorageService();
-
-  //the header of the pgn
-  final PgnHeaders _headers = PgnGame.defaultHeaders();
-
-  ///
-  Future<void> _storageStartNewGame() async {
-    _headers['Event'] = 'Casual Game';
-    _headers['Site'] = 'FlutterApp';
-    _headers['Date'] = DateTime.now().toIso8601String().split('T').first;
-    _headers['Round'] = '1';
-    _headers['Result'] = '*';
-    _headers['EventDate'] = DateTime.now().toIso8601String().split('T').first;
-    _headers['White'] = whitePlayer.value.name;
-    _headers['Black'] = blackPlayer.value.name;
-    _headers['ECO'] = 'C77';
-    _headers['WhiteElo'] = whitePlayer.value.playerRating.toString();
-    _headers['BlackElo'] = blackPlayer.value.playerRating.toString();
-    _headers['PlyCount'] = gameState.allMoves.length.toString();
-    _headers['Termination'] = 'Normal';
-    _headers['Opening'] = "Ruy Lopez, Closed, Breyer Defense";
-    _headers['Variant'] = "Standard";
-    _headers['Annotator'] = "ChessGround Game App";
-    _headers['Source'] = "ChessGround Game App";
-    _headers['SourceDate'] = DateTime.now().toIso8601String();
-    debugPrint(chessGame.toString());
-    _gameStorageService.startNewGame(
-      chessGame: chessGame,
-      startFEN: fen,
-      white: whitePlayer.value.toCollection(),
-      black: blackPlayer.value.toCollection(),
-      headers: _headers,
-    );
-  }
-
-  /// حفظ اللعبة الحالية في Isar
-  Future<void> saveCurrentGame() async {
-    // _headers['Result'] = getResult.name;
-    _headers['EventDate'] = DateTime.now().toIso8601String().split('T').first;
-    _headers['WhiteElo'] = whitePlayer.value.playerRating.toString();
-    _headers['BlackElo'] = blackPlayer.value.playerRating.toString();
-    // _headers['PlyCount'] = pastMoves.length.toString();
-    // _headers['Termination'] = gameTermination.name;
-
-    final root = PgnNode<PgnNodeData>();
-    for (final move in gameState.allMoves) {
-      root.children.add(PgnChildNode<PgnNodeData>(PgnNodeData(san: move.san!)));
-    }
-    final pgnGame = PgnGame<PgnNodeData>(
-      headers: _headers,
-      moves: root,
-      comments: [],
-    );
-    final pgnText = pgnGame.makePgn();
-
-    chessGame = chessGame
-      ..fullPgn = pgnText
-      ..movesCount = gameState.allMoves.length
-      ..event = _headers['Event']
-      ..site = _headers['Site']
-      ..date = DateTime.now()
-      ..round = _headers['Round']
-      ..result = _headers['Result']
-      ..whitePlayer.value = whitePlayer.value.toCollection()
-      ..blackPlayer.value = blackPlayer.value.toCollection()
-      ..moves;
-
-    await _gameStorageService.saveGame(
-      chessGame,
-      whitePlayer.value.toCollection(),
-      blackPlayer.value.toCollection(),
-    );
-  }
+  //     await createOrGetGustPlayer().then(
+  //       (value) => blackPlayer.value = value!.toModel().toEntity(),
+  //     );
+  //   }
+  // }
 
   Future<void> playAiMove() async {
     await Future.delayed(const Duration(milliseconds: 100));
@@ -242,119 +138,18 @@ class GameComputerController extends BaseGameController
     }
   }
 
-  // // النسخة المعدلة من getResult
-  Outcome? get getResult {
-    return gameState.result;
-  }
-
-  // GameTermination get gameTermination {
-  //   // إذا كانت الـ Position (من dartchess) تعطي هذه القيم — نستخدمها مباشرة
-  //   final pos = gameState.position;
-
-  //   if (pos.isCheckmate) return GameTermination.checkmate;
-  //   if (pos.isStalemate) return GameTermination.stalemate;
-
-  //   // insufficient material و variant end
-  //   if (pos.isInsufficientMaterial) {
-  //     return GameTermination.insufficientMaterial;
-  //   }
-
-  //   return GameTermination.agreement;
-  // }
-  void _listenToGameStatus() {
-    gameState.gameStatus.listen((status) {
-      if (gameState.turn == Side.white) {
-        statusText.value = "دور الأبيض";
-      } else if (gameState.turn == Side.black) {
-        statusText.value = "دور الأسود";
-      }
-      if (gameState.isCheck) {
-        statusText.value += '(كش)';
-      }
-      if (status != GameStatus.ongoing) {
-        statusText.value =
-            "${gameStatusL10n(Get.context!, gameStatus: status, lastPosition: gameState.position, winner: gameState.result?.winner, isThreefoldRepetition: gameState.isThreefoldRepetition())} ";
-        Get.dialog(
-          GameResultDialog(
-            gameState: gameState,
-            gameStatus: status,
-            reset: reset,
-          ),
-        );
-        _gameStorageService.endGame(
-          chessGame,
-          result: winner == Side.white ? '1-0' : '0-1',
-          movesData: gameState.getMoveTokens
-              .map((e) => e.toCollection())
-              .toList(),
-          headers: _headers,
-        );
-      }
-    });
-  }
-
-  final RxString statusText = "Play vs AI".obs;
-
-  GameStatus get gameStatus => gameState.status();
-
   ///reset - override to add Stockfish reset
   @override
   void reset() {
-    super.reset();
     debugPrint('reset to $fen');
     engineService.ucinewgame();
+    super.reset();
   }
 
-  void tryPlayPremove() {
-    if (premove.value != null) {
-      Timer.run(() {
-        onUserMoveAgainstAI(premove.value!, isPremove: true);
-      });
-    }
-  }
-
-  void onSetPremove(NormalMove? move) {
-    debugPrint("onSetPremove $move");
-    premove.value = move;
-    update();
-  }
-
-  void onPromotionSelection(Role? role) {
-    debugPrint('onPromotionSelection: $role');
-    if (role == null) {
-      onPromotionCancel();
-    } else if (promotionMove.value != null) {
-      debugPrint('promotionMove != null');
-      onUserMoveAgainstAI(promotionMove.value!.withPromotion(role));
-    }
-  }
-
-  void onPromotionCancel() {
-    promotionMove.value = null;
-    update();
-  }
-
-  void onUserMoveAgainstAI(
-    NormalMove move, {
-    bool? isDrop,
-    bool? isPremove,
-  }) async {
-    if (isPromotionPawnMove(move)) {
-      promotionMove.value = move;
-      update();
-    } else if (gameState.position.isLegal(move)) {
-      // Use base class applyMove method
-      applyMove(move);
-      validMoves = ValidMoves(const {});
-      promotionMove.value = null;
-
-      // Update Stockfish position
-      engineService.setPosition(fen: fen);
-      update();
-
-      await playAiMove();
-      update();
-    }
+  @override
+  void onUserMove(NormalMove move, {bool? isDrop, bool? isPremove}) async {
+    super.onUserMove(move);
+    await playAiMove();
     tryPlayPremove();
   }
 
@@ -438,43 +233,6 @@ class GameComputerController extends BaseGameController
       'Thinking Time for AI (ms): ${choosingCtrl.thinkingTimeForAI.value}',
     );
   }
-
-  /// expose PGN tokens for the UI
-  List<MoveDataModel> get pgnTokens => gameState.getMoveTokens;
-
-  int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
-
-  /// jump to a halfmove index (0-based). This will rebuild the game state up to that halfmove.
-  /// Implementation: get a copy of move objects from gameState, construct a fresh GameState
-  /// and replay moves up to `index` then replace controller.gameState with rebuilt one.
-  void jumpToHalfmove(int index) {
-    final allMoves = gameState.getMoveObjectsCopy();
-    final newState = GameState(initial: initail);
-    for (int i = 0; i <= index && i < allMoves.length; i++) {
-      newState.play(allMoves[i]);
-    }
-    gameState = newState;
-    fen = gameState.position.fen;
-    validMoves = makeLegalMoves(gameState.position);
-    update();
-  }
-
-  Map<Role, int> get whiteCaptured => gameState.getCapturedPieces(Side.white);
-  Map<Role, int> get blackCaptured => gameState.getCapturedPieces(Side.black);
-  String get whiteCapturedText => gameState.capturedPiecesAsString(Side.white);
-  String get whiteCapturedIcons =>
-      gameState.capturedPiecesAsUnicode(Side.white);
-  String get blackCapturedIcons =>
-      gameState.capturedPiecesAsUnicode(Side.black);
-
-  ///
-  ///
-
-  // في controller أو widget بعد استدعاء setState/update
-  List<Role> get whiteCapturedList =>
-      gameState.getCapturedPiecesList(Side.white); // قائمة الرول مكررة
-  List<Role> get blackCapturedList =>
-      gameState.getCapturedPiecesList(Side.black);
 
   @override
   void dispose() {

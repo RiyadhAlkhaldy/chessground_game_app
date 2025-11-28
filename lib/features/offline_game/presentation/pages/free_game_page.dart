@@ -1,7 +1,7 @@
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
-import 'package:chessground_game_app/features/offline_game/presentation/controllers/freee_game_controller.dart';
-import 'package:chessground_game_app/features/offline_game/presentation/widgets/chess_board_widget.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/widgets/chess_clock_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_settings_widgets.dart';
@@ -13,22 +13,26 @@ import 'package:material_symbols_icons/symbols.dart';
 class FreeGamePage extends StatelessWidget {
   FreeGamePage({super.key});
 
-  final ctrl = Get.find<FreeGameController>();
+  final ctrl = Get.find<BaseGameController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       primary: MediaQuery.of(context).orientation == Orientation.portrait,
       appBar: AppBar(
-        title: GetX<FreeGameController>(
+        title: GetX<BaseGameController>(
           builder: (_) {
-            return Text(ctrl.statusText.value, style: Theme.of(context).textTheme.titleMedium);
+            return Text(
+              ctrl.statusText.value,
+              style: Theme.of(context).textTheme.titleMedium,
+            );
           },
         ),
       ),
 
       body: OrientationBuilder(
-        builder: (context, orientation) =>
-            orientation == Orientation.portrait ? BuildPortrait() : BuildLandScape(),
+        builder: (context, orientation) => orientation == Orientation.portrait
+            ? BuildPortrait()
+            : BuildLandScape(),
       ),
     );
   }
@@ -36,7 +40,7 @@ class FreeGamePage extends StatelessWidget {
 
 class BuildPortrait extends StatelessWidget {
   BuildPortrait({super.key});
-  final ctrl = Get.find<FreeGameController>();
+  final ctrl = Get.find<BaseGameController>();
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
   @override
   Widget build(BuildContext context) {
@@ -46,7 +50,7 @@ class BuildPortrait extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            GetBuilder<FreeGameController>(
+            GetBuilder<BaseGameController>(
               builder: (controller) {
                 return PgnHorizontalRow(
                   tokens: ctrl.pgnTokens,
@@ -55,7 +59,7 @@ class BuildPortrait extends StatelessWidget {
                 );
               },
             ),
-            GetBuilder<FreeGameController>(
+            GetBuilder<BaseGameController>(
               builder: (ctrl) => Column(
                 children: [
                   ShowCircleAvatarAndTimerInUp(
@@ -63,7 +67,7 @@ class BuildPortrait extends StatelessWidget {
                     blackPlayer: ctrl.blackPlayer,
                     whiteCapturedList: ctrl.whiteCapturedList,
                     blackCapturedList: ctrl.blackCapturedList,
-                    gameState: ctrl.gameState.value,
+                    gameState: ctrl.gameState,
                   ),
                   const ChessBoardWidget(),
                   ShowCircleAvatarAndTimerInDown(
@@ -71,7 +75,7 @@ class BuildPortrait extends StatelessWidget {
                     blackPlayer: ctrl.blackPlayer,
                     whiteCapturedList: ctrl.whiteCapturedList,
                     blackCapturedList: ctrl.blackCapturedList,
-                    gameState: ctrl.gameState.value,
+                    gameState: ctrl.gameState,
                   ),
                 ],
               ),
@@ -91,7 +95,7 @@ class BuildPortrait extends StatelessWidget {
 
 class BuildLandScape extends StatelessWidget {
   BuildLandScape({super.key});
-  final ctrl = Get.find<FreeGameController>();
+  final ctrl = Get.find<BaseGameController>();
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
   @override
   Widget build(BuildContext context) {
@@ -99,14 +103,18 @@ class BuildLandScape extends StatelessWidget {
       padding: const EdgeInsets.all(screenPadding),
       child: Row(
         children: [
-          Expanded(child: GetBuilder<FreeGameController>(builder: (_) => const ChessBoardWidget())),
+          Expanded(
+            child: GetBuilder<BaseGameController>(
+              builder: (_) => const ChessBoardWidget(),
+            ),
+          ),
 
           const SizedBox(width: screenLandscapeSplitter),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                GetBuilder<FreeGameController>(
+                GetBuilder<BaseGameController>(
                   builder: (controller) {
                     return PgnHorizontalRow(
                       tokens: ctrl.pgnTokens,
@@ -120,14 +128,14 @@ class BuildLandScape extends StatelessWidget {
                   blackPlayer: ctrl.blackPlayer,
                   whiteCapturedList: ctrl.whiteCapturedList,
                   blackCapturedList: ctrl.blackCapturedList,
-                  gameState: ctrl.gameState.value,
+                  gameState: ctrl.gameState,
                 ),
                 ShowCircleAvatarAndTimerInDown(
                   whitePlayer: ctrl.whitePlayer,
                   blackPlayer: ctrl.blackPlayer,
                   whiteCapturedList: ctrl.whiteCapturedList,
                   blackCapturedList: ctrl.blackCapturedList,
-                  gameState: ctrl.gameState.value,
+                  gameState: ctrl.gameState,
                 ),
                 const Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),
@@ -148,7 +156,7 @@ class BuildControlButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: buttonHeight,
-      child: GetBuilder<FreeGameController>(
+      child: GetBuilder<BaseGameController>(
         initState: (_) {},
         builder: (ctrl) {
           return Row(
@@ -166,18 +174,20 @@ class BuildControlButtons extends StatelessWidget {
   }
 }
 
-Widget buildNewRoundButton(FreeGameController ctrl) => IconButton(
+Widget buildNewRoundButton(BaseGameController ctrl) => IconButton(
   icon: Icon(Symbols.refresh, size: iconSize),
-  onPressed: ctrl.gameState.value!.isGameOverExtended || !ctrl.canUndo.value ? null : ctrl.reset,
+  onPressed: ctrl.gameState.isGameOverExtended || !ctrl.canUndo.value
+      ? null
+      : ctrl.reset,
 );
 
-Widget buildUndoButton() => GetX<FreeGameController>(
+Widget buildUndoButton() => GetX<BaseGameController>(
   builder: (controller) => IconButton(
     icon: Icon(Symbols.chevron_left, size: iconSize),
     onPressed: controller.canUndo.value ? controller.undoMove : null,
   ),
 );
-Widget buildRedoButton() => GetX<FreeGameController>(
+Widget buildRedoButton() => GetX<BaseGameController>(
   builder: (controller) => IconButton(
     icon: Icon(Symbols.chevron_right, size: iconSize),
     onPressed: controller.canRedo.value ? controller.redoMove : null,
