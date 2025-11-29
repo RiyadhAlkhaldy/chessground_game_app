@@ -29,7 +29,12 @@ void main() async {
     // Run the app
     runApp(MyApp(locale: await getLocale()));
   } catch (e, stackTrace) {
-    AppLogger.error('Failed to start application', error: e, stackTrace: stackTrace, tag: 'Main');
+    AppLogger.error(
+      'Failed to start application',
+      error: e,
+      stackTrace: stackTrace,
+      tag: 'Main',
+    );
 
     // Show error screen or rethrow
     rethrow;
@@ -46,10 +51,16 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Chessground Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo, brightness: Brightness.light),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+          brightness: Brightness.light,
+        ),
       ),
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.indigo,
+          brightness: Brightness.dark,
+        ),
       ),
       localizationsDelegates: const [
         ...AppLocalizations.localizationsDelegates,

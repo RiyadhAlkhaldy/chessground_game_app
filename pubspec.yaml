@@ -73,7 +73,6 @@ dependencies:
   shared_preferences: ^2.5.3
   dartz: ^0.10.1
   equatable: ^2.0.7
-  get_it: ^9.0.5
   dynamic_system_colors: ^1.8.0
   share_plus: ^12.0.1
   # flutter_local_notifications: ^19.5.0

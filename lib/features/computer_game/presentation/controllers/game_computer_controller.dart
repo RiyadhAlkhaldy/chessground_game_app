@@ -12,7 +12,8 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
-import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
+import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
@@ -52,31 +53,36 @@ class GameComputerController extends BaseGameController
 
   @override
   void onInit() {
-    super.onInit();
     WidgetsBinding.instance.addObserver(this);
-    gameState = GameState(initial: initail);
-    fen = gameState.position.fen;
-    validMoves = makeLegalMoves(gameState.position);
-    plySound.executeDongSound();
-
-    engineService.start().then((_) {
-      applyStockfishSettings();
-      engineService.setPosition(fen: fen);
-      stockfishState.value = StockfishState.ready;
-      // if the player is black, let the AI play the first move
-      playerSide == PlayerSide.black ? playAiMove() : null;
-    });
-    //
-    engineService.evaluations.listen((ev) {
-      // if (ev != null) {
-      // evaluation.value = ev;
-      // score.value = evaluation.value!.whiteWinPercent();
-      // }
-    });
-    engineService.bestmoves.listen((event) {
-      debugPrint('bestmoves: $event');
-      makeMoveAi(event);
-      update();
+    super.onInit();
+    startNewGame(
+      whitePlayerName: uuidKeyForUser,
+      blackPlayerName: uuidKeyForAI,
+    ).then((value) {
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
+      listenToGameStatus();
+      plySound.executeDongSound();
+      AppLogger.info('GameController initialized', tag: 'GameController');
+      engineService.start().then((_) {
+        applyStockfishSettings();
+        engineService.setPosition(fen: fen);
+        stockfishState.value = StockfishState.ready;
+        // if the player is black, let the AI play the first move
+        playerSide == PlayerSide.black ? playAiMove() : null;
+      });
+      //
+      engineService.evaluations.listen((ev) {
+        // if (ev != null) {
+        // evaluation.value = ev;
+        // score.value = evaluation.value!.whiteWinPercent();
+        // }
+      });
+      engineService.bestmoves.listen((event) {
+        debugPrint('bestmoves: $event');
+        makeMoveAi(event);
+        update();
+      });
     });
   }
 

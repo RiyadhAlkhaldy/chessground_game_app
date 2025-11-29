@@ -112,7 +112,7 @@ class WhitePlayerClockWidget extends StatelessWidget {
     return Column(
       children: [
         Obx(
-          () => whitePlayer.value!.name.isEmpty
+          () => whitePlayer.value == null
               ? const SizedBox()
               : ListTile(
                   leading: whitePlayer.value!.image == null
@@ -170,7 +170,7 @@ class BlackPlayerClockWidget extends StatelessWidget {
     return Column(
       children: [
         Obx(
-          () => blackPlayer.value!.name.isEmpty
+          () => blackPlayer.value == null
               ? const SizedBox()
               : ListTile(
                   leading: blackPlayer.value!.image == null

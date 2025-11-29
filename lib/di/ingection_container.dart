@@ -32,16 +32,14 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/game_us
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/update_player_rating_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/update_player_usecase.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:get_it/get_it.dart';
+import 'package:get/get.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Service locator instance
-/// مثيل محدد موقع الخدمة
-final sl = GetIt.instance;
+/// Service locator shim
+T sl<T extends Object>() => Get.find<T>();
 
 /// Initialize all dependencies
-/// تهيئة جميع التبعيات
 /// InectionContainer
 class InjectionContainer {
   static bool get isInTestMode =>
@@ -104,7 +102,7 @@ class InjectionContainer {
     );
 
     // Register Isar as singleton
-    sl.registerLazySingleton<Isar>(() => isar);
+    Get.put<Isar>(isar, permanent: true);
 
     AppLogger.info('Isar database initialized', tag: 'DI');
   }
@@ -115,19 +113,22 @@ class InjectionContainer {
     AppLogger.debug('Registering data sources', tag: 'DI');
 
     // Local data sources
-    sl.registerLazySingleton<ChessGameLocalDataSource>(
+    Get.lazyPut<ChessGameLocalDataSource>(
       () => ChessGameLocalDataSourceImpl(isar: sl<Isar>()),
+      fenix: true,
     );
 
-    sl.registerLazySingleton<PlayerLocalDataSource>(
+    Get.lazyPut<PlayerLocalDataSource>(
       () => PlayerLocalDataSourceImpl(isar: sl()),
+      fenix: true,
     );
     // StockfishDataSource
-    sl.registerLazySingleton<StockfishDataSource>(() => StockfishDataSource());
+    Get.lazyPut<StockfishDataSource>(() => StockfishDataSource(), fenix: true);
 
     // Cache data source
-    sl.registerLazySingleton<GameStateCacheDataSource>(
+    Get.lazyPut<GameStateCacheDataSource>(
       () => GameStateCacheDataSourceImpl(),
+      fenix: true,
     );
 
     AppLogger.debug('Data sources registered', tag: 'DI');
@@ -138,22 +139,25 @@ class InjectionContainer {
   static void _initRepositories() {
     AppLogger.debug('Registering repositories', tag: 'DI');
 
-    sl.registerLazySingleton<ChessGameRepository>(
+    Get.lazyPut<ChessGameRepository>(
       () => ChessGameRepositoryImpl(
         localDataSource: sl<ChessGameLocalDataSource>(),
       ),
+      fenix: true,
     );
 
-    sl.registerLazySingleton<PlayerRepository>(
+    Get.lazyPut<PlayerRepository>(
       () => PlayerRepositoryImpl(localDataSource: sl()),
+      fenix: true,
     );
 
-    sl.registerLazySingleton<GameStateRepository>(
+    Get.lazyPut<GameStateRepository>(
       () => GameStateRepositoryImpl(cacheDataSource: sl()),
+      fenix: true,
     );
 
     ///
-    sl.registerLazySingleton<SoundEffectService>(() => SoundEffectService());
+    Get.lazyPut<SoundEffectService>(() => SoundEffectService(), fenix: true);
 
     AppLogger.debug('Repositories registered', tag: 'DI');
   }
@@ -164,28 +168,28 @@ class InjectionContainer {
     AppLogger.debug('Registering use cases', tag: 'DI');
 
     // Game use cases
-    sl.registerLazySingleton(() => SaveGameUseCase(sl()));
-    sl.registerLazySingleton(() => UpdateGameUseCase(sl()));
-    sl.registerLazySingleton(() => GetGameByUuidUseCase(sl()));
-    sl.registerLazySingleton(() => GetAllGamesUseCase(sl()));
-    sl.registerLazySingleton(() => GetRecentGamesUseCase(sl()));
-    sl.registerLazySingleton(() => DeleteGameUseCase(sl()));
+    Get.lazyPut(() => SaveGameUseCase(sl()), fenix: true);
+    Get.lazyPut(() => UpdateGameUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetGameByUuidUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetAllGamesUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetRecentGamesUseCase(sl()), fenix: true);
+    Get.lazyPut(() => DeleteGameUseCase(sl()), fenix: true);
 
     // Player use cases
-    sl.registerLazySingleton(() => SavePlayerUseCase(sl()));
-    sl.registerLazySingleton(() => UpdatePlayerUseCase(sl()));
-    sl.registerLazySingleton(() => GetPlayerByUuidUseCase(sl()));
-    sl.registerLazySingleton(() => UpdatePlayerRatingUseCase(sl()));
-    sl.registerLazySingleton(() => GetOrCreateGuestPlayerUseCase(sl()));
+    Get.lazyPut(() => SavePlayerUseCase(sl()), fenix: true);
+    Get.lazyPut(() => UpdatePlayerUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetPlayerByUuidUseCase(sl()), fenix: true);
+    Get.lazyPut(() => UpdatePlayerRatingUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetOrCreateGuestPlayerUseCase(sl()), fenix: true);
 
     // GameState use cases
-    sl.registerLazySingleton(() => CacheGameStateUseCase(sl()));
-    sl.registerLazySingleton(() => GetCachedGameStateUseCase(sl()));
-    sl.registerLazySingleton(() => RemoveCachedGameStateUseCase(sl()));
+    Get.lazyPut(() => CacheGameStateUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetCachedGameStateUseCase(sl()), fenix: true);
+    Get.lazyPut(() => RemoveCachedGameStateUseCase(sl()), fenix: true);
 
     ///
-    sl.registerLazySingleton(() => PlaySoundUseCase(sl()));
-    sl.registerLazySingleton(() => PlayMove(sl()));
+    Get.lazyPut(() => PlaySoundUseCase(sl()), fenix: true);
+    Get.lazyPut(() => PlayMove(sl()), fenix: true);
 
     AppLogger.debug('Use cases registered', tag: 'DI');
   }
@@ -197,13 +201,13 @@ class InjectionContainer {
       AppLogger.info('Disposing dependency injection', tag: 'DI');
 
       // Close Isar
-      if (sl.isRegistered<Isar>()) {
-        final isar = sl<Isar>();
+      if (Get.isRegistered<Isar>()) {
+        final isar = Get.find<Isar>();
         await isar.close();
       }
 
-      // Reset GetIt
-      await sl.reset();
+      // Reset Get
+      await Get.deleteAll();
 
       AppLogger.info('Dependency injection disposed', tag: 'DI');
     } catch (e, stackTrace) {
