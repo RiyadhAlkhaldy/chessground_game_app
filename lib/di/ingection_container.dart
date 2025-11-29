@@ -154,7 +154,7 @@ class InjectionContainer {
 
     ///
     sl.registerLazySingleton<SoundEffectService>(() => SoundEffectService());
-   
+
     AppLogger.debug('Repositories registered', tag: 'DI');
   }
 

@@ -14,7 +14,7 @@ class GameComputerBindings extends Bindings {
   void dependencies() {
     Get.lazyPut<BaseGameController>(
       () => GameComputerController(
-        choosingCtrl: sl<SideChoosingController>(),
+        choosingCtrl: Get.find<SideChoosingController>(),
         engineService: sl<StockfishEngineService>(),
         plySound: sl<PlaySoundUseCase>(),
         saveGameUseCase: sl<SaveGameUseCase>(),

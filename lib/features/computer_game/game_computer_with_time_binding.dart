@@ -9,13 +9,13 @@ import 'package:chessground_game_app/di/ingection_container.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_with_time_controller.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
 import 'package:get/get.dart';
- 
+
 class GameComputerWithTimeBindings extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<BaseGameController>(
       () => GameComputerWithTimeController(
-        choosingCtrl: sl<SideChoosingController>(),
+        choosingCtrl: Get.find<SideChoosingController>(),
         engineService: sl<StockfishEngineService>(),
         plySound: sl<PlaySoundUseCase>(),
         saveGameUseCase: sl<SaveGameUseCase>(),
