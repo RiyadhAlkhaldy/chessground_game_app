@@ -496,7 +496,7 @@ class GameState {
   List<Move> getMoveObjectsCopy() => List<Move>.from(_moveObjects);
 
   /// Provide tokens for PGN horizontal display. Each token corresponds to a half-move.
-  List<MoveDataModel> get getMoveTokens => allMoves;
+  List<MoveDataModel> get getMoveTokens => _moves;
 
   int get currentHalfmoveIndex => _moveObjects.length - 1;
 
