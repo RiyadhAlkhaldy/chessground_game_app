@@ -8,7 +8,6 @@ import 'package:chessground_game_app/core/global_feature/domain/entities/chess_g
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/setup_game_vs_ai_mixin.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_result_dialog.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
 import 'package:chessground_game_app/core/utils/dialog/status_l10n.dart';
@@ -17,7 +16,7 @@ import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
 
-abstract class BaseGameController extends GetxController with SetupGameVsAiMixin {
+abstract class BaseGameController extends GetxController {
   // ========== Observable State ==========
   Position get initail => Chess.fromSetup(Setup.parseFen(_initailLocalFen));
 

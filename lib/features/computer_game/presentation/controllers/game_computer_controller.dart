@@ -11,6 +11,7 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/setup_game_vs_ai_mixin.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
 import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
@@ -18,10 +19,10 @@ import 'package:chessground_game_app/features/computer_game/presentation/control
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:multistockfish/multistockfish.dart';
+import 'package:stockfish/stockfish.dart'; 
 
 class GameComputerController extends BaseGameController
-    with StorageFeatures, WidgetsBindingObserver {
+    with StorageFeatures,SetupGameVsAiMixin, WidgetsBindingObserver {
   // Computer-specific dependencies
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
   final storage = Get.find<GetStorageControllerImp>();
@@ -41,11 +42,11 @@ class GameComputerController extends BaseGameController
   GameComputerController({
     required this.choosingCtrl,
     required this.engineService,
-    required PlaySoundUseCase plySound,
+    required super.plySound,
     required SaveGameUseCase saveGameUseCase,
     required CacheGameStateUseCase cacheGameStateUseCase,
     required GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase,
-  }) : super(plySound: plySound) {
+  }) {
     this.saveGameUseCase = saveGameUseCase;
     this.cacheGameStateUseCase = cacheGameStateUseCase;
     this.getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;

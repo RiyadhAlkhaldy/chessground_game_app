@@ -10,6 +10,7 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/setup_game_vs_ai_mixin.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
@@ -19,7 +20,7 @@ import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
 
 class OfflineGameController extends BaseGameController
-    with StorageFeatures
+    with StorageFeatures, SetupGameVsAiMixin
     implements OfflineFeatures {
   // ========== Dependencies (Use Cases) ==========
   final UpdateGameUseCase updateGameUseCase;

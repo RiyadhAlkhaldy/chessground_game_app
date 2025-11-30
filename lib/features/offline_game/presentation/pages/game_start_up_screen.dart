@@ -3,6 +3,7 @@
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/widgets.dart';
 import 'package:chessground_game_app/core/utils/helper/constants.dart';
+import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +56,7 @@ class _StartUpPageState extends State<StartUpPage> {
                       child: PlayerColorRadioButton(
                         title: 'Play as ${Side.white.name}',
                         value: Side.white,
-                        groupValue: controller.playerColor.value,
+                        groupValue: (controller as OfflineGameController).playerColor.value,
                         onChanged: (value) {
                           controller.setPlayerColor(player: Side.white);
                         },

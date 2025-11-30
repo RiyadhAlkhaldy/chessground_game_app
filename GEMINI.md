@@ -51,8 +51,7 @@ lib/
 │   ├── puzzle/      (Likely a placeholder)
 │   ├── recent_screen/
 │   └── settings/
-├── l10n/         # Localization and internationalization files.
-├── piece_set/    # Asset definitions for different chess piece styles.
+├── l10n/         # Localization and internationalization files. 
 ├── routes/       # Route definitions and bindings for GetX.
 └── main.dart     # The main entry point of the application.
 ```

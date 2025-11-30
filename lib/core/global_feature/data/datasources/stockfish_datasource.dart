@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:chessground_game_app/core/global_feature/data/models/extended_evaluation.dart';
 import 'package:flutter/material.dart';
-import 'package:multistockfish/multistockfish.dart'; 
+import 'package:stockfish/stockfish.dart'; 
 
 /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine
 class StockfishDataSource {
-  static Stockfish? _stockfish;
+  static Stockfish? _stockfish; 
   StreamSubscription<String>? _stdoutSub;
   StreamSubscription<String>? _stderrSub;
 

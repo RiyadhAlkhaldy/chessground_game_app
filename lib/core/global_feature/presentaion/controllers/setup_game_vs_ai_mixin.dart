@@ -1,8 +1,9 @@
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/utils/helper/constants.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
 
-mixin SetupGameVsAiMixin on GetxController {
+mixin SetupGameVsAiMixin on BaseGameController {
   final skillLevel = 20.obs; // Default to max skill level
   final uciElo = 3190.obs; // Default to a high Elo
   final uciLimitStrength = true.obs;
@@ -25,34 +26,6 @@ mixin SetupGameVsAiMixin on GetxController {
 
   // get method
   bool get vsComputer => _vsComputer;
-
-  // make squre move
-  bool makeSquaresMove(Move move) {
-    // bool result = game.makeSquaresMove(move);
-    update();
-    // return result;
-    return true;
-  }
-
-  // make squre move
-  bool makeStringMove(String bestMove) {
-    // bool result = game.makeMoveString(bestMove);
-    update();
-    // return result;
-    return true;
-  }
-
-  // set sqaures state
-  Future<void> setSquaresState() async {
-    // _state = game.squaresState(player);
-    update();
-  }
-
-  // make random move
-  void makeRandomMove() {
-    // _game.makeRandomMove();
-    update();
-  }
 
   void setAiThinking(bool value) {
     _aiThinking = value;

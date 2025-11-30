@@ -50,9 +50,12 @@ class NewGameVsComputerPage extends GetView<BaseGameController> {
                             child: PlayerColorRadioButton(
                               title: 'Play as ${Side.white.name}',
                               value: Side.white,
-                              groupValue: controller.playerColor.value,
+                              groupValue: (controller as GameComputerController)
+                                  .playerColor
+                                  .value,
                               onChanged: (value) {
-                                controller.setPlayerColor(player: Side.white);
+                                (controller as GameComputerController)
+                                    .setPlayerColor(player: Side.white);
                               },
                             ),
                           ),
@@ -70,9 +73,12 @@ class NewGameVsComputerPage extends GetView<BaseGameController> {
                             child: PlayerColorRadioButton(
                               title: 'Play as ${Side.black.name}',
                               value: Side.black,
-                              groupValue: controller.playerColor.value,
+                              groupValue: (controller as GameComputerController)
+                                  .playerColor
+                                  .value,
                               onChanged: (value) {
-                                controller.setPlayerColor(player: Side.black);
+                                (controller as GameComputerController)
+                                    .setPlayerColor(player: Side.black);
                               },
                             ),
                           ),
@@ -83,27 +89,33 @@ class NewGameVsComputerPage extends GetView<BaseGameController> {
                         children: [
                           GameLevelRadioButton(
                             onChanged: (value) {
-                              controller.setGameDifficulty(level: 1);
+                              (controller as GameComputerController)
+                                  .setGameDifficulty(level: 1);
                             },
                             value: GameDifficulty.easy,
-                            groupValue: controller.gameDifficulty,
+                            groupValue: (controller as GameComputerController)
+                                .gameDifficulty,
                             title: GameDifficulty.medium.name,
                           ),
                           GameLevelRadioButton(
                             onChanged: (value) {
-                              controller.setGameDifficulty(level: 2);
+                              (controller as GameComputerController)
+                                  .setGameDifficulty(level: 2);
                             },
 
                             value: GameDifficulty.medium,
-                            groupValue: controller.gameDifficulty,
+                            groupValue: (controller as GameComputerController)
+                                .gameDifficulty,
                             title: GameDifficulty.medium.name,
                           ),
                           GameLevelRadioButton(
                             onChanged: (value) {
-                              controller.setGameDifficulty(level: 3);
+                              (controller as GameComputerController)
+                                  .setGameDifficulty(level: 3);
                             },
                             value: GameDifficulty.hard,
-                            groupValue: controller.gameDifficulty,
+                            groupValue: (controller as GameComputerController)
+                                .gameDifficulty,
                             title: GameDifficulty.hard.name,
                           ),
                         ],
@@ -111,28 +123,42 @@ class NewGameVsComputerPage extends GetView<BaseGameController> {
 
                       Obx(
                         () => Opacity(
-                          opacity: controller.uciLimitStrength.value
+                          opacity:
+                              (controller as GameComputerController)
+                                  .uciLimitStrength
+                                  .value
                               ? 1.0
                               : 0.5,
                           child: AbsorbPointer(
-                            absorbing: !controller.uciLimitStrength.value,
+                            absorbing: !(controller as GameComputerController)
+                                .uciLimitStrength
+                                .value,
                             child: Column(
                               children: [
                                 // UCI_Elo Slider
                                 Text(
-                                  'UCI Elo: ${controller.uciElo.value}',
+                                  'UCI Elo: ${(controller as GameComputerController).uciElo.value}',
                                   style: Theme.of(
                                     context,
                                   ).textTheme.titleMedium,
                                 ),
                                 Slider(
-                                  value: controller.uciElo.value.toDouble(),
+                                  value: (controller as GameComputerController)
+                                      .uciElo
+                                      .value
+                                      .toDouble(),
                                   min: 1320,
                                   max: 3190,
                                   divisions: 300,
-                                  label: controller.uciElo.value.toString(),
+                                  label: (controller as GameComputerController)
+                                      .uciElo
+                                      .value
+                                      .toString(),
                                   onChanged: (double value) {
-                                    controller.uciElo.value = value.toInt();
+                                    (controller as GameComputerController)
+                                        .uciElo
+                                        .value = value
+                                        .toInt();
                                   },
                                   activeColor: Colors.orangeAccent,
                                   inactiveColor: Colors.orange.shade200

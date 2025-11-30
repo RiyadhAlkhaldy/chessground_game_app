@@ -39,7 +39,9 @@ dependencies:
   sound_effect: ^0.1.1
   # stockfish_chess_engine: ^0.8.2
   # 
-  multistockfish: ^0.3.0
+  stockfish: ^1.7.1
+  # 
+  # multistockfish: ^0.3.0
   # multistockfish_chess: ^0.2.1
   # multistockfish_sf16: ^0.1.1
   # multistockfish_variant: ^0.1.1
@@ -112,7 +114,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - lib/piece_set/maestro/
     - assets/images/
     - assets/sounds/futuristic/
     - assets/sounds/lisp/
