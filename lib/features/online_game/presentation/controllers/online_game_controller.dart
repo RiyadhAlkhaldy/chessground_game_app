@@ -72,4 +72,52 @@ class OnlineGameController extends BaseGameController
   }) {
     throw UnimplementedError();
   }
+
+  @override
+  agreeDraw() {
+    // TODO: implement agreeDraw
+    throw UnimplementedError();
+  }
+
+  @override
+  checkMate() {
+    // TODO: implement checkMate
+    throw UnimplementedError();
+  }
+
+  @override
+  draw() {
+    // TODO: implement draw
+    throw UnimplementedError();
+  }
+
+  @override
+  fiftyMoveRule() {
+    // TODO: implement fiftyMoveRule
+    throw UnimplementedError();
+  }
+
+  @override
+  insufficientMaterial() {
+    // TODO: implement insufficientMaterial
+    throw UnimplementedError();
+  }
+
+  @override
+  staleMate() {
+    // TODO: implement staleMate
+    throw UnimplementedError();
+  }
+
+  @override
+  threefoldRepetition() {
+    // TODO: implement threefoldRepetition
+    throw UnimplementedError();
+  }
+
+  @override
+  timeOut() {
+    // TODO: implement timeOut
+    throw UnimplementedError();
+  }
 }

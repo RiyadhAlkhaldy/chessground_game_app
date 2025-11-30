@@ -68,10 +68,6 @@ class OfflineGameController extends BaseGameController
     super.onClose();
   }
 
-  @override
-  Outcome? get getResult {
-    return gameState.result;
-  }
   // ========== Public Methods ==========
 
   @override
@@ -241,13 +237,8 @@ class OfflineGameController extends BaseGameController
   @override
   Future<void> resign(Side side) async {
     try {
-      gameState.resign(side);
-      updateReactiveState();
-
+      super.resign(side);
       await _saveGameToDatabase();
-
-      AppLogger.gameEvent('PlayerResigned', data: {'side': side.name});
-
       Get.snackbar(
         'Game Over',
         '${side == Side.white ? 'White' : 'Black'} resigned',
@@ -422,5 +413,53 @@ class OfflineGameController extends BaseGameController
         tag: 'GameController',
       );
     }
+  }
+
+  @override
+  agreeDraw() {
+    // TODO: implement agreeDraw
+    throw UnimplementedError();
+  }
+
+  @override
+  checkMate() {
+    // TODO: implement checkMate
+    throw UnimplementedError();
+  }
+
+  @override
+  draw() {
+    // TODO: implement draw
+    throw UnimplementedError();
+  }
+
+  @override
+  fiftyMoveRule() {
+    // TODO: implement fiftyMoveRule
+    throw UnimplementedError();
+  }
+
+  @override
+  insufficientMaterial() {
+    // TODO: implement insufficientMaterial
+    throw UnimplementedError();
+  }
+
+  @override
+  staleMate() {
+    // TODO: implement staleMate
+    throw UnimplementedError();
+  }
+
+  @override
+  threefoldRepetition() {
+    // TODO: implement threefoldRepetition
+    throw UnimplementedError();
+  }
+
+  @override
+  timeOut() {
+    // TODO: implement timeOut
+    throw UnimplementedError();
   }
 }

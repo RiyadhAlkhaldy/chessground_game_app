@@ -1,19 +1,13 @@
-// lib/presentation/pages/game_screen.dart
+// lib/features/offline_game/presentation/pages/offline_game_page.dart
 
-import 'dart:math';
-
-import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_controls_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/captured_pieces_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/game_info_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/move_list_widget.dart';
-import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
-import 'package:chessground_game_app/core/utils/styles/styles.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:dartchess/dartchess.dart';
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -49,7 +43,10 @@ class OfflineGamePage extends GetView<BaseGameController> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton(onPressed: () => Get.back(), child: const Text('Go Back')),
+                  ElevatedButton(
+                    onPressed: () => Get.back(),
+                    child: const Text('Go Back'),
+                  ),
                 ],
               ),
             );
@@ -122,7 +119,10 @@ class OfflineGamePage extends GetView<BaseGameController> {
           _buildPlayerSection(context, Side.black, isTop: true),
 
           // Chess board
-          const Padding(padding: EdgeInsetsGeometry.all(1), child: ChessBoardWidget()),
+          const Padding(
+            padding: EdgeInsetsGeometry.all(1),
+            child: ChessBoardWidget(),
+          ),
 
           // Bottom player info and captured pieces
           _buildPlayerSection(context, Side.white, isTop: false),
@@ -162,7 +162,12 @@ class OfflineGamePage extends GetView<BaseGameController> {
             children: [
               _buildPlayerSection(context, Side.black, isTop: true),
               const Expanded(
-                child: Center(child: AspectRatio(aspectRatio: 1.0, child: ChessBoardWidget())),
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: 1.0,
+                    child: ChessBoardWidget(),
+                  ),
+                ),
               ),
               _buildPlayerSection(context, Side.white, isTop: false),
             ],
@@ -193,13 +198,19 @@ class OfflineGamePage extends GetView<BaseGameController> {
 
   /// Build player section with info and captured pieces
   /// بناء قسم اللاعب مع المعلومات والقطع المأسورة
-  Widget _buildPlayerSection(BuildContext context, Side side, {required bool isTop}) {
+  Widget _buildPlayerSection(
+    BuildContext context,
+    Side side, {
+    required bool isTop,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: isTop ? Colors.grey[200] : Colors.grey[100],
         border: Border(
-          bottom: isTop ? const BorderSide(color: Colors.grey) : BorderSide.none,
+          bottom: isTop
+              ? const BorderSide(color: Colors.grey)
+              : BorderSide.none,
           top: !isTop ? const BorderSide(color: Colors.grey) : BorderSide.none,
         ),
       ),
@@ -222,7 +233,9 @@ class OfflineGamePage extends GetView<BaseGameController> {
           Expanded(
             child: Obx(() {
               final game = controller.currentGame;
-              final player = side == Side.white ? game?.whitePlayer : game?.blackPlayer;
+              final player = side == Side.white
+                  ? game?.whitePlayer
+                  : game?.blackPlayer;
 
               final isCurrentTurn = controller.currentTurn == side;
 
@@ -236,13 +249,18 @@ class OfflineGamePage extends GetView<BaseGameController> {
                         player?.name ?? 'Unknown',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: isCurrentTurn ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isCurrentTurn
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                       if (isCurrentTurn) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green,
                             borderRadius: BorderRadius.circular(4),
@@ -270,12 +288,16 @@ class OfflineGamePage extends GetView<BaseGameController> {
 
           // Captured pieces preview
           Obx(() {
-            final capturedPieces = (controller as OfflineGameController).getCapturedPieces(side);
+            final capturedPieces = (controller as OfflineGameController)
+                .getCapturedPieces(side);
             if (capturedPieces.isEmpty) {
               return const SizedBox(width: 100);
             }
 
-            return SizedBox(width: 100, child: CapturedPiecesWidget(side: side, compact: true));
+            return SizedBox(
+              width: 100,
+              child: CapturedPiecesWidget(side: side, compact: true),
+            );
           }),
         ],
       ),
@@ -342,7 +364,9 @@ class OfflineGamePage extends GetView<BaseGameController> {
             ),
           ],
         ),
-        actions: [TextButton(onPressed: () => Get.back(), child: const Text('Close'))],
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Close')),
+        ],
       ),
     );
   }
@@ -440,7 +464,11 @@ class OfflineGamePage extends GetView<BaseGameController> {
     final pgn = (controller as OfflineGameController).getPgnString();
 
     if (pgn.isEmpty) {
-      Get.snackbar('Error', 'PGN not available.', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'PGN not available.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
@@ -472,120 +500,23 @@ class OfflineGamePage extends GetView<BaseGameController> {
   void _copyPgn(String pgn) {
     Clipboard.setData(ClipboardData(text: pgn));
     Get.back();
-    Get.snackbar('PGN Copied', 'PGN copied to clipboard', snackPosition: SnackPosition.BOTTOM);
+    Get.snackbar(
+      'PGN Copied',
+      'PGN copied to clipboard',
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 
   void _sharePgn(String pgn) async {
     final result = await SharePlus.instance.share(ShareParams(text: pgn));
     if (result.status == ShareResultStatus.success) {
-      Get.snackbar('Success', 'Thank you for sharing PGN..', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Success',
+        'Thank you for sharing PGN..',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
   // lib/presentation/pages/game_screen.dart - تحديث buildChessBoard method
-}
-
-class ChessBoardWidget extends GetView<BaseGameController> {
-  const ChessBoardWidget({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return PopScope(
-            canPop: controller.gameState.isGameOverExtended, // Prevents automatic exit
-
-            onPopInvokedWithResult: (didPop, result) async {
-              if (didPop) {
-                return;
-              }
-              if (controller.getResult != null) {
-                Get.back();
-              } else {
-                final shouldExit = await showExitConfirmationDialog(context).then((value) {
-                  if (value != null && value == true) {
-                    controller.resign(controller.gameState.turn);
-                  }
-                  return value;
-                });
-
-                if (shouldExit == true) {
-                  if (context.mounted) {
-                    // controller.gameStatus;
-                    // controller.plySound.executeResignSound();
-                    controller.resign(
-                      controller.playerSide == PlayerSide.white ? Side.white : Side.black,
-                    );
-                    controller.gameResult;
-                    // And then, after closing the second dialog, navigate back
-                    // if (context.mounted) {
-                    //   Get.back();
-                    // }
-                  }
-                }
-              }
-            },
-            child: GetX<ChessBoardSettingsController>(
-              builder: (ctrlBoardSettings) => Chessboard(
-                size: min(constraints.maxWidth, constraints.maxHeight),
-                settings: ChessboardSettings(
-                  pieceAssets: ctrlBoardSettings.pieceSet.value.assets,
-                  colorScheme: ctrlBoardSettings.boardTheme.value.colors,
-                  border: ctrlBoardSettings.showBorder.value
-                      ? BoardBorder(
-                          width: 10.0,
-                          color: darken(ctrlBoardSettings.boardTheme.value.colors.darkSquare, 0.2),
-                        )
-                      : null,
-                  enableCoordinates: true,
-                  autoQueenPromotion: false,
-                  animationDuration: ctrlBoardSettings.pieceAnimation.value
-                      ? const Duration(milliseconds: 200)
-                      : Duration.zero,
-
-                  dragFeedbackScale: ctrlBoardSettings.dragMagnify.value ? 2.0 : 1.0,
-                  dragTargetKind: ctrlBoardSettings.dragTargetKind.value,
-                  drawShape: DrawShapeOptions(
-                    enable: ctrlBoardSettings.drawMode,
-                    onCompleteShape: ctrlBoardSettings.onCompleteShape,
-                    onClearShapes: () {
-                      ctrlBoardSettings.shapes.value = ISet<Shape>();
-                    },
-                  ),
-                  pieceShiftMethod: ctrlBoardSettings.pieceShiftMethod.value,
-                  autoQueenPromotionOnPremove: false,
-                  pieceOrientationBehavior: PieceOrientationBehavior.facingUser,
-                ),
-                orientation: ctrlBoardSettings.orientation.value,
-
-                fen: controller.currentFen,
-                // lastMove: controller.lastMove,
-                game: GameData(
-                  playerSide: controller.gameState.isGameOverExtended
-                      ? PlayerSide.none
-                      : controller.gameState.position.turn == Side.white
-                      ? PlayerSide.white
-                      : PlayerSide.black,
-                  validMoves: controller.validMoves,
-                  sideToMove: controller.gameState.position.turn,
-                  isCheck: controller.gameState.position.isCheck,
-                  promotionMove: controller.promotionMove.value,
-                  onMove: controller.onUserMove,
-                  onPromotionSelection: controller.onPromotionSelection,
-                  premovable: (
-                    onSetPremove: controller.onSetPremove,
-                    premove: controller.premove.value,
-                  ),
-                ),
-
-                shapes: ctrlBoardSettings.shapes.value.isNotEmpty
-                    ? ctrlBoardSettings.shapes.value
-                    : null,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 }

@@ -8,6 +8,7 @@ import 'package:chessground_game_app/core/global_feature/domain/entities/chess_g
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/interfaces/end_game_interfaces.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_result_dialog.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
 import 'package:chessground_game_app/core/utils/dialog/status_l10n.dart';
@@ -16,7 +17,17 @@ import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
 
-abstract class BaseGameController extends GetxController {
+abstract class BaseGameController extends GetxController
+    implements
+        CheckMateInterface,
+        StaleMateInterface,
+        DrawInterface,
+        ResignInterface,
+        AgreeDrawInterface,
+        TimeOutInterface,
+        InsufficientMaterialInterface,
+        ThreefoldRepetitionInterface,
+        FiftyMoveRuleInterface {
   // ========== Observable State ==========
   Position get initail => Chess.fromSetup(Setup.parseFen(_initailLocalFen));
 
@@ -196,11 +207,15 @@ abstract class BaseGameController extends GetxController {
   void setAgreementDraw() => {gameState.setAgreementDraw(), update()};
 
   /// Resign: if side resigns, winner is the other side.
-  void resign(Side side) => {
-    gameState.resign(side),
-    plySound.executeResignSound(),
-    update(),
-  };
+
+  @override
+  Future<void> resign(Side side) async {
+    gameState.resign(side);
+    updateReactiveState();
+    plySound.executeResignSound();
+    AppLogger.gameEvent('PlayerResigned', data: {'side': side.name});
+    update();
+  }
 
   ///reset
   void reset() {

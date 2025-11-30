@@ -205,6 +205,27 @@ class FreeGameController extends BaseGameController with StorageFeatures {
     }
   }
 
+  @override
+  Future<void> resign(Side side) async {
+    try {
+      super.resign(side);
+      await _saveGameToDatabase();
+      Get.snackbar(
+        'Game Over',
+        '${side == Side.white ? 'White' : 'Black'} resigned',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error resigning',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'GameController',
+      );
+      setError('Failed to resign: ${e.toString()}');
+    }
+  }
+
   // ========== Private Methods ==========
   // ignore: unused_element
   Future<void> _autoSaveGame() async {
@@ -273,5 +294,53 @@ class FreeGameController extends BaseGameController with StorageFeatures {
         tag: 'GameController',
       );
     }
+  }
+
+  @override
+  agreeDraw() {
+    // TODO: implement agreeDraw
+    throw UnimplementedError();
+  }
+
+  @override
+  checkMate() {
+    // TODO: implement checkMate
+    throw UnimplementedError();
+  }
+
+  @override
+  draw() {
+    // TODO: implement draw
+    throw UnimplementedError();
+  }
+
+  @override
+  fiftyMoveRule() {
+    // TODO: implement fiftyMoveRule
+    throw UnimplementedError();
+  }
+
+  @override
+  insufficientMaterial() {
+    // TODO: implement insufficientMaterial
+    throw UnimplementedError();
+  }
+
+  @override
+  staleMate() {
+    // TODO: implement staleMate
+    throw UnimplementedError();
+  }
+
+  @override
+  threefoldRepetition() {
+    // TODO: implement threefoldRepetition
+    throw UnimplementedError();
+  }
+
+  @override
+  timeOut() {
+    // TODO: implement timeOut
+    throw UnimplementedError();
   }
 }
