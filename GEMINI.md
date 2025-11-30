@@ -1,190 +1,774 @@
 # GEMINI Project Documentation: Chessground Game App
 
-## 1. Project Overview
+## 1. Executive Summary
 
-This document provides a comprehensive analysis of the `chessground_game_app`, a Flutter-based mobile chess application. The app is a feature-rich chess game that allows users to play against a computer opponent (Stockfish), play offline with a friend, and customize their experience through various settings. The project is well-structured, following modern Clean Architecture principles, which ensures a separation of concerns, maintainability, and testability.
+This document provides a comprehensive analysis of the `chessground_game_app`, a Flutter-based cross-platform chess application. The app is designed with **Clean Architecture** principles, ensuring separation of concerns, maintainability, and testability.
 
-**Executive Summary:**
-- **Framework:** Flutter
-- **Architecture:** Clean Architecture
+**Project Status:** 🟡 **Partially Complete**
+- ✅ **Fully Implemented:** Computer Game (AI), Offline Game (2-Player), Game History, Settings
+- 🟡 **Partially Implemented:** Game Controls (missing navigation features), End Game Interfaces (TODOs)
+- ❌ **Not Implemented:** Online Multiplayer, Puzzle Mode
+
+**Key Information:**
+- **Framework:** Flutter 3.9.0+
+- **Architecture:** Clean Architecture (Data → Domain → Presentation)
 - **State Management:** GetX
-- **Dependency Injection:** GetIt
-- **Database:** Isar (local)
-- **Core Features:** Play vs. AI, Offline 2-Player, Timed/Untimed Games, Game History, Board Customization.
+- **Dependency Injection:** Get (formerly GetIt, migrated in recent refactoring)
+- **Database:** Isar (local embedded NoSQL)
+- **Chess Engine:** Stockfish via `stockfish` package (v1.7.1)
+- **UI Rendering:** Chessground (v7.1.6) + Dartchess (v0.11.1)
 
 ---
 
-## 2. Technologies & Dependencies
+## 2. Technology Stack
 
-The project leverages a modern and robust set of packages to deliver its features.
+### Core Dependencies
 
-| Dependency                  | Purpose                                                                                             |
-| --------------------------- | --------------------------------------------------------------------------------------------------- |
-| `flutter`                   | Core framework for building the cross-platform UI.                                                  |
-| `get`                       | A powerful and lightweight solution for state management, routing, and dependency injection.        |
-| `get_it`                    | Used as a service locator to implement dependency injection for the data and domain layers.           |
-| `chessground`               | A sophisticated widget for rendering the chessboard and handling user interactions.                 |
-| `dartchess`                 | Provides the core chess logic for move generation, validation, and game state management (FEN/PGN). |
-| `stockfish_chess_engine`    | Integrates the powerful Stockfish chess engine for the "Play vs. Computer" feature.                 |
-| `isar` & `isar_flutter_libs`| A fast, ACID-compliant, and easy-to-use embedded database for local data persistence.               |
-| `freezed` & `json_serializable` | Code generation for creating immutable data models and handling JSON serialization.               |
-| `dartz`                     | Brings functional programming patterns (like `Either` for error handling) into the project.         |
-| `intl` & `flutter_localizations` | Handles internationalization (i10n) and localization (l10n).                                 |
-| `build_runner`              | The primary tool for running code generators (for Isar, Freezed).                                   |
-| `flutter_lints` & `mocktail`| Used for enforcing code quality and creating mocks for testing.                                     |
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **flutter** | SDK | Cross-platform UI framework |
+| **get** | ^4.7.2 | State management, routing, and dependency injection |
+| **chessground** | ^7.1.6 | Interactive chessboard widget with sophisticated UI |
+| **dartchess** | ^0.11.1 | Core chess logic (move generation, validation, FEN/PGN) |
+| **stockfish** | ^1.7.1 | Stockfish chess engine integration for AI gameplay |
+| **isar** | ^3.1.0+1 | Fast, ACID-compliant embedded database |
+| **isar_flutter_libs** | git | Platform-specific Isar libraries |
+| **freezed** | any | Code generation for immutable data classes |
+| **json_serializable** | ^4.9.0 | JSON serialization/deserialization |
+| **dartz** | ^0.10.1 | Functional programming patterns (Either, Option) |
+| **equatable** | ^2.0.7 | Value equality for entities |
+| **get_storage** | ^2.1.1 | Simple key-value storage |
+| **shared_preferences** | ^2.5.3 | Platform-agnostic persistent storage |
+| **dio** | ^5.9.0 | HTTP client (prepared for online features) |
+| **intl** | ^0.20.2 | Internationalization support |
+| **flutter_localizations** | SDK | Material/Cupertino localizations |
+
+### Development Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| **build_runner** | any | Code generation runner |
+| **isar_generator** | any | Generates Isar collection code |
+| **mocktail** | ^1.0.4 | Mocking library for testing |
+| **flutter_lints** | ^5.0.0 | Linting rules |
+| **lint** | ^2.8.0 | Additional lint rules |
+| **fake_async** | ^1.3.3 | Testing asynchronous code |
+
+### UI/UX Enhancements
+
+| Package | Purpose |
+|---------|---------|
+| `material_symbols_icons` (^4.2874.0) | Extended icon set |
+| `material_design_icons_flutter` (^7.0.7296) | Material design icons |
+| `chess_vectors_flutter` (^1.1.0) | Chess piece SVG assets |
+| `cached_network_image` (^3.4.1) | Network image caching |
+| `auto_size_text` (^3.0.0) | Responsive text sizing |
+| `sound_effect` (^0.1.1) | Audio playback for moves |
+| `image_picker` (^1.2.0) | Player avatar selection |
+| `url_launcher` (^6.3.2) | External URL handling |
+| `share_plus` (^12.0.1) | Game sharing functionality |
+| `dynamic_system_colors` (^1.8.0) | System color integration |
+| `pull_to_refresh` (^2.0.0) | Refresh gesture support |
 
 ---
 
-## 3. Directory Structure
+## 3. Project Architecture
 
-The project follows a feature-first organization within the `lib` directory, which is standard for a scalable Flutter application.
+### Directory Structure
 
 ```
-lib/
-├── core/         # Shared widgets, utilities, error handling, global features.
-├── di/           # Dependency injection setup (using get_it).
-├── features/     # Contains all the distinct features of the app.
-│   ├── computer_game/
-│   ├── home/
-│   ├── offline_game/
-│   ├── online_game/ (Likely a placeholder)
-│   ├── puzzle/      (Likely a placeholder)
-│   ├── recent_screen/
-│   └── settings/
-├── l10n/         # Localization and internationalization files. 
-├── routes/       # Route definitions and bindings for GetX.
-└── main.dart     # The main entry point of the application.
+chessground_game_app/
+├── android/                    # Android platform code
+├── ios/                        # iOS platform code
+├── lib/
+│   ├── core/                   # Shared utilities and global features
+│   │   ├── connection/         # Network connectivity checking
+│   │   ├── databases/          # API and cache infrastructure
+│   │   │   ├── api/            # Dio HTTP client setup
+│   │   │   └── cache/          # Shared preferences wrapper
+│   │   ├── errors/             # Error handling (Failures, Exceptions)
+│   │   ├── global_feature/     # Core chess game logic (Clean Architecture)
+│   │   │   ├── data/           # Data layer
+│   │   │   │   ├── collections/    # Isar database collections
+│   │   │   │   ├── datasources/    # Data source implementations
+│   │   │   │   ├── models/         # Data models (with Freezed)
+│   │   │   │   └── repositories/   # Repository implementations
+│   │   │   ├── domain/         # Domain layer
+│   │   │   │   ├── converters/    # Entity/Model converters
+│   │   │   │   ├── entities/      # Business entities
+│   │   │   │   ├── repositories/  # Repository contracts (abstract)
+│   │   │   │   ├── services/      # Domain services
+│   │   │   │   └── usecases/      # Business logic use cases
+│   │   │   └── presentaion/   # Shared presentation components
+│   │   │       ├── controllers/   # Base controllers
+│   │   │       └── widgets/       # Shared widgets
+│   │   ├── params/             # Common parameters
+│   │   └── utils/              # Utilities (logger, helpers, dialogs)
+│   ├── di/                     # Dependency injection setup
+│   │   └── ingection_container.dart
+│   ├── features/               # Feature modules
+│   │   ├── computer_game/      # ✅ Play vs. AI (Complete)
+│   │   ├── home/               # ✅ Home screen & navigation (Complete)
+│   │   ├── offline_game/       # ✅ Pass-and-play mode (Complete)
+│   │   ├── online_game/        # ❌ Online multiplayer (Stub only)
+│   │   ├── puzzle/             # ❌ Chess puzzles (Stub only)
+│   │   ├── recent_screen/      # ✅ Game history viewer (Complete)
+│   │   └── settings/           # ✅ App settings (Complete)
+│   ├── l10n/                   # Localization files
+│   ├── routes/                 # GetX routing configuration
+│   │   ├── app_pages.dart
+│   │   └── game_binding.dart
+│   └── main.dart               # App entry point
+├── test/                       # Unit and widget tests
+├── assets/                     # Images, sounds, etc.
+└── pubspec.yaml                # Dependencies
 ```
 
----
-
-## 4. Architecture
-
-The application is built using **Clean Architecture**. This design pattern isolates the business logic from the UI and data layers, making the application easier to test, maintain, and scale.
-
-### Architecture Diagram (Mermaid)
+### Clean Architecture Layers
 
 ```mermaid
-graph TD
-    A[Presentation Layer] --> B[Domain Layer];
-    C[Data Layer] --> B;
-
-    subgraph Presentation Layer
-        A
-        direction LR
-        A1(Widgets / Screens) --> A2(Controllers / GetX);
+graph LR
+    subgraph Presentation["🎨 Presentation Layer"]
+        UI[UI Widgets]
+        Controllers[GetX Controllers]
     end
-
-    subgraph Domain Layer
-        B
-        direction LR
-        B1(Use Cases) --> B2(Abstract Repositories);
-        B2 --> B3(Entities / Models);
+    
+    subgraph Domain["💼 Domain Layer"]
+        UseCases[Use Cases]
+        Repositories[Repository Interfaces]
+        Entities[Domain Entities]
     end
-
-    subgraph Data Layer
-        C
-        direction LR
-        C1(Repository Implementations) --> C2(Data Sources);
-        C2 --> C3[External Dependencies];
+    
+    subgraph Data["💾 Data Layer"]
+        RepositoriesImpl[Repository Implementations]
+        DataSources[Data Sources]
+        Models[Data Models]
     end
-
-    subgraph External Dependencies
-        C3
-        direction TB
-        C3_1[Isar Database]
-        C3_2[Stockfish Engine]
-        C3_3[Shared Prefs / Cache]
+    
+    subgraph External["🔌 External"]
+        Isar[(Isar DB)]
+        Stockfish[Stockfish Engine]
+        Cache[GetStorage]
+        API[REST API - dio]
     end
-
-    style A fill:#cde4ff,stroke:#6a8ebf,stroke-width:2px
-    style B fill:#d5e8d4,stroke:#82b366,stroke-width:2px
-    style C fill:#f8cecc,stroke:#b85450,stroke-width:2px
+    
+    UI --> Controllers
+    Controllers --> UseCases
+    UseCases --> Repositories
+    RepositoriesImpl -.implements.- Repositories
+    RepositoriesImpl --> DataSources
+    DataSources --> Isar
+    DataSources --> Stockfish
+    DataSources --> Cache
+    DataSources --> API
+    
+    style Presentation fill:#e1f5ff
+    style Domain fill:#d4edda
+    style Data fill:#fff3cd
+    style External fill:#f8d7da
 ```
 
-### Layer Breakdown:
-1.  **Presentation Layer (`features/.../presentation`)**:
-    *   Contains all UI elements (Widgets and Pages).
-    *   Uses **GetX** controllers (`GetxController`) to manage the state of the UI.
-    *   Widgets react to state changes in the controllers and call methods on them in response to user input.
-    *   These controllers execute business logic by calling Use Cases from the Domain Layer.
+#### Layer Breakdown
 
-2.  **Domain Layer (`core/global_feature/domain`)**:
-    *   The core of the application, containing all business logic. It is completely independent of Flutter or any specific UI/database framework.
-    *   **Use Cases**: Encapsulate specific business rules (e.g., `PlayMove`, `SaveGameUseCase`, `GetRecentGamesUseCase`).
-    *   **Repositories (Abstract)**: Define contracts (interfaces) that the Data Layer must implement. This decouples the domain logic from the data sources.
-    *   **Entities**: Business objects (e.g., `ChessGame`, `Player`).
+**1. Presentation Layer** (`features/.../presentation`)
+- **Pages**: Full-screen UI components
+- **Widgets**: Reusable UI components
+- **Controllers**: GetX controllers managing UI state
+- **Bindings**: Dependency injection for controllers
 
-3.  **Data Layer (`core/global_feature/data`)**:
-    *   **Repositories (Implementations)**: Implement the repository contracts defined in the Domain Layer. They orchestrate data fetching from one or more data sources.
-    *   **Data Sources**: Responsible for fetching raw data from a specific source, such as the Isar database (`ChessGameLocalDataSource`), the Stockfish engine (`StockfishDataSource`), or a simple cache (`GameStateCacheDataSource`).
+**2. Domain Layer** (`core/global_feature/domain`)
+- **Entities**: Pure business objects (e.g., `ChessGameEntity`, `PlayerEntity`)
+- **Use Cases**: Single-responsibility business logic (e.g., `SaveGameUseCase`, `PlayMoveUseCase`)
+- **Repositories (Abstract)**: Contracts defining data operations
+- **Services**: Complex business logic spanning multiple entities
 
-### Dependency Injection:
-*   **GetIt (`di/ingection_container.dart`)**: Used to register and resolve dependencies for the Data and Domain layers. This follows the service locator pattern and ensures that components are loosely coupled.
-*   **GetX Bindings (`routes/game_binding.dart`)**: Used by the Presentation Layer to provide instances of GetX controllers to the relevant screens.
-
----
-
-## 5. Feature Breakdown
-
-| Feature                 | Description                                                                                             | File References                                                                                                                              |
-| ----------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Home Screen**         | The main navigation hub of the app, providing access to all game modes and settings.                    | `lib/features/home/presentation/pages/home_page.dart`                                                                                        |
-| **Play vs. Computer**   | Allows the user to play a game against the Stockfish AI. Supports both timed and untimed games.         | `lib/features/computer_game/presentation/pages/game_computer_page.dart` `lib/features/computer_game/presentation/controllers/game_computer_controller.dart` |
-| **Offline Game**        | A "pass and play" mode for two human players on the same device.                                        | `lib/features/offline_game/presentation/pages/offline_game_page.dart`                                                                      |
-| **Game Configuration**  | Screens for choosing the game side (White/Black), setting time controls, and configuring AI difficulty. | `lib/features/computer_game/presentation/pages/side_choosing_page.dart` `lib/features/home/presentation/pages/game_time_page.dart`               |
-| **Recent Games**        | Displays a list of recently played games, which can be reviewed.                                        | `lib/features/recent_screen/presentation/pages/recent_page.dart`                                                                             |
-| **Settings**            | Allows customization of the board theme, piece set, sounds, and other application settings.             | `lib/features/settings/presentation/pages/settings_page.dart`                                                                                |
-| **Game Controls**       | UI for undoing/redoing moves and starting a new round.                                                  | `lib/features/computer_game/presentation/pages/game_computer_page.dart` (and other game pages)                                                |
+**3. Data Layer** (`core/global_feature/data`)
+- **Models**: JSON-serializable data transfer objects (Freezed)
+- **Data Sources**: 
+  - `ChessGameLocalDataSource` - Isar database operations
+  - `StockfishDataSource` - Chess engine interactions
+  - `GameStateCacheDataSource` - In-memory game state caching
+  - `PlayerLocalDataSource` - Player data persistence
+- **Repositories (Implementations)**: Bridge between domain and data sources
 
 ---
 
-## 6. Known Issues & Improvements
+## 4. Implemented Features
 
-The codebase is generally of high quality, but there are areas for improvement and incomplete features.
+### ✅ Computer Game (Play vs. AI)
 
-### TODO List
-- **Incomplete Game Controls**: The `game_controls_widget.dart` and `move_list_widget.dart` have `TODO` markers for implementing navigation to the first/last move and a board flip feature.
-- **Placeholder `TODO`s**: There are several generic `//TODO` comments in files like `game_computer_with_time_controller.dart` that should be resolved or removed.
-- **Unused Code**: A `todo.dart` collection and its related services exist but do not appear to be used in the main application flow. This could be example code that should be cleaned up.
-- **Build Configuration**: The `android/app/build.gradle.kts` file contains `TODO`s for specifying a unique Application ID and adding a release signing config. These are critical for a production build.
+**Files:**
+- `lib/features/computer_game/presentation/`
+- Controllers: `GameComputerController`, `GameComputerWithTimeController`
+- Pages: `GameComputerPage`, `GameComputerWithTimePage`, `SideChoosingPage`
 
-### Improvement Suggestions
-- **Error Handling**: While the architecture supports it, more robust user-facing error handling could be added, especially for potential failures in the Stockfish engine or database operations.
-- **Refactor Online/Puzzle Features**: The `online_game` and `puzzle` feature folders are mostly empty. These should either be built out or removed to reduce clutter.
-- **Consolidate DI**: The project uses both `get_it` and GetX's built-in dependency injection. While this works, a future refactor could consolidate them into a single system (likely `get_it` for services and GetX for controllers) for better clarity.
-- **Add Tests**: The `test` directory exists, but expanding the test suite to cover more use cases and widgets would improve the project's long-term stability.
+**Capabilities:**
+- Choose side (White/Black/Random)
+- Adjust AI difficulty:
+  - UCI Elo rating (1350-2850)
+  - Skill level (0-20)
+  - Search depth (1-20)
+  - Thinking time (100-5000ms)
+- Timed and untimed games
+- Undo/redo moves
+- PGN export
+- Game saving and history
+- Visual evaluation bar
+- Material count display
+
+**Architecture:**
+- Uses `StockfishDataSource` for AI move generation
+- Extends `BaseGameController`
+- Implements end game interfaces (with TODOs)
+
+---
+
+### ✅ Offline Game (2-Player Pass-and-Play)
+
+**Files:**
+- `lib/features/offline_game/presentation/`
+- Controllers: `OfflineGameController`, `FreeGameController`
+- Pages: `OfflineGamePage`, `FreeGamePage`, `NewGamePage`
+
+**Capabilities:**
+- Local multiplayer on same device
+- Both timed and untimed modes
+- Custom player names and avatars
+- Game saving
+- Full move history with PGN
+
+**Architecture:**
+- No AI dependency
+- Clean game state management
+- Time control support via `ChessClockService`
 
 ---
 
-## 7. Build and Run Instructions
+### ✅ Recent Games (Game History)
 
-To get the project running, you will need the Flutter SDK installed.
+**Files:**
+- `lib/features/recent_screen/presentation/`
+- Controller: `RecentGamesController`
+- Page: `RecentGamesPage`
 
-1.  **Get Dependencies:**
-    Open a terminal in the project root and run:
-    ```bash
-    flutter pub get
-    ```
+**Capabilities:**
+- View all saved games
+- Filter by player
+- Delete games
+- Review game moves
+- Mini board preview
 
-2.  **Run Code Generation:**
-    The project uses code generation for database models and data classes. Run the following command to generate the necessary files:
-    ```bash
-    flutter pub run build_runner build --delete-conflicting-outputs
-    ```
-
-3.  **Run the App:**
-    Connect a device or start an emulator, then run:
-    ```bash
-    flutter run
-    ```
-
-4.  **Run Tests:**
-    To execute the unit and widget tests, run:
-    ```bash
-    flutter test
-    ```
+**Architecture:**
+- Uses `GetRecentGamesUseCase`
+- Queries Isar database via `ChessGameLocalDataSource`
 
 ---
-*This document was generated by analyzing the project's source code.*
-*Files Scanned: All `.dart`, `.yaml`, and `.md` files in the project directory.*
+
+### ✅ Settings
+
+**Files:**
+- `lib/features/settings/presentation/`
+- Controller: `SettingsController`
+- Page: `SettingsPage`
+
+**Capabilities:**
+- Board theme selection (multiple themes)
+- Piece set customization
+- Sound effects toggle
+- Language selection (Arabic/English supported)
+- Board orientation toggle
+
+**Storage:**
+- Persisted via `GetStorage`
+
+---
+
+### ✅ Home Screen & Navigation
+
+**Files:**
+- `lib/features/home/presentation/pages/home_page.dart`
+- `lib/routes/app_pages.dart`
+
+**Capabilities:**
+- Navigation to all game modes
+- Quick start buttons
+- Settings access
+- Game history access
+
+---
+
+## 5. Missing Features
+
+### ❌ Online Game (Multiplayer)
+
+**Current State:** Stub implementation with `UnimplementedError` thrown in all methods
+
+**Required Implementation:**
+
+#### Data Layer (Missing)
+```
+lib/features/online_game/data/
+├── datasources/
+│   ├── online_game_remote_datasource.dart  # WebSocket/REST API
+│   └── online_game_cache_datasource.dart   # Local cache
+├── models/
+│   ├── online_game_model.dart
+│   └── online_move_model.dart
+└── repositories/
+    └── online_game_repository_impl.dart
+```
+
+**Needed:**
+- WebSocket connection for real-time moves
+- Game session management
+- Move synchronization
+- Opponent matching/invitations
+- Draw offers/resignations
+- Time control synchronization
+
+#### Domain Layer (Partial)
+**Exists:** `lib/features/online_game/domain/usecases/play_move.dart`
+**Missing:**
+- `ConnectToGameUsecase`
+- `SendMoveUsecase`
+- `ReceiveMovesUsecase`
+- `OfferDrawUsecase`
+- `AcceptDrawUsecase`
+- `ResignGameUsecase`
+- Entity definitions
+- Repository contract
+
+#### Presentation Layer (Stub)
+**File:** `lib/features/online_game/presentation/controllers/online_game_controller.dart`
+
+**Methods to Implement:**
+- `connectToGame(String gameId)`
+- `sendMove(NormalMove move)`
+- `receiveMoves()` (Stream)
+- `offerDraw()`
+- `acceptDraw()`
+- `declineDraw()`
+- `resign(Side side)`
+- All end game interface methods (8 TODOs)
+
+**Missing UI:**
+- Online game page
+- Matchmaking screen
+- Lobby/room system
+- Connection status indicators
+
+---
+
+### ❌ Puzzle Mode
+
+**Current State:** Stub implementation, completely non-functional
+
+**Required Implementation:**
+
+#### Data Layer (Missing)
+```
+lib/features/puzzle/data/
+├── datasources/
+│   ├── puzzle_remote_datasource.dart  # API for puzzle DB
+│   └── puzzle_local_datasource.dart   # Cache solved puzzles
+├── models/
+│   ├── puzzle_model.dart
+│   └── puzzle_solution_model.dart
+└── repositories/
+    └── puzzle_repository_impl.dart
+```
+
+**Puzzle Data Structure:**
+- Puzzle ID
+- FEN position
+- Themes/categories
+- Rating/difficulty
+- Solution moves
+- Explanations
+
+#### Domain Layer (Missing)
+```
+lib/features/puzzle/domain/
+├── entities/
+│   ├── puzzle_entity.dart
+│   └── puzzle_stats_entity.dart
+├── repositories/
+│   └── puzzle_repository.dart
+└── usecases/
+    ├── load_puzzle_usecase.dart
+    ├── check_solution_usecase.dart
+    ├── get_hint_usecase.dart
+    └── save_puzzle_stats_usecase.dart
+```
+
+#### Presentation Layer (Stub)
+**File:** `lib/features/puzzle/presentation/controllers/puzzles_game_controller.dart`
+
+**Methods to Implement:**
+- `loadPuzzle(String puzzleId)`
+- `checkSolution(List<String> moves)`
+- `getHint()`
+- `showSolution()`
+- All end game interface methods (8 TODOs)
+
+**Missing UI:**
+- Puzzle browser
+- Puzzle board with constraints
+- Solution checker
+- Progress tracking
+- Rating display
+
+**Puzzle Source Options:**
+- [ ] Lichess puzzle API
+- [ ] Local puzzle database
+- [ ] Custom puzzle import
+
+---
+
+### 🟡 Game Controls (Partially Implemented)
+
+**File:** `lib/core/global_feature/presentaion/widgets/game_controls_widget.dart`
+
+**Missing Features:**
+```dart
+// Line 97
+// TODO: Implement navigation to first move
+
+// Line 109  
+// TODO: Implement navigation to last move
+
+// Line 121
+// TODO: Implement board flip
+```
+
+**Impact:** Users cannot:
+- Jump to game start/end
+- Flip board perspective
+- Navigate move history efficiently
+
+---
+
+### 🟡 End Game Interfaces (TODO Comments)
+
+**Affected Controllers:**
+- `OfflineGameController` (8 TODOs at lines 420-462)
+- `OnlineGameController` (8 TODOs at lines 78-120)
+- `PuzzlesGameController` (8 TODOs at lines 46-88)
+- `FreeGameController` (8 TODOs at lines 301-343)
+
+**Methods with `throw UnimplementedError()`:**
+1. `agreeDraw()` - Handle draw agreement in multiplayer
+2. `checkMate()` - Trigger checkmate end game flow
+3. `draw()` - Handle general draw conditions
+4. `fiftyMoveRule()` - End game on 50-move rule
+5. `insufficientMaterial()` - End game on insufficient material
+6. `staleMate()` - Handle stalemate
+7. `threefoldRepetition()` - End game on threefold repetition
+8. `timeOut()` - Handle time forfeit
+
+**Note:** Some controllers (e.g., `GameComputerController`) have proper implementations of these interfaces.
+
+---
+
+## 6. Test Coverage Analysis
+
+### Existing Tests (21 files)
+
+**Core - Data Layer:**
+- ✅ `chess_game_local_datasource_test.dart` (2 versions)
+- ✅ `game_state_cache_datasource_test.dart`
+- ✅ `stockfish_datasource_test.dart`
+- ✅ `game_state_repository_impl_test.dart`
+- ✅ `isar_chess_game_test.dart`
+- ✅ Various PGN parsing tests
+
+**Core - Domain Layer:**
+- ✅ `chess_game_storage_service_test.dart`
+- ✅ Game state tests
+
+**Core - Presentation:**
+- ✅ `free_game_controller_test.dart`
+
+**Features:**
+- ✅ `offline_game_controller_test.dart`
+
+**General:**
+- ✅ `endgame_conditions_test.dart`
+- ✅ `game_state_test.dart`
+- ✅ `widget_test.dart`
+
+### Missing Tests
+
+**Controllers:**
+- ❌ `GameComputerController`
+- ❌ `GameComputerWithTimeController`
+- ❌ `OnlineGameController`
+- ❌ `PuzzlesGameController`
+- ❌ `RecentGamesController`
+- ❌ `SettingsController`
+
+**Use Cases:** (Most untested)
+- Game use cases (save, update, delete, get)
+- Player use cases
+- Game state caching use cases
+
+**Widgets:**
+- ❌ Most UI widgets lack widget tests
+
+**Integration Tests:**
+- ❌ No end-to-end flow tests
+
+---
+
+## 7. Known Issues & Technical Debt
+
+### Critical Issues
+
+**1. Build Configuration (Android)**
+**File:** `android/app/build.gradle.kts`
+**Lines:** 23-24, 35-37
+
+```kotlin
+// TODO: Specify your own unique Application ID
+applicationId = "com.example.chessground_game_app"
+
+// TODO: Add your own signing config for the release build.
+signingConfig = signingConfigs.getByName("debug")
+```
+
+**Impact:** Cannot publish to Play Store without unique app ID and proper signing.
+
+---
+
+### Code Quality Issues
+
+**2. Massive TODO Count**
+- 50+ TODO comments project-wide
+- Most in end game interface implementations
+- Some in game controls
+
+**3. Commented-Out Code**
+**Analysis from `REFACTORING_REPORT.md`:**
+- `freee_game_controller.dart:284` - 200+ lines of obsolete code
+- `recent_games.dart` - Entire file commented out
+- Multiple commented imports
+
+**Recommendation:** Clean up immediately.
+
+---
+
+**4. Dead Code**
+**File:** `lib/core/global_feature/data/collections/todo.dart`
+**Related:** `todo_service.dart`
+
+**Issue:** Example code from scaffolding, not used in app flow.
+
+---
+
+**5. Hardcoded Values**
+- Magic numbers for UI dimensions (e.g., `width: 10.0` for board border)
+- Colors not centralized
+- Some strings not localized
+
+---
+
+**6. UI Code Duplication**
+**Files:**
+- `game_computer_page.dart`
+- `game_computer_with_time_page.dart`
+
+**Issue:** Nearly identical `BuildPortrait` and `BuildLandScape` widgets.
+**Recommendation:** Extract shared `GamePageLayout` widget.
+
+---
+
+### Architecture Inconsistencies
+
+**7. Mixed DI Approaches**
+- Get (used in recent refactoring)
+- Remnant GetIt references in documentation
+
+**8. Overly Complex Widgets**
+- `BuildPortrait`/`BuildLandScape` widgets are monolithic
+- Need decomposition (e.g., `PlayerInfoPanel`, `GameAnalysisPanel`)
+
+---
+
+## 8. Dependency Injection Setup
+
+**File:** `lib/di/ingection_container.dart`
+
+**Current Pattern:** Service locator using Get
+**Registered Dependencies:**
+- Data sources (Isar, Stockfish, Cache)
+- Repositories
+- Use cases
+- Services (Sound, Clock, Storage)
+
+**Responsibilities:**
+- Initialize Isar database
+- Register all domain/data layer dependencies
+- Provide lazy singletons
+
+**Note:** Controllers are registered via GetX Bindings in routes.
+
+---
+
+## 9. Localization
+
+**Supported Languages:**
+- 🇬🇧 English (`en_US`)
+- 🇸🇦 Arabic (`ar`)
+- 🌍 Esperanto (via `l10n_esperanto` package)
+
+**Files:**
+- `lib/l10n/app_en_US.arb`
+- `lib/l10n/app_ar.arb`
+- Generated: `lib/l10n/l10n.dart`, `l10n_ar.dart`, `l10n_en.dart`
+
+**Implementation:** Flutter's `gen_l10n` + Arabic RTL support
+
+---
+
+## 10. Build & Run Instructions
+
+### Prerequisites
+- Flutter SDK 3.9.0 or higher
+- Android Studio / Xcode (for platform builds)
+
+### Setup
+
+1. **Install Dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+2. **Generate Code** (Isar, Freezed, JSON)
+   ```bash
+   flutter pub run build_runner build --delete-conflicting-outputs
+   ```
+
+3. **Run App**
+   ```bash
+   # Debug mode
+   flutter run
+
+   # Release mode (Android)
+   flutter run --release
+   ```
+
+4. **Run Tests**
+   ```bash
+   # All tests
+   flutter test
+
+   # Specific test file
+   flutter test test/core/global_features/data/datasources/chess_game_local_datasource_test.dart
+   ```
+
+5. **Build APK** (Android)
+   ```bash
+   flutter build apk --release
+   ```
+
+6. **Build IPA** (iOS)
+   ```bash
+   flutter build ios --release
+   ```
+
+---
+
+## 11. Project Statistics
+
+| Metric | Count |
+|--------|-------|
+| **Total Dart Files** | 150+ |
+| **Features** | 7 (5 complete, 2 stubs) |
+| **Test Files** | 21 |
+| **Data Sources** | 4 |
+| **Repositories** | 5 |
+| **Use Cases** | 17 |
+| **Services** | 7 |
+| **Controllers** | 8 |
+| **Pages** | 15+ |
+| **Widgets** | 30+ |
+| **Supported Locales** | 3 |
+| **TODO Comments** | 50+ |
+
+---
+
+## 12. Roadmap Priorities
+
+### High Priority
+1. ✅ Complete end game interface implementations
+2. ✅ Implement missing game control features (first/last move, board flip)
+3. ✅ Clean up commented code and TODOs
+4. ✅ Fix Android build configuration
+
+### Medium Priority
+1. 🟡 Implement online multiplayer (requires backend)
+2. 🟡 Add comprehensive test coverage
+3. 🟡 Refactor UI duplication
+
+### Low Priority
+1. ⚪ Implement puzzle mode
+2. ⚪ Add more board themes
+3. ⚪ Add game analysis features
+
+---
+
+## 13. API/Backend Requirements for Online Features
+
+**For Online Multiplayer to Function, You Need:**
+
+1. **WebSocket Server**
+   - Real-time bidirectional communication
+   - Game room management
+   - Move broadcasting
+
+2. **REST API Endpoints**
+   - User authentication
+   - Matchmaking
+   - Game creation/joining
+   - Rating system
+
+3. **Database (Backend)**
+   - User profiles
+   - Active games
+   - Game history
+   - Ratings/statistics
+
+**Recommended Stack:**
+- Node.js + Socket.io (WebSocket)
+- PostgreSQL / MongoDB (database)
+- Redis (session management)
+
+**Alternative:** Integrate with existing chess platforms (Lichess API, Chess.com)
+
+---
+
+## 14. Conclusion
+
+The Chessground Game App is a **well-architected, partially complete chess application** with solid foundations in Clean Architecture. The computer game and offline game modes are production-ready, while online multiplayer and puzzle features require full implementation.
+
+**Strengths:**
+- ✅ Clean separation of concerns
+- ✅ Testable architecture
+- ✅ Modern Flutter best practices
+- ✅ Strong typing with Freezed
+- ✅ Functional error handling with Dartz
+
+**Weaknesses:**
+- ❌ Incomplete features (online, puzzles)
+- ❌ High TODO count
+- ❌ Missing tests for controllers
+- ❌ UI code duplication
+- ❌ Build configuration not production-ready
+
+**Recommendation:** Prioritize completing end game interfaces and game controls before expanding to online/puzzle features. This will ensure existing modes are polished and bug-free.
+
+---
+
+*Document generated: 2025-12-01*
+*Last updated: Project re-analysis*
+*Files analyzed: 150+ Dart files, 21 test files, configuration files*
