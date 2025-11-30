@@ -6,6 +6,7 @@ import 'package:chessground_game_app/features/home/presentation/pages/home_page.
 import 'package:chessground_game_app/features/offline_game/fee_game_bindings.dart';
 import 'package:chessground_game_app/features/offline_game/offline_game_bindings.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/pages/free_game_page.dart';
+import 'package:chessground_game_app/features/offline_game/presentation/pages/new_game_page.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/pages/offline_game_page.dart';
 import 'package:chessground_game_app/features/recent_screen/presentation/pages/recent_page.dart';
 import 'package:chessground_game_app/features/settings/presentation/pages/settings_page.dart';
@@ -22,6 +23,7 @@ abstract class RouteNames {
   static String gameComputerWithTimePage = '/gameComputerWithTimePage';
   static String freeGamePage = '/FreeGameScreen';
   static String offlineGamePage = '/offlineGamePage';
+  static String newGamePage = '/newGamePage';
   static String editPosition = '/EditPosition';
   static String analysisPage = '/AnalysisScreen';
   static String gameTimePage = '/GameTimeScreen';
@@ -70,7 +72,11 @@ class AppPages {
       page: () => const OfflineGamePage(),
       binding: OfflineGameBindings(),
     ),
-
+    GetPage(
+      name: RouteNames.newGamePage,
+      page: () => const NewGamePage(),
+      binding: OfflineGameBindings(),
+    ),
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),
     // GetPage(name: RouteNames.analysisScreen, page: () => AnalysisScreen()),
     // GetPage(name: '/puzzles', page: () => const PuzzlesView()),

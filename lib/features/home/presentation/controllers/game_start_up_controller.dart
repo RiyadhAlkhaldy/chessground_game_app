@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_chess/models/user_model.dart';
 // import 'package:uuid/uuid.dart';
 import 'package:get/get.dart';
-import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
+import 'package:multistockfish/multistockfish.dart';
 
 class GameStartUpController extends GetxController {
   final skillLevel = 20.obs; // Default to max skill level

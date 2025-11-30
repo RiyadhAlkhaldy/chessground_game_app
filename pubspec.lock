@@ -798,6 +798,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  multistockfish:
+    dependency: "direct main"
+    description:
+      name: multistockfish
+      sha256: "825a16c840b42a415f52a1a026d6a73eaef0dbdaf725cf021bc3b87633a08178"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
+  multistockfish_chess:
+    dependency: transitive
+    description:
+      name: multistockfish_chess
+      sha256: "963ab3e9d0d85ef5e5e10cef18152aca2b72a4c809c557d81191f9956ab4765c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
+  multistockfish_sf16:
+    dependency: transitive
+    description:
+      name: multistockfish_sf16
+      sha256: b32eb392d8036668b0f0fd9ed53fff65a12efcf4178e58205147aab27df1b1a9
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
+  multistockfish_variant:
+    dependency: transitive
+    description:
+      name: multistockfish_variant
+      sha256: "24ef2781ae65d6ccdcd95c4b000dbdcdba8368b9fa2f02810eb7f932e6698dc4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   nested:
     dependency: transitive
     description:
@@ -1115,14 +1147,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.1"
-  stockfish_chess_engine:
-    dependency: "direct main"
-    description:
-      name: stockfish_chess_engine
-      sha256: "9349400ad696900b731c40d50c8459475f6739c07da0018a948de79f3c1d5b9d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.8.2"
   stream_channel:
     dependency: transitive
     description:

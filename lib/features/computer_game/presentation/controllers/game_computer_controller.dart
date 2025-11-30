@@ -18,7 +18,7 @@ import 'package:chessground_game_app/features/computer_game/presentation/control
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
+import 'package:multistockfish/multistockfish.dart';
 
 class GameComputerController extends BaseGameController
     with StorageFeatures, WidgetsBindingObserver {
@@ -31,7 +31,7 @@ class GameComputerController extends BaseGameController
 
   // Computer-specific properties
   Side humanSide = Side.white;
-  int thinkingTimeForAI = 2000; // default 2 seconds
+  // int thinkingTimeForAI = 2000; // default 2 seconds
 
   final random = Random();
   RxDouble score = 0.0.obs;

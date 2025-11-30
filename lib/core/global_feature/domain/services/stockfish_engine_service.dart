@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:chessground_game_app/core/global_feature/data/models/extended_evaluation.dart';
 import 'package:flutter/material.dart';
-import 'package:stockfish_chess_engine/stockfish_chess_engine.dart';
-import 'package:stockfish_chess_engine/stockfish_chess_engine_state.dart';
- 
+import 'package:multistockfish/multistockfish.dart'; 
 
 /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine
 class StockfishEngineService {
@@ -34,9 +32,9 @@ class StockfishEngineService {
       _handleLine(line);
     });
 
-    _stderrSub = _stockfish?.stderr.listen((err) {
-      _raw.add('ERR: $err');
-    });
+    // _stderrSub = _stockfish?.stderr.listen((err) {
+    //   _raw.add('ERR: $err');
+    // });
 
     await Future.delayed(waitBeforeUci);
 

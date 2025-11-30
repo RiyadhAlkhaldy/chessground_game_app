@@ -11,7 +11,6 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/game_us
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
-import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
@@ -46,20 +45,20 @@ class OfflineGameController extends BaseGameController
 
   // ========== Lifecycle Methods ==========
 
-  @override
-  void onInit() {
-    super.onInit();
-    startNewGame(
-      whitePlayerName: uuidKeyForUser,
-      blackPlayerName: uuidKeyForAI,
-    ).then((_) {
-      plySound.executeDongSound();
-      fen = gameState.position.fen;
-      validMoves = makeLegalMoves(gameState.position);
-      listenToGameStatus();
-      AppLogger.info('GameController initialized', tag: 'GameController');
-    });
-  }
+  // @override
+  // void onInit() {
+  //   super.onInit();
+  // startNewGame(
+  //   whitePlayerName: uuidKeyForUser,
+  //   blackPlayerName: uuidKeyForAI,
+  // ).then((_) {
+  //   });
+  // plySound.executeDongSound();
+  // fen = gameState.position.fen;
+  // validMoves = makeLegalMoves(gameState.position);
+  // listenToGameStatus();
+  // AppLogger.info('GameController initialized', tag: 'GameController');
+  // }
 
   @override
   void onClose() {

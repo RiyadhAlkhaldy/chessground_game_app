@@ -80,7 +80,7 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       controller.setVsComputer(value: true);
                       // navigate to setup game time screen
-                      Get.toNamed(RouteNames.offlineGamePage);
+                      Get.toNamed(RouteNames.newGamePage);
                     },
                   ),
                   buildGameType(
