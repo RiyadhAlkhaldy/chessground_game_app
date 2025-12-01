@@ -7,7 +7,6 @@ import 'package:chessground_game_app/core/global_feature/data/collections/player
 import 'package:chessground_game_app/core/global_feature/data/datasources/chess_game_local_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/data/datasources/game_state_cache_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/data/datasources/player_local_datasource.dart';
-import 'package:chessground_game_app/core/global_feature/data/datasources/stockfish_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/data/repositories/chess_game_repository_impl.dart';
 import 'package:chessground_game_app/core/global_feature/data/repositories/game_state_repository_impl.dart';
 import 'package:chessground_game_app/core/global_feature/data/repositories/player_repository_impl.dart';
@@ -24,6 +23,14 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/game_us
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_player_by_uuid_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_recent_games_usecase.dart';
+import 'package:chessground_game_app/features/analysis/data/datasources/stockfish_datasource.dart';
+import 'package:chessground_game_app/features/analysis/data/repositories/stockfish_repository_impl.dart';
+import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/analyze_position_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_hint_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/set_engine_level_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/stream_analysis_usecase.dart';
 import 'package:chessground_game_app/features/online_game/domain/usecases/play_move.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
@@ -123,7 +130,10 @@ class InjectionContainer {
       fenix: true,
     );
     // StockfishDataSource
-    Get.lazyPut<StockfishDataSource>(() => StockfishDataSource(), fenix: true);
+    Get.lazyPut<StockfishDataSource>(
+      () => StockfishDataSourceImpl(),
+      fenix: true,
+    );
 
     // Cache data source
     Get.lazyPut<GameStateCacheDataSource>(
@@ -158,6 +168,10 @@ class InjectionContainer {
 
     ///
     Get.lazyPut<SoundEffectService>(() => SoundEffectService(), fenix: true);
+    // Stockfish repository
+    Get.lazyPut<StockfishRepository>(
+      () => StockfishRepositoryImpl(dataSource: sl()),
+    );
 
     AppLogger.debug('Repositories registered', tag: 'DI');
   }
@@ -190,7 +204,12 @@ class InjectionContainer {
     ///
     Get.lazyPut(() => PlaySoundUseCase(sl()), fenix: true);
     Get.lazyPut(() => PlayMove(sl()), fenix: true);
-
+    // Stockfish use cases
+    Get.lazyPut(() => AnalyzePositionUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetBestMoveUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetHintUseCase(sl()), fenix: true);
+    Get.lazyPut(() => StreamAnalysisUseCase(sl()), fenix: true);
+    Get.lazyPut(() => SetEngineLevelUseCase(sl()), fenix: true);
     AppLogger.debug('Use cases registered', tag: 'DI');
   }
 

@@ -1,4 +1,3 @@
-import 'package:chessground_game_app/core/global_feature/data/datasources/stockfish_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/data/repositories/games_respository_impl.dart';
 import 'package:chessground_game_app/core/global_feature/domain/repositories/games_repository.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_clock_service.dart';
@@ -39,7 +38,7 @@ class GameBinding extends Bindings {
   @override
   void dependencies() {
     /// data sources
-    Get.lazyPut(() => StockfishDataSource(), fenix: true);
+    // Get.lazyPut(() => StockfishDataSource(), fenix: true);
 
     /// services
     Get.lazyPut(() => SoundEffectService(), fenix: true);

@@ -1,3 +1,6 @@
+import 'package:chessground_game_app/features/analysis/game_analysis_binding.dart';
+import 'package:chessground_game_app/features/analysis/presentation/pages/game_analysis_screen.dart';
+import 'package:chessground_game_app/features/analysis/stockfish_binding.dart';
 import 'package:chessground_game_app/features/computer_game/game_computer_binding.dart';
 import 'package:chessground_game_app/features/computer_game/game_computer_with_time_binding.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/pages/game_computer_page.dart';
@@ -17,6 +20,8 @@ import 'package:chessground_game_app/features/computer_game/presentation/pages/s
 import 'package:get/get.dart';
 
 abstract class RouteNames {
+  RouteNames._();
+
   static String home = '/';
   static String sideChoosingPage = '/sideChoosingPage';
   static String gameComputerPage = '/gameComputerPage';
@@ -24,6 +29,14 @@ abstract class RouteNames {
   static String freeGamePage = '/FreeGameScreen';
   static String offlineGamePage = '/offlineGamePage';
   static String newGamePage = '/newGamePage';
+  static const String newGame = '/new-game';
+  static const String game = '/game';
+  static const String gameHistory = '/game-history';
+  static const String gameDetail = '/game-detail';
+  static const String gameAnalysis = '/game-analysis'; // NEW
+  static const String settings = '/settings';
+  static const String about = '/about';
+
   static String editPosition = '/EditPosition';
   static String analysisPage = '/AnalysisScreen';
   static String gameTimePage = '/GameTimeScreen';
@@ -37,6 +50,7 @@ abstract class RouteNames {
 }
 
 class AppPages {
+  AppPages._();
   static final routes = [
     GetPage(name: RouteNames.home, page: () => const HomePage()),
     // GetPage(name: '/online', page: () => const OnlineView()),
@@ -76,6 +90,16 @@ class AppPages {
       name: RouteNames.newGamePage,
       page: () => const NewGamePage(),
       binding: OfflineGameBindings(),
+    ),
+    // Game analysis screen
+    GetPage(
+      name: RouteNames.gameAnalysis,
+      page: () => const GameAnalysisScreen(),
+      bindings: [
+        StockfishBinding(), // Ensure Stockfish is initialized
+        GameAnalysisBinding(),
+      ],
+      transition: Transition.rightToLeft,
     ),
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),
     // GetPage(name: RouteNames.analysisScreen, page: () => AnalysisScreen()),
