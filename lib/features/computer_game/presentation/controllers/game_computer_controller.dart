@@ -5,7 +5,6 @@ import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/data/models/extended_evaluation.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
@@ -19,10 +18,10 @@ import 'package:chessground_game_app/features/computer_game/presentation/control
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stockfish/stockfish.dart'; 
+import 'package:stockfish/stockfish.dart';
 
 class GameComputerController extends BaseGameController
-    with StorageFeatures,SetupGameVsAiMixin, WidgetsBindingObserver {
+    with StorageFeatures, SetupGameVsAiMixin, WidgetsBindingObserver {
   // Computer-specific dependencies
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
   final storage = Get.find<GetStorageControllerImp>();
