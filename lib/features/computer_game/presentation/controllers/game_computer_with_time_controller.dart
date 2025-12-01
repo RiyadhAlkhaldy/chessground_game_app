@@ -2,13 +2,16 @@ import 'dart:async';
 
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_clock_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/interfaces/end_game_interfaces.dart';
+import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_controller.dart';
 import 'package:chessground_game_app/features/home/presentation/controllers/game_start_up_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class GameComputerWithTimeController extends GameComputerController {
+class GameComputerWithTimeController extends GameComputerController
+    implements TimeOutInterface {
   final ChessClockService clockCtrl;
   GameStartUpController? gameCtrl;
 
@@ -77,6 +80,35 @@ class GameComputerWithTimeController extends GameComputerController {
   void applyStockfishSettings() {
     // Override to use settings from gameCtrl if needed, or just call super
     super.applyStockfishSettings();
+  }
+
+  @override
+  Future<void> timeOut() async {
+    try {
+      final loser = gameState.turn;
+      final winner = loser == Side.white ? Side.black : Side.white;
+
+      AppLogger.gameEvent(
+        'TimeOut',
+        data: {'loser': loser.name, 'winner': winner.name},
+      );
+
+      // await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Time Out!',
+        '${loser == Side.white ? 'White' : 'Black'} lost on time. ${winner == Side.white ? 'White' : 'Black'} wins!',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in timeOut',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'OfflineGameController',
+      );
+    }
   }
 }
 

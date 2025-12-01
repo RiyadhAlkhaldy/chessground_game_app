@@ -416,50 +416,155 @@ class OfflineGameController extends BaseGameController
   }
 
   @override
-  agreeDraw() {
-    // TODO: implement agreeDraw
-    throw UnimplementedError();
+  Future<void> agreeDraw() async {
+    try {
+      await agreeDrawn();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in agreeDraw',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'OfflineGameController',
+      );
+    }
   }
 
   @override
-  checkMate() {
-    // TODO: implement checkMate
-    throw UnimplementedError();
+  Future<void> checkMate() async {
+    try {
+      final winner = gameState.turn == Side.white ? Side.black : Side.white;
+      AppLogger.gameEvent('Checkmate', data: {'winner': winner.name});
+
+      await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Checkmate!',
+        '${winner == Side.white ? 'White' : 'Black'} wins by checkmate!',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in checkMate',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'OfflineGameController',
+      );
+    }
   }
 
   @override
-  draw() {
-    // TODO: implement draw
-    throw UnimplementedError();
+  Future<void> draw() async {
+    try {
+      gameState.setAgreementDraw();
+      updateReactiveState();
+      await _saveGameToDatabase();
+
+      AppLogger.gameEvent('Draw');
+
+      Get.snackbar(
+        'Game Drawn',
+        'The game ended in a draw',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in draw',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'OfflineGameController',
+      );
+    }
   }
 
   @override
-  fiftyMoveRule() {
-    // TODO: implement fiftyMoveRule
-    throw UnimplementedError();
+  Future<void> fiftyMoveRule() async {
+    try {
+      AppLogger.gameEvent('FiftyMoveRule');
+      await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Draw by Fifty-Move Rule',
+        'Game drawn due to fifty-move rule',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in fiftyMoveRule',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'OfflineGameController',
+      );
+    }
   }
 
   @override
-  insufficientMaterial() {
-    // TODO: implement insufficientMaterial
-    throw UnimplementedError();
+  Future<void> insufficientMaterial() async {
+    try {
+      AppLogger.gameEvent('InsufficientMaterial');
+      await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Draw by Insufficient Material',
+        'Game drawn due to insufficient material',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in insufficientMaterial',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'OfflineGameController',
+      );
+    }
   }
 
   @override
-  staleMate() {
-    // TODO: implement staleMate
-    throw UnimplementedError();
+  Future<void> staleMate() async {
+    try {
+      AppLogger.gameEvent('Stalemate');
+      await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Stalemate!',
+        'Game ended in a stalemate - it\'s a draw',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in staleMate',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'OfflineGameController',
+      );
+    }
   }
 
   @override
-  threefoldRepetition() {
-    // TODO: implement threefoldRepetition
-    throw UnimplementedError();
+  Future<void> threefoldRepetition() async {
+    try {
+      AppLogger.gameEvent('ThreefoldRepetition');
+      await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Draw by Threefold Repetition',
+        'Game drawn due to threefold repetition',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in threefoldRepetition',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'OfflineGameController',
+      );
+    }
   }
 
-  @override
-  timeOut() {
-    // TODO: implement timeOut
-    throw UnimplementedError();
-  }
+  
 }

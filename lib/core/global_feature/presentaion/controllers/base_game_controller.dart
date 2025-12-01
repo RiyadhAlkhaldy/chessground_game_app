@@ -8,7 +8,6 @@ import 'package:chessground_game_app/core/global_feature/domain/entities/chess_g
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/interfaces/end_game_interfaces.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_result_dialog.dart';
 import 'package:chessground_game_app/core/utils/dialog/game_status.dart';
 import 'package:chessground_game_app/core/utils/dialog/status_l10n.dart';
@@ -17,17 +16,7 @@ import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
 
-abstract class BaseGameController extends GetxController
-    implements
-        CheckMateInterface,
-        StaleMateInterface,
-        DrawInterface,
-        ResignInterface,
-        AgreeDrawInterface,
-        TimeOutInterface,
-        InsufficientMaterialInterface,
-        ThreefoldRepetitionInterface,
-        FiftyMoveRuleInterface {
+abstract class BaseGameController extends GetxController {
   // ========== Observable State ==========
   Position get initail => Chess.fromSetup(Setup.parseFen(_initailLocalFen));
 
@@ -208,7 +197,6 @@ abstract class BaseGameController extends GetxController
 
   /// Resign: if side resigns, winner is the other side.
 
-  @override
   Future<void> resign(Side side) async {
     gameState.resign(side);
     updateReactiveState();
@@ -383,6 +371,11 @@ abstract class BaseGameController extends GetxController
 
   int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
 
+  /// Board orientation (for flip board feature)
+  final Rx<Side> _orientation = Side.white.obs;
+  set orientation(Side side) => _orientation.value = side;
+  Side get orientation => _orientation.value;
+
   void jumpToHalfmove(int index) {
     final allMoves = gameState.getMoveObjectsCopy();
     final newState = GameState(initial: initail);
@@ -392,6 +385,30 @@ abstract class BaseGameController extends GetxController
     gameState = newState;
     fen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
+    update();
+  }
+
+  /// Navigate to first move
+  void navigateToFirstMove() {
+    if (pgnTokens.isEmpty) return;
+    jumpToHalfmove(0);
+  }
+
+  /// Navigate to last move (current position)
+  void navigateToLastMove() {
+    if (pgnTokens.isEmpty) return;
+    jumpToHalfmove(pgnTokens.length - 1);
+  }
+
+  /// Navigate to specific move index
+  void navigateToMove(int index) {
+    if (index < 0 || index >= pgnTokens.length) return;
+    jumpToHalfmove(index);
+  }
+
+  /// Flip board orientation
+  void flipBoard() {
+    orientation = orientation == Side.white ? Side.black : Side.white;
     update();
   }
 

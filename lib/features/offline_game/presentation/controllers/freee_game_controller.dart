@@ -10,14 +10,18 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/setup_game_vs_ai_mixin.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_features.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
 
-class FreeGameController extends BaseGameController with StorageFeatures {
+class FreeGameController extends BaseGameController
+    with StorageFeatures, SetupGameVsAiMixin
+    implements OfflineFeatures {
   // ========== Dependencies (Use Cases) ==========
   final UpdateGameUseCase updateGameUseCase;
   final GetGameByUuidUseCase getGameByUuidUseCase;
@@ -45,6 +49,7 @@ class FreeGameController extends BaseGameController with StorageFeatures {
     listenToGameStatus();
   }
 
+  @override
   String getPgnString() {
     if (currentGame == null) return '';
 
@@ -60,14 +65,17 @@ class FreeGameController extends BaseGameController with StorageFeatures {
     );
   }
 
+  @override
   List<Role> getCapturedPieces(Side side) {
     return gameState.getCapturedPiecesList(side);
   }
 
+  @override
   int getMaterialOnBoard(Side side) {
     return gameState.materialOnBoard(side);
   }
 
+  @override
   Future<void> saveGame() async {
     await _saveGameToDatabase();
     Get.snackbar(
@@ -96,6 +104,7 @@ class FreeGameController extends BaseGameController with StorageFeatures {
   @override
   int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
 
+  @override
   Future<void> loadGame(String gameUuid) async {
     try {
       setLoading(true);
@@ -180,6 +189,7 @@ class FreeGameController extends BaseGameController with StorageFeatures {
     }
   }
 
+  @override
   Future<void> agreeDrawn() async {
     try {
       gameState.setAgreementDraw();
@@ -297,50 +307,153 @@ class FreeGameController extends BaseGameController with StorageFeatures {
   }
 
   @override
-  agreeDraw() {
-    // TODO: implement agreeDraw
-    throw UnimplementedError();
+  Future<void> agreeDraw() async {
+    try {
+      await agreeDrawn();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in agreeDraw',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'FreeGameController',
+      );
+    }
   }
 
   @override
-  checkMate() {
-    // TODO: implement checkMate
-    throw UnimplementedError();
+  Future<void> checkMate() async {
+    try {
+      final winner = gameState.turn == Side.white ? Side.black : Side.white;
+      AppLogger.gameEvent('Checkmate', data: {'winner': winner.name});
+
+      await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Checkmate!',
+        '${winner == Side.white ? 'White' : 'Black'} wins by checkmate!',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in checkMate',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'FreeGameController',
+      );
+    }
   }
 
   @override
-  draw() {
-    // TODO: implement draw
-    throw UnimplementedError();
+  Future<void> draw() async {
+    try {
+      gameState.setAgreementDraw();
+      updateReactiveState();
+      await _saveGameToDatabase();
+
+      AppLogger.gameEvent('Draw');
+
+      Get.snackbar(
+        'Game Drawn',
+        'The game ended in a draw',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in draw',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'FreeGameController',
+      );
+    }
   }
 
   @override
-  fiftyMoveRule() {
-    // TODO: implement fiftyMoveRule
-    throw UnimplementedError();
+  Future<void> fiftyMoveRule() async {
+    try {
+      AppLogger.gameEvent('FiftyMoveRule');
+      await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Draw by Fifty-Move Rule',
+        'Game drawn due to fifty-move rule',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in fiftyMoveRule',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'FreeGameController',
+      );
+    }
   }
 
   @override
-  insufficientMaterial() {
-    // TODO: implement insufficientMaterial
-    throw UnimplementedError();
+  Future<void> insufficientMaterial() async {
+    try {
+      AppLogger.gameEvent('InsufficientMaterial');
+      await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Draw by Insufficient Material',
+        'Game drawn due to insufficient material',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in insufficientMaterial',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'FreeGameController',
+      );
+    }
   }
 
   @override
-  staleMate() {
-    // TODO: implement staleMate
-    throw UnimplementedError();
+  Future<void> staleMate() async {
+    try {
+      AppLogger.gameEvent('Stalemate');
+      await _saveGameToDatabase();
+
+      Get.snackbar(
+        'Stalemate!',
+        'Game ended in a stalemate - it\'s a draw',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in staleMate',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'FreeGameController',
+      );
+    }
   }
 
   @override
-  threefoldRepetition() {
-    // TODO: implement threefoldRepetition
-    throw UnimplementedError();
-  }
+  Future<void> threefoldRepetition() async {
+    try {
+      AppLogger.gameEvent('ThreefoldRepetition');
+      await _saveGameToDatabase();
 
-  @override
-  timeOut() {
-    // TODO: implement timeOut
-    throw UnimplementedError();
+      Get.snackbar(
+        'Draw by Threefold Repetition',
+        'Game drawn due to threefold repetition',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 3),
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error in threefoldRepetition',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'FreeGameController',
+      );
+    }
   }
 }

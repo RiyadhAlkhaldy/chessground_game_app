@@ -1,6 +1,17 @@
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/interfaces/end_game_interfaces.dart';
 import 'package:dartchess/dartchess.dart';
 
-abstract class OnlineFeatures {
+abstract class OnlineFeatures
+    implements
+        TimeOutInterface,
+        CheckMateInterface,
+        StaleMateInterface,
+        DrawInterface,
+        ResignInterface,
+        AgreeDrawInterface,
+        InsufficientMaterialInterface,
+        ThreefoldRepetitionInterface,
+        FiftyMoveRuleInterface {
   Future<void> startNewGame({
     required String whitePlayerName,
     required String blackPlayerName,
@@ -11,6 +22,7 @@ abstract class OnlineFeatures {
   Future<void> connectToGame(String gameId);
   Future<void> sendMove(NormalMove move);
   Stream<NormalMove> receiveMoves();
+  @override
   Future<void> resign(Side side);
   Future<void> offerDraw();
   Future<void> acceptDraw();
@@ -19,4 +31,3 @@ abstract class OnlineFeatures {
   List<Role> getCapturedPieces(Side side);
   int getMaterialOnBoard(Side side);
 }
-

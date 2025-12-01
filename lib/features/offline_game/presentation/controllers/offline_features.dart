@@ -1,6 +1,16 @@
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/interfaces/end_game_interfaces.dart';
 import 'package:dartchess/dartchess.dart';
 
-abstract class OfflineFeatures {
+abstract class OfflineFeatures
+    implements
+        CheckMateInterface,
+        StaleMateInterface,
+        DrawInterface,
+        ResignInterface,
+        AgreeDrawInterface,
+        InsufficientMaterialInterface,
+        ThreefoldRepetitionInterface,
+        FiftyMoveRuleInterface {
   Future<void> startNewGame({
     required String whitePlayerName,
     required String blackPlayerName,
@@ -12,12 +22,6 @@ abstract class OfflineFeatures {
   Future<void> loadGame(String gameUuid);
 
   Future<void> saveGame();
-
-  Future<void> undoMove();
-
-  Future<void> redoMove();
-
-  Future<void> resign(Side side);
 
   Future<void> agreeDrawn();
 

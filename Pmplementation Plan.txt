@@ -1,0 +1,839 @@
+// Implementation Plan: Chessground Game App Completion
+// Overview
+// This implementation plan outlines the steps to complete all missing features in the Chessground Game App, organized by priority and following Clean Architecture principles across Data, Domain, and Presentation layers.
+
+// User Review Required
+// IMPORTANT
+
+// Breaking Changes & Decisions
+
+// Online Multiplayer Backend: This feature requires a backend server (WebSocket + REST API). Choose one:
+// Build custom backend (Node.js + Socket.io recommended)
+// Integrate with Lichess API
+// Integrate with Chess.com API
+// Skip online features for now
+// Puzzle Data Source: Where should puzzles come from?
+// Lichess puzzle database (API integration)
+// Local embedded puzzle database
+// Custom puzzle import feature
+// Skip puzzle mode for now
+// Build Configuration: Need real values for:
+// Android Application ID (e.g., com.yourcompany.chessapp)
+// Release signing keystore details
+// Testing Strategy: Should we add tests as we implement, or batch them at the end?
+// Proposed Changes
+// Phase 1: Core Improvements (High Priority)
+// Complete existing features and fix critical issues before adding new functionality.
+
+// 1.1 End Game Interfaces Implementation
+// Implement all TODO end game interface methods across controllers.
+
+// [MODIFY] 
+// offline_game_controller.dart
+// Changes:
+
+// Implement 8 end game interface methods (lines 420-462)
+// Replace throw UnimplementedError() with proper logic
+// Show game result dialogs
+// Update game statistics
+// Save game to database
+// Implementation approach:
+
+// @override
+// void checkMate() {
+//   final winner = gameState.turn == Side.white ? Side.black : Side.white;
+//   _showGameResultDialog(
+//     result: GameResult.checkmate,
+//     winner: winner,
+//     message: '${winner == Side.white ? "White" : "Black"} wins by checkmate!',
+//   );
+//   _finalizeGame(winner: winner, termination: GameTermination.checkmate);
+// }
+// @override
+// void draw() {
+//   _showGameResultDialog(
+//     result: GameResult.draw,
+//     message: 'Game drawn by agreement',
+//   );
+//   _finalizeGame(termination: GameTermination.draw);
+// }
+// // Similar implementations for staleMate, fiftyMoveRule, etc.
+// [MODIFY] 
+// freee_game_controller.dart
+// Changes:
+
+// Implement 8 end game interface methods (lines 301-343)
+// Same approach as offline_game_controller
+// [MODIFY] 
+// online_game_controller.dart
+// Changes:
+
+// Implement 8 end game interface methods (lines 78-120)
+// Send game end notifications to opponent via WebSocket
+// Sync game result with backend
+// [MODIFY] 
+// puzzles_game_controller.dart
+// Changes:
+
+// Implement 8 end game interface methods (lines 46-88)
+// Handle puzzle-specific end conditions
+// Track puzzle completion status
+// 1.2 Game Controls Enhancement
+// [MODIFY] 
+// game_controls_widget.dart
+// Changes:
+
+// Line 97 - Navigate to First Move:
+
+// IconButton(
+//   icon: Icon(Icons.first_page),
+//   onPressed: () {
+//     controller.navigateToFirstMove();
+//   },
+//   tooltip: 'First move',
+// )
+// Line 109 - Navigate to Last Move:
+
+// IconButton(
+//   icon: Icon(Icons.last_page),
+//   onPressed: () {
+//     controller.navigateToLastMove();
+//   },
+//   tooltip: 'Last move',
+// )
+// Line 121 - Board Flip:
+
+// IconButton(
+//   icon: Icon(Icons.rotate_left),
+//   onPressed: () {
+//     controller.flipBoard();
+//   },
+//   tooltip: 'Flip board',
+// )
+// Add to BaseGameController:
+
+// // In base_game_controller.dart
+// void navigateToFirstMove() {
+//   if (moveHistory.isEmpty) return;
+//   currentMoveIndex.value = 0;
+//   _updateBoardPosition();
+// }
+// void navigateToLastMove() {
+//   if (moveHistory.isEmpty) return;
+//   currentMoveIndex.value = moveHistory.length - 1;
+//   _updateBoardPosition();
+// }
+// void flipBoard() {
+//   orientation.value = orientation.value == Side.white ? Side.black : Side.white;
+// }
+// [MODIFY] 
+// move_list_widget.dart
+// Changes (Line 127):
+
+// ListTile(
+//   title: Text(move.san),
+//   onTap: () {
+//     controller.navigateToMove(index);
+//   },
+//   selected: controller.currentMoveIndex.value == index,
+// )
+// Add to BaseGameController:
+
+// void navigateToMove(int index) {
+//   if (index < 0 || index >= moveHistory.length) return;
+//   currentMoveIndex.value = index;
+//   _updateBoardPosition();
+// }
+// void _updateBoardPosition() {
+//   // Rebuild game state up to currentMoveIndex
+//   final movesToApply = moveHistory.sublist(0, currentMoveIndex.value + 1);
+//   gameState.value = GameState.fromFEN(initialFEN);
+//   for (final move in movesToApply) {
+//     gameState.value = gameState.value.playMove(move);
+//   }
+// }
+// 1.3 Code Cleanup
+// [DELETE] Dead Code Blocks
+// freee_game_controller.dart
+// :
+
+// Delete lines 284-500+ (commented-out old implementation)
+// recent_games.dart
+// :
+
+// Delete entire file (fully commented)
+// All files:
+
+// Remove commented-out imports
+// Remove unused debug FEN strings
+// [DELETE] Unused Example Code
+// todo.dart
+// :
+
+// Delete file
+// todo_service.dart
+// :
+
+// Delete file
+// 1.4 Build Configuration
+// [MODIFY] 
+// build.gradle.kts
+// Changes:
+
+// Line 24 - Application ID:
+
+// applicationId = "com.yourcompany.chessgroundapp" // Replace with actual ID
+// Lines 33-39 - Signing Configuration:
+
+// signingConfigs {
+//     create("release") {
+//         storeFile = file("../keystore.jks")
+//         storePassword = System.getenv("KEYSTORE_PASSWORD")
+//         keyAlias = System.getenv("KEYSTORE_KEY_ALIAS")
+//         keyPassword = System.getenv("KEYSTORE_KEY_PASSWORD")
+//     }
+// }
+// buildTypes {
+//     release {
+//         signingConfig = signingConfigs.getByName("release")
+//     }
+// }
+// Phase 2: Online Multiplayer (Medium Priority)
+// Implement complete online game functionality across all three layers.
+
+// 2.1 Data Layer - Online Game
+// [NEW] 
+// online_game_remote_datasource.dart
+// Purpose: Handle WebSocket connections and REST API calls
+
+// Dependencies:
+
+// dio (already in pubspec.yaml)
+// web_socket_channel (add to pubspec)
+// Key Methods:
+
+// abstract class OnlineGameRemoteDataSource {
+//   Future<String> createGame(CreateGameParams params);
+//   Future<void> joinGame(String gameId);
+//   Future<void> sendMove(String gameId, String move);
+//   Stream<MoveModel> listenToMoves(String gameId);
+//   Future<void> offerDraw(String gameId);
+//   Future<void> acceptDraw(String gameId);
+//   Future<void> resign(String gameId);
+// }
+// [NEW] 
+// online_game_model.dart
+// Uses Freezed:
+
+// @freezed
+// class OnlineGameModel with _$OnlineGameModel {
+//   const factory OnlineGameModel({
+//     required String id,
+//     required String whitePlayerId,
+//     required String blackPlayerId,
+//     required GameStateModel gameState,
+//     required String status,
+//     DateTime? startedAt,
+//     DateTime? endedAt,
+//   }) = _OnlineGameModel;
+//   factory OnlineGameModel.fromJson(Map<String, dynamic> json) =>
+//       _$OnlineGameModelFromJson(json);
+// }
+// [NEW] 
+// online_game_repository_impl.dart
+// Implements: OnlineGameRepository (domain)
+
+// Key Methods:
+
+// class OnlineGameRepositoryImpl implements OnlineGameRepository {
+//   final OnlineGameRemoteDataSource remoteDataSource;
+//   @override
+//   Future<Either<Failure, String>> createGame({
+//     required String whitePlayerName,
+//     required String blackPlayerName,
+//   }) async {
+//     try {
+//       final gameId = await remoteDataSource.createGame(...);
+//       return Right(gameId);
+//     } catch (e) {
+//       return Left(ServerFailure(e.toString()));
+//     }
+//   }
+  
+//   // Similar for other methods
+// }
+// 2.2 Domain Layer - Online Game
+// [NEW] 
+// online_game_entity.dart
+// class OnlineGameEntity extends Equatable {
+//   final String id;
+//   final String whitePlayerId;
+//   final String blackPlayerId;
+//   final GameStateEntity gameState;
+//   final OnlineGameStatus status;
+//   final DateTime? startedAt;
+//   final DateTime? endedAt;
+//   const OnlineGameEntity({...});
+//   @override
+//   List<Object?> get props => [...];
+// }
+// enum OnlineGameStatus {
+//   waiting,
+//   active,
+//   finished,
+//   abandoned,
+// }
+// [NEW] 
+// online_game_repository.dart
+// Contract for data layer:
+
+// abstract class OnlineGameRepository {
+//   Future<Either<Failure, String>> createGame({
+//     required String whitePlayerName,
+//     required String blackPlayerName,
+//     String? timeControl,
+//   });
+//   Future<Either<Failure, void>> joinGame(String gameId);
+//   Future<Either<Failure, void>> sendMove(String gameId, NormalMove move);
+//   Stream<NormalMove> receiveMoves(String gameId);
+//   Future<Either<Failure, void>> offerDraw(String gameId);
+//   Future<Either<Failure, void>> acceptDraw(String gameId);
+//   Future<Either<Failure, void>> resign(String gameId);
+// }
+// [NEW] Use Cases
+// Create 7 new use case files in lib/features/online_game/domain/usecases/:
+
+// create_online_game_usecase.dart
+// join_online_game_usecase.dart
+// send_move_usecase.dart
+// receive_moves_usecase.dart
+// offer_draw_usecase.dart
+// accept_draw_usecase.dart
+// resign_game_usecase.dart
+// 2.3 Presentation Layer - Online Game
+// [MODIFY] 
+// online_game_controller.dart
+// Replace all throw UnimplementedError() with:
+
+// class OnlineGameController extends BaseGameController
+//     implements OnlineFeatures {
+//   final CreateOnlineGameUsecase createGameUsecase;
+//   final JoinOnlineGameUsecase joinGameUsecase;
+//   final SendMoveUsecase sendMoveUsecase;
+//   final ReceiveMovesUsecase receiveMovesUsecase;
+//   final OfferDrawUsecase offerDrawUsecase;
+//   final AcceptDrawUsecase acceptDrawUsecase;
+//   final ResignGameUsecase resignGameUsecase;
+//   final gameId = Rx<String?>(null);
+//   final connectionStatus = Rx<ConnectionStatus>(ConnectionStatus.disconnected);
+//   @override
+//   Future<void> startNewGame({
+//     required String whitePlayerName,
+//     required String blackPlayerName,
+//     String? event,
+//     String? site,
+//     String? timeControl,
+//   }) async {
+//     connectionStatus.value = ConnectionStatus.connecting;
+    
+//     final result = await createGameUsecase(CreateGameParams(
+//       whitePlayerName: whitePlayerName,
+//       blackPlayerName: blackPlayerName,
+//       timeControl: timeControl,
+//     ));
+//     result.fold(
+//       (failure) {
+//         connectionStatus.value = ConnectionStatus.failed;
+//         Get.snackbar('Error', 'Failed to create game: ${failure.message}');
+//       },
+//       (id) {
+//         gameId.value = id;
+//         connectionStatus.value = ConnectionStatus.connected;
+//         _startListeningToMoves();
+//       },
+//     );
+//   }
+//   @override
+//   Future<void> sendMove(NormalMove move) async {
+//     if (gameId.value == null) return;
+    
+//     final result = await sendMoveUsecase(SendMoveParams(
+//       gameId: gameId.value!,
+//       move: move,
+//     ));
+//     result.fold(
+//       (failure) => Get.snackbar('Error', 'Failed to send move'),
+//       (_) => null, // Success
+//     );
+//   }
+//   void _startListeningToMoves() {
+//     if (gameId.value == null) return;
+    
+//     receiveMovesUsecase(gameId.value!).listen((move) {
+//       // Update game state with received move
+//       playMove(move);
+//     });
+//   }
+//   // Implement other methods similarly
+// }
+// [NEW] 
+// online_game_page.dart
+// UI for online gameplay:
+
+// class OnlineGamePage extends GetView<OnlineGameController> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Obx(() => Text(
+//           controller.connectionStatus.value == ConnectionStatus.connected
+//               ? 'Online Game'
+//               : 'Connecting...',
+//         )),
+//         actions: [
+//           IconButton(
+//             icon: Icon(Icons.exit_to_app),
+//             onPressed: controller.resign,
+//           ),
+//         ],
+//       ),
+//       body: Obx(() {
+//         if (controller.connectionStatus.value == ConnectionStatus.connecting) {
+//           return Center(child: CircularProgressIndicator());
+//         }
+        
+//         return Column(
+//           children: [
+//             // Player info
+//             PlayerInfoWidget(player: controller.opponentPlayer),
+            
+//             // Chessboard
+//             Expanded(
+//               child: ChessgroundWidget(
+//                 // Board configuration
+//               ),
+//             ),
+            
+//             // Current player info
+//             PlayerInfoWidget(player: controller.currentPlayer),
+            
+//             // Game controls
+//             GameControlsWidget(),
+//           ],
+//         );
+//       }),
+//     );
+//   }
+// }
+// [NEW] 
+// matchmaking_page.dart
+// UI for finding opponents:
+
+// Quick match button
+// Custom game creation
+// Join game by ID
+// Active games list
+// [MODIFY] 
+// app_pages.dart
+// Add routes:
+
+// static String onlineGamePage = '/onlineGamePage';
+// static String matchmakingPage = '/matchmakingPage';
+// // In routes array:
+// GetPage(
+//   name: RouteNames.onlineGamePage,
+//   page: () => OnlineGamePage(),
+//   binding: OnlineGameBindings(),
+// ),
+// GetPage(
+//   name: RouteNames.matchmakingPage,
+//   page: () => MatchmakingPage(),
+// ),
+// 2.4 Backend Requirements
+// Required API Endpoints
+// REST API:
+
+// POST   /api/games              - Create new game
+// POST   /api/games/:id/join     - Join game
+// POST   /api/games/:id/resign   - Resign game
+// POST   /api/games/:id/draw     - Offer/accept draw
+// GET    /api/games/active       - List active games
+// WebSocket Events:
+
+// SEND:   move         - Send move to opponent
+// SEND:   draw_offer   - Offer draw
+// SEND:   draw_response - Accept/decline draw
+// RECEIVE: move         - Opponent's move
+// RECEIVE: draw_offer   - Opponent offers draw
+// RECEIVE: game_end     - Game ended
+// RECEIVE: opponent_disconnect - Opponent connection status
+// Sample Backend Implementation (Node.js + Socket.io)
+// File structure:
+
+// backend/
+// ├── server.js           # Entry point
+// ├── routes/
+// │   └── games.js        # REST routes
+// ├── sockets/
+// │   └── gameSocket.js   # WebSocket handlers
+// ├── models/
+// │   └── Game.js         # Database model
+// └── package.json
+// Recommended packages:
+
+// express - REST API
+// socket.io - WebSocket
+// mongoose / pg - Database
+// redis - Session management
+// Phase 3: Puzzle Mode (Low Priority)
+// Implement complete puzzle feature across all three layers.
+
+// 3.1 Data Layer - Puzzles
+// [NEW] 
+// puzzle_remote_datasource.dart
+// Purpose: Fetch puzzles from API (e.g., Lichess)
+
+// abstract class PuzzleRemoteDataSource {
+//   Future<List<PuzzleModel>> getDailyPuzzles();
+//   Future<PuzzleModel> getPuzzleById(String id);
+//   Future<List<PuzzleModel>> getPuzzlesByTheme(PuzzleTheme theme);
+//   Future<List<PuzzleModel>> getPuzzlesByRating(int minRating, int maxRating);
+// }
+// class PuzzleRemoteDataSourceImpl implements PuzzleRemoteDataSource {
+//   final Dio dio;
+  
+//   @override
+//   Future<PuzzleModel> getPuzzleById(String id) async {
+//     final response = await dio.get('https://lichess.org/api/puzzle/$id');
+//     return PuzzleModel.fromJson(response.data);
+//   }
+// }
+// [NEW] 
+// puzzle_local_datasource.dart
+// Purpose: Cache solved puzzles, track progress
+
+// Isar Collection:
+
+// @collection
+// class SolvedPuzzle {
+//   Id id = Isar.autoIncrement;
+  
+//   late String puzzleId;
+//   late bool solved;
+//   late int attempts;
+//   late DateTime solvedAt;
+//   late int timeSpent; // seconds
+// }
+// [NEW] 
+// puzzle_model.dart
+// @freezed
+// class PuzzleModel with _$PuzzleModel {
+//   const factory PuzzleModel({
+//     required String id,
+//     required String fen,
+//     required List<String> solution,
+//     required int rating,
+//     required List<String> themes,
+//     String? explanation,
+//   }) = _PuzzleModel;
+//   factory PuzzleModel.fromJson(Map<String, dynamic> json) =>
+//       _$PuzzleModelFromJson(json);
+// }
+// [NEW] 
+// puzzle_repository_impl.dart
+// class PuzzleRepositoryImpl implements PuzzleRepository {
+//   final PuzzleRemoteDataSource remoteDataSource;
+//   final PuzzleLocalDataSource localDataSource;
+//   @override
+//   Future<Either<Failure, PuzzleEntity>> loadPuzzle(String puzzleId) async {
+//     try {
+//       final puzzleModel = await remoteDataSource.getPuzzleById(puzzleId);
+//       return Right(puzzleModel.toEntity());
+//     } catch (e) {
+//       return Left(ServerFailure(e.toString()));
+//     }
+//   }
+//   @override
+//   Future<Either<Failure, bool>> checkSolution(
+//     String puzzleId,
+//     List<String> moves,
+//   ) async {
+//     final puzzleResult = await loadPuzzle(puzzleId);
+    
+//     return puzzleResult.fold(
+//       (failure) => Left(failure),
+//       (puzzle) {
+//         final isCorrect = _compareMoves(moves, puzzle.solution);
+//         if (isCorrect) {
+//           localDataSource.saveSolvedPuzzle(puzzleId);
+//         }
+//         return Right(isCorrect);
+//       },
+//     );
+//   }
+// }
+// 3.2 Domain Layer - Puzzles
+// [NEW] 
+// puzzle_entity.dart
+// class PuzzleEntity extends Equatable {
+//   final String id;
+//   final String fen;
+//   final List<String> solution;
+//   final int rating;
+//   final List<PuzzleTheme> themes;
+//   final String? explanation;
+//   const PuzzleEntity({...});
+//   @override
+//   List<Object?> get props => [...];
+// }
+// enum PuzzleTheme {
+//   mateIn1,
+//   mateIn2,
+//   fork,
+//   pin,
+//   skewer,
+//   discoveredAttack,
+//   // etc.
+// }
+// [NEW] Use Cases
+// Create 5 use case files in lib/features/puzzle/domain/usecases/:
+
+// load_puzzle_usecase.dart
+// check_solution_usecase.dart
+// get_hint_usecase.dart
+// get_puzzles_by_theme_usecase.dart
+// get_puzzle_stats_usecase.dart
+// 3.3 Presentation Layer - Puzzles
+// [MODIFY] 
+// puzzles_game_controller.dart
+// class PuzzlesGameController extends BaseGameController
+//     implements PuzzleFeatures {
+//   final LoadPuzzleUsecase loadPuzzleUsecase;
+//   final CheckSolutionUsecase checkSolutionUsecase;
+//   final GetHintUsecase getHintUsecase;
+//   final currentPuzzle = Rx<PuzzleEntity?>(null);
+//   final userMoves = RxList<String>([]);
+//   final currentSolutionIndex = RxInt(0);
+//   final puzzleStatus = Rx<PuzzleStatus>(PuzzleStatus.loading);
+//   @override
+//   Future<void> loadPuzzle(String puzzleId) async {
+//     puzzleStatus.value = PuzzleStatus.loading;
+    
+//     final result = await loadPuzzleUsecase(puzzleId);
+    
+//     result.fold(
+//       (failure) {
+//         puzzleStatus.value = PuzzleStatus.error;
+//         Get.snackbar('Error', 'Failed to load puzzle');
+//       },
+//       (puzzle) {
+//         currentPuzzle.value = puzzle;
+//         gameState.value = GameState.fromFEN(puzzle.fen);
+//         puzzleStatus.value = PuzzleStatus.active;
+//       },
+//     );
+//   }
+//   @override
+//   Future<bool> checkSolution(List<String> moves) async {
+//     if (currentPuzzle.value == null) return false;
+    
+//     final result = await checkSolutionUsecase(CheckSolutionParams(
+//       puzzleId: currentPuzzle.value!.id,
+//       moves: moves,
+//     ));
+//     return result.fold(
+//       (failure) => false,
+//       (isCorrect) {
+//         if (isCorrect) {
+//           puzzleStatus.value = PuzzleStatus.solved;
+//           _showSuccessDialog();
+//         } else {
+//           puzzleStatus.value = PuzzleStatus.failed;
+//           _showFailureDialog();
+//         }
+//         return isCorrect;
+//       },
+//     );
+//   }
+//   @override
+//   Future<String> getHint() async {
+//     if (currentPuzzle.value == null) return '';
+    
+//     final nextMove = currentPuzzle.value!.solution[currentSolutionIndex.value];
+//     return 'Try moving to $nextMove';
+//   }
+// }
+// enum PuzzleStatus {
+//   loading,
+//   active,
+//   solved,
+//   failed,
+//   error,
+// }
+// [NEW] 
+// puzzles_page.dart
+// UI features:
+
+// Puzzle difficulty display
+// Solution validation feedback
+// Hint button
+// Skip button
+// Progress tracking
+// Theme badges
+// [NEW] 
+// puzzle_browser_page.dart
+// Browse puzzles by:
+
+// Difficulty rating
+// Themes
+// Recently added
+// User's unsolved puzzles
+// 3.4 Puzzle Data Integration
+// Option 1: Lichess API
+
+// Free, unlimited puzzles
+// Well-documented API
+// No backend needed
+// Option 2: Local Database
+
+// Embed puzzle JSON file in assets
+// No internet required
+// Limited puzzle set
+// Option 3: Custom Backend
+
+// Full control
+// Custom puzzle creation
+// Requires maintenance
+// Verification Plan
+// Automated Tests
+// Phase 1 Tests
+// # Test end game interfaces
+// flutter test test/features/offline_game/presentation/controllers/offline_game_controller_test.dart
+// flutter test test/features/computer_game/presentation/controllers/game_computer_controller_test.dart
+// # Test game controls
+// flutter test test/core/global_feature/presentation/widgets/game_controls_widget_test.dart
+// New test files to create:
+
+// game_computer_controller_test.dart
+// online_game_controller_test.dart
+// puzzles_game_controller_test.dart
+// game_controls_widget_test.dart
+// Phase 2 Tests
+// # Online game data layer
+// flutter test test/features/online_game/data/datasources/online_game_remote_datasource_test.dart
+// flutter test test/features/online_game/data/repositories/online_game_repository_impl_test.dart
+// # Online game domain layer
+// flutter test test/features/online_game/domain/usecases/create_online_game_usecase_test.dart
+// # Online game presentation
+// flutter test test/features/online_game/presentation/controllers/online_game_controller_test.dart
+// Phase 3 Tests
+// # Puzzle data layer
+// flutter test test/features/puzzle/data/datasources/puzzle_remote_datasource_test.dart
+// # Puzzle domain layer
+// flutter test test/features/puzzle/domain/usecases/load_puzzle_usecase_test.dart
+// # Puzzle presentation
+// flutter test test/features/puzzle/presentation/controllers/puzzles_game_controller_test.dart
+// Manual Verification
+// Phase 1
+// Launch computer game mode
+// Play until checkmate → verify dialog appears and game saves
+// Test undo/redo functionality
+// Click "First Move" button → verify board resets to starting position
+// Click "Last Move" button → verify board shows current position
+// Click "Flip Board" → verify board rotates 180°
+// Click on move in move list → verify board shows position at that move
+// Phase 2
+// Start backend server
+// Create online game from app
+// Join same game from second device/emulator
+// Make moves on both devices → verify synchronization
+// Offer draw from one device → verify notification on other
+// Accept draw → verify both devices show draw result
+// Test resign functionality
+// Test reconnection after network interruption
+// Phase 3
+// Load a puzzle
+// Make incorrect move → verify failure feedback
+// Click "Hint" → verify helpful hint is shown
+// Complete puzzle correctly → verify success animation
+// Browse puzzles by theme
+// Check puzzle statistics page
+// Test puzzle progress saving across app restarts
+// Build Verification
+// # Android
+// flutter build apk --release
+// # Verify APK installs and runs
+// # iOS (macOS only)
+// flutter build ios --release
+// # Verify archive builds successfully
+// Implementation Timeline Estimate
+// Phase	Tasks	Estimated Time
+// Phase 1: Core	End game interfaces (4 controllers × 8 methods)	8 hours
+// Game controls (3 features)	4 hours
+// Code cleanup (delete files, TODOs)	2 hours
+// Build configuration	1 hour
+// Testing	4 hours
+// Phase 1 Total	19 hours
+// Phase 2: Online	Data layer (3 files)	6 hours
+// Domain layer (8 files)	8 hours
+// Presentation layer (3 files)	10 hours
+// Backend setup	12 hours
+// Testing	6 hours
+// Phase 2 Total	42 hours
+// Phase 3: Puzzles	Data layer (4 files)	6 hours
+// Domain layer (6 files)	6 hours
+// Presentation layer (3 files)	8 hours
+// Testing	4 hours
+// Phase 3 Total	24 hours
+// Grand Total		85 hours
+// Dependencies to Add
+// For Online Game
+// dependencies:
+//   web_socket_channel: ^3.0.1  # WebSocket support
+  
+//   # Optional: if using Firebase
+//   firebase_core: ^3.11.0
+//   firebase_database: ^11.5.8
+// For Puzzles (if using Lichess)
+// # No new dependencies required
+// # Uses existing dio package
+// Rollout Strategy
+// Phase 1 (Core) → Deploy to TestFlight/Internal Testing
+
+// Get user feedback on improved game controls
+// Verify end game flows work correctly
+// Phase 2 (Online) → Closed beta with limited users
+
+// Stress test backend
+// Gather feedback on matchmaking UX
+// Fix any synchronization bugs
+// Phase 3 (Puzzles) → Public release
+
+// Full feature set complete
+// Marketing push for puzzle mode
+// Monitor puzzle API usage/costs
+// Risks & Mitigation
+// Risk	Impact	Mitigation
+// Backend downtime	High	Implement retry logic, offline mode
+// Lichess API rate limits	Medium	Cache puzzles locally, implement backoff
+// WebSocket connection drops	High	Auto-reconnect with exponential backoff
+// Game state desync	High	Periodic state validation, conflict resolution
+// Complex end game logic bugs	Medium	Comprehensive unit tests, beta testing
+// Success Criteria
+// Phase 1
+// ✅ All 32 TODO methods implemented
+// ✅ No commented-out code remains
+// ✅ Build configuration production-ready
+// ✅ Game controls fully functional
+// ✅ All tests pass
+// Phase 2
+// ✅ Two devices can play online successfully
+// ✅ Game state stays synchronized
+// ✅ Backend handles 10+ concurrent games
+// ✅ Graceful handling of disconnections
+// Phase 3
+// ✅ Puzzles load from API successfully
+// ✅ Solution validation works correctly
+// ✅ User progress persists locally
+// ✅ No API errors in production
+// Implementation plan created: 2025-12-01 Estimated total effort: 85 hours (10-11 working days)

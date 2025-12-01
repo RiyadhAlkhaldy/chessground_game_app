@@ -15,13 +15,15 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
+import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_features.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stockfish/stockfish.dart';
 
 class GameComputerController extends BaseGameController
-    with StorageFeatures, SetupGameVsAiMixin, WidgetsBindingObserver {
+    with StorageFeatures, SetupGameVsAiMixin, WidgetsBindingObserver
+    implements OfflineFeatures {
   // Computer-specific dependencies
   final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
   final storage = Get.find<GetStorageControllerImp>();
@@ -296,8 +298,38 @@ class GameComputerController extends BaseGameController
   }
 
   @override
-  timeOut() {
-    // TODO: implement timeOut
+  Future<void> agreeDrawn() {
+    // TODO: implement agreeDrawn
+    throw UnimplementedError();
+  }
+
+  @override
+  List<Role> getCapturedPieces(Side side) {
+    // TODO: implement getCapturedPieces
+    throw UnimplementedError();
+  }
+
+  @override
+  int getMaterialOnBoard(Side side) {
+    // TODO: implement getMaterialOnBoard
+    throw UnimplementedError();
+  }
+
+  @override
+  String getPgnString() {
+    // TODO: implement getPgnString
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> loadGame(String gameUuid) {
+    // TODO: implement loadGame
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> saveGame() {
+    // TODO: implement saveGame
     throw UnimplementedError();
   }
 }
