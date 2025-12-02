@@ -1,7 +1,6 @@
-
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; 
+import 'package:get/get.dart';
 
 /// Widget for engine controls (hint, analysis, etc.)
 /// عنصر لعناصر التحكم في المحرك (تلميح، تحليل، إلخ)
@@ -24,7 +23,7 @@ class EngineControlsWidget extends GetView<StockfishController> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -36,56 +35,62 @@ class EngineControlsWidget extends GetView<StockfishController> {
           // Header
           Text(
             'Engine Controls',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
 
           const SizedBox(height: 16),
 
           // Hint button
-          Obx(() => ElevatedButton.icon(
-                onPressed: controller.isLoading || !controller.isInitialized
-                    ? null
-                    : () => _getHint(context),
-                icon: const Icon(Icons.lightbulb),
-                label: const Text('Get Hint'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  backgroundColor: Colors.amber,
-                  foregroundColor: Colors.black,
-                ),
-              )),
+          Obx(
+            () => ElevatedButton.icon(
+              onPressed: controller.isLoading || !controller.isInitialized
+                  ? null
+                  : () => _getHint(context),
+              icon: const Icon(Icons.lightbulb),
+              label: const Text('Get Hint'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
+              ),
+            ),
+          ),
 
           const SizedBox(height: 8),
 
           // Analyze button
-          Obx(() => ElevatedButton.icon(
-                onPressed: controller.isLoading || !controller.isInitialized
-                    ? null
-                    : () => _analyzePosition(context),
-                icon: const Icon(Icons.analytics),
-                label: const Text('Analyze Position'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  backgroundColor: Colors.blue,
-                ),
-              )),
+          Obx(
+            () => ElevatedButton.icon(
+              onPressed: controller.isLoading || !controller.isInitialized
+                  ? null
+                  : () => _analyzePosition(context),
+              icon: const Icon(Icons.analytics),
+              label: const Text('Analyze Position'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                backgroundColor: Colors.blue,
+              ),
+            ),
+          ),
 
           const SizedBox(height: 8),
 
           // Best move button
-          Obx(() => ElevatedButton.icon(
-                onPressed: controller.isLoading || !controller.isInitialized
-                    ? null
-                    : () => _getBestMove(context),
-                icon: const Icon(Icons.star),
-                label: const Text('Best Move'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  backgroundColor: Colors.green,
-                ),
-              )),
+          Obx(
+            () => ElevatedButton.icon(
+              onPressed: controller.isLoading || !controller.isInitialized
+                  ? null
+                  : () => _getBestMove(context),
+              icon: const Icon(Icons.star),
+              label: const Text('Best Move'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                backgroundColor: Colors.green,
+              ),
+            ),
+          ),
 
           const SizedBox(height: 16),
           const Divider(),
@@ -118,10 +123,7 @@ class EngineControlsWidget extends GetView<StockfishController> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.blue[100],
                   borderRadius: BorderRadius.circular(4),
@@ -154,17 +156,11 @@ class EngineControlsWidget extends GetView<StockfishController> {
               children: [
                 Text(
                   'Beginner',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                 ),
                 Text(
                   'Master',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                 ),
               ],
             ),
@@ -181,25 +177,17 @@ class EngineControlsWidget extends GetView<StockfishController> {
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: controller.isInitialized
-              ? Colors.green[50]
-              : Colors.grey[200],
+          color: controller.isInitialized ? Colors.green[50] : Colors.grey[200],
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: controller.isInitialized
-                ? Colors.green
-                : Colors.grey,
+            color: controller.isInitialized ? Colors.green : Colors.grey,
           ),
         ),
         child: Row(
           children: [
             Icon(
-              controller.isInitialized
-                  ? Icons.check_circle
-                  : Icons.pending,
-              color: controller.isInitialized
-                  ? Colors.green
-                  : Colors.grey,
+              controller.isInitialized ? Icons.check_circle : Icons.pending,
+              color: controller.isInitialized ? Colors.green : Colors.grey,
               size: 20,
             ),
             const SizedBox(width: 8),
@@ -233,7 +221,7 @@ class EngineControlsWidget extends GetView<StockfishController> {
   /// الحصول على تلميح
   Future<void> _getHint(BuildContext context) async {
     await controller.getHint(currentFen);
-    
+
     if (controller.hintMove != null && onHintReceived != null) {
       onHintReceived!();
     }
@@ -249,7 +237,7 @@ class EngineControlsWidget extends GetView<StockfishController> {
   /// الحصول على أفضل حركة
   Future<void> _getBestMove(BuildContext context) async {
     await controller.getBestMove(currentFen, depth: 20);
-    
+
     if (controller.bestMove != null) {
       Get.snackbar(
         'Best Move',

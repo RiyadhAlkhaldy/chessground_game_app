@@ -37,12 +37,19 @@ class SideChoosingPage extends StatelessWidget {
                 const Text(
                   "اختر خيارات اللعب",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 sizedBox,
 
                 // Player Color Selector
-                const Text("اختر لونك", style: TextStyle(fontSize: 18, color: Colors.white70)),
+                const Text(
+                  "اختر لونك",
+                  style: TextStyle(fontSize: 18, color: Colors.white70),
+                ),
                 sizedBox,
                 SideChosingWidget(controller: controller),
                 sizedBox,
@@ -50,7 +57,9 @@ class SideChoosingPage extends StatelessWidget {
                 // UCI_LimitStrength toggle
                 Obx(
                   () => CheckboxListTile(
-                    title: const Text('Limit Engine Strength UCI_LimitStrength'),
+                    title: const Text(
+                      'Limit Engine Strength UCI_LimitStrength',
+                    ),
                     value: controller.uciLimitStrength.value,
                     onChanged: (bool? value) {
                       controller.uciLimitStrength.value = value!;
@@ -79,7 +88,9 @@ class SideChoosingPage extends StatelessWidget {
                               controller.uciElo.value = value.toInt();
                             },
                             activeColor: Colors.orangeAccent,
-                            inactiveColor: Colors.orange.shade200.withValues(alpha: 0.3),
+                            inactiveColor: Colors.orange.shade200.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                         ],
                       ),
@@ -106,7 +117,9 @@ class SideChoosingPage extends StatelessWidget {
                               controller.skillLevel.value = value.toInt();
                             },
                             activeColor: Colors.tealAccent,
-                            inactiveColor: Colors.teal.shade200.withValues(alpha: 0.3),
+                            inactiveColor: Colors.teal.shade200.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                         ],
                       ),
@@ -129,9 +142,13 @@ class SideChoosingPage extends StatelessWidget {
                           controller.depth.value = value.toInt();
                         },
                         activeColor: Colors.deepPurpleAccent,
-                        inactiveColor: Colors.deepPurple.shade200.withValues(alpha: 0.3),
+                        inactiveColor: Colors.deepPurple.shade200.withValues(
+                          alpha: 0.3,
+                        ),
                       ),
-                      Text('Thinking Time for AI (ms): ${controller.thinkingTimeForAI.value}'),
+                      Text(
+                        'Thinking Time for AI (ms): ${controller.thinkingTimeForAI.value}',
+                      ),
                       Slider(
                         value: controller.thinkingTimeForAI.value.toDouble(),
                         min: 100,
@@ -142,7 +159,9 @@ class SideChoosingPage extends StatelessWidget {
                           controller.thinkingTimeForAI.value = value.toInt();
                         },
                         activeColor: Colors.cyanAccent,
-                        inactiveColor: Colors.cyan.shade200.withValues(alpha: 0.3),
+                        inactiveColor: Colors.cyan.shade200.withValues(
+                          alpha: 0.3,
+                        ),
                       ),
                     ],
                   ),
@@ -152,10 +171,14 @@ class SideChoosingPage extends StatelessWidget {
                   () => Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("إظهار المساعدات", style: TextStyle(color: Colors.white)),
+                      const Text(
+                        "إظهار المساعدات",
+                        style: TextStyle(color: Colors.white),
+                      ),
                       Switch(
                         value: controller.showMoveHints.value,
-                        onChanged: (val) => controller.showMoveHints.value = val,
+                        onChanged: (val) =>
+                            controller.showMoveHints.value = val,
                         activeThumbColor: Colors.green,
                       ),
                     ],
@@ -166,16 +189,24 @@ class SideChoosingPage extends StatelessWidget {
                 // Play button
                 ElevatedButton(
                   onPressed: () {
-                    controller.changeValuecolorPlayer(controller.playerColor.value);
-                    Get.toNamed(RouteNames.gameComputerPage);
+                    controller.changeValuecolorPlayer(
+                      controller.playerColor.value,
+                    );
+                    Get.toNamed(AppRoutes.gameComputerPage);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     shape: const StadiumBorder(),
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 12,
+                    ),
                     textStyle: const TextStyle(fontSize: 18),
                   ),
-                  child: Text("ابدأ اللعب", style: Theme.of(context).textTheme.titleLarge),
+                  child: Text(
+                    "ابدأ اللعب",
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
                 ),
               ],
             ),

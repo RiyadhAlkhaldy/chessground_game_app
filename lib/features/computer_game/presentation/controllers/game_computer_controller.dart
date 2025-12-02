@@ -14,8 +14,7 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
 import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
-import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_features.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart'; 
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

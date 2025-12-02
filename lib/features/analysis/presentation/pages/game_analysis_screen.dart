@@ -4,7 +4,6 @@ import 'package:chessground_game_app/features/analysis/presentation/widgets/engi
 import 'package:chessground_game_app/features/analysis/presentation/widgets/move_list_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:chessground/chessground.dart';
 
 /// Screen for analyzing past games
 /// شاشة لتحليل الألعاب السابقة

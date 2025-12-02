@@ -166,7 +166,7 @@ class NewGamePage extends GetView<BaseGameController> {
 
     // Navigate to game screen
     if (!controller.isLoading && controller.errorMessage.isEmpty) {
-      Get.toNamed(RouteNames.offlineGamePage);
+      Get.toNamed(AppRoutes.offlineGamePage);
     }
   }
 }

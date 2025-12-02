@@ -56,7 +56,9 @@ class _StartUpPageState extends State<StartUpPage> {
                       child: PlayerColorRadioButton(
                         title: 'Play as ${Side.white.name}',
                         value: Side.white,
-                        groupValue: (controller as OfflineGameController).playerColor.value,
+                        groupValue: (controller as OfflineGameController)
+                            .playerColor
+                            .value,
                         onChanged: (value) {
                           controller.setPlayerColor(player: Side.white);
                         },
@@ -232,7 +234,7 @@ class _StartUpPageState extends State<StartUpPage> {
                     : ElevatedButton(
                         onPressed: () {
                           Get.toNamed(
-                            RouteNames.offlineGamePage,
+                            AppRoutes.offlineGamePage,
                             arguments: {"withTime": true},
                           );
                         },
@@ -245,8 +247,6 @@ class _StartUpPageState extends State<StartUpPage> {
           );
         },
       ),
-   
-   
     );
   }
 }

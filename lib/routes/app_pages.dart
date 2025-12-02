@@ -1,5 +1,7 @@
+import 'package:chessground_game_app/features/computer_game/computer_game_binding.dart';
 import 'package:chessground_game_app/features/analysis/game_analysis_binding.dart';
 import 'package:chessground_game_app/features/analysis/presentation/pages/game_analysis_screen.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/pages/new_computer_game_page.dart';
 import 'package:chessground_game_app/features/analysis/stockfish_binding.dart';
 import 'package:chessground_game_app/features/computer_game/game_computer_binding.dart';
 import 'package:chessground_game_app/features/computer_game/game_computer_with_time_binding.dart';
@@ -19,8 +21,8 @@ import 'package:chessground_game_app/features/home/presentation/pages/game_time_
 import 'package:chessground_game_app/features/computer_game/presentation/pages/side_choosing_page.dart';
 import 'package:get/get.dart';
 
-abstract class RouteNames {
-  RouteNames._();
+abstract class AppRoutes {
+  AppRoutes._();
 
   static String home = '/';
   static String sideChoosingPage = '/sideChoosingPage';
@@ -29,6 +31,7 @@ abstract class RouteNames {
   static String freeGamePage = '/FreeGameScreen';
   static String offlineGamePage = '/offlineGamePage';
   static String newGamePage = '/newGamePage';
+  static String newGameComputerPage = '/newGameComputerPage';
   static const String newGame = '/new-game';
   static const String game = '/game';
   static const String gameHistory = '/game-history';
@@ -52,54 +55,59 @@ abstract class RouteNames {
 class AppPages {
   AppPages._();
   static final routes = [
-    GetPage(name: RouteNames.home, page: () => const HomePage()),
+    GetPage(name: AppRoutes.home, page: () => const HomePage()),
     // GetPage(name: '/online', page: () => const OnlineView()),
     GetPage(
-      name: RouteNames.gameComputerPage,
+      name: AppRoutes.gameComputerPage,
       page: () => GameComputerPage(),
       binding: GameComputerBindings(),
     ),
     GetPage(
-      name: RouteNames.gameComputerWithTimePage,
+      name: AppRoutes.gameComputerWithTimePage,
       page: () => GameComputerWithTimePage(),
       binding: GameComputerWithTimeBindings(),
     ),
-    GetPage(name: RouteNames.sideChoosingPage, page: () => SideChoosingPage()),
-    GetPage(name: RouteNames.aboutPage, page: () => const AboutPage()),
-    GetPage(name: RouteNames.settingsPage, page: () => const SettingsPage()),
-    GetPage(name: RouteNames.gameTimePage, page: () => const GameTimePage()),
+    GetPage(name: AppRoutes.sideChoosingPage, page: () => SideChoosingPage()),
+    GetPage(name: AppRoutes.aboutPage, page: () => const AboutPage()),
+    GetPage(name: AppRoutes.settingsPage, page: () => const SettingsPage()),
+    GetPage(name: AppRoutes.gameTimePage, page: () => const GameTimePage()),
     GetPage(
-      name: RouteNames.gameStartUpPage,
+      name: AppRoutes.gameStartUpPage,
       page: () => const GameStartUpPage(isCustomTime: false, gameTime: '5'),
     ),
     GetPage(
-      name: RouteNames.freeGamePage,
+      name: AppRoutes.freeGamePage,
       page: () => FreeGamePage(),
       binding: FreeGameBindings(),
     ),
     GetPage(
-      name: RouteNames.recentGamesPage,
+      name: AppRoutes.recentGamesPage,
       page: () => const RecentGamesPage(),
     ),
     GetPage(
-      name: RouteNames.offlineGamePage,
+      name: AppRoutes.offlineGamePage,
       page: () => const OfflineGamePage(),
       binding: OfflineGameBindings(),
     ),
     GetPage(
-      name: RouteNames.newGamePage,
+      name: AppRoutes.newGamePage,
       page: () => const NewGamePage(),
       binding: OfflineGameBindings(),
     ),
     // Game analysis screen
     GetPage(
-      name: RouteNames.gameAnalysis,
+      name: AppRoutes.gameAnalysis,
       page: () => const GameAnalysisScreen(),
       bindings: [
         StockfishBinding(), // Ensure Stockfish is initialized
         GameAnalysisBinding(),
       ],
       transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.newGameComputerPage,
+      page: () => const NewComputerGamePage(),
+      binding: ComputerGameBinding(),
     ),
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),
     // GetPage(name: RouteNames.analysisScreen, page: () => AnalysisScreen()),

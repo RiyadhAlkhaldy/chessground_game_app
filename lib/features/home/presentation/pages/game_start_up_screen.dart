@@ -9,7 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class GameStartUpPage extends StatefulWidget {
-  const GameStartUpPage({super.key, required this.isCustomTime, required this.gameTime});
+  const GameStartUpPage({
+    super.key,
+    required this.isCustomTime,
+    required this.gameTime,
+  });
 
   final bool isCustomTime;
   final String gameTime;
@@ -31,7 +35,10 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
       appBar: AppBar(
         backgroundColor: Colors.blue,
         title: const Text('Setup Game'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: Get.back),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: Get.back,
+        ),
       ),
       body: GetBuilder<GameStartUpController>(
         builder: (_) {
@@ -71,7 +78,10 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
                         : Container(
                             height: 40,
                             decoration: BoxDecoration(
-                              border: Border.all(width: 0.5, color: Colors.black),
+                              border: Border.all(
+                                width: 0.5,
+                                color: Colors.black,
+                              ),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Padding(
@@ -80,7 +90,10 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
                                 child: Text(
                                   widget.gameTime,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(fontSize: 20, color: Colors.black),
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
                             ),
@@ -122,7 +135,10 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
                         : Container(
                             height: 40,
                             decoration: BoxDecoration(
-                              border: Border.all(width: 0.5, color: Colors.black),
+                              border: Border.all(
+                                width: 0.5,
+                                color: Colors.black,
+                              ),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Padding(
@@ -131,7 +147,10 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
                                 child: Text(
                                   widget.gameTime,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(fontSize: 20, color: Colors.black),
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
                             ),
@@ -172,7 +191,9 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
                 controller.vsComputer
                     ? Obx(
                         () => Opacity(
-                          opacity: controller.uciLimitStrength.value ? 1.0 : 0.5,
+                          opacity: controller.uciLimitStrength.value
+                              ? 1.0
+                              : 0.5,
                           child: AbsorbPointer(
                             absorbing: !controller.uciLimitStrength.value,
                             child: Column(
@@ -180,7 +201,9 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
                                 // UCI_Elo Slider
                                 Text(
                                   'UCI Elo: ${controller.uciElo.value}',
-                                  style: Theme.of(context).textTheme.titleMedium,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
                                 ),
                                 Slider(
                                   value: controller.uciElo.value.toDouble(),
@@ -192,7 +215,8 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
                                     controller.uciElo.value = value.toInt();
                                   },
                                   activeColor: Colors.orangeAccent,
-                                  inactiveColor: Colors.orange.shade200.withValues(alpha: 0.3),
+                                  inactiveColor: Colors.orange.shade200
+                                      .withValues(alpha: 0.3),
                                 ),
                               ],
                             ),
@@ -214,7 +238,9 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
 
                 const SizedBox(height: 20),
 
-                controller.vsComputer ? const SizedBox.shrink() : Text(controller.waitingText),
+                controller.vsComputer
+                    ? const SizedBox.shrink()
+                    : Text(controller.waitingText),
               ],
             ),
           );
@@ -236,14 +262,21 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
 
       // 1. start loading dialog
       controller.setIsLoading(value: true);
-      controller.setWhitesTime(Duration(minutes: int.parse(whiteTimeInMenutes.toString())));
-      controller.setBlacksTime(Duration(minutes: int.parse(blackTimeInMenutes.toString())));
+      controller.setWhitesTime(
+        Duration(minutes: int.parse(whiteTimeInMenutes.toString())),
+      );
+      controller.setBlacksTime(
+        Duration(minutes: int.parse(blackTimeInMenutes.toString())),
+      );
 
       // 2. save time and player color for both players
       if (controller.vsComputer) {
         controller.setIsLoading(value: false);
         // 3. navigate to game screen
-        Get.toNamed(RouteNames.gameComputerWithTimePage, arguments: {"withTime": true});
+        Get.toNamed(
+          AppRoutes.gameComputerWithTimePage,
+          arguments: {"withTime": true},
+        );
       } else {
         // search for players
       }
@@ -285,7 +318,10 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
       if (controller.vsComputer) {
         controller.setIsLoading(value: false);
         // 3. navigate to game screen
-        Get.toNamed(RouteNames.gameComputerWithTimePage, arguments: {"withTime": true});
+        Get.toNamed(
+          AppRoutes.gameComputerWithTimePage,
+          arguments: {"withTime": true},
+        );
       } else {
         // search for players
       }

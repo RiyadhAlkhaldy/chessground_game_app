@@ -75,11 +75,11 @@ class EngineEvaluationWidget extends GetView<StockfishController> {
           Text(
             'D${evaluation.depth}',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
               fontSize: 11,
             ),
           ),
-        ],
+        ],  
       ),
     );
   }
@@ -97,7 +97,7 @@ class EngineEvaluationWidget extends GetView<StockfishController> {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -145,7 +145,7 @@ class EngineEvaluationWidget extends GetView<StockfishController> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _getEvaluationColor(evaluation).withOpacity(0.1),
+              color: _getEvaluationColor(evaluation).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
                 color: _getEvaluationColor(evaluation),

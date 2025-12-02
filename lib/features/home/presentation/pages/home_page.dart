@@ -36,7 +36,7 @@ class HomePage extends StatelessWidget {
                       controller.setVsComputer(value: true);
                       // navigate to setup game time screen
                       Get.toNamed(
-                        RouteNames.gameTimePage,
+                        AppRoutes.gameTimePage,
                         arguments: {"withTime": false},
                       );
                     },
@@ -48,7 +48,7 @@ class HomePage extends StatelessWidget {
                       controller.setVsComputer(value: false);
                       // navigate to setup game time screen
                       Get.toNamed(
-                        RouteNames.gameTimePage,
+                        AppRoutes.gameTimePage,
                         arguments: {"withTime": false},
                       );
                     },
@@ -60,7 +60,7 @@ class HomePage extends StatelessWidget {
                       controller.setVsComputer(value: true);
                       // navigate to setup game time screen
                       Get.toNamed(
-                        RouteNames.sideChoosingPage,
+                        AppRoutes.sideChoosingPage,
                         arguments: {"withTime": false},
                       );
                     },
@@ -71,7 +71,7 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       controller.setVsComputer(value: true);
                       // navigate to setup game time screen
-                      Get.toNamed(RouteNames.freeGamePage);
+                      Get.toNamed(AppRoutes.freeGamePage);
                     },
                   ),
                   buildGameType(
@@ -80,7 +80,7 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       controller.setVsComputer(value: true);
                       // navigate to setup game time screen
-                      Get.toNamed(RouteNames.newGamePage);
+                      Get.toNamed(AppRoutes.newGamePage);
                     },
                   ),
                   buildGameType(
@@ -89,7 +89,7 @@ class HomePage extends StatelessWidget {
                     onTap: () {
                       // navigate to settings screen
 
-                      Get.toNamed(RouteNames.settingsPage);
+                      Get.toNamed(AppRoutes.settingsPage);
                     },
                   ),
                   buildGameType(
@@ -98,7 +98,7 @@ class HomePage extends StatelessWidget {
 
                     onTap: () {
                       // navigate to recent games screen
-                      Get.toNamed(RouteNames.recentGamesPage);
+                      Get.toNamed(AppRoutes.recentGamesPage);
                     },
                   ),
                   buildGameType(
@@ -106,7 +106,7 @@ class HomePage extends StatelessWidget {
                     icon: Symbols.info,
                     onTap: () {
                       // navigate to about screen
-                      Get.toNamed(RouteNames.aboutPage);
+                      Get.toNamed(AppRoutes.aboutPage);
                     },
                   ),
                 ],

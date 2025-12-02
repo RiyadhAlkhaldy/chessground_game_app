@@ -255,7 +255,7 @@ class NewGameVsComputerPage extends GetView<BaseGameController> {
 
     // Navigate to game screen
     if (!controller.isLoading && controller.errorMessage.isEmpty) {
-      Get.toNamed(RouteNames.gameComputerPage);
+      Get.toNamed(AppRoutes.gameComputerPage);
     }
   }
 }
