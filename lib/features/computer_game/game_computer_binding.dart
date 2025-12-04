@@ -21,7 +21,7 @@ class GameComputerBindings extends Bindings {
         cacheGameStateUseCase: sl<CacheGameStateUseCase>(),
         getOrCreateGuestPlayerUseCase: sl<GetOrCreateGuestPlayerUseCase>(),
       ),
-      fenix: true,
+      // fenix: true,
     );
   }
 }

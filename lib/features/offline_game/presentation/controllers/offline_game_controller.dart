@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
 import 'package:chessground_game_app/core/global_feature/domain/converters/game_state_converter.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
@@ -10,8 +11,10 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/setup_game_vs_ai_mixin.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
+import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
@@ -43,23 +46,36 @@ class OfflineGameController extends BaseGameController
     this.cacheGameStateUseCase = cacheGameStateUseCase;
     this.getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
   }
+  @override
+  void onInit() {
+    super.onInit();
+    startNewGame(
+      whitePlayerName: uuidKeyForUser,
+      blackPlayerName: uuidKeyForAI,
+    ).then((value) {
+      fen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
+      listenToGameStatus();
+      plySound.executeDongSound();
+      AppLogger.info('GameController initialized', tag: 'GameController');
+
+      // Set board orientation based on player's side choice
+      // if (choosingCtrl.playerColor.value == SideChoosing.black) {
+      //   playerSide = PlayerSide.black;
+      //   ctrlBoardSettings.orientation.value = Side.black;
+      // } else if (choosingCtrl.playerColor.value == SideChoosing.white) {
+      //   playerSide = PlayerSide.white;
+      //   ctrlBoardSettings.orientation.value = Side.white;
+      // } else {
+      //   // Random was chosen, determine based on playerSide after it's set
+      //   ctrlBoardSettings.orientation.value = playerSide == PlayerSide.black
+      //       ? Side.black
+      //       : Side.white;
+      // }
+    });
+  }
 
   // ========== Lifecycle Methods ==========
-
-  // @override
-  // void onInit() {
-  //   super.onInit();
-  // startNewGame(
-  //   whitePlayerName: uuidKeyForUser,
-  //   blackPlayerName: uuidKeyForAI,
-  // ).then((_) {
-  //   });
-  // plySound.executeDongSound();
-  // fen = gameState.position.fen;
-  // validMoves = makeLegalMoves(gameState.position);
-  // listenToGameStatus();
-  // AppLogger.info('GameController initialized', tag: 'GameController');
-  // }
 
   @override
   void onClose() {
@@ -69,6 +85,41 @@ class OfflineGameController extends BaseGameController
   }
 
   // ========== Public Methods ==========
+
+  /// Override startNewGame to set board orientation based on player color
+  @override
+  Future<void> startNewGame({
+    required String whitePlayerName,
+    required String blackPlayerName,
+    String? event,
+    String? site,
+    String? timeControl,
+  }) async {
+    // Call parent implementation to initialize the game
+    await super.startNewGame(
+      whitePlayerName: whitePlayerName,
+      blackPlayerName: blackPlayerName,
+      event: event,
+      site: site,
+      timeControl: timeControl,
+    );
+
+    // Set board orientation based on player color choice
+    final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
+    if (playerSide == PlayerSide.black) {
+      ctrlBoardSettings.orientation.value = Side.black;
+      AppLogger.debug(
+        'Board orientation set to black',
+        tag: 'OfflineGameController',
+      );
+    } else {
+      ctrlBoardSettings.orientation.value = Side.white;
+      AppLogger.debug(
+        'Board orientation set to white',
+        tag: 'OfflineGameController',
+      );
+    }
+  }
 
   @override
   Future<void> loadGame(String gameUuid) async {
@@ -565,6 +616,4 @@ class OfflineGameController extends BaseGameController
       );
     }
   }
-
-  
 }

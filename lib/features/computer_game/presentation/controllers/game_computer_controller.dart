@@ -14,7 +14,7 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
 import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart'; 
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -64,6 +64,21 @@ class GameComputerController extends BaseGameController
       listenToGameStatus();
       plySound.executeDongSound();
       AppLogger.info('GameController initialized', tag: 'GameController');
+
+      // Set board orientation based on player's side choice
+      if (choosingCtrl.playerColor.value == SideChoosing.black) {
+        playerSide = PlayerSide.black;
+        ctrlBoardSettings.orientation.value = Side.black;
+      } else if (choosingCtrl.playerColor.value == SideChoosing.white) {
+        playerSide = PlayerSide.white;
+        ctrlBoardSettings.orientation.value = Side.white;
+      } else {
+        // Random was chosen, determine based on playerSide after it's set
+        ctrlBoardSettings.orientation.value = playerSide == PlayerSide.black
+            ? Side.black
+            : Side.white;
+      }
+
       engineService.start().then((_) {
         applyStockfishSettings();
         engineService.setPosition(fen: fen);
@@ -252,6 +267,4 @@ class GameComputerController extends BaseGameController
     engineService.dispose();
     super.onClose();
   }
-
-
 }

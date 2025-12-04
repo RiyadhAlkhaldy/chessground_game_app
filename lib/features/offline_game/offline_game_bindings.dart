@@ -29,7 +29,7 @@ class OfflineGameBindings extends Bindings {
         savePlayerUseCase: sl<SavePlayerUseCase>(),
         getOrCreateGuestPlayerUseCase: sl<GetOrCreateGuestPlayerUseCase>(),
       ),
-      fenix: true, // Keep alive even when not in use
+      // fenix: true, // Keep alive even when not in use
     );
   }
 }

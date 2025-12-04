@@ -14,6 +14,10 @@ class OnlineGameController extends BaseGameController
     required this.playMoveUsecase,
   });
 
+  // TODO: When implementing online game features, add board orientation logic
+  // based on player's assigned color (similar to OfflineGameController).
+  // Use ChessBoardSettingsController to set orientation when player is assigned black.
+
   @override
   int getMaterialOnBoard(Side side) {
     throw UnimplementedError();

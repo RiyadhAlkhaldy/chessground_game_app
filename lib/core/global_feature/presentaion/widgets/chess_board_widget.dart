@@ -5,6 +5,7 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/core/utils/styles/styles.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
+import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
@@ -23,35 +24,40 @@ class ChessBoardWidget extends GetView<BaseGameController> {
                 .isGameOverExtended, // Prevents automatic exit
 
             onPopInvokedWithResult: (didPop, result) async {
+              // If already popped, do nothing
               if (didPop) {
                 return;
               }
-              if (controller.getResult != null) {
-                Get.back();
-              } else {
-                final shouldExit = await showExitConfirmationDialog(context)
-                    .then((value) {
-                      if (value != null && value == true) {
-                        controller.resign(controller.gameState.turn);
-                      }
-                      return value;
-                    });
 
-                if (shouldExit == true) {
-                  if (context.mounted) {
-                    // controller.gameStatus;
-                    // controller.plySound.executeResignSound();
-                    controller.resign(
-                      controller.playerSide == PlayerSide.white
+              // If game is over, allow exit immediately
+              if (controller.gameState.isGameOverExtended) {
+                Get.back();
+                return;
+              }
+
+              // Game is still ongoing, show confirmation dialog
+              final shouldExit = await showExitConfirmationDialog(context);
+
+              if (shouldExit == true && context.mounted) {
+                // Determine which side is resigning
+                final resigningSide = controller.playerSide == PlayerSide.both
+                    ? controller
+                          .gameState
+                          .position
+                          .turn // In 2-player games, current turn resigns
+                    : (controller.playerSide == PlayerSide.white
                           ? Side.white
-                          : Side.black,
-                    );
-                    controller.gameStatus;
-                    // And then, after closing the second dialog, navigate back
-                    // if (context.mounted) {
-                    //   Get.back();
-                    // }
-                  }
+                          : Side.black);
+
+                // Resign (this will save the game in controllers that override resign)
+                await controller.resign(resigningSide);
+
+                // Wait briefly to ensure save completes
+                await Future.delayed(const Duration(milliseconds: 300));
+
+                // Navigate back
+                if (context.mounted) {
+                  Get.back();
                 }
               }
             },
@@ -111,9 +117,11 @@ class ChessBoardWidget extends GetView<BaseGameController> {
                       fen: controller.fen,
                       // lastMove: controller.lastMove,
                       game: GameData(
-                        playerSide: controller.getResult == null
-                            ? controller.playerSide
-                            : PlayerSide.none,
+                        playerSide: controller.gameState.isGameOverExtended
+                            ? PlayerSide.none
+                            : (controller is OfflineGameController)
+                            ? PlayerSide.both
+                            : controller.playerSide,
                         validMoves: controller.validMoves,
                         sideToMove: controller.gameState.position.turn,
                         isCheck: controller.gameState.position.isCheck,

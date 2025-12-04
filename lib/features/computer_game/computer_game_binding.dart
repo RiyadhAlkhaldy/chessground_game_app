@@ -1,8 +1,9 @@
 import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart'; 
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/di/ingection_container.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_controller.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
@@ -20,7 +21,7 @@ class ComputerGameBinding extends Bindings {
       StockfishBinding().dependencies();
     }
 
-    Get.lazyPut<ComputerGameController>(
+    Get.lazyPut<BaseGameController>(
       () => ComputerGameController(
         plySound: sl<PlaySoundUseCase>(),
         saveGameUseCase: sl<SaveGameUseCase>(),
@@ -30,7 +31,7 @@ class ComputerGameBinding extends Bindings {
         choosingCtrl: Get.find<SideChoosingController>(),
         engineService: sl<StockfishEngineService>(),
       ),
-      fenix: true,
+      // fenix: true,
     );
   }
 }

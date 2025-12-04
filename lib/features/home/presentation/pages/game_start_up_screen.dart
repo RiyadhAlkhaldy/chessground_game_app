@@ -1,10 +1,10 @@
 // import 'package:flutter_chess/providers/authentication_provider.dart';
 
+import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/widgets.dart';
 import 'package:chessground_game_app/core/utils/helper/constants.dart';
 import 'package:chessground_game_app/features/home/presentation/controllers/game_start_up_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
-import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -23,7 +23,7 @@ class GameStartUpPage extends StatefulWidget {
 }
 
 class _GameStartUpPageState extends State<GameStartUpPage> {
-  Side playerColorGroup = Side.white;
+  PlayerSide playerColorGroup = PlayerSide.white;
   GameDifficulty gameLevelGroup = GameDifficulty.easy;
 
   int whiteTimeInMenutes = 0;
@@ -53,11 +53,11 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.5,
                       child: PlayerColorRadioButton(
-                        title: 'Play as ${Side.white.name}',
-                        value: Side.white,
+                        title: 'Play as ${PlayerSide.white.name}',
+                        value: PlayerSide.white,
                         groupValue: controller.playerColor.value,
                         onChanged: (value) {
-                          controller.setPlayerColor(player: Side.white);
+                          controller.setPlayerColor(player: PlayerSide.white);
                         },
                       ),
                     ),
@@ -110,11 +110,11 @@ class _GameStartUpPageState extends State<GameStartUpPage> {
                       width: MediaQuery.of(context).size.width * 0.5,
                       //
                       child: PlayerColorRadioButton(
-                        title: 'Play as ${Side.black.name}',
-                        value: Side.black,
+                        title: 'Play as ${PlayerSide.black.name}',
+                        value: PlayerSide.black,
                         groupValue: controller.playerColor.value,
                         onChanged: (value) {
-                          controller.setPlayerColor(player: Side.black);
+                          controller.setPlayerColor(player: PlayerSide.black);
                         },
                       ),
                     ),

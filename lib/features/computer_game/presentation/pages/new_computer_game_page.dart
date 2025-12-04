@@ -1,3 +1,4 @@
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:dartchess/dartchess.dart';
@@ -6,7 +7,7 @@ import 'package:get/get.dart';
 
 /// Screen for setting up a new computer game
 /// شاشة إعداد لعبة جديدة ضد الكمبيوتر
-class NewComputerGamePage extends GetView<ComputerGameController> {
+class NewComputerGamePage extends GetView<BaseGameController> {
   const NewComputerGamePage({super.key});
 
   @override
@@ -262,7 +263,7 @@ class NewComputerGamePage extends GetView<ComputerGameController> {
       return;
     }
 
-    await controller.startComputerGame(
+    await (controller as ComputerGameController).startComputerGame(
       playerName: playerName.trim(),
       playerSide: playerSide,
       difficulty: difficulty,

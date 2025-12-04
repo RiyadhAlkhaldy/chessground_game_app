@@ -23,7 +23,7 @@ class GameComputerWithTimeBindings extends Bindings {
         getOrCreateGuestPlayerUseCase: sl<GetOrCreateGuestPlayerUseCase>(),
         clockCtrl: Get.find<ChessClockService>(),
       ),
-      fenix: true,
+      // fenix: true,
     );
   }
 }

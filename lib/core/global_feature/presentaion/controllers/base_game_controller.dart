@@ -43,7 +43,7 @@ abstract class BaseGameController extends GetxController {
   /// Premove
   final Rx<NormalMove?> premove = Rx<NormalMove?>(null);
 
-  PlayerSide playerSide = PlayerSide.both;
+  PlayerSide playerSide = PlayerSide.white;
 
   /// Current game state
   /// حالة اللعبة الحالية

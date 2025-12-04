@@ -8,9 +8,7 @@ import 'package:chessground_game_app/features/computer_game/game_computer_with_t
 import 'package:chessground_game_app/features/computer_game/presentation/pages/game_computer_page.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/pages/game_computer_with_time_page.dart';
 import 'package:chessground_game_app/features/home/presentation/pages/home_page.dart';
-import 'package:chessground_game_app/features/offline_game/fee_game_bindings.dart';
 import 'package:chessground_game_app/features/offline_game/offline_game_bindings.dart';
-import 'package:chessground_game_app/features/offline_game/presentation/pages/free_game_page.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/pages/new_game_page.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/pages/offline_game_page.dart';
 import 'package:chessground_game_app/features/recent_screen/presentation/pages/recent_page.dart';
@@ -28,7 +26,6 @@ abstract class AppRoutes {
   static String sideChoosingPage = '/sideChoosingPage';
   static String gameComputerPage = '/gameComputerPage';
   static String gameComputerWithTimePage = '/gameComputerWithTimePage';
-  static String freeGamePage = '/FreeGameScreen';
   static String offlineGamePage = '/offlineGamePage';
   static String newGamePage = '/newGamePage';
   static String newGameComputerPage = '/newGameComputerPage';
@@ -59,7 +56,7 @@ class AppPages {
     // GetPage(name: '/online', page: () => const OnlineView()),
     GetPage(
       name: AppRoutes.gameComputerPage,
-      page: () => GameComputerPage(),
+      page: () => const GameComputerPage(),
       binding: GameComputerBindings(),
     ),
     GetPage(
@@ -76,18 +73,13 @@ class AppPages {
       page: () => const GameStartUpPage(isCustomTime: false, gameTime: '5'),
     ),
     GetPage(
-      name: AppRoutes.freeGamePage,
-      page: () => FreeGamePage(),
-      binding: FreeGameBindings(),
-    ),
-    GetPage(
       name: AppRoutes.recentGamesPage,
       page: () => const RecentGamesPage(),
     ),
     GetPage(
       name: AppRoutes.offlineGamePage,
       page: () => const OfflineGamePage(),
-      binding: OfflineGameBindings(),
+      // binding: OfflineGameBindings(),
     ),
     GetPage(
       name: AppRoutes.newGamePage,

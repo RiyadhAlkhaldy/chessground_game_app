@@ -1,11 +1,11 @@
 // lib/presentation/pages/new_game_screen.dart
 
+import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/widgets.dart';
 import 'package:chessground_game_app/core/utils/helper/constants.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
-import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -48,14 +48,13 @@ class NewGameVsComputerPage extends GetView<BaseGameController> {
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 0.5,
                             child: PlayerColorRadioButton(
-                              title: 'Play as ${Side.white.name}',
-                              value: Side.white,
+                              title: 'Play as ${PlayerSide.white.name}',
+                              value: PlayerSide.white,
                               groupValue: (controller as GameComputerController)
-                                  .playerColor
-                                  .value,
+                                  .playerSide,
                               onChanged: (value) {
                                 (controller as GameComputerController)
-                                    .setPlayerColor(player: Side.white);
+                                    .setPlayerColor(player: PlayerSide.white);
                               },
                             ),
                           ),
@@ -71,14 +70,13 @@ class NewGameVsComputerPage extends GetView<BaseGameController> {
                             width: MediaQuery.of(context).size.width * 0.5,
                             //
                             child: PlayerColorRadioButton(
-                              title: 'Play as ${Side.black.name}',
-                              value: Side.black,
+                              title: 'Play as ${PlayerSide.black.name}',
+                              value: PlayerSide.black,
                               groupValue: (controller as GameComputerController)
-                                  .playerColor
-                                  .value,
+                                  .playerSide,
                               onChanged: (value) {
                                 (controller as GameComputerController)
-                                    .setPlayerColor(player: Side.black);
+                                    .setPlayerColor(player: PlayerSide.black);
                               },
                             ),
                           ),

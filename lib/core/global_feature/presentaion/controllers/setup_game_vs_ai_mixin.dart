@@ -1,6 +1,6 @@
+import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
-import 'package:chessground_game_app/core/utils/helper/constants.dart';
-import 'package:dartchess/dartchess.dart';
+import 'package:chessground_game_app/core/utils/helper/constants.dart'; 
 import 'package:get/get.dart';
 
 mixin SetupGameVsAiMixin on BaseGameController {
@@ -11,8 +11,7 @@ mixin SetupGameVsAiMixin on BaseGameController {
   bool _aiThinking = false;
   bool _vsComputer = false;
   int _gameLevel = 1;
-  int _incrementalValue = 0;
-  Side _player = Side.white;
+  int _incrementalValue = 0; 
   GameDifficulty _gameDifficulty = GameDifficulty.easy;
 
   bool get aiThinking => _aiThinking;
@@ -20,10 +19,7 @@ mixin SetupGameVsAiMixin on BaseGameController {
   int get gameLevel => _gameLevel;
   GameDifficulty get gameDifficulty => _gameDifficulty;
 
-  int get incrementalValue => _incrementalValue;
-  Side get player => _player;
-  Rx<Side> playerColor = Side.white.obs;
-
+  int get incrementalValue => _incrementalValue;  
   // get method
   bool get vsComputer => _vsComputer;
 
@@ -45,9 +41,9 @@ mixin SetupGameVsAiMixin on BaseGameController {
   }
 
   // set playerColor
-  void setPlayerColor({required Side player}) {
-    _player = player;
-    playerColor.value = player;
+  void setPlayerColor({required PlayerSide player}) {
+    playerSide = player;
+    // playerColor.value = player;
     update();
   }
 

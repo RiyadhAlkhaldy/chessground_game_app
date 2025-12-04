@@ -1,26 +1,19 @@
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_settings_widgets.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/pgn_horizontal_row.dart';
-import 'package:chessground_game_app/core/l10n_build_context.dart';
-import 'package:chessground_game_app/core/utils/dialog/constants/const.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/widgets/chess_clock_widget.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/orientation/build_landscape.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/orientation/build_portrait.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:material_symbols_icons/symbols.dart';
 
 class GameComputerPage extends StatelessWidget {
-  GameComputerPage({super.key});
+  const GameComputerPage({super.key});
 
-  final ctrl = Get.find<BaseGameController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       primary: MediaQuery.of(context).orientation == Orientation.portrait,
       appBar: AppBar(
         title: GetX<BaseGameController>(
-          builder: (_) {
+          builder: (ctrl) {
             return Text(
               ctrl.statusText.value,
               style: Theme.of(context).textTheme.titleMedium,
@@ -37,170 +30,3 @@ class GameComputerPage extends StatelessWidget {
     );
   }
 }
-
-class BuildPortrait extends StatelessWidget {
-  BuildPortrait({super.key});
-  final ctrl = Get.find<BaseGameController>();
-  final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: screenPadding),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            GetBuilder<BaseGameController>(
-              builder: (controller) {
-                return PgnHorizontalRow(
-                  tokens: ctrl.pgnTokens,
-                  currentHalfmoveIndex: ctrl.currentHalfmoveIndex,
-                  onJumpTo: (idx) => ctrl.jumpToHalfmove(idx),
-                );
-              },
-            ),
-            GetBuilder<BaseGameController>(
-              builder: (ctrl) => Column(
-                children: [
-                  ShowCircleAvatarAndTimerInUp(
-                    whitePlayer: ctrl.whitePlayer,
-                    blackPlayer: ctrl.blackPlayer,
-                    whiteCapturedList: ctrl.whiteCapturedList,
-                    blackCapturedList: ctrl.blackCapturedList,
-                    gameState: ctrl.gameState,
-                  ),
-                  const ChessBoardWidget(),
-                  ShowCircleAvatarAndTimerInDown(
-                    whitePlayer: ctrl.whitePlayer,
-                    blackPlayer: ctrl.blackPlayer,
-                    whiteCapturedList: ctrl.whiteCapturedList,
-                    blackCapturedList: ctrl.blackCapturedList,
-                    gameState: ctrl.gameState,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: screenPortraitSplitter),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: screenPadding),
-              child: BuildControlButtons(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class BuildLandScape extends StatelessWidget {
-  BuildLandScape({super.key});
-  final ctrl = Get.find<BaseGameController>();
-  final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(screenPadding),
-      child: Row(
-        children: [
-          Expanded(
-            child: GetBuilder<BaseGameController>(
-              builder: (_) => const ChessBoardWidget(),
-            ),
-          ),
-
-          const SizedBox(width: screenLandscapeSplitter),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                GetBuilder<BaseGameController>(
-                  builder: (controller) {
-                    return PgnHorizontalRow(
-                      tokens: ctrl.pgnTokens,
-                      currentHalfmoveIndex: ctrl.currentHalfmoveIndex,
-                      onJumpTo: (idx) => ctrl.jumpToHalfmove(idx),
-                    );
-                  },
-                ),
-                ShowCircleAvatarAndTimerInUp(
-                  whitePlayer: ctrl.whitePlayer,
-                  blackPlayer: ctrl.blackPlayer,
-                  whiteCapturedList: ctrl.whiteCapturedList,
-                  blackCapturedList: ctrl.blackCapturedList,
-                  gameState: ctrl.gameState,
-                ),
-                ShowCircleAvatarAndTimerInDown(
-                  whitePlayer: ctrl.whitePlayer,
-                  blackPlayer: ctrl.blackPlayer,
-                  whiteCapturedList: ctrl.whiteCapturedList,
-                  blackCapturedList: ctrl.blackCapturedList,
-                  gameState: ctrl.gameState,
-                ),
-                const Expanded(child: ChessBoardSettingsWidgets()),
-                const SizedBox(height: screenPortraitSplitter),
-                const BuildControlButtons(),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class BuildControlButtons extends StatelessWidget {
-  const BuildControlButtons({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: buttonHeight,
-      child: GetBuilder<BaseGameController>(
-        initState: (_) {},
-        builder: (ctrl) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: buildNewRoundButton(ctrl)),
-              Expanded(child: buildUndoButton()),
-              Expanded(child: buildRedoButton()),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-Widget buildNewRoundButton(BaseGameController ctrl) => IconButton(
-  icon: Icon(Symbols.refresh, size: iconSize),
-  onPressed: ctrl.gameState.isGameOverExtended || !ctrl.canUndo.value
-      ? null
-      : ctrl.reset,
-);
-Widget buildUndoButton() => GetX<BaseGameController>(
-  builder: (controller) => IconButton(
-    icon: Icon(Symbols.chevron_left, size: iconSize),
-    onPressed: controller.canUndo.value ? controller.undoMove : null,
-  ),
-);
-Widget buildRedoButton() => GetX<BaseGameController>(
-  builder: (controller) => IconButton(
-    icon: Icon(Symbols.chevron_right, size: iconSize),
-    onPressed: controller.canRedo.value ? controller.redoMove : null,
-  ),
-);
-Widget buildMenuButton() => IconButton(
-  icon: Icon(Symbols.menu, size: iconSize),
-  onPressed: () {
-    Get.dialog(
-      const Padding(
-        padding: EdgeInsets.symmetric(horizontal: screenPadding),
-        child: ChessBoardSettingsWidgets(),
-      ),
-      name: Get.context!.l10n.mobileBoardSettings,
-      barrierColor: Theme.of(Get.context!).dialogTheme.backgroundColor,
-    );
-  },
-);

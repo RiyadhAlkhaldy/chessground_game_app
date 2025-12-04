@@ -1,11 +1,11 @@
 // import 'package:flutter_chess/providers/authentication_provider.dart';
 
+import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/widgets.dart';
 import 'package:chessground_game_app/core/utils/helper/constants.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
-import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,7 +24,7 @@ class StartUpPage extends StatefulWidget {
 }
 
 class _StartUpPageState extends State<StartUpPage> {
-  Side playerColorGroup = Side.white;
+  PlayerSide playerColorGroup = PlayerSide.white;
   GameDifficulty gameLevelGroup = GameDifficulty.easy;
 
   int whiteTimeInMenutes = 0;
@@ -54,13 +54,12 @@ class _StartUpPageState extends State<StartUpPage> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.5,
                       child: PlayerColorRadioButton(
-                        title: 'Play as ${Side.white.name}',
-                        value: Side.white,
-                        groupValue: (controller as OfflineGameController)
-                            .playerColor
-                            .value,
+                        title: 'Play as ${PlayerSide.white.name}',
+                        value: PlayerSide.white,
+                        groupValue:
+                            (controller as OfflineGameController).playerSide,
                         onChanged: (value) {
-                          controller.setPlayerColor(player: Side.white);
+                          controller.setPlayerColor(player: PlayerSide.white);
                         },
                       ),
                     ),
@@ -113,11 +112,11 @@ class _StartUpPageState extends State<StartUpPage> {
                       width: MediaQuery.of(context).size.width * 0.5,
                       //
                       child: PlayerColorRadioButton(
-                        title: 'Play as ${Side.black.name}',
-                        value: Side.black,
-                        groupValue: controller.playerColor.value,
+                        title: 'Play as ${PlayerSide.black.name}',
+                        value: PlayerSide.black,
+                        groupValue: controller.playerSide,
                         onChanged: (value) {
-                          controller.setPlayerColor(player: Side.black);
+                          controller.setPlayerColor(player: PlayerSide.black);
                         },
                       ),
                     ),

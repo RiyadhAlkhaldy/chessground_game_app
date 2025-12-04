@@ -1,5 +1,5 @@
-import 'package:chessground_game_app/core/utils/helper/constants.dart';
-import 'package:dartchess/dartchess.dart';
+import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/utils/helper/constants.dart'; 
 import 'package:flutter/material.dart';
 
 class PlayerColorRadioButton extends StatelessWidget {
@@ -12,16 +12,16 @@ class PlayerColorRadioButton extends StatelessWidget {
   });
 
   final String title;
-  final Side value;
-  final Side? groupValue;
-  final Function(Side?)? onChanged;
+  final PlayerSide value;
+  final PlayerSide? groupValue;
+  final Function(PlayerSide?)? onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return RadioGroup<Side>(
+    return RadioGroup<PlayerSide>(
       groupValue: groupValue, // Managed by RadioGroup now
       onChanged: onChanged!,
-      child: RadioMenuButton<Side>(
+      child: RadioMenuButton<PlayerSide>(
         onChanged: onChanged,
         value: value,
         groupValue: groupValue,
@@ -56,7 +56,10 @@ class GameLevelRadioButton extends StatelessWidget {
           onChanged: onChanged,
           value: value,
           groupValue: groupValue,
-          child: Text(capitalizedTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+          child: Text(
+            capitalizedTitle,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
       ),
     );
@@ -103,7 +106,10 @@ class BuildCustomTime extends StatelessWidget {
             ),
           ),
         ),
-        InkWell(onTap: onRightArrowCricked, child: const Icon(Icons.arrow_forward)),
+        InkWell(
+          onTap: onRightArrowCricked,
+          child: const Icon(Icons.arrow_forward),
+        ),
       ],
     );
   }

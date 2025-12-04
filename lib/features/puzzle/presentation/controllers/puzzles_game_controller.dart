@@ -8,6 +8,10 @@ class PuzzlesGameController extends BaseGameController
     implements PuzzleFeatures {
   PuzzlesGameController({required super.plySound});
 
+  // TODO: When implementing puzzle features, consider setting board orientation
+  // based on puzzle requirements (e.g., if puzzle shows black to move, flip board).
+  // Use ChessBoardSettingsController to set orientation in loadPuzzle method.
+
   @override
   int getMaterialOnBoard(Side side) {
     return gameState.materialOnBoard(side);

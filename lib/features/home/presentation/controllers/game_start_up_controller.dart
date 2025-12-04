@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/utils/helper/constants.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartchess/dartchess.dart';
@@ -32,7 +33,7 @@ class GameStartUpController extends GetxController {
   bool _playBlacksTimer = true;
   int _gameLevel = 1;
   int _incrementalValue = 0;
-  Side _player = Side.white;
+  PlayerSide _player = PlayerSide.white;
   Timer? _whitesTimer;
   Timer? _blacksTimer;
   final int _whitesScore = 0;
@@ -67,8 +68,8 @@ class GameStartUpController extends GetxController {
   GameDifficulty get gameDifficulty => _gameDifficulty;
 
   int get incrementalValue => _incrementalValue;
-  Side get player => _player;
-  Rx<Side> playerColor = Side.white.obs;
+  PlayerSide get player => _player;
+  Rx<PlayerSide> playerColor = PlayerSide.white.obs;
 
   Duration get whitesTime => _whitesTime;
   Duration get blacksTime => _blacksTime;
@@ -105,10 +106,10 @@ class GameStartUpController extends GetxController {
     if (newGame) {
       // check if the player was white in the previous game
       // change the player
-      if (_player == Side.white) {
-        _player = Side.black;
+      if (_player == PlayerSide.white) {
+        _player = PlayerSide.black;
       } else {
-        _player = Side.white;
+        _player = PlayerSide.white;
       }
     }
     // reset game
@@ -198,7 +199,7 @@ class GameStartUpController extends GetxController {
   }
 
   // set playerColor
-  void setPlayerColor({required Side player}) {
+  void setPlayerColor({required PlayerSide player}) {
     _player = player;
     playerColor.value = player;
     update();
