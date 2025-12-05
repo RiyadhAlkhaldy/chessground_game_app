@@ -1,6 +1,7 @@
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/game_analysis_controller.dart';
 import 'package:chessground_game_app/features/analysis/presentation/widgets/engine_evaluation_widget.dart';
+import 'package:chessground_game_app/features/analysis/presentation/widgets/evaluation_graph_widget.dart';
 import 'package:chessground_game_app/features/analysis/presentation/widgets/move_list_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -117,6 +118,7 @@ class GameAnalysisScreen extends GetView<GameAnalysisController> {
 
   /// Build portrait layout
   /// بناء تخطيط الوضع العمودي
+
   Widget _buildPortraitLayout(BuildContext context) {
     return Column(
       children: [
@@ -125,6 +127,14 @@ class GameAnalysisScreen extends GetView<GameAnalysisController> {
           padding: EdgeInsets.all(16),
           child: EngineEvaluationWidget(compact: false),
         ),
+
+        // Evaluation graph (NEW)
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: EvaluationGraphWidget(),
+        ),
+
+        const SizedBox(height: 16),
 
         // Chess board
         const Expanded(
@@ -218,31 +228,79 @@ class GameAnalysisScreen extends GetView<GameAnalysisController> {
     );
   }
 
-  /// Build chess board
-  /// بناء رقعة الشطرنج
+  /// Build chess board with proper chessground integration
+  /// بناء رقعة الشطرنج مع تكامل chessground صحيح
   // Widget _buildChessBoard(BuildContext context) {
   //   return Obx(() {
   //     if (controller.gameState == null) {
   //       return const Center(child: CircularProgressIndicator());
   //     }
 
+  //     final fen = controller.currentFen;
+  //     final lastMove = _getLastMoveFromIndex(controller.currentMoveIndex);
+
   //     return Board(
   //       size: MediaQuery.of(context).size.width,
   //       data: BoardData(
-  //         interactableSide: InteractableSide.none, // View only
+  //         interactableSide: InteractableSide.none, // View only for analysis
   //         orientation: Side.white,
-  //         fen: controller.currentFen,
+  //         fen: fen,
+  //         lastMove: lastMove,
   //         settings: BoardSettings(
   //           colorScheme: BoardColorScheme(
   //             lightSquare: const Color(0xFFF0D9B5),
   //             darkSquare: const Color(0xFFB58863),
+  //             lastMove: HighlightDetails(
+  //               solidColor: Colors.yellow.withOpacity(0.5),
+  //             ),
   //           ),
   //           pieceAssets: PieceSet.merida.assets,
   //           enableCoordinates: true,
+  //           animationDuration: const Duration(milliseconds: 250),
+  //           borderRadius: const BorderRadius.all(Radius.circular(4)),
+  //           boxShadow: const [
+  //             BoxShadow(
+  //               color: Colors.black26,
+  //               blurRadius: 10,
+  //               spreadRadius: 2,
+  //             ),
+  //           ],
   //         ),
   //       ),
   //     );
   //   });
+  // }
+
+  /// Get last move for highlighting in analysis view
+  /// الحصول على آخر حركة للإضاءة في عرض التحليل
+  // Move? _getLastMoveFromIndex(int moveIndex) {
+  //   if (controller.gameState == null || moveIndex < 0) return null;
+
+  //   final moves = controller.gameState!.getMoveTokens;
+  //   if (moveIndex >= moves.length) return null;
+
+  //   final move = moves[moveIndex];
+  //   if (move.lan == null) return null;
+
+  //   try {
+  //     final dartMove = Move.parse(move.lan!);
+  //     if (dartMove is NormalMove) {
+  //       return NormalMove(
+  //         from: _squareToChessgroundSquare(dartMove.from),
+  //         to: _squareToChessgroundSquare(dartMove.to),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     // Ignore parsing errors
+  //   }
+
+  //   return null;
+  // }
+
+  // /// Convert dartchess Square to chessground square string
+  // String _squareToChessgroundSquare(Square square) {
+  //   const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  //   return '${files[square.file]}${square.rank + 1}';
   // }
 
   /// Build navigation controls

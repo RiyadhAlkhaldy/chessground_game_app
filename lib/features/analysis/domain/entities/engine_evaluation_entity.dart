@@ -1,3 +1,5 @@
+// lib/features/analysis/domain/entities/engine_evaluation_entity.dart
+
 import 'package:equatable/equatable.dart';
 
 /// Entity representing Stockfish evaluation of a position

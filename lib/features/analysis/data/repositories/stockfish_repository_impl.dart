@@ -2,7 +2,7 @@ import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/analysis/data/datasources/stockfish_datasource.dart';
 import 'package:chessground_game_app/features/analysis/data/models/engine_evaluation_model.dart';
-import 'package:chessground_game_app/features/analysis/domain/engine_evaluation_entity.dart';
+import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/engine_move_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
 import 'package:dartz/dartz.dart';  

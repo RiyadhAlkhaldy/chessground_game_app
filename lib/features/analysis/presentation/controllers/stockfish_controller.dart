@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:chessground_game_app/features/analysis/domain/engine_evaluation_entity.dart';
+import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/engine_move_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_usecase.dart';

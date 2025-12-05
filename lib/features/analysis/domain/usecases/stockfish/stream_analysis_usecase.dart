@@ -1,7 +1,7 @@
 import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/base/usecase.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:chessground_game_app/features/analysis/domain/engine_evaluation_entity.dart';
+import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';

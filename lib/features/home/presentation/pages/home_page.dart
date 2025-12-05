@@ -75,6 +75,15 @@ class HomePage extends StatelessWidget {
                     },
                   ),
                   buildGameType(
+                    lable: context.l10n.play,
+                    icon: Icons.play_arrow,
+                    onTap: () {
+                      controller.setVsComputer(value: true);
+                      // navigate to setup game time screen
+                      Get.toNamed(AppRoutes.newGameComputerPage);
+                    },
+                  ),
+                  buildGameType(
                     lable: context.l10n.mobileSettingsTab,
                     icon: Symbols.settings,
                     onTap: () {
