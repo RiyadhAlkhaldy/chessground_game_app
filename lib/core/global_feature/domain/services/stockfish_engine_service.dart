@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:chessground_game_app/core/global_feature/data/models/extended_evaluation.dart';
-import 'package:flutter/material.dart'; 
-import 'package:stockfish/stockfish.dart'; 
+import 'package:flutter/material.dart';
+import 'package:stockfish/stockfish.dart';
 
 /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine
 class StockfishEngineService {
@@ -25,7 +25,7 @@ class StockfishEngineService {
     if (_stockfish != null && !startStockfishIfNecessary) {
       return;
     }
-    _stockfish = Stockfish();
+    _stockfish = await stockfishAsync();
 
     _stdoutSub = _stockfish?.stdout.listen((line) {
       _raw.add(line);

@@ -20,7 +20,7 @@ class BuildLandScape extends GetView<BaseGameController> {
         children: [
           Expanded(
             child: GetBuilder<BaseGameController>(
-              builder: (_) => const ChessBoardWidget(),
+              builder: (_) =>  ChessBoardWidget(),
             ),
           ),
 

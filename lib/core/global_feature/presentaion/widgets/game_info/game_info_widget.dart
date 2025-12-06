@@ -142,7 +142,7 @@ class GameInfoWidget extends GetView<BaseGameController> {
         if (!controller.isGameOver) ...[
           const SizedBox(height: 4),
           Text(
-            'Turn: ${controller.currentTurn == Side.white ? 'White' : 'Black'}',
+            'Turn: ${controller.gameState.position.turn == Side.white ? 'White' : 'Black'}',
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ],

@@ -29,6 +29,7 @@ abstract class AppRoutes {
   static String offlineGamePage = '/offlineGamePage';
   static String newGamePage = '/newGamePage';
   static String newGameComputerPage = '/newGameComputerPage';
+  static String newGameVsComputerPage = '/NewGameVsComputerPage';
   static const String newGame = '/new-game';
   static const String game = '/game';
   static const String gameHistory = '/game-history';
@@ -58,6 +59,11 @@ class AppPages {
       name: AppRoutes.gameComputerPage,
       page: () => const GameComputerPage(),
       binding: GameComputerBindings(),
+    ),
+    GetPage(
+      name: AppRoutes.newGameVsComputerPage,
+      page: () => const GameComputerPage(),
+      binding: ComputerGameBinding(),
     ),
     GetPage(
       name: AppRoutes.gameComputerWithTimePage,

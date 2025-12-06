@@ -65,7 +65,7 @@ class GameComputerWithTimeController extends GameComputerController
       applyMove(bestMove);
 
       // Update Stockfish position
-      engineService.setPosition(fen: fen);
+      engineService.setPosition(fen: currentFen);
 
       // Switch clock
       clockCtrl.switchTurn(gameState.turn.opposite);

@@ -137,7 +137,7 @@ class GameAnalysisScreen extends GetView<GameAnalysisController> {
         const SizedBox(height: 16),
 
         // Chess board
-        const Expanded(
+        Expanded(
           child: Center(
             child: AspectRatio(aspectRatio: 1.0, child: ChessBoardWidget()),
           ),
@@ -175,7 +175,7 @@ class GameAnalysisScreen extends GetView<GameAnalysisController> {
           flex: 5,
           child: Column(
             children: [
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: 1.0,

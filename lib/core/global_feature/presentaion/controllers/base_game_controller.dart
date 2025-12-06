@@ -22,7 +22,7 @@ abstract class BaseGameController extends GetxController {
 
   String get _initailLocalFen => Chess.initial.fen;
 
-  String fen = Chess.initial.fen;
+  // String fen = Chess.initial.fen;
 
   /// Valid moves for chessground (IMap format)
   final Rx<ValidMoves> _validMoves = ValidMoves(const {}).obs;
@@ -67,7 +67,7 @@ abstract class BaseGameController extends GetxController {
   /// Error message
   /// رسالة الخطأ
   final RxString _errorMessage = ''.obs;
-  set errorMessage(String message) => _errorMessage.value = message;
+  // set errorMessage(String message) => _errorMessage.value = message;
   String get errorMessage => _errorMessage.value;
 
   /// Current position FEN (reactive)
@@ -78,9 +78,9 @@ abstract class BaseGameController extends GetxController {
 
   /// Current turn (reactive)
   /// الدور الحالي (تفاعلي)
-  final Rx<Side> _currentTurn = Side.white.obs;
-  set currentTurn(Side turn) => _currentTurn.value = turn;
-  Side get currentTurn => _currentTurn.value;
+  // final Rx<Side> _currentTurn = Side.white.obs;
+  // set currentTurn(Side turn) => _currentTurn.value = turn;
+  Side get currentTurn => gameState.position.turn;
 
   /// Is game over (reactive)
   /// هل انتهت اللعبة (تفاعلي)
@@ -208,7 +208,7 @@ abstract class BaseGameController extends GetxController {
   ///reset
   void reset() {
     gameState = GameState(initial: initail);
-    fen = gameState.position.fen;
+    currentFen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
     promotionMove.value = null;
     plySound.executeDongSound();
@@ -296,7 +296,7 @@ abstract class BaseGameController extends GetxController {
       // Update reactive state
       updateReactiveState();
 
-      fen = gameState.position.fen;
+      currentFen = gameState.position.fen;
       validMoves = makeLegalMoves(gameState.position);
       // validMoves = gameState.position.legalMoves ;
 
@@ -348,7 +348,7 @@ abstract class BaseGameController extends GetxController {
   void undoMove() {
     if (canUndo.value) {
       gameState.undoMove();
-      fen = gameState.position.fen;
+      currentFen = gameState.position.fen;
       validMoves = makeLegalMoves(gameState.position);
       // play a feedback sound (optional)
       plySound.executeMoveSound();
@@ -359,7 +359,7 @@ abstract class BaseGameController extends GetxController {
   void redoMove() {
     if (canRedo.value) {
       gameState.redoMove();
-      fen = gameState.position.fen;
+      currentFen = gameState.position.fen;
       validMoves = makeLegalMoves(gameState.position);
       plySound.executeMoveSound();
       update();
@@ -383,7 +383,7 @@ abstract class BaseGameController extends GetxController {
       newState.play(allMoves[i]);
     }
     gameState = newState;
-    fen = gameState.position.fen;
+    currentFen = gameState.position.fen;
     validMoves = makeLegalMoves(gameState.position);
     update();
   }
@@ -427,8 +427,8 @@ abstract class BaseGameController extends GetxController {
 
   /// Update all reactive state variables
   void updateReactiveState() {
-    currentFen = gameState.position.fen;
-    currentTurn = gameState.turn;
+    // currentFen = gameState.position.fen;
+    // currentTurn = gameState.turn;
     isGameOver = gameState.isGameOverExtended;
     if (currentGame != null) {
       gameResult = GameService.calculateResult(
@@ -451,13 +451,13 @@ abstract class BaseGameController extends GetxController {
 
   /// Set error message
   void setError(String message) {
-    errorMessage = message;
+    _errorMessage.value = message;
     AppLogger.error(message, tag: 'GameController');
   }
 
   /// Clear error message
   void clearError() {
-    errorMessage = '';
+    _errorMessage.value = '';
   }
 
   @override

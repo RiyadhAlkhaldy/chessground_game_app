@@ -119,8 +119,8 @@ class OfflineGamePage extends GetView<BaseGameController> {
           _buildPlayerSection(context, Side.black, isTop: true),
 
           // Chess board
-          const Padding(
-            padding: EdgeInsetsGeometry.all(1),
+          Padding(
+            padding: const EdgeInsetsGeometry.all(1),
             child: ChessBoardWidget(),
           ),
 
@@ -161,7 +161,7 @@ class OfflineGamePage extends GetView<BaseGameController> {
           child: Column(
             children: [
               _buildPlayerSection(context, Side.black, isTop: true),
-              const Expanded(
+              Expanded(
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: 1.0,

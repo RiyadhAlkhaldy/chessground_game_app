@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/analysis/data/models/engine_evaluation_model.dart';
-import 'package:stockfish/stockfish.dart'; 
+import 'package:stockfish/stockfish.dart';
 
 /// DataSource for Stockfish engine operations
 /// مصدر البيانات لعمليات محرك Stockfish
@@ -46,8 +46,7 @@ class StockfishDataSourceImpl implements StockfishDataSource {
         tag: 'StockfishDataSource',
       );
 
-      _stockfish = Stockfish();
-
+      _stockfish = await stockfishAsync();
       // Listen to engine output
       _outputSubscription = _stockfish!.stdout.listen(
         _handleEngineOutput,
@@ -59,6 +58,7 @@ class StockfishDataSourceImpl implements StockfishDataSource {
           );
         },
       );
+      // await Future.delayed(const Duration(seconds: 2));
 
       // Send UCI command
       _stockfish!.stdin = 'uci';
@@ -67,8 +67,8 @@ class StockfishDataSourceImpl implements StockfishDataSource {
       await _waitForReady();
 
       // Set default options
-      _stockfish!.stdin = 'setoption name Threads value 2';
-      _stockfish!.stdin = 'setoption name Hash value 128';
+      _stockfish!.stdin = 'setoption name threads value 2';
+      _stockfish!.stdin = 'setoption name hash value 128';
 
       AppLogger.info(
         'Stockfish initialized successfully',
@@ -266,14 +266,14 @@ class StockfishDataSourceImpl implements StockfishDataSource {
         tag: 'StockfishDataSource',
       );
 
-      _stockfish!.stdin = 'setoption name Skill Level value $clampedLevel';
+      _stockfish!.stdin = 'setoption name skill level value  $clampedLevel';
 
       // Adjust other parameters based on skill level
       if (clampedLevel < 20) {
         // Add some randomness for lower levels
         final errorProb = (20 - clampedLevel) * 5;
         _stockfish!.stdin =
-            'setoption name Skill Level Maximum Error value $errorProb';
+            'setoption name skill level maximum error value $errorProb';
       }
     } catch (e, stackTrace) {
       AppLogger.error(

@@ -41,7 +41,7 @@ class BuildPortrait extends GetView<BaseGameController> {
                       ? (controller as GameComputerWithTimeController).clockCtrl
                       : null,
                 ),
-                const ChessBoardWidget(),
+                 ChessBoardWidget(),
                 ShowCircleAvatarAndTimerInDown(
                   whitePlayer: controller.whitePlayer,
                   blackPlayer: controller.blackPlayer,

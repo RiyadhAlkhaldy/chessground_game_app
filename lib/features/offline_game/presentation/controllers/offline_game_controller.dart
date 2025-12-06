@@ -53,7 +53,7 @@ class OfflineGameController extends BaseGameController
       whitePlayerName: uuidKeyForUser,
       blackPlayerName: uuidKeyForAI,
     ).then((value) {
-      fen = gameState.position.fen;
+      currentFen = gameState.position.fen;
       validMoves = makeLegalMoves(gameState.position);
       listenToGameStatus();
       plySound.executeDongSound();

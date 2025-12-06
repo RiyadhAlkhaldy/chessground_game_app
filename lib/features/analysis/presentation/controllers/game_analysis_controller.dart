@@ -5,6 +5,7 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/game_us
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/entities/game_analysis_entity.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/analysis/save_game_analysis_usecase.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,12 +16,15 @@ import 'package:chessground_game_app/core/utils/logger.dart';
 class GameAnalysisController extends GetxController {
   final GetGameByUuidUseCase _getGameByUuidUseCase;
   final StockfishController _stockfishController;
+  final SaveGameAnalysisUseCase _saveGameAnalysisUseCase;
 
   GameAnalysisController({
     required GetGameByUuidUseCase getGameByUuidUseCase,
     required StockfishController stockfishController,
+    required SaveGameAnalysisUseCase saveGameAnalysisUseCase,
   }) : _getGameByUuidUseCase = getGameByUuidUseCase,
-       _stockfishController = stockfishController;
+       _stockfishController = stockfishController,
+       _saveGameAnalysisUseCase = saveGameAnalysisUseCase;
 
   // ========== Observable State ==========
 
@@ -293,7 +297,22 @@ class GameAnalysisController extends GetxController {
         analyzedAt: DateTime.now(),
       );
 
-      // TODO: Save to database using SaveGameAnalysisUseCase
+      // Save to database using SaveGameAnalysisUseCase
+      final result = await _saveGameAnalysisUseCase(
+        SaveGameAnalysisParams(analysis: analysisEntity),
+      );
+
+      result.fold(
+        (failure) {
+          throw Exception('Failed to save: ${failure.message}');
+        },
+        (_) {
+          AppLogger.info(
+            'Game analysis saved to database',
+            tag: 'GameAnalysisController',
+          );
+        },
+      );
 
       AppLogger.info('Game analysis saved', tag: 'GameAnalysisController');
 

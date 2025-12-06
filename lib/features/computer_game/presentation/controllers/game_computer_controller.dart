@@ -59,7 +59,7 @@ class GameComputerController extends BaseGameController
       whitePlayerName: uuidKeyForUser,
       blackPlayerName: uuidKeyForAI,
     ).then((value) {
-      fen = gameState.position.fen;
+      currentFen = gameState.position.fen;
       validMoves = makeLegalMoves(gameState.position);
       listenToGameStatus();
       plySound.executeDongSound();
@@ -81,7 +81,7 @@ class GameComputerController extends BaseGameController
 
       engineService.start().then((_) {
         applyStockfishSettings();
-        engineService.setPosition(fen: fen);
+        engineService.setPosition(fen: currentFen);
         stockfishState.value = StockfishState.ready;
         // if the player is black, let the AI play the first move
         playerSide == PlayerSide.black ? playAiMove() : null;
@@ -162,7 +162,7 @@ class GameComputerController extends BaseGameController
   ///reset - override to add Stockfish reset
   @override
   void reset() {
-    debugPrint('reset to $fen');
+    debugPrint('reset to $currentFen');
     engineService.ucinewgame();
     super.reset();
   }
@@ -185,7 +185,7 @@ class GameComputerController extends BaseGameController
       applyMove(bestMove);
 
       // Update Stockfish position
-      engineService.setPosition(fen: fen);
+      engineService.setPosition(fen: currentFen);
 
       update();
       tryPlayPremove();
@@ -196,7 +196,7 @@ class GameComputerController extends BaseGameController
   void undoMove() {
     if (canUndo.value) {
       super.undoMove();
-      engineService.setPosition(fen: fen);
+      engineService.setPosition(fen: currentFen);
     }
   }
 
@@ -204,7 +204,7 @@ class GameComputerController extends BaseGameController
   void redoMove() {
     if (canRedo.value) {
       super.redoMove();
-      engineService.setPosition(fen: fen);
+      engineService.setPosition(fen: currentFen);
     }
   }
 

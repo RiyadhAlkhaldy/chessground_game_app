@@ -171,6 +171,7 @@ class InjectionContainer {
     // Stockfish repository
     Get.lazyPut<StockfishRepository>(
       () => StockfishRepositoryImpl(dataSource: sl()),
+      fenix: true,
     );
 
     AppLogger.debug('Repositories registered', tag: 'DI');

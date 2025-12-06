@@ -24,7 +24,7 @@ class PgnExportService {
     // Seven Tag Roster
     pgn.writeln('[Event "${game.event ?? "?"}"]');
     pgn.writeln('[Site "${game.site ?? "?"}"]');
-    pgn.writeln('[Date "${_formatDate(game.date)}"]');
+    pgn.writeln('[Date "${_formatDate(game.date!)}"]');
     pgn.writeln('[Round "${game.round ?? "?"}"]');
     pgn.writeln('[White "${game.whitePlayer.name}"]');
     pgn.writeln('[Black "${game.blackPlayer.name}"]');
@@ -92,23 +92,140 @@ class PgnExportService {
         pgn.writeln();
       }
     }
-
-    // Add final newline and result
+    // Result
     pgn.writeln();
     pgn.write(game.result);
 
     return pgn.toString();
   }
 
-  /// Format date for PGN (YYYY.MM.DD format)
-  /// تنسيق التاريخ لصيغة PGN
-  static String _formatDate(DateTime? date) {
-    if (date == null) return '????.??.??';
+  /// Export game with analysis to PGN file
+  /// تصدير اللعبة مع التحليل إلى ملف PGN
+  static String exportGameWithAnalysisToPgn(
+    ChessGameEntity game,
+    GameState gameState,
+    GameAnalysisEntity analysis,
+  ) {
+    return exportGameToPgn(
+      game,
+      gameState,
+      analysis: analysis,
+      includeEvaluations: true,
+    );
+  }
 
-    final year = date.year.toString().padLeft(4, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    final day = date.day.toString().padLeft(2, '0');
+  /// Format date for PGN
+  /// تنسيق التاريخ لـ PGN
+  static String _formatDate(DateTime date) {
+    return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
+  }
 
-    return '$year.$month.$day';
+  /// Create shareable PGN text with statistics
+  /// إنشاء نص PGN قابل للمشاركة مع الإحصائيات
+  static String createShareableAnalysis(
+    ChessGameEntity game,
+    GameState gameState,
+    GameAnalysisEntity analysis,
+  ) {
+    final StringBuffer share = StringBuffer();
+
+    // Title
+    share.writeln('♟️ Chess Game Analysis');
+    share.writeln('━━━━━━━━━━━━━━━━━━━━');
+    share.writeln();
+
+    // Players
+    share.writeln('⚪ White: ${game.whitePlayer.name}');
+    if (analysis.whiteAccuracy != null) {
+      share.writeln(
+        '   Accuracy: ${analysis.whiteAccuracy!.toStringAsFixed(1)}%',
+      );
+    }
+    share.writeln('   Blunders: ${analysis.whiteBlunders}');
+    share.writeln('   Mistakes: ${analysis.whiteMistakes}');
+    share.writeln('   Inaccuracies: ${analysis.whiteInaccuracies}');
+    share.writeln();
+
+    share.writeln('⚫ Black: ${game.blackPlayer.name}');
+    if (analysis.blackAccuracy != null) {
+      share.writeln(
+        '   Accuracy: ${analysis.blackAccuracy!.toStringAsFixed(1)}%',
+      );
+    }
+    share.writeln('   Blunders: ${analysis.blackBlunders}');
+    share.writeln('   Mistakes: ${analysis.blackMistakes}');
+    share.writeln('   Inaccuracies: ${analysis.blackInaccuracies}');
+    share.writeln();
+
+    // Game info
+    share.writeln('📊 Game Info');
+    share.writeln('━━━━━━━━━━━━━━━━━━━━');
+    share.writeln('Result: ${game.result}');
+    share.writeln('Moves: ${game.movesCount}');
+    if (analysis.openingName != null) {
+      share.writeln('Opening: ${analysis.openingName}');
+    }
+    if (analysis.eco != null) {
+      share.writeln('ECO: ${analysis.eco}');
+    }
+    share.writeln();
+
+    // PGN
+    share.writeln('📝 PGN');
+    share.writeln('━━━━━━━━━━━━━━━━━━━━');
+    share.writeln(exportGameToPgn(game, gameState, analysis: analysis));
+
+    return share.toString();
+  }
+
+  /// Export to PGN file format for saving
+  /// التصدير إلى صيغة ملف PGN للحفظ
+  static Map<String, String> exportToFile(
+    ChessGameEntity game,
+    GameState gameState, {
+    GameAnalysisEntity? analysis,
+  }) {
+    final fileName = _generateFileName(game);
+    final content = exportGameToPgn(
+      game,
+      gameState,
+      analysis: analysis,
+      includeEvaluations: analysis != null,
+    );
+
+    return {
+      'fileName': fileName,
+      'content': content,
+      'mimeType': 'application/x-chess-pgn',
+    };
+  }
+
+  /// Generate file name for PGN export
+  /// إنشاء اسم ملف لتصدير PGN
+  static String _generateFileName(ChessGameEntity game) {
+    final date = _formatDate(game.date!).replaceAll('.', '-');
+    final white = game.whitePlayer.name.replaceAll(' ', '_');
+    final black = game.blackPlayer.name.replaceAll(' ', '_');
+    return '${date}_${white}_vs_$black.pgn';
   }
 }
+
+//     // Add final newline and result
+//     pgn.writeln();
+//     pgn.write(game.result);
+
+//     return pgn.toString();
+//   }
+
+//   /// Format date for PGN (YYYY.MM.DD format)
+//   /// تنسيق التاريخ لصيغة PGN
+//   static String _formatDate(DateTime? date) {
+//     if (date == null) return '????.??.??';
+
+//     final year = date.year.toString().padLeft(4, '0');
+//     final month = date.month.toString().padLeft(2, '0');
+//     final day = date.day.toString().padLeft(2, '0');
+
+//     return '$year.$month.$day';
+//   }
+// }

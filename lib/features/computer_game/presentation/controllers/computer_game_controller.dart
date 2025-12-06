@@ -1,53 +1,61 @@
+import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/get_cached_game_state_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_game_by_uuid_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_controller.dart';
 import 'package:dartchess/dartchess.dart';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
 
-/// Controller for playing against computer
-/// المتحكم في اللعب ضد الكمبيوتر
-class ComputerGameController extends GameComputerController {
-  final StockfishController stockfishController;
-
+class ComputerGameController extends BaseGameController
+    with StorageFeatures, WidgetsBindingObserver {
   /// Player side (white or black)
-  // final Rx<Side> playerSide = Side.white.obs;
-  // Side get playerSide => playerSide;
-  // set playerSide(Side value) => playerSide = value;
+  // final Rx<PlayerSide> playerSide = PlayerSide.white.obs;
+  // PlayerSide get playerSide => playerSide;
+  // set playerSide(PlayerSide value) => playerSide = value;
 
   /// Computer is thinking
   final RxBool _computerThinking = false.obs;
   bool get computerThinking => _computerThinking.value;
 
-  /// Computer difficulty level (0-20)
+  // / Computer difficulty level (0-20)
   final RxInt _difficulty = 10.obs;
   int get difficulty => _difficulty.value;
   set difficulty(int value) => _difficulty.value = value;
 
+  final UpdateGameUseCase updateGameUseCase;
+  final GetGameByUuidUseCase getGameByUuidUseCase;
+  final GetCachedGameStateUseCase getCachedGameStateUseCase;
+  final SavePlayerUseCase savePlayerUseCase;
+  final StockfishController stockfishController;
   ComputerGameController({
-    required this.stockfishController,
-    required super.engineService,
     required super.plySound,
-    required super.saveGameUseCase,
-    required super.cacheGameStateUseCase,
-    required super.getOrCreateGuestPlayerUseCase,
-    required super.choosingCtrl,
-  });
-
-  //     super(
-  //       saveGameUseCase: saveGameUseCase,
-  //       updateGameUseCase: updateGameUseCase,
-  //       getGameByUuidUseCase: getGameByUuidUseCase,
-  //       cacheGameStateUseCase: cacheGameStateUseCase,
-  //       getCachedGameStateUseCase: getCachedGameStateUseCase,
-  //       savePlayerUseCase: savePlayerUseCase,
-  //       getOrCreateGuestPlayerUseCase: getOrCreateGuestPlayerUseCase,
-  //     );
+    required this.updateGameUseCase,
+    required this.getGameByUuidUseCase,
+    required this.getCachedGameStateUseCase,
+    required this.savePlayerUseCase,
+    required this.stockfishController,
+    required SaveGameUseCase saveGameUseCase,
+    required CacheGameStateUseCase cacheGameStateUseCase,
+    required GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase,
+  }) {
+    this.saveGameUseCase = saveGameUseCase;
+    this.cacheGameStateUseCase = cacheGameStateUseCase;
+    this.getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
+  }
 
   /// Start new game against computer
   /// بدء لعبة جديدة ضد الكمبيوتر
   Future<void> startComputerGame({
     required String playerName,
-    required Side playerSide,
+    required PlayerSide playerSide,
     int difficulty = 10,
   }) async {
     try {
@@ -68,16 +76,26 @@ class ComputerGameController extends GameComputerController {
 
       // Start game with player and computer
       await startNewGame(
-        whitePlayerName: playerSide == Side.white ? playerName : 'Stockfish',
-        blackPlayerName: playerSide == Side.black ? playerName : 'Stockfish',
+        whitePlayerName: playerSide == PlayerSide.white
+            ? playerName
+            : 'Stockfish',
+        blackPlayerName: playerSide == PlayerSide.black
+            ? playerName
+            : 'Stockfish',
         event: 'Computer Game',
         site: 'Local',
       );
 
       // If computer plays white, make first move
-      if (playerSide == Side.black) {
+      if (playerSide == PlayerSide.black) {
         await _makeComputerMove();
       }
+      currentFen = gameState.position.fen;
+      validMoves = makeLegalMoves(gameState.position);
+
+      isLoading = false;
+      debugPrint('Computer game started');
+      debugPrint('setError($errorMessage)');
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error starting computer game',
@@ -90,23 +108,23 @@ class ComputerGameController extends GameComputerController {
 
   /// Override onUserMove to trigger computer response
   /// تجاوز onUserMove لتشغيل استجابة الكمبيوتر
-  // @override
-  // Future<void> onUserMove(
-  //   NormalMove move, {
-  //   bool? isDrop,
-  //   bool? isPremove,
-  // }) async {
-  //   // Execute player's move
-  //   super.onUserMove(move, isDrop: isDrop, isPremove: isPremove);
+  @override
+  Future<void> onUserMove(
+    NormalMove move, {
+    bool? isDrop,
+    bool? isPremove,
+  }) async {
+    // Execute player's move
+    super.onUserMove(move, isDrop: isDrop, isPremove: isPremove);
 
-  //   // Check if game is over
-  //   if (isGameOver) return;
+    // Check if game is over
+    if (isGameOver) return;
 
-  //   // Check if it's computer's turn
-  //   if (currentTurn != playerSide) {
-  //     await _makeComputerMove();
-  //   }
-  // }
+    // Check if it's computer's turn
+    if (currentTurn.name != playerSide.name) {
+      await _makeComputerMove();
+    }
+  }
 
   /// Make computer move
   /// تنفيذ حركة الكمبيوتر
@@ -127,7 +145,6 @@ class ComputerGameController extends GameComputerController {
         depth: _getDepthForDifficulty(difficulty),
       );
       final bestMoveResult = stockfishController.bestMove;
-
       if (bestMoveResult == null) {
         AppLogger.error(
           'Computer failed to find move',
@@ -179,14 +196,14 @@ class ComputerGameController extends GameComputerController {
   /// تجاوز التراجع للتراجع عن حركة الكمبيوتر أيضاً
   // @override
   // Future<void> undoMove() async {
-  //   if (!canUndo.value) return;
+  //   if (!canUndo) return;
 
   //   // Undo player's move
-  //   super.undoMove();
+  //    super.undoMove();
 
   //   // If it's still computer's turn, undo computer's move too
-  //   if (currentTurn != playerSide && canUndo.value) {
-  //     super.undoMove();
+  //   if (currentTurn != playerSide && canUndo) {
+  //      super.undoMove();
   //   }
   // }
 }

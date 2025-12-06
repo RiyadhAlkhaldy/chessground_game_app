@@ -5,6 +5,7 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/core/utils/styles/styles.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_controller.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
@@ -12,7 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class ChessBoardWidget extends GetView<BaseGameController> {
-  const ChessBoardWidget({super.key});
+  ChessBoardWidget({super.key});
+  final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -61,8 +63,8 @@ class ChessBoardWidget extends GetView<BaseGameController> {
                 }
               }
             },
-            child: GetX<ChessBoardSettingsController>(
-              builder: (ctrlBoardSettings) => controller.isLoading
+            child: Obx(
+              () => controller.isLoading
                   ? const CircularProgressIndicator()
                   : Chessboard(
                       size: min(constraints.maxWidth, constraints.maxHeight),
@@ -114,12 +116,13 @@ class ChessBoardWidget extends GetView<BaseGameController> {
                       ),
                       orientation: ctrlBoardSettings.orientation.value,
 
-                      fen: controller.fen,
+                      fen: controller.currentFen,
                       // lastMove: controller.lastMove,
                       game: GameData(
                         playerSide: controller.gameState.isGameOverExtended
                             ? PlayerSide.none
-                            : (controller is OfflineGameController)
+                            : (controller is OfflineGameController ||
+                                  controller is ComputerGameController)
                             ? PlayerSide.both
                             : controller.playerSide,
                         validMoves: controller.validMoves,

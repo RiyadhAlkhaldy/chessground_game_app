@@ -1,7 +1,7 @@
+import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
-import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -13,7 +13,7 @@ class NewComputerGamePage extends GetView<BaseGameController> {
   @override
   Widget build(BuildContext context) {
     final nameController = TextEditingController(text: 'Player');
-    final selectedSide = Side.white.obs;
+    final selectedSide = PlayerSide.white.obs;
     final selectedDifficulty = 10.obs;
 
     return Scaffold(
@@ -45,7 +45,7 @@ class NewComputerGamePage extends GetView<BaseGameController> {
 
             // Choose side
             const Text(
-              'Choose Your Side',
+              'Choose Your PlayerSide',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
@@ -57,22 +57,22 @@ class NewComputerGamePage extends GetView<BaseGameController> {
                   Expanded(
                     child: _buildSideCard(
                       context,
-                      side: Side.white,
+                      side: PlayerSide.white,
                       icon: '♔',
                       label: 'White',
-                      isSelected: selectedSide.value == Side.white,
-                      onTap: () => selectedSide.value = Side.white,
+                      isSelected: selectedSide.value == PlayerSide.white,
+                      onTap: () => selectedSide.value = PlayerSide.white,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildSideCard(
                       context,
-                      side: Side.black,
+                      side: PlayerSide.black,
                       icon: '♚',
                       label: 'Black',
-                      isSelected: selectedSide.value == Side.black,
-                      onTap: () => selectedSide.value = Side.black,
+                      isSelected: selectedSide.value == PlayerSide.black,
+                      onTap: () => selectedSide.value = PlayerSide.black,
                     ),
                   ),
                 ],
@@ -195,7 +195,7 @@ class NewComputerGamePage extends GetView<BaseGameController> {
 
   Widget _buildSideCard(
     BuildContext context, {
-    required Side side,
+    required PlayerSide side,
     required String icon,
     required String label,
     required bool isSelected,
@@ -249,7 +249,7 @@ class NewComputerGamePage extends GetView<BaseGameController> {
   Future<void> _startGame(
     BuildContext context,
     String playerName,
-    Side playerSide,
+    PlayerSide playerSide,
     int difficulty,
   ) async {
     if (playerName.trim().isEmpty) {
@@ -270,7 +270,7 @@ class NewComputerGamePage extends GetView<BaseGameController> {
     );
 
     if (!controller.isLoading && controller.errorMessage.isEmpty) {
-      Get.offNamed(AppRoutes.newGameComputerPage);
+      Get.offNamed(AppRoutes.newGameVsComputerPage);
     }
   }
 }

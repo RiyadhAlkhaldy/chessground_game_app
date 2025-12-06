@@ -23,7 +23,7 @@ class StockfishBinding extends Bindings {
         streamAnalysisUseCase: sl<StreamAnalysisUseCase>(),
         setEngineLevelUseCase: sl<SetEngineLevelUseCase>(),
       ),
-      permanent: true, // Keep alive throughout app lifecycle
+      // permanent: true, // Keep alive throughout app lifecycle
     );
   }
 }
