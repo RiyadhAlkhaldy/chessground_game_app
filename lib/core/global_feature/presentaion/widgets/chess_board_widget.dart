@@ -4,8 +4,7 @@ import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/utils/helper/helper_methodes.dart';
 import 'package:chessground_game_app/core/utils/styles/styles.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart'; 
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
@@ -121,8 +120,7 @@ class ChessBoardWidget extends GetView<BaseGameController> {
                       game: GameData(
                         playerSide: controller.gameState.isGameOverExtended
                             ? PlayerSide.none
-                            : (controller is OfflineGameController ||
-                                  controller is ComputerGameController)
+                            : (controller is OfflineGameController)
                             ? PlayerSide.both
                             : controller.playerSide,
                         validMoves: controller.validMoves,

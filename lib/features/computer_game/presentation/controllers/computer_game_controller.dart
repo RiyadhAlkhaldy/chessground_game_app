@@ -12,7 +12,7 @@ import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
+import 'package:get/get.dart'; 
 
 class ComputerGameController extends BaseGameController
     with StorageFeatures, WidgetsBindingObserver {
@@ -51,15 +51,35 @@ class ComputerGameController extends BaseGameController
     this.getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
   }
 
+  @override
+  void onInit() {
+    super.onInit();
+    final args = Get.arguments;
+    if (args != null && args is Map) {
+      final playerName = args['playerName'] as String;
+      final playerSide = args['playerSide'] as PlayerSide;
+      final difficulty = args['difficulty'] as int;
+
+      // Start game automatically with provided arguments
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startComputerGame(
+          playerName: playerName,
+          playerSide: playerSide,
+          difficulty: difficulty,
+        );
+      });
+    }
+  }
+
   /// Start new game against computer
   /// بدء لعبة جديدة ضد الكمبيوتر
-  Future<void> startComputerGame({
+  Future<void> _startComputerGame({
     required String playerName,
     required PlayerSide playerSide,
     int difficulty = 10,
   }) async {
     try {
-      playerSide = playerSide;
+      this.playerSide = playerSide;
       _difficulty.value = difficulty;
 
       // Set computer skill level

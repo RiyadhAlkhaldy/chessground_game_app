@@ -1,21 +1,15 @@
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_controller.dart';
-import 'package:chessground_game_app/routes/app_pages.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/new_computer_game_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 /// Screen for setting up a new computer game
 /// شاشة إعداد لعبة جديدة ضد الكمبيوتر
-class NewComputerGamePage extends GetView<BaseGameController> {
+class NewComputerGamePage extends GetView<NewComputerGameController> {
   const NewComputerGamePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final nameController = TextEditingController(text: 'Player');
-    final selectedSide = PlayerSide.white.obs;
-    final selectedDifficulty = 10.obs;
-
     return Scaffold(
       appBar: AppBar(title: const Text('Play vs Computer')),
       body: SingleChildScrollView(
@@ -33,7 +27,7 @@ class NewComputerGamePage extends GetView<BaseGameController> {
 
             // Player name
             TextField(
-              controller: nameController,
+              controller: controller.nameController,
               decoration: const InputDecoration(
                 labelText: 'Your Name',
                 border: OutlineInputBorder(),
@@ -60,8 +54,9 @@ class NewComputerGamePage extends GetView<BaseGameController> {
                       side: PlayerSide.white,
                       icon: '♔',
                       label: 'White',
-                      isSelected: selectedSide.value == PlayerSide.white,
-                      onTap: () => selectedSide.value = PlayerSide.white,
+                      isSelected:
+                          controller.selectedSide.value == PlayerSide.white,
+                      onTap: () => controller.setSide(PlayerSide.white),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -71,8 +66,9 @@ class NewComputerGamePage extends GetView<BaseGameController> {
                       side: PlayerSide.black,
                       icon: '♚',
                       label: 'Black',
-                      isSelected: selectedSide.value == PlayerSide.black,
-                      onTap: () => selectedSide.value = PlayerSide.black,
+                      isSelected:
+                          controller.selectedSide.value == PlayerSide.black,
+                      onTap: () => controller.setSide(PlayerSide.black),
                     ),
                   ),
                 ],
@@ -95,18 +91,24 @@ class NewComputerGamePage extends GetView<BaseGameController> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(_getDifficultyLabel(selectedDifficulty.value)),
+                      Text(
+                        controller.getDifficultyLabel(
+                          controller.selectedDifficulty.value,
+                        ),
+                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: _getDifficultyColor(selectedDifficulty.value),
+                          color: controller.getDifficultyColor(
+                            controller.selectedDifficulty.value,
+                          ),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          'Level ${selectedDifficulty.value}',
+                          'Level ${controller.selectedDifficulty.value}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -117,13 +119,13 @@ class NewComputerGamePage extends GetView<BaseGameController> {
                   ),
                   const SizedBox(height: 8),
                   Slider(
-                    value: selectedDifficulty.value.toDouble(),
+                    value: controller.selectedDifficulty.value.toDouble(),
                     min: 1,
                     max: 20,
                     divisions: 19,
-                    label: selectedDifficulty.value.toString(),
+                    label: controller.selectedDifficulty.value.toString(),
                     onChanged: (value) =>
-                        selectedDifficulty.value = value.toInt(),
+                        controller.setDifficulty(value.toInt()),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -156,20 +158,15 @@ class NewComputerGamePage extends GetView<BaseGameController> {
             // Start button
             Obx(
               () => ElevatedButton(
-                onPressed: controller.isLoading
+                onPressed: controller.isLoading.value
                     ? null
-                    : () => _startGame(
-                        context,
-                        nameController.text,
-                        selectedSide.value,
-                        selectedDifficulty.value,
-                      ),
+                    : () => controller.startGame(),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                 ),
-                child: controller.isLoading
+                child: controller.isLoading.value
                     ? const SizedBox(
                         height: 20,
                         width: 20,
@@ -230,47 +227,5 @@ class NewComputerGamePage extends GetView<BaseGameController> {
         ),
       ),
     );
-  }
-
-  String _getDifficultyLabel(int level) {
-    if (level <= 5) return 'Beginner';
-    if (level <= 10) return 'Intermediate';
-    if (level <= 15) return 'Advanced';
-    return 'Master';
-  }
-
-  Color _getDifficultyColor(int level) {
-    if (level <= 5) return Colors.green;
-    if (level <= 10) return Colors.orange;
-    if (level <= 15) return Colors.red;
-    return Colors.purple;
-  }
-
-  Future<void> _startGame(
-    BuildContext context,
-    String playerName,
-    PlayerSide playerSide,
-    int difficulty,
-  ) async {
-    if (playerName.trim().isEmpty) {
-      Get.snackbar(
-        'Invalid Input',
-        'Please enter your name',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
-    await (controller as ComputerGameController).startComputerGame(
-      playerName: playerName.trim(),
-      playerSide: playerSide,
-      difficulty: difficulty,
-    );
-
-    if (!controller.isLoading && controller.errorMessage.isEmpty) {
-      Get.offNamed(AppRoutes.newGameVsComputerPage);
-    }
   }
 }
