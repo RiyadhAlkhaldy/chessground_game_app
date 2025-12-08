@@ -4,7 +4,7 @@ import 'package:chessground_game_app/features/analysis/domain/usecases/game_anal
 import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/save_game_analysis_usecase.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/game_analysis_controller.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
-import 'package:chessground_game_app/features/analysis/stockfish_binding.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/stockfish_binding.dart';
 import 'package:get/get.dart';
 
 /// Binding for GameAnalysisController

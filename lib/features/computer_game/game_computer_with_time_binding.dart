@@ -1,5 +1,5 @@
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_clock_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
+import 'package:chessground_game_app/core/global_feature/data/datasources/stockfish_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
@@ -16,7 +16,7 @@ class GameComputerWithTimeBindings extends Bindings {
     Get.lazyPut<BaseGameController>(
       () => GameComputerWithTimeController(
         choosingCtrl: Get.find<SideChoosingController>(),
-        engineService: sl<StockfishEngineService>(),
+        dataSource: sl<StockfishDataSource>(),
         plySound: sl<PlaySoundUseCase>(),
         saveGameUseCase: sl<SaveGameUseCase>(),
         cacheGameStateUseCase: sl<CacheGameStateUseCase>(),

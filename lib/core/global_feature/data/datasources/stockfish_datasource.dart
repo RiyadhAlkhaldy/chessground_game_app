@@ -1,191 +1,601 @@
-// import 'dart:async';
+import 'dart:async';
+import 'package:chessground_game_app/core/global_feature/data/models/stockfish/engine_evaluation_model.dart';
+import 'package:chessground_game_app/core/utils/logger.dart'; 
+import 'package:stockfish/stockfish.dart';
 
-// import 'package:chessground_game_app/core/global_feature/data/models/extended_evaluation.dart';
-// import 'package:flutter/material.dart';
-// import 'package:stockfish/stockfish.dart'; 
+/// DataSource for Stockfish engine operations
+/// مصدر البيانات لعمليات محرك Stockfish
+abstract class StockfishDataSource {
+  Future<void> initialize();
+  Future<void> dispose();
+  Future<EngineEvaluationModel> analyzePosition({
+    required String fen,
+    int depth = 20,
+    int? timeLimit,
+  });
+  Future<String> getBestMove({required String fen, int depth = 20});
+  Future<String> getBestMoveWithTime({
+    required String fen,
+    required int timeMilliseconds,
+  });
+  Future<String> getBestMoveWithTimeAndDepth({
+    required String fen,
+    required int depth,
+    required int timeMilliseconds,
+  });
+  Stream<EngineEvaluationModel> streamAnalysis({
+    required String fen,
+    int maxDepth = 25,
+  });
+  Future<void> stopAnalysis();
+  Future<void> setSkillLevel(int level);
+  Future<void> setOption(String name, dynamic value);
+  Future<void> uciNewGame();
+  Future<bool> isReady();
+}
 
-// /// طبقة البيانات: تغليف مباشر لمحرّك Stockfish عبر الحزمة stockfish_chess_engine
-// class StockfishDataSource {
-//   static Stockfish? _stockfish; 
-//   StreamSubscription<String>? _stdoutSub;
-//   StreamSubscription<String>? _stderrSub;
+/// Implementation of StockfishDataSource
+/// تنفيذ مصدر بيانات Stockfish
+class StockfishDataSourceImpl implements StockfishDataSource {
+  Stockfish? _stockfish;
+  StreamSubscription<String>? _outputSubscription;
+  final StreamController<EngineEvaluationModel> _analysisController =
+      StreamController<EngineEvaluationModel>.broadcast();
 
-//   final StreamController<String> _raw = StreamController.broadcast();
-//   final StreamController<ExtendedEvaluation> _eval = StreamController.broadcast();
-//   final StreamController<String> _bestmove = StreamController.broadcast();
+  Completer<EngineEvaluationModel>? _evaluationCompleter;
+  Completer<String>? _bestMoveCompleter;
+  Completer<bool>? _readyCompleter;
 
-//   Stream<String> get raw => _raw.stream;
-//   Stream<ExtendedEvaluation?> get evaluations => _eval.stream;
-//   Stream<String> get bestmoves => _bestmove.stream;
+  EngineEvaluationModel? _lastEvaluation;
+  int _currentDepth = 0;
 
-//   Future<void> start({Duration waitBeforeUci = const Duration(milliseconds: 2000)}) async {
-//     if (_stockfish != null && !startStockfishIfNecessary) {
-//       return;
-//     }
-//     _stockfish = Stockfish();
+  @override
+  Future<void> initialize() async {
+    try {
+      AppLogger.info(
+        'Initializing Stockfish engine',
+        tag: 'StockfishDataSource',
+      );
 
-//     _stdoutSub = _stockfish?.stdout.listen((line) {
-//       _raw.add(line);
-//       _handleLine(line);
-//     });
+      _stockfish = await stockfishAsync();
+      // Listen to engine output
+      _outputSubscription = _stockfish!.stdout.listen(
+        _handleEngineOutput,
+        onError: (error) {
+          AppLogger.error(
+            'Stockfish output error',
+            error: error,
+            tag: 'StockfishDataSource',
+          );
+        },
+      );
+      // await Future.delayed(const Duration(seconds: 2));
 
-//     // _stderrSub = _stockfish?.stderr.listen((err) {
-//     //   _raw.add('ERR: $err');
-//     // });
+      // Send UCI command
+      _stockfish!.stdin = 'uci';
 
-//     await Future.delayed(waitBeforeUci);
+      // Wait for engine to be ready
+      await _waitForReady();
 
-//     _stockfish?.stdin = 'uci';
+      // Set default options
+      _stockfish!.stdin = 'setoption name threads value 2';
+      _stockfish!.stdin = 'setoption name hash value 128';
 
-//     await _waitFor((l) => l.contains('uciok'), const Duration(seconds: 3));
+      AppLogger.info(
+        'Stockfish initialized successfully',
+        tag: 'StockfishDataSource',
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Failed to initialize Stockfish',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+      rethrow;
+    }
+  }
 
-//     await isReady();
-//   }
+  @override
+  Future<void> dispose() async {
+    try {
+      AppLogger.info('Disposing Stockfish engine', tag: 'StockfishDataSource');
 
-//   bool get startStockfishIfNecessary {
-//     if (_stockfish?.state.value == StockfishState.ready ||
-//         _stockfish?.state.value == StockfishState.starting) {
-//       return false;
-//     }
-//     return true;
-//   }
+      await stopAnalysis();
+      await _outputSubscription?.cancel();
+      await _analysisController.close();
+      _stockfish?.stdin = 'quit';
+      _stockfish = null;
 
-//   Future<void> _waitFor(bool Function(String) predicate, Duration timeout) async {
-//     // debugPrint(' _waitFor...');
-//     await raw
-//         .firstWhere(predicate)
-//         .timeout(
-//           timeout,
-//           // onTimeout: () {
-//           //   return '';
-//           // },
-//         );
-//   }
+      AppLogger.info('Stockfish disposed', tag: 'StockfishDataSource');
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error disposing Stockfish',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+    }
+  }
 
-//   Future<void> isReady() async {
-//     _stockfish?.stdin = 'isready';
-//     await _waitFor((l) => l.contains('readyok'), const Duration(seconds: 1));
-//   }
+  @override
+  Future<EngineEvaluationModel> analyzePosition({
+    required String fen,
+    int depth = 20,
+    int? timeLimit,
+  }) async {
+    try {
+      AppLogger.info(
+        'Analyzing position at depth $depth',
+        tag: 'StockfishDataSource',
+      );
 
-//   Future<void> ucinewgame() async {
-//     _stockfish?.stdin = 'ucinewgame';
-//     await isReady();
-//   }
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
 
-//   void setOption(String name, dynamic value) =>
-//       _stockfish?.stdin = 'setoption name $name value $value';
+      // Stop any ongoing analysis
+      await stopAnalysis();
 
-//   ///
-//   void setPosition({String? fen, List<String>? moves}) {
-//     var cmd = fen != null ? 'position fen $fen' : 'position startpos';
-//     if (moves != null && moves.isNotEmpty) cmd += ' moves ${moves.join(' ')}';
-//     // debugPrint("Move: $cmd  ");
-//     _stockfish?.stdin = cmd;
-//   }
+      // Reset state
+      _evaluationCompleter = Completer<EngineEvaluationModel>();
+      _lastEvaluation = null;
+      _currentDepth = 0;
 
-//   Future<String> goDepth(int depth, {Duration timeout = const Duration(seconds: 2)}) async {
-//     _stockfish?.stdin = 'go depth $depth';
-//     final line = await raw.firstWhere((l) => l.startsWith('bestmove')).timeout(timeout);
-//     return _parseBestmove(line);
-//   }
+      // Set position
+      _stockfish!.stdin = 'position fen $fen';
 
-//   void goMovetime(int ms, {Duration timeout = const Duration(seconds: 2)}) async {
-//     _stockfish?.stdin = 'go movetime $ms';
-//     // final line = await raw
-//     //     .firstWhere((l) => l.startsWith('bestmove'))
-//     //     .timeout(timeout);
-//     // return _parseBestmove(line);
-//   }
+      // Start analysis
+      if (timeLimit != null) {
+        _stockfish!.stdin = 'go movetime $timeLimit';
+      } else {
+        _stockfish!.stdin = 'go depth $depth';
+      }
 
-//   Future<void> stop() async {
-//     _stockfish?.stdin = 'stop';
-//   }
+      // Wait for analysis to complete
+      final evaluation = await _evaluationCompleter!.future;
 
-//   String _parseBestmove(String line) {
-//     final parts = line.split(RegExp(r"\s+"));
-//     if (parts.length >= 2) {
-//       final bm = parts[1].trim();
-//       _bestmove.add(bm);
-//       return bm;
-//     }
-//     return '';
-//   }
+      AppLogger.info(
+        'Analysis complete: ${evaluation.toString()}',
+        tag: 'StockfishDataSource',
+      );
 
-//   void _handleLine(String line) {
-//     // debugPrint('_handleLine: $line');
+      return evaluation;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error analyzing position',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+      rethrow;
+    }
+  }
 
-//     if (line.startsWith('info')) {
-//       final eval = _parseInfoLine(line);
-//       if (eval != null) _eval.add(eval);
-//     } else if (line.startsWith('bestmove')) {
-//       _parseBestmove(line);
-//     }
-//   }
+  @override
+  Future<String> getBestMove({required String fen, int depth = 20}) async {
+    try {
+      AppLogger.info('Getting best move', tag: 'StockfishDataSource');
 
-//   ExtendedEvaluation? _parseInfoLine(String line) {
-//     try {
-//       final depthMatch = RegExp(r'depth\s+(\d+)').firstMatch(line);
-//       final depth = depthMatch != null ? int.parse(depthMatch.group(1)!) : 0;
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
 
-//       final cpMatch = RegExp(r'score\s+cp\s+(-?\d+)').firstMatch(line);
+      // Stop any ongoing analysis
+      await stopAnalysis();
 
-//       final mateMatch = RegExp(r'score\s+mate\s+(-?\d+)').firstMatch(line);
+      // Reset state
+      _bestMoveCompleter = Completer<String>();
 
-//       final pvMatch = RegExp(r'pv\s+(.+)$').firstMatch(line);
+      // Set position
+      _stockfish!.stdin = 'position fen $fen';
 
-//       final String pv = pvMatch != null ? pvMatch.group(1)!.trim() : '';
+      // Get best move
+      _stockfish!.stdin = 'go depth $depth';
 
-//       final wdlMatch = RegExp(r'wdl\s+(\d+)\s+(\d+)\s+(\d+)').firstMatch(line);
+      // Wait for best move
+      final bestMove = await _bestMoveCompleter!.future;
 
-//       final int? cp = cpMatch != null ? int.parse(cpMatch.group(1)!) : null;
-//       final int? mate = mateMatch != null ? int.parse(mateMatch.group(1)!) : null;
+      AppLogger.info('Best move: $bestMove', tag: 'StockfishDataSource');
 
-//       ///
-//       final int? wdlWin = wdlMatch != null ? int.parse(wdlMatch.group(1)!) : null;
-//       final int? wdlDraw = wdlMatch != null ? int.parse(wdlMatch.group(2)!) : null;
-//       final int? wdlLoss = wdlMatch != null ? int.parse(wdlMatch.group(3)!) : null;
+      return bestMove;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error getting best move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+      rethrow;
+    }
+  }
 
-//       // debugPrint(
-//       //   "pv:$pv , pvMatch:$pvMatch , depth:$depth  , cpMatch:$cp , mateMatch:$mateMatch",
-//       // );
-//       return ExtendedEvaluation(
-//         depth: depth,
-//         pv: pv,
-//         cp: cp,
-//         mate: mate,
-//         wdlWin: wdlWin,
-//         wdlDraw: wdlDraw,
-//         wdlLoss: wdlLoss,
-//       );
-//     } catch (e) {
-//       debugPrint("error _parseInfoLine $e");
-//       return null;
-//     }
-//   }
+  @override
+  Future<String> getBestMoveWithTime({
+    required String fen,
+    required int timeMilliseconds,
+  }) async {
+    try {
+      AppLogger.info(
+        'Getting best move with time limit: ${timeMilliseconds}ms',
+        tag: 'StockfishDataSource',
+      );
 
-//   ///
-//   Future<void> stopStockfish() async {
-//     if (_stockfish?.state.value == StockfishState.disposed ||
-//         _stockfish?.state.value == StockfishState.error) {
-//       return;
-//     }
-//     _stdoutSub?.cancel();
-//     _stderrSub?.cancel();
-//     _stockfish?.dispose();
-//     await Future.delayed(const Duration(milliseconds: 1200));
-//     // if (Get.context!.mounted) return;
-//   }
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
 
-//   Future<void> dispose() async {
-//     _stdoutSub?.cancel();
-//     _stderrSub?.cancel();
-//     try {
-//       _stockfish?.dispose();
-//     } catch (e) {
-//       debugPrint("error dispose $e");
-//     }
-//     await _raw.close();
-//     await _eval.close();
-//     await _bestmove.close();
-//   }
-// }
+      // Stop any ongoing analysis
+      await stopAnalysis();
+
+      // Reset state
+      _bestMoveCompleter = Completer<String>();
+
+      // Set position
+      _stockfish!.stdin = 'position fen $fen';
+
+      // Get best move with time limit (in milliseconds)
+      _stockfish!.stdin = 'go movetime $timeMilliseconds';
+
+      // Wait for best move
+      final bestMove = await _bestMoveCompleter!.future;
+
+      AppLogger.info(
+        'Best move (time-based): $bestMove',
+        tag: 'StockfishDataSource',
+      );
+
+      return bestMove;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error getting best move with time',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> getBestMoveWithTimeAndDepth({
+    required String fen,
+    required int depth,
+    required int timeMilliseconds,
+  }) async {
+    try {
+      AppLogger.info(
+        'Getting best move with depth $depth and time limit ${timeMilliseconds}ms',
+        tag: 'StockfishDataSource',
+      );
+
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
+
+      // Stop any ongoing analysis
+      await stopAnalysis();
+
+      // Reset state
+      _bestMoveCompleter = Completer<String>();
+
+      // Set position
+      _stockfish!.stdin = 'position fen $fen';
+
+      // Get best move with both depth and time constraints
+      // Engine will stop when either limit is reached
+      _stockfish!.stdin = 'go depth $depth movetime $timeMilliseconds';
+
+      // Wait for best move
+      final bestMove = await _bestMoveCompleter!.future;
+
+      AppLogger.info(
+        'Best move (depth+time): $bestMove',
+        tag: 'StockfishDataSource',
+      );
+
+      return bestMove;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error getting best move with time and depth',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<EngineEvaluationModel> streamAnalysis({
+    required String fen,
+    int maxDepth = 25,
+  }) {
+    try {
+      AppLogger.info('Starting analysis stream', tag: 'StockfishDataSource');
+
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
+
+      // Stop any ongoing analysis
+      stopAnalysis();
+
+      // Reset state
+      _lastEvaluation = null;
+      _currentDepth = 0;
+
+      // Set position
+      _stockfish!.stdin = 'position fen $fen';
+
+      // Start infinite analysis
+      _stockfish!.stdin = 'go infinite';
+
+      return _analysisController.stream;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error starting analysis stream',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> stopAnalysis() async {
+    try {
+      if (_stockfish != null) {
+        _stockfish!.stdin = 'stop';
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+    } catch (e) {
+      AppLogger.warning(
+        'Error stopping analysis: $e',
+        tag: 'StockfishDataSource',
+      );
+    }
+  }
+
+  @override
+  Future<void> setSkillLevel(int level) async {
+    try {
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
+
+      // Clamp level between 0 and 20
+      final clampedLevel = level.clamp(0, 20);
+
+      AppLogger.info(
+        'Setting skill level to $clampedLevel',
+        tag: 'StockfishDataSource',
+      );
+
+      _stockfish!.stdin = 'setoption name skill level value  $clampedLevel';
+
+      // Adjust other parameters based on skill level
+      if (clampedLevel < 20) {
+        // Add some randomness for lower levels
+        final errorProb = (20 - clampedLevel) * 5;
+        _stockfish!.stdin =
+            'setoption name skill level maximum error value $errorProb';
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error setting skill level',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> setOption(String name, dynamic value) async {
+    try {
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
+      AppLogger.info(
+        'Setting option $name to $value',
+        tag: 'StockfishDataSource',
+      );
+      _stockfish!.stdin = 'setoption name $name value $value';
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error setting option',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+    }
+  }
+
+  @override
+  Future<void> uciNewGame() async {
+    try {
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
+      AppLogger.info('Sending ucinewgame', tag: 'StockfishDataSource');
+      _stockfish!.stdin = 'ucinewgame';
+      await isReady();
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error sending ucinewgame',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+    }
+  }
+
+  @override
+  Future<bool> isReady() async {
+    try {
+      if (_stockfish == null) return false;
+
+      _readyCompleter = Completer<bool>();
+      _stockfish!.stdin = 'isready';
+
+      return await _readyCompleter!.future.timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => false,
+      );
+    } catch (e) {
+      AppLogger.warning(
+        'Error checking ready state: $e',
+        tag: 'StockfishDataSource',
+      );
+      return false;
+    }
+  }
+
+  /// Wait for engine to be ready
+  /// الانتظار حتى يصبح المحرك جاهزاً
+  Future<void> _waitForReady() async {
+    _readyCompleter = Completer<bool>();
+    _stockfish!.stdin = 'isready';
+    await _readyCompleter!.future;
+  }
+
+  /// Handle engine output
+  /// معالجة مخرجات المحرك
+  void _handleEngineOutput(String line) {
+    try {
+      AppLogger.debug('Engine output: $line', tag: 'StockfishDataSource');
+
+      // Handle readyok
+      if (line.trim() == 'readyok') {
+        if (_readyCompleter != null && !_readyCompleter!.isCompleted) {
+          _readyCompleter!.complete(true);
+        }
+        return;
+      }
+
+      // Handle info lines (evaluation updates)
+      if (line.startsWith('info')) {
+        _handleInfoLine(line);
+        return;
+      }
+
+      // Handle bestmove
+      if (line.startsWith('bestmove')) {
+        _handleBestMoveLine(line);
+        return;
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error handling engine output',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+    }
+  }
+
+  /// Handle info line from engine
+  /// معالجة سطر معلومات من المحرك
+  void _handleInfoLine(String line) {
+    try {
+      final parts = line.split(' ');
+
+      int? depth;
+      int? nodes;
+      int? time;
+      int? cp;
+      int? mate;
+      String? bestMove;
+      List<String> pv = [];
+
+      for (int i = 0; i < parts.length; i++) {
+        switch (parts[i]) {
+          case 'depth':
+            if (i + 1 < parts.length) depth = int.tryParse(parts[i + 1]);
+            break;
+          case 'nodes':
+            if (i + 1 < parts.length) nodes = int.tryParse(parts[i + 1]);
+            break;
+          case 'time':
+            if (i + 1 < parts.length) time = int.tryParse(parts[i + 1]);
+            break;
+          case 'cp':
+            if (i + 1 < parts.length) cp = int.tryParse(parts[i + 1]);
+            break;
+          case 'mate':
+            if (i + 1 < parts.length) mate = int.tryParse(parts[i + 1]);
+            break;
+          case 'pv':
+            // Principal variation starts here
+            pv = parts.sublist(i + 1);
+            if (pv.isNotEmpty) bestMove = pv.first;
+            break;
+        }
+      }
+
+      // Only process if we have depth and bestMove
+      if (depth != null && bestMove != null) {
+        _currentDepth = depth;
+
+        final evaluation = EngineEvaluationModel(
+          centipawns: cp,
+          mate: mate,
+          depth: depth,
+          nodes: nodes,
+          bestMove: bestMove,
+          pv: pv,
+          time: time,
+        );
+
+        _lastEvaluation = evaluation;
+
+        // Add to stream
+        if (!_analysisController.isClosed) {
+          _analysisController.add(evaluation);
+        }
+      }
+    } catch (e) {
+      AppLogger.warning(
+        'Error parsing info line: $e',
+        tag: 'StockfishDataSource',
+      );
+    }
+  }
+
+  /// Handle bestmove line from engine
+  /// معالجة سطر أفضل حركة من المحرك
+  void _handleBestMoveLine(String line) {
+    try {
+      final parts = line.split(' ');
+      if (parts.length >= 2) {
+        final bestMove = parts[1];
+
+        // Complete best move completer
+        if (_bestMoveCompleter != null && !_bestMoveCompleter!.isCompleted) {
+          _bestMoveCompleter!.complete(bestMove);
+        }
+
+        // Complete evaluation completer with last evaluation
+        if (_evaluationCompleter != null &&
+            !_evaluationCompleter!.isCompleted) {
+          if (_lastEvaluation != null) {
+            _evaluationCompleter!.complete(_lastEvaluation);
+          } else {
+            // Create a minimal evaluation
+            _evaluationCompleter!.complete(
+              EngineEvaluationModel(depth: _currentDepth, bestMove: bestMove),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      AppLogger.warning(
+        'Error parsing bestmove line: $e',
+        tag: 'StockfishDataSource',
+      );
+    }
+  }
+}

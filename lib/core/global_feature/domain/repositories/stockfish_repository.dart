@@ -1,6 +1,6 @@
 import 'package:chessground_game_app/core/errors/failures.dart';
-import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
-import 'package:chessground_game_app/features/analysis/domain/engine_move_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/stockfish/engine_evaluation_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/stockfish/engine_move_entity.dart';
 import 'package:dartz/dartz.dart';
 
 /// Repository interface for Stockfish engine operations

@@ -2,7 +2,7 @@
 // lib/features/analysis/data/models/game_analysis_model.dart
 
 import 'dart:convert';
-import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/stockfish/engine_evaluation_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/entities/game_analysis_entity.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 

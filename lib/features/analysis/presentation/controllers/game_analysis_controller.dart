@@ -3,7 +3,7 @@ import 'package:chessground_game_app/core/global_feature/domain/entities/chess_g
 import 'package:chessground_game_app/core/global_feature/domain/services/game_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_game_by_uuid_usecase.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
-import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/stockfish/engine_evaluation_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/entities/game_analysis_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/get_game_analysis_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/save_game_analysis_usecase.dart';

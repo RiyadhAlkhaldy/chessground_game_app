@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_clock_service.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
+import 'package:chessground_game_app/core/global_feature/data/datasources/stockfish_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/interfaces/end_game_interfaces.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_controller.dart';
@@ -17,7 +17,7 @@ class GameComputerWithTimeController extends GameComputerController
 
   GameComputerWithTimeController({
     required super.choosingCtrl,
-    required super.engineService,
+    required super.dataSource,
     required super.plySound,
     required this.clockCtrl,
     required super.saveGameUseCase,
@@ -37,21 +37,7 @@ class GameComputerWithTimeController extends GameComputerController
     super.onClose();
   }
 
-  @override
-  Future<void> playAiMove() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (gameState.isGameOver) return;
-
-    final allMoves = [
-      for (final entry in gameState.position.legalMoves.entries)
-        for (final dest in entry.value.squares)
-          NormalMove(from: entry.key, to: dest),
-    ];
-
-    if (allMoves.isNotEmpty) {
-      engineService.goMovetime(thinkingTimeForAI);
-    }
-  }
+  // playAiMove removed, using super implementation which calls makeMoveAi
 
   @override
   void makeMoveAi(String best) async {
@@ -64,8 +50,8 @@ class GameComputerWithTimeController extends GameComputerController
       // Use base class applyMove
       applyMove(bestMove);
 
-      // Update Stockfish position
-      engineService.setPosition(fen: currentFen);
+      // Update Stockfish position - not needed
+      // engineService.setPosition(fen: currentFen);
 
       // Switch clock
       clockCtrl.switchTurn(gameState.turn.opposite);
@@ -115,7 +101,7 @@ class GameComputerWithTimeController extends GameComputerController
 /// عند انتهاء الوقت — نفعل هذه الدالة (clockService يجب أن يمرّر الجانب الذي انتهى الوقت له)
 void handleTimeout(Side timedOutSide) async {
   final clockCtrl = Get.find<ChessClockService>();
-  final engineService = Get.find<StockfishEngineService>();
+  final dataSource = Get.find<StockfishDataSource>();
   final gameComputerWithTimeController =
       Get.find<GameComputerWithTimeController>();
   debugPrint('Handling timeout for side: $timedOutSide');
@@ -124,7 +110,7 @@ void handleTimeout(Side timedOutSide) async {
   final resultText = winnerSide == Side.white ? '1-0' : '0-1';
   debugPrint('Game over by timeout, result: $resultText');
   // نوقف المحرك والساعة
-  engineService.stop();
+  dataSource.stopAnalysis();
   clockCtrl.stop();
 
   gameComputerWithTimeController.statusText.value =

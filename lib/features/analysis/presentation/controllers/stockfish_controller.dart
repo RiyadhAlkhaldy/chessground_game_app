@@ -1,16 +1,16 @@
 import 'dart:async';
-import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
-import 'package:chessground_game_app/features/analysis/domain/engine_move_entity.dart';
-import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
-import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_usecase.dart';
-import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_with_time_usecase.dart';
-import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_with_time_and_depth_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/stockfish/engine_evaluation_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/stockfish/engine_move_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/repositories/stockfish_repository.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/stockfish/get_best_move_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/stockfish/get_best_move_with_time_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/stockfish/get_best_move_with_time_and_depth_usecase.dart';
 import 'package:get/get.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_hint_usecase.dart';
-import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/stream_analysis_usecase.dart';
-import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/set_engine_level_usecase.dart';
-import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/analyze_position_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/stockfish/get_hint_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/stockfish/stream_analysis_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/stockfish/set_engine_level_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/stockfish/analyze_position_usecase.dart';
 
 /// Controller for Stockfish engine operations
 /// المتحكم في عمليات محرك Stockfish

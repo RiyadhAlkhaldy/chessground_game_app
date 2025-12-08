@@ -1,5 +1,5 @@
 
-import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/stockfish/engine_evaluation_entity.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'engine_evaluation_model.freezed.dart';

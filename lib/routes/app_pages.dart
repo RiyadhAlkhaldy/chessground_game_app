@@ -3,7 +3,7 @@ import 'package:chessground_game_app/features/analysis/game_analysis_binding.dar
 import 'package:chessground_game_app/features/analysis/presentation/pages/game_analysis_screen.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/pages/computer_game_page.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/pages/new_computer_game_page.dart';
-import 'package:chessground_game_app/features/analysis/stockfish_binding.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/stockfish_binding.dart';
 import 'package:chessground_game_app/features/computer_game/game_computer_binding.dart';
 import 'package:chessground_game_app/features/computer_game/game_computer_with_time_binding.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/pages/game_computer_page.dart';

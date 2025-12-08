@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/data/models/extended_evaluation.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/stockfish_engine_service.dart';
+import 'package:chessground_game_app/core/global_feature/data/datasources/stockfish_datasource.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
@@ -27,7 +27,7 @@ class GameComputerController extends BaseGameController
   final storage = Get.find<GetStorageControllerImp>();
   final SideChoosingController choosingCtrl;
   final Rx<StockfishState> stockfishState = StockfishState.disposed.obs;
-  final StockfishEngineService engineService;
+  final StockfishDataSource dataSource;
 
   // Computer-specific properties
   Side humanSide = Side.white;
@@ -40,7 +40,7 @@ class GameComputerController extends BaseGameController
   // Constructor - call super with required parameters
   GameComputerController({
     required this.choosingCtrl,
-    required this.engineService,
+    required this.dataSource,
     required super.plySound,
     required SaveGameUseCase saveGameUseCase,
     required CacheGameStateUseCase cacheGameStateUseCase,
@@ -79,24 +79,12 @@ class GameComputerController extends BaseGameController
             : Side.white;
       }
 
-      engineService.start().then((_) {
+      dataSource.initialize().then((_) {
         applyStockfishSettings();
-        engineService.setPosition(fen: currentFen);
+        // dataSource.setPosition(fen: currentFen); // Not needed with direct move calls
         stockfishState.value = StockfishState.ready;
         // if the player is black, let the AI play the first move
         playerSide == PlayerSide.black ? playAiMove() : null;
-      });
-      //
-      engineService.evaluations.listen((ev) {
-        // if (ev != null) {
-        // evaluation.value = ev;
-        // score.value = evaluation.value!.whiteWinPercent();
-        // }
-      });
-      engineService.bestmoves.listen((event) {
-        debugPrint('bestmoves: $event');
-        makeMoveAi(event);
-        update();
       });
     });
   }
@@ -108,41 +96,18 @@ class GameComputerController extends BaseGameController
       _startStockfishIfNecessary();
     } else if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
-      engineService.stopStockfish();
+      dataSource.dispose();
     }
   }
 
-  void _startStockfishIfNecessary() {
-    engineService.startStockfishIfNecessary
-        ? engineService.start().then((_) {
-            stockfishState.value = StockfishState.ready;
-            update();
-          })
-        : null;
+  Future<void> _startStockfishIfNecessary() async {
+    final isReady = await dataSource.isReady();
+    if (!isReady) {
+      await dataSource.initialize();
+      stockfishState.value = StockfishState.ready;
+      update();
+    }
   }
-
-  // Future<void> initPlayers() async {
-  //   if (choosingCtrl.playerColor.value == SideChoosing.white) {
-  //     playerSide = PlayerSide.white;
-  //     ctrlBoardSettings.orientation.value = Side.white;
-  //     await createOrGetGustPlayer().then(
-  //       (value) => whitePlayer.value = value!.toModel().toEntity(),
-  //     );
-  //     await createOrGetGustPlayer(
-  //       uuidKeyForAI,
-  //     ).then((value) => blackPlayer.value = value!.toModel().toEntity());
-  //   } else if (choosingCtrl.playerColor.value == SideChoosing.black) {
-  //     playerSide = PlayerSide.black;
-  //     ctrlBoardSettings.orientation.value = Side.black;
-  //     await createOrGetGustPlayer(
-  //       uuidKeyForAI,
-  //     ).then((value) => whitePlayer.value = value!.toModel().toEntity());
-
-  //     await createOrGetGustPlayer().then(
-  //       (value) => blackPlayer.value = value!.toModel().toEntity(),
-  //     );
-  //   }
-  // }
 
   Future<void> playAiMove() async {
     await Future.delayed(const Duration(milliseconds: 100));
@@ -155,7 +120,11 @@ class GameComputerController extends BaseGameController
     ];
 
     if (allMoves.isNotEmpty) {
-      engineService.goMovetime(thinkingTimeForAI);
+      final bestMove = await dataSource.getBestMoveWithTime(
+        fen: currentFen,
+        timeMilliseconds: thinkingTimeForAI,
+      );
+      makeMoveAi(bestMove);
     }
   }
 
@@ -163,7 +132,7 @@ class GameComputerController extends BaseGameController
   @override
   void reset() {
     debugPrint('reset to $currentFen');
-    engineService.ucinewgame();
+    dataSource.uciNewGame();
     super.reset();
   }
 
@@ -184,8 +153,8 @@ class GameComputerController extends BaseGameController
       // Use base class applyMove
       applyMove(bestMove);
 
-      // Update Stockfish position
-      engineService.setPosition(fen: currentFen);
+      // Update Stockfish position - not needed if using getBestMove with FEN
+      // engineService.setPosition(fen: currentFen);
 
       update();
       tryPlayPremove();
@@ -196,7 +165,7 @@ class GameComputerController extends BaseGameController
   void undoMove() {
     if (canUndo.value) {
       super.undoMove();
-      engineService.setPosition(fen: currentFen);
+      // engineService.setPosition(fen: currentFen);
     }
   }
 
@@ -204,14 +173,13 @@ class GameComputerController extends BaseGameController
   void redoMove() {
     if (canRedo.value) {
       super.redoMove();
-      engineService.setPosition(fen: currentFen);
+      // engineService.setPosition(fen: currentFen);
     }
   }
 
   // Method to apply the settings from SideChoosingController
   void applyStockfishSettings() {
     final skillLevel = choosingCtrl.skillLevel.value;
-    final depth = choosingCtrl.depth.value;
     final uciLimitStrength = choosingCtrl.uciLimitStrength.value;
     final uciElo = choosingCtrl.uciElo.value;
     thinkingTimeForAI = choosingCtrl.thinkingTimeForAI.value;
@@ -219,22 +187,30 @@ class GameComputerController extends BaseGameController
     // Apply UCI_Elo if UCI_LimitStrength is enabled
     if (uciLimitStrength) {
       // Apply UCI_LimitStrength option
-      engineService.setOption('UCI_LimitStrength', uciLimitStrength);
-      engineService.setOption('UCI_Elo', uciElo);
+      dataSource.setOption('UCI_LimitStrength', uciLimitStrength);
+      dataSource.setOption('UCI_Elo', uciElo);
       // Optional: Set depth to a low value as it's not the primary control
       // when UCI_LimitStrength is true
-      engineService.setOption(
+      dataSource.setOption(
         'Skill Level',
         20,
       ); // Setting a high skill level by default
     } else {
       // Use Skill Level and Depth if UCI_LimitStrength is disabled
-      engineService.setOption('Skill Level', skillLevel);
-      engineService.setOption('Depth', depth);
+      dataSource.setOption('Skill Level', skillLevel);
+      // Depth is used in search, not as option usually, but maybe for some configs?
+      // dataSource.setOption('Depth', depth);
+      // NOTE: Stockfish doesn't usually have a 'Depth' option, it's a command parameter.
+      // But keeping it if it was there (maybe for some variant?)
+      // Actually standard Stockfish UCI options don't include Depth.
+      // But I will keep it commented or passing if user insists.
+      // 'go depth X' is how depth is used.
     }
 
-    // Always apply Move Time
-    engineService.setOption('Move Time', thinkingTimeForAI);
+    // Always apply Move Time - this is property on controller, used in playAiMove
+    // engineService.setOption('Move Time', thinkingTimeForAI); // 'Move Time' is not a standard UCI option usually?
+    // 'Move Overhead'? No.
+    // I will rely on passing thinkingTimeForAI to getBestMoveWithTime.
 
     // Now, let's log the settings to confirm they are applied
     _logAppliedSettings();
@@ -258,13 +234,13 @@ class GameComputerController extends BaseGameController
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    engineService.dispose();
+    dataSource.dispose();
     super.dispose();
   }
 
   @override
   void onClose() {
-    engineService.dispose();
+    dataSource.dispose();
     super.onClose();
   }
 }

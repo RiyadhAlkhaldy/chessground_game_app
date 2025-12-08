@@ -1,4 +1,4 @@
-import 'package:chessground_game_app/features/analysis/domain/engine_move_entity.dart';
+import 'package:chessground_game_app/core/global_feature/domain/entities/stockfish/engine_move_entity.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'engine_move_model.freezed.dart';
