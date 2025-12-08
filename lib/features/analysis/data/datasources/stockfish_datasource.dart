@@ -14,6 +14,15 @@ abstract class StockfishDataSource {
     int? timeLimit,
   });
   Future<String> getBestMove({required String fen, int depth = 20});
+  Future<String> getBestMoveWithTime({
+    required String fen,
+    required int timeMilliseconds,
+  });
+  Future<String> getBestMoveWithTimeAndDepth({
+    required String fen,
+    required int depth,
+    required int timeMilliseconds,
+  });
   Stream<EngineEvaluationModel> streamAnalysis({
     required String fen,
     int maxDepth = 25,
@@ -191,6 +200,102 @@ class StockfishDataSourceImpl implements StockfishDataSource {
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error getting best move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> getBestMoveWithTime({
+    required String fen,
+    required int timeMilliseconds,
+  }) async {
+    try {
+      AppLogger.info(
+        'Getting best move with time limit: ${timeMilliseconds}ms',
+        tag: 'StockfishDataSource',
+      );
+
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
+
+      // Stop any ongoing analysis
+      await stopAnalysis();
+
+      // Reset state
+      _bestMoveCompleter = Completer<String>();
+
+      // Set position
+      _stockfish!.stdin = 'position fen $fen';
+
+      // Get best move with time limit (in milliseconds)
+      _stockfish!.stdin = 'go movetime $timeMilliseconds';
+
+      // Wait for best move
+      final bestMove = await _bestMoveCompleter!.future;
+
+      AppLogger.info(
+        'Best move (time-based): $bestMove',
+        tag: 'StockfishDataSource',
+      );
+
+      return bestMove;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error getting best move with time',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishDataSource',
+      );
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> getBestMoveWithTimeAndDepth({
+    required String fen,
+    required int depth,
+    required int timeMilliseconds,
+  }) async {
+    try {
+      AppLogger.info(
+        'Getting best move with depth $depth and time limit ${timeMilliseconds}ms',
+        tag: 'StockfishDataSource',
+      );
+
+      if (_stockfish == null) {
+        throw Exception('Stockfish not initialized');
+      }
+
+      // Stop any ongoing analysis
+      await stopAnalysis();
+
+      // Reset state
+      _bestMoveCompleter = Completer<String>();
+
+      // Set position
+      _stockfish!.stdin = 'position fen $fen';
+
+      // Get best move with both depth and time constraints
+      // Engine will stop when either limit is reached
+      _stockfish!.stdin = 'go depth $depth movetime $timeMilliseconds';
+
+      // Wait for best move
+      final bestMove = await _bestMoveCompleter!.future;
+
+      AppLogger.info(
+        'Best move (depth+time): $bestMove',
+        tag: 'StockfishDataSource',
+      );
+
+      return bestMove;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error getting best move with time and depth',
         error: e,
         stackTrace: stackTrace,
         tag: 'StockfishDataSource',

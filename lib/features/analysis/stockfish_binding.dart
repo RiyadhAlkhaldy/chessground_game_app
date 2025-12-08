@@ -1,6 +1,8 @@
 import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/analyze_position_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_with_time_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_with_time_and_depth_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_hint_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/set_engine_level_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/stream_analysis_usecase.dart';
@@ -19,6 +21,9 @@ class StockfishBinding extends Bindings {
         repository: sl<StockfishRepository>(),
         analyzePositionUseCase: sl<AnalyzePositionUseCase>(),
         getBestMoveUseCase: sl<GetBestMoveUseCase>(),
+        getBestMoveWithTimeUseCase: sl<GetBestMoveWithTimeUseCase>(),
+        getBestMoveWithTimeAndDepthUseCase:
+            sl<GetBestMoveWithTimeAndDepthUseCase>(),
         getHintUseCase: sl<GetHintUseCase>(),
         streamAnalysisUseCase: sl<StreamAnalysisUseCase>(),
         setEngineLevelUseCase: sl<SetEngineLevelUseCase>(),

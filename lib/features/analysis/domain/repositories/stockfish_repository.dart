@@ -1,8 +1,7 @@
-
 import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/engine_move_entity.dart';
-import 'package:dartz/dartz.dart'; 
+import 'package:dartz/dartz.dart';
 
 /// Repository interface for Stockfish engine operations
 /// واجهة المستودع لعمليات محرك Stockfish
@@ -28,6 +27,21 @@ abstract class StockfishRepository {
   Future<Either<Failure, EngineMoveEntity>> getBestMove({
     required String fen,
     int depth = 20,
+  });
+
+  /// Get best move for a position with time limit
+  /// الحصول على أفضل حركة لموضع مع حد زمني
+  Future<Either<Failure, EngineMoveEntity>> getBestMoveWithTime({
+    required String fen,
+    required int timeMilliseconds,
+  });
+
+  /// Get best move for a position with both time and depth constraints
+  /// الحصول على أفضل حركة لموضع مع قيود الوقت والعمق
+  Future<Either<Failure, EngineMoveEntity>> getBestMoveWithTimeAndDepth({
+    required String fen,
+    required int depth,
+    required int timeMilliseconds,
   });
 
   /// Get multiple move suggestions

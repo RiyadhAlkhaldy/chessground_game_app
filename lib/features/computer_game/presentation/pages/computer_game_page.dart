@@ -88,81 +88,81 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
   /// Build portrait layout
   Widget _buildPortraitLayout(BuildContext context) {
-    return Column(
-      children: [
-        // Top player info (computer)
-        Obx(
-          () => const GameInfoWidget(
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Top player info (computer)
+          // Obx(
+          //   () =>
+          const GameInfoWidget(
             // player: controller.game?.blackPlayer,
             // isPlayerTurn: controller.currentTurn == Side.black,
             // capturedPieces: controller.capturedPieces['white'] ?? [],
             // timeRemaining: null,
             // isTop: true,
           ),
-        ),
+          // ),
 
-        // Computer thinking indicator
-        Obx(() {
-          if ((controller as ComputerGameController).computerThinking) {
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Computer is thinking...',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
+          // Computer thinking indicator
+          Obx(() {
+            if ((controller as ComputerGameController).computerThinking) {
+              return Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
-                  ),
-                ],
-              ),
-            );
-          }
-          return const SizedBox(height: 8);
-        }),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Computer is thinking...',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox(height: 8);
+          }),
 
-        // Chess board
-        Expanded(
-          child: Center(
-            child: AspectRatio(aspectRatio: 1.0, child: ChessBoardWidget()),
-          ),
-        ),
+          // Chess board
+          AspectRatio(aspectRatio: 1.0, child: ChessBoardWidget()),
 
-        // Bottom player info (human)
-        Obx(
-          () => const GameInfoWidget(
+          // Bottom player info (human)
+          // Obx(
+          //   () =>
+          const GameInfoWidget(
             // player: controller.game?.whitePlayer,
             // isPlayerTurn: controller.currentTurn == Side.white,
             // capturedPieces: controller.capturedPieces['black'] ?? [],
             // timeRemaining: null,
             // isTop: false,
           ),
-        ),
+          // ),
 
-        // Move list
-        SizedBox(
-          height: 120,
-          child: Obx(() {
-            if (controller.gameState.getMoveTokens.isEmpty) {
-              return const Center(child: Text('No moves yet'));
-            }
+          // Move list
+          SizedBox(
+            height: 120,
+            child: Obx(() {
+              if (controller.gameState.getMoveTokens.isEmpty) {
+                return const Center(child: Text('No moves yet'));
+              }
 
-            return MoveListWidget(
-              tokens: controller.gameState.getMoveTokens,
-              currentIndex: controller.gameState.getMoveTokens.length - 1,
-            );
-          }),
-        ),
-      ],
+              return MoveListWidget(
+                tokens: controller.gameState.getMoveTokens,
+                currentIndex: controller.gameState.getMoveTokens.length - 1,
+              );
+            }),
+          ),
+        ],
+      ),
     );
   }
 
@@ -176,15 +176,16 @@ class ComputerGamePage extends GetView<BaseGameController> {
           child: Column(
             children: [
               // Computer info
-              Obx(
-                () => const GameInfoWidget(
-                  // player: controller.game?.blackPlayer,
-                  // isPlayerTurn: controller.currentTurn == Side.black,
-                  // capturedPieces: controller.capturedPieces['white'] ?? [],
-                  // timeRemaining: null,
-                  // isTop: true,
-                ),
+              // Obx(
+              //   () =>
+              const GameInfoWidget(
+                // player: controller.game?.blackPlayer,
+                // isPlayerTurn: controller.currentTurn == Side.black,
+                // capturedPieces: controller.capturedPieces['white'] ?? [],
+                // timeRemaining: null,
+                // isTop: true,
               ),
+              // ),
 
               // Board
               Expanded(
@@ -197,15 +198,16 @@ class ComputerGamePage extends GetView<BaseGameController> {
               ),
 
               // Player info
-              Obx(
-                () => const GameInfoWidget(
-                  // player: controller.game?.whitePlayer,
-                  // isPlayerTurn: controller.currentTurn == Side.white,
-                  // capturedPieces: controller.capturedPieces['black'] ?? [],
-                  // timeRemaining: null,
-                  // isTop: false,
-                ),
+              // Obx(
+              //   () =>
+              const GameInfoWidget(
+                // player: controller.game?.whitePlayer,
+                // isPlayerTurn: controller.currentTurn == Side.white,
+                // capturedPieces: controller.capturedPieces['black'] ?? [],
+                // timeRemaining: null,
+                // isTop: false,
               ),
+              // ),
             ],
           ),
         ),

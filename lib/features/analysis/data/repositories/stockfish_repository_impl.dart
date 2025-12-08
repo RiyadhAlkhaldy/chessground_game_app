@@ -5,7 +5,7 @@ import 'package:chessground_game_app/features/analysis/data/models/engine_evalua
 import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/engine_move_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
-import 'package:dartz/dartz.dart';  
+import 'package:dartz/dartz.dart';
 
 /// Implementation of StockfishRepository
 /// تنفيذ مستودع Stockfish
@@ -17,11 +17,17 @@ class StockfishRepositoryImpl implements StockfishRepository {
   @override
   Future<Either<Failure, void>> initialize() async {
     try {
-      AppLogger.info('Repository: Initializing Stockfish', tag: 'StockfishRepository');
-      
+      AppLogger.info(
+        'Repository: Initializing Stockfish',
+        tag: 'StockfishRepository',
+      );
+
       await dataSource.initialize();
-      
-      AppLogger.info('Repository: Stockfish initialized', tag: 'StockfishRepository');
+
+      AppLogger.info(
+        'Repository: Stockfish initialized',
+        tag: 'StockfishRepository',
+      );
       return const Right(null);
     } catch (e, stackTrace) {
       AppLogger.error(
@@ -30,7 +36,7 @@ class StockfishRepositoryImpl implements StockfishRepository {
         stackTrace: stackTrace,
         tag: 'StockfishRepository',
       );
-      
+
       return Left(
         DatabaseFailure(
           message: 'Failed to initialize engine: ${e.toString()}',
@@ -43,11 +49,17 @@ class StockfishRepositoryImpl implements StockfishRepository {
   @override
   Future<Either<Failure, void>> dispose() async {
     try {
-      AppLogger.info('Repository: Disposing Stockfish', tag: 'StockfishRepository');
-      
+      AppLogger.info(
+        'Repository: Disposing Stockfish',
+        tag: 'StockfishRepository',
+      );
+
       await dataSource.dispose();
-      
-      AppLogger.info('Repository: Stockfish disposed', tag: 'StockfishRepository');
+
+      AppLogger.info(
+        'Repository: Stockfish disposed',
+        tag: 'StockfishRepository',
+      );
       return const Right(null);
     } catch (e, stackTrace) {
       AppLogger.error(
@@ -56,7 +68,7 @@ class StockfishRepositoryImpl implements StockfishRepository {
         stackTrace: stackTrace,
         tag: 'StockfishRepository',
       );
-      
+
       return Left(
         DatabaseFailure(
           message: 'Failed to dispose engine: ${e.toString()}',
@@ -120,10 +132,7 @@ class StockfishRepositoryImpl implements StockfishRepository {
         tag: 'StockfishRepository',
       );
 
-      final bestMoveUci = await dataSource.getBestMove(
-        fen: fen,
-        depth: depth,
-      );
+      final bestMoveUci = await dataSource.getBestMove(fen: fen, depth: depth);
 
       // Get evaluation for this move
       final evaluation = await dataSource.analyzePosition(
@@ -162,6 +171,114 @@ class StockfishRepositoryImpl implements StockfishRepository {
   }
 
   @override
+  Future<Either<Failure, EngineMoveEntity>> getBestMoveWithTime({
+    required String fen,
+    required int timeMilliseconds,
+  }) async {
+    try {
+      AppLogger.info(
+        'Repository: Getting best move with time limit: ${timeMilliseconds}ms',
+        tag: 'StockfishRepository',
+      );
+
+      final bestMoveUci = await dataSource.getBestMoveWithTime(
+        fen: fen,
+        timeMilliseconds: timeMilliseconds,
+      );
+
+      // Get evaluation for this move
+      final evaluation = await dataSource.analyzePosition(
+        fen: fen,
+        timeLimit: timeMilliseconds,
+      );
+
+      final entity = EngineMoveEntity(
+        uci: bestMoveUci,
+        evaluation: evaluation.centipawns,
+        isBestMove: true,
+        rank: 1,
+      );
+
+      AppLogger.info(
+        'Repository: Best move retrieved (time-based) - $bestMoveUci',
+        tag: 'StockfishRepository',
+      );
+
+      return Right(entity);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Repository: Failed to get best move with time',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishRepository',
+      );
+
+      return Left(
+        DatabaseFailure(
+          message: 'Failed to get best move with time: ${e.toString()}',
+          details: e,
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, EngineMoveEntity>> getBestMoveWithTimeAndDepth({
+    required String fen,
+    required int depth,
+    required int timeMilliseconds,
+  }) async {
+    try {
+      AppLogger.info(
+        'Repository: Getting best move with depth $depth and time ${timeMilliseconds}ms',
+        tag: 'StockfishRepository',
+      );
+
+      final bestMoveUci = await dataSource.getBestMoveWithTimeAndDepth(
+        fen: fen,
+        depth: depth,
+        timeMilliseconds: timeMilliseconds,
+      );
+
+      // Get evaluation for this move
+      final evaluation = await dataSource.analyzePosition(
+        fen: fen,
+        depth: depth,
+        timeLimit: timeMilliseconds,
+      );
+
+      final entity = EngineMoveEntity(
+        uci: bestMoveUci,
+        evaluation: evaluation.centipawns,
+        isBestMove: true,
+        rank: 1,
+      );
+
+      AppLogger.info(
+        'Repository: Best move retrieved (depth+time) - $bestMoveUci',
+        tag: 'StockfishRepository',
+      );
+
+      return Right(entity);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Repository: Failed to get best move with time and depth',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishRepository',
+      );
+
+      return Left(
+        DatabaseFailure(
+          message:
+              'Failed to get best move with time and depth: ${e.toString()}',
+          details: e,
+        ),
+      );
+    }
+  }
+
+  @override
   Future<Either<Failure, List<EngineMoveEntity>>> getMoveSuggestions({
     required String fen,
     int count = 3,
@@ -175,7 +292,7 @@ class StockfishRepositoryImpl implements StockfishRepository {
 
       // Get best move
       final bestMoveResult = await getBestMove(fen: fen, depth: depth);
-      
+
       if (bestMoveResult.isLeft()) {
         return bestMoveResult.fold(
           (failure) => Left(failure),
@@ -225,21 +342,23 @@ class StockfishRepositoryImpl implements StockfishRepository {
 
       return dataSource
           .streamAnalysis(fen: fen, maxDepth: maxDepth)
-          .map((model) => Right<Failure, EngineEvaluationEntity>(model.toEntity()))
+          .map(
+            (model) => Right<Failure, EngineEvaluationEntity>(model.toEntity()),
+          )
           .handleError((error, stackTrace) {
-        AppLogger.error(
-          'Repository: Analysis stream error',
-          error: error,
-          stackTrace: stackTrace,
-          tag: 'StockfishRepository',
-        );
+            AppLogger.error(
+              'Repository: Analysis stream error',
+              error: error,
+              stackTrace: stackTrace,
+              tag: 'StockfishRepository',
+            );
 
-        return Left<Failure, EngineEvaluationEntity>(
-          DatabaseFailure(
-            message: 'Analysis stream error: ${error.toString()}',
-          ),
-        );
-      });
+            return Left<Failure, EngineEvaluationEntity>(
+              DatabaseFailure(
+                message: 'Analysis stream error: ${error.toString()}',
+              ),
+            );
+          });
     } catch (e, stackTrace) {
       AppLogger.error(
         'Repository: Failed to start analysis stream',
@@ -272,9 +391,7 @@ class StockfishRepositoryImpl implements StockfishRepository {
       );
 
       return Left(
-        DatabaseFailure(
-          message: 'Failed to stop analysis: ${e.toString()}',
-        ),
+        DatabaseFailure(message: 'Failed to stop analysis: ${e.toString()}'),
       );
     }
   }
@@ -304,9 +421,7 @@ class StockfishRepositoryImpl implements StockfishRepository {
       );
 
       return Left(
-        DatabaseFailure(
-          message: 'Failed to set skill level: ${e.toString()}',
-        ),
+        DatabaseFailure(message: 'Failed to set skill level: ${e.toString()}'),
       );
     }
   }

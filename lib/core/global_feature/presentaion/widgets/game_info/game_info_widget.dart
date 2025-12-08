@@ -1,8 +1,7 @@
 // lib/presentation/widgets/game_info_widget.dart
 
 import 'package:chessground_game_app/core/game_termination_enum.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
-import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart'; 
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -51,13 +50,23 @@ class GameInfoWidget extends GetView<BaseGameController> {
             _buildInfoRow(
               icon: Icons.calendar_today,
               label: 'Date',
-              value: game.date != null ? DateFormat('yyyy-MM-dd').format(game.date!) : 'Unknown',
+              value: game.date != null
+                  ? DateFormat('yyyy-MM-dd').format(game.date!)
+                  : 'Unknown',
             ),
 
-            _buildInfoRow(icon: Icons.location_on, label: 'Site', value: game.site ?? 'Local'),
+            _buildInfoRow(
+              icon: Icons.location_on,
+              label: 'Site',
+              value: game.site ?? 'Local',
+            ),
 
             if (game.timeControl != null)
-              _buildInfoRow(icon: Icons.timer, label: 'Time Control', value: game.timeControl!),
+              _buildInfoRow(
+                icon: Icons.timer,
+                label: 'Time Control',
+                value: game.timeControl!,
+              ),
 
             const Divider(height: 16),
 
@@ -76,14 +85,21 @@ class GameInfoWidget extends GetView<BaseGameController> {
 
   /// Build info row
   /// بناء صف المعلومات
-  Widget _buildInfoRow({required IconData icon, required String label, required String value}) {
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Icon(icon, size: 16, color: Colors.grey[600]),
           const SizedBox(width: 8),
-          Text('$label: ', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          Text(
+            '$label: ',
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          ),
           Expanded(
             child: Text(
               value,
@@ -103,7 +119,10 @@ class GameInfoWidget extends GetView<BaseGameController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text('Game Status', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        const Text(
+          'Game Status',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
 
         // Status indicator
@@ -164,7 +183,11 @@ class GameInfoWidget extends GetView<BaseGameController> {
                 SizedBox(width: 4),
                 Text(
                   'Check!',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.orange),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange,
+                  ),
                 ),
               ],
             ),
@@ -181,7 +204,10 @@ class GameInfoWidget extends GetView<BaseGameController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text('Material Balance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        const Text(
+          'Material Balance',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
 
         Row(
@@ -190,9 +216,12 @@ class GameInfoWidget extends GetView<BaseGameController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('White', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+                  const Text(
+                    'White',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
                   Text(
-                    '${(controller as OfflineGameController).getMaterialOnBoard(Side.white)} points',
+                    '${controller.gameState.materialOnBoard(Side.white)} points',
                     style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
                 ],
@@ -220,9 +249,12 @@ class GameInfoWidget extends GetView<BaseGameController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text('Black', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500)),
+                  const Text(
+                    'Black',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                  ),
                   Text(
-                    '${(controller as OfflineGameController).getMaterialOnBoard(Side.black)} points',
+                    '${controller.gameState.materialOnBoard(Side.black)} points',
                     style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
                 ],

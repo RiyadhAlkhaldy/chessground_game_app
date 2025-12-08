@@ -1,7 +1,7 @@
 import 'package:chessground_game_app/core/global_feature/data/collections/chess_game.dart';
 import 'package:chessground_game_app/core/global_feature/domain/repositories/games_repository.dart';
+import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:get/get.dart';
- 
 
 class RecentGamesController extends GetxController {
   final GamesRepository repository = Get.find<GamesRepository>();
@@ -88,6 +88,6 @@ class RecentGamesController extends GetxController {
   /// فتح تفاصيل المباراة
   void openGame(String uuid) {
     // نستخدم Get.toNamed ونمرر uuid كـ argument
-    Get.toNamed('/game-details', arguments: {'uuid': uuid});
+    Get.toNamed(AppRoutes.gameAnalysis, arguments: {'gameUuid': uuid});
   }
 }

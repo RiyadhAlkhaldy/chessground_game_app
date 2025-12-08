@@ -3,6 +3,8 @@ import 'package:chessground_game_app/features/analysis/domain/entities/engine_ev
 import 'package:chessground_game_app/features/analysis/domain/engine_move_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_with_time_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_with_time_and_depth_usecase.dart';
 import 'package:get/get.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_hint_usecase.dart';
@@ -16,6 +18,8 @@ class StockfishController extends GetxController {
   final StockfishRepository _repository;
   final AnalyzePositionUseCase _analyzePositionUseCase;
   final GetBestMoveUseCase _getBestMoveUseCase;
+  final GetBestMoveWithTimeUseCase _getBestMoveWithTimeUseCase;
+  final GetBestMoveWithTimeAndDepthUseCase _getBestMoveWithTimeAndDepthUseCase;
   final GetHintUseCase _getHintUseCase;
   final StreamAnalysisUseCase _streamAnalysisUseCase;
   final SetEngineLevelUseCase _setEngineLevelUseCase;
@@ -24,12 +28,17 @@ class StockfishController extends GetxController {
     required StockfishRepository repository,
     required AnalyzePositionUseCase analyzePositionUseCase,
     required GetBestMoveUseCase getBestMoveUseCase,
+    required GetBestMoveWithTimeUseCase getBestMoveWithTimeUseCase,
+    required GetBestMoveWithTimeAndDepthUseCase
+    getBestMoveWithTimeAndDepthUseCase,
     required GetHintUseCase getHintUseCase,
     required StreamAnalysisUseCase streamAnalysisUseCase,
     required SetEngineLevelUseCase setEngineLevelUseCase,
   }) : _repository = repository,
        _analyzePositionUseCase = analyzePositionUseCase,
        _getBestMoveUseCase = getBestMoveUseCase,
+       _getBestMoveWithTimeUseCase = getBestMoveWithTimeUseCase,
+       _getBestMoveWithTimeAndDepthUseCase = getBestMoveWithTimeAndDepthUseCase,
        _getHintUseCase = getHintUseCase,
        _streamAnalysisUseCase = streamAnalysisUseCase,
        _setEngineLevelUseCase = setEngineLevelUseCase;
@@ -246,6 +255,125 @@ class StockfishController extends GetxController {
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error getting best move',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishController',
+      );
+      _setError('Unexpected error: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Get best move for a position with time limit
+  /// الحصول على أفضل حركة لموضع مع حد زمني
+  Future<void> getBestMoveWithTime(
+    String fen, {
+    required int timeMilliseconds,
+  }) async {
+    try {
+      if (!_isInitialized.value) {
+        Get.snackbar(
+          'Engine Not Ready',
+          'Please wait for engine initialization',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      _setLoading(true);
+      _clearError();
+
+      AppLogger.info(
+        'Getting best move with time: ${timeMilliseconds}ms',
+        tag: 'StockfishController',
+      );
+
+      final result = await _getBestMoveWithTimeUseCase(
+        GetBestMoveWithTimeParams(fen: fen, timeMilliseconds: timeMilliseconds),
+      );
+
+      result.fold(
+        (failure) {
+          _setError('Failed to get best move: ${failure.message}');
+          AppLogger.error(
+            'Failed to get best move with time',
+            tag: 'StockfishController',
+          );
+        },
+        (move) {
+          _bestMove.value = move;
+          AppLogger.info(
+            'Best move (time-based): ${move.uci}',
+            tag: 'StockfishController',
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error getting best move with time',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StockfishController',
+      );
+      _setError('Unexpected error: ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  /// Get best move for a position with both time and depth constraints
+  /// الحصول على أفضل حركة لموضع مع قيود الوقت والعمق
+  Future<void> getBestMoveWithTimeAndDepth(
+    String fen, {
+    required int depth,
+    required int timeMilliseconds,
+  }) async {
+    try {
+      if (!_isInitialized.value) {
+        Get.snackbar(
+          'Engine Not Ready',
+          'Please wait for engine initialization',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      _setLoading(true);
+      _clearError();
+
+      AppLogger.info(
+        'Getting best move with depth $depth and time ${timeMilliseconds}ms',
+        tag: 'StockfishController',
+      );
+
+      final result = await _getBestMoveWithTimeAndDepthUseCase(
+        GetBestMoveWithTimeAndDepthParams(
+          fen: fen,
+          depth: depth,
+          timeMilliseconds: timeMilliseconds,
+        ),
+      );
+
+      result.fold(
+        (failure) {
+          _setError('Failed to get best move: ${failure.message}');
+          AppLogger.error(
+            'Failed to get best move with time and depth',
+            tag: 'StockfishController',
+          );
+        },
+        (move) {
+          _bestMove.value = move;
+          AppLogger.info(
+            'Best move (depth+time): ${move.uci}',
+            tag: 'StockfishController',
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error getting best move with time and depth',
         error: e,
         stackTrace: stackTrace,
         tag: 'StockfishController',

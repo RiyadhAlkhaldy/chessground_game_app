@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/get_cached_game_state_usecase.dart';
@@ -12,7 +13,7 @@ import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; 
+import 'package:get/get.dart';
 
 class ComputerGameController extends BaseGameController
     with StorageFeatures, WidgetsBindingObserver {
@@ -159,10 +160,11 @@ class ComputerGameController extends BaseGameController
       // Add small delay for better UX
       await Future.delayed(const Duration(milliseconds: 500));
 
-      // Get best move from Stockfish
-      await stockfishController.getBestMove(
+      final randomTime = Random().nextInt(3000) + 2000; // 2000ms to 5000ms
+      await stockfishController.getBestMoveWithTimeAndDepth(
         currentFen,
         depth: _getDepthForDifficulty(difficulty),
+        timeMilliseconds: randomTime,
       );
       final bestMoveResult = stockfishController.bestMove;
       if (bestMoveResult == null) {

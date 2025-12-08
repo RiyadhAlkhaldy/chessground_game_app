@@ -24,17 +24,20 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_player_by_uuid_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_recent_games_usecase.dart';
 import 'package:chessground_game_app/features/analysis/data/datasources/game_analysis_datasource.dart';
+import 'package:chessground_game_app/features/analysis/data/datasources/game_analysis_local_datasource.dart';
 import 'package:chessground_game_app/features/analysis/data/datasources/stockfish_datasource.dart';
 import 'package:chessground_game_app/features/analysis/data/repositories/game_analysis_repository_impl.dart';
 import 'package:chessground_game_app/features/analysis/data/repositories/stockfish_repository_impl.dart';
 import 'package:chessground_game_app/features/analysis/domain/repositories/game_analysis_repository.dart';
-import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart'; 
+import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/delete_game_analysis_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/get_all_analyses_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/get_game_analysis_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/save_game_analysis_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/analyze_position_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_with_time_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_with_time_and_depth_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_hint_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/set_engine_level_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/stream_analysis_usecase.dart';
@@ -153,6 +156,10 @@ class InjectionContainer {
       () => GameAnalysisDataSourceImpl(isar: sl()),
       fenix: true,
     );
+    Get.lazyPut<GameAnalysisLocalDataSource>(
+      () => GameAnalysisLocalDataSourceImpl(isar: sl()),
+      fenix: true,
+    );
 
     AppLogger.debug('Data sources registered', tag: 'DI');
   }
@@ -227,6 +234,8 @@ class InjectionContainer {
     // Stockfish use cases
     Get.lazyPut(() => AnalyzePositionUseCase(sl()), fenix: true);
     Get.lazyPut(() => GetBestMoveUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetBestMoveWithTimeUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetBestMoveWithTimeAndDepthUseCase(sl()), fenix: true);
     Get.lazyPut(() => GetHintUseCase(sl()), fenix: true);
     Get.lazyPut(() => StreamAnalysisUseCase(sl()), fenix: true);
     Get.lazyPut(() => SetEngineLevelUseCase(sl()), fenix: true);
