@@ -1,4 +1,6 @@
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
+import 'package:chessground_game_app/features/analysis/domain/entities/game_analysis_entity.dart';
+import 'package:chessground_game_app/features/analysis/domain/services/share_service.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/game_analysis_controller.dart';
 import 'package:chessground_game_app/features/analysis/presentation/widgets/engine_evaluation_widget.dart';
 import 'package:chessground_game_app/features/analysis/presentation/widgets/evaluation_graph_widget.dart';
@@ -394,21 +396,114 @@ class GameAnalysisScreen extends GetView<GameAnalysisController> {
   void _handleMenuAction(String action, BuildContext context) {
     switch (action) {
       case 'export':
-        // TODO: Implement PGN export
-        Get.snackbar(
-          'Export PGN',
-          'Feature coming soon',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        _exportPgn(context);
         break;
       case 'share':
-        // TODO: Implement share analysis
+        _shareAnalysis(context);
+        break;
+    }
+  }
+
+  /// Export game as PGN
+  /// تصدير اللعبة بصيغة PGN
+  Future<void> _exportPgn(BuildContext context) async {
+    try {
+      if (controller.game == null || controller.gameState == null) {
         Get.snackbar(
-          'Share Analysis',
-          'Feature coming soon',
+          'Cannot Export',
+          'No game data available',
           snackPosition: SnackPosition.BOTTOM,
         );
-        break;
+        return;
+      }
+
+      await ShareService.shareGameAsPgn(
+        controller.game!,
+        controller.gameState!,
+        analysis: controller.moveEvaluations.isNotEmpty
+            ? GameAnalysisEntity(
+                gameUuid: controller.game!.uuid,
+                moveEvaluations: controller.moveEvaluations,
+                analyzedAt: DateTime.now(),
+              )
+            : null,
+      );
+
+      Get.snackbar(
+        'Export Successful',
+        'PGN file shared',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Export Failed',
+        'Failed to export PGN: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Share analysis
+  /// مشاركة التحليل
+  Future<void> _shareAnalysis(BuildContext context) async {
+    try {
+      if (controller.game == null ||
+          controller.gameState == null ||
+          controller.moveEvaluations.isEmpty) {
+        Get.snackbar(
+          'Cannot Share',
+          'No analysis data available',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      // Calculate statistics
+      final stats = controller.calculateGameStatistics();
+
+      final analysis = GameAnalysisEntity(
+        gameUuid: controller.game!.uuid,
+        moveEvaluations: controller.moveEvaluations,
+        whiteAccuracy: stats['whiteAccuracy'],
+        blackAccuracy: stats['blackAccuracy'],
+        whiteBlunders: stats['whiteBlunders'],
+        blackBlunders: stats['blackBlunders'],
+        whiteMistakes: stats['whiteMistakes'],
+        blackMistakes: stats['blackMistakes'],
+        whiteInaccuracies: stats['whiteInaccuracies'],
+        blackInaccuracies: stats['blackInaccuracies'],
+        completionPercentage:
+            (controller.moveEvaluations.length /
+                controller.gameState!.getMoveTokens.length) *
+            100,
+        analyzedAt: DateTime.now(),
+      );
+
+      await ShareService.shareAnalysisAsText(
+        controller.game!,
+        controller.gameState!,
+        analysis,
+      );
+
+      Get.snackbar(
+        'Share Successful',
+        'Analysis shared',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Share Failed',
+        'Failed to share analysis: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 }

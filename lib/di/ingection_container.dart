@@ -23,9 +23,16 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/game_us
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_player_by_uuid_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_recent_games_usecase.dart';
+import 'package:chessground_game_app/features/analysis/data/datasources/game_analysis_datasource.dart';
 import 'package:chessground_game_app/features/analysis/data/datasources/stockfish_datasource.dart';
+import 'package:chessground_game_app/features/analysis/data/repositories/game_analysis_repository_impl.dart';
 import 'package:chessground_game_app/features/analysis/data/repositories/stockfish_repository_impl.dart';
-import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart';
+import 'package:chessground_game_app/features/analysis/domain/repositories/game_analysis_repository.dart';
+import 'package:chessground_game_app/features/analysis/domain/repositories/stockfish_repository.dart'; 
+import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/delete_game_analysis_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/get_all_analyses_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/get_game_analysis_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/save_game_analysis_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/analyze_position_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_best_move_usecase.dart';
 import 'package:chessground_game_app/features/analysis/domain/usecases/stockfish/get_hint_usecase.dart';
@@ -141,6 +148,12 @@ class InjectionContainer {
       fenix: true,
     );
 
+    // Game Analysis data source
+    Get.lazyPut<GameAnalysisDataSource>(
+      () => GameAnalysisDataSourceImpl(isar: sl()),
+      fenix: true,
+    );
+
     AppLogger.debug('Data sources registered', tag: 'DI');
   }
 
@@ -171,6 +184,12 @@ class InjectionContainer {
     // Stockfish repository
     Get.lazyPut<StockfishRepository>(
       () => StockfishRepositoryImpl(dataSource: sl()),
+      fenix: true,
+    );
+
+    // Game Analysis repository
+    Get.lazyPut<GameAnalysisRepository>(
+      () => GameAnalysisRepositoryImpl(localDataSource: sl()),
       fenix: true,
     );
 
@@ -211,6 +230,12 @@ class InjectionContainer {
     Get.lazyPut(() => GetHintUseCase(sl()), fenix: true);
     Get.lazyPut(() => StreamAnalysisUseCase(sl()), fenix: true);
     Get.lazyPut(() => SetEngineLevelUseCase(sl()), fenix: true);
+
+    // Game Analysis use cases
+    Get.lazyPut(() => SaveGameAnalysisUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetGameAnalysisUseCase(sl()), fenix: true);
+    Get.lazyPut(() => DeleteGameAnalysisUseCase(sl()), fenix: true);
+    Get.lazyPut(() => GetAllAnalysesUseCase(sl()), fenix: true);
     AppLogger.debug('Use cases registered', tag: 'DI');
   }
 

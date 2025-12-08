@@ -5,7 +5,8 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/game_us
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/features/analysis/domain/entities/engine_evaluation_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/entities/game_analysis_entity.dart';
-import 'package:chessground_game_app/features/analysis/domain/usecases/analysis/save_game_analysis_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/get_game_analysis_usecase.dart';
+import 'package:chessground_game_app/features/analysis/domain/usecases/game_analysis/save_game_analysis_usecase.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,14 +18,17 @@ class GameAnalysisController extends GetxController {
   final GetGameByUuidUseCase _getGameByUuidUseCase;
   final StockfishController _stockfishController;
   final SaveGameAnalysisUseCase _saveGameAnalysisUseCase;
+  final GetGameAnalysisUseCase _getGameAnalysisUseCase;
 
   GameAnalysisController({
     required GetGameByUuidUseCase getGameByUuidUseCase,
     required StockfishController stockfishController,
     required SaveGameAnalysisUseCase saveGameAnalysisUseCase,
+    required GetGameAnalysisUseCase getGameAnalysisUseCase,
   }) : _getGameByUuidUseCase = getGameByUuidUseCase,
        _stockfishController = stockfishController,
-       _saveGameAnalysisUseCase = saveGameAnalysisUseCase;
+       _saveGameAnalysisUseCase = saveGameAnalysisUseCase,
+       _getGameAnalysisUseCase = getGameAnalysisUseCase;
 
   // ========== Observable State ==========
 
@@ -75,12 +79,13 @@ class GameAnalysisController extends GetxController {
         tag: 'GameAnalysisController',
       );
 
+      // Load game
       final result = await _getGameByUuidUseCase(
         GetGameByUuidParams(uuid: gameUuid),
       );
 
-      result.fold(
-        (failure) {
+      await result.fold(
+        (failure) async {
           _setError('Failed to load game: ${failure.message}');
           AppLogger.error('Failed to load game', tag: 'GameAnalysisController');
         },
@@ -91,14 +96,17 @@ class GameAnalysisController extends GetxController {
           final restoreResult = GameService.restoreGameStateFromEntity(
             loadedGame,
           );
-          restoreResult.fold(
-            (failure) {
+          await restoreResult.fold(
+            (failure) async {
               _setError('Failed to restore game state: ${failure.message}');
             },
-            (restoredState) {
+            (restoredState) async {
               _gameState.value = restoredState;
               _currentMoveIndex.value = 0;
               _updateCurrentFen();
+
+              // Load saved analysis if exists
+              await _loadSavedAnalysis(gameUuid);
 
               AppLogger.info(
                 'Game loaded for analysis',
@@ -124,6 +132,49 @@ class GameAnalysisController extends GetxController {
       _setError('Unexpected error: ${e.toString()}');
     } finally {
       _setLoading(false);
+    }
+  }
+
+  Future<void> _loadSavedAnalysis(String gameUuid) async {
+    try {
+      final result = await _getGameAnalysisUseCase(
+        GetGameAnalysisParams(gameUuid: gameUuid),
+      );
+
+      result.fold(
+        (failure) {
+          AppLogger.warning(
+            'No saved analysis found for game',
+            tag: 'GameAnalysisController',
+          );
+        },
+        (analysis) {
+          if (analysis != null) {
+            // Load cached evaluations
+            _moveEvaluations.clear();
+            _moveEvaluations.addAll(analysis.moveEvaluations);
+
+            AppLogger.info(
+              'Loaded ${analysis.moveEvaluations.length} cached evaluations',
+              tag: 'GameAnalysisController',
+            );
+
+            Get.snackbar(
+              'Analysis Loaded',
+              'Found ${analysis.moveEvaluations.length} cached evaluations',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.blue,
+              colorText: Colors.white,
+              duration: const Duration(seconds: 2),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      AppLogger.warning(
+        'Error loading saved analysis: $e',
+        tag: 'GameAnalysisController',
+      );
     }
   }
 
@@ -276,7 +327,7 @@ class GameAnalysisController extends GetxController {
       AppLogger.info('Saving game analysis', tag: 'GameAnalysisController');
 
       // Calculate statistics
-      final stats = _calculateGameStatistics();
+      final stats = calculateGameStatistics();
 
       final analysisEntity = GameAnalysisEntity(
         gameUuid: _game.value!.uuid,
@@ -297,31 +348,26 @@ class GameAnalysisController extends GetxController {
         analyzedAt: DateTime.now(),
       );
 
-      // Save to database using SaveGameAnalysisUseCase
+      // Save using use case
       final result = await _saveGameAnalysisUseCase(
         SaveGameAnalysisParams(analysis: analysisEntity),
       );
 
       result.fold(
         (failure) {
-          throw Exception('Failed to save: ${failure.message}');
+          _setError('Failed to save analysis: ${failure.message}');
         },
-        (_) {
-          AppLogger.info(
-            'Game analysis saved to database',
-            tag: 'GameAnalysisController',
+        (savedAnalysis) {
+          AppLogger.info('Game analysis saved', tag: 'GameAnalysisController');
+
+          Get.snackbar(
+            'Analysis Saved',
+            'Game analysis saved successfully',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
           );
         },
-      );
-
-      AppLogger.info('Game analysis saved', tag: 'GameAnalysisController');
-
-      Get.snackbar(
-        'Analysis Saved',
-        'Game analysis saved successfully',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
       );
     } catch (e, stackTrace) {
       AppLogger.error(
@@ -338,7 +384,7 @@ class GameAnalysisController extends GetxController {
 
   /// Calculate game statistics from evaluations
   /// حساب إحصائيات اللعبة من التقييمات
-  Map<String, dynamic> _calculateGameStatistics() {
+  Map<String, dynamic> calculateGameStatistics() {
     int whiteBlunders = 0, blackBlunders = 0;
     int whiteMistakes = 0, blackMistakes = 0;
     int whiteInaccuracies = 0, blackInaccuracies = 0;

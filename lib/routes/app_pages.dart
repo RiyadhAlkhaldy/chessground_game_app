@@ -1,6 +1,7 @@
 import 'package:chessground_game_app/features/computer_game/computer_game_binding.dart';
 import 'package:chessground_game_app/features/analysis/game_analysis_binding.dart';
 import 'package:chessground_game_app/features/analysis/presentation/pages/game_analysis_screen.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/pages/computer_game_page.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/pages/new_computer_game_page.dart';
 import 'package:chessground_game_app/features/analysis/stockfish_binding.dart';
 import 'package:chessground_game_app/features/computer_game/game_computer_binding.dart';
@@ -30,7 +31,7 @@ abstract class AppRoutes {
   static String offlineGamePage = '/offlineGamePage';
   static String newGamePage = '/newGamePage';
   static String newGameComputerPage = '/newGameComputerPage';
-  static String newGameVsComputerPage = '/NewGameVsComputerPage';
+  static String computerGamePage = '/computerGamePage';
   static const String newGame = '/new-game';
   static const String game = '/game';
   static const String gameHistory = '/game-history';
@@ -49,6 +50,8 @@ abstract class AppRoutes {
   static String puzzles = '/Puzzles';
   static String rankings = '/Rankings';
   static String friends = '/Friends';
+  static const String computerGame = '/computer-game'; // NEW
+  static const String puzzlePlay = '/puzzle-play'; // NEW
 }
 
 class AppPages {
@@ -62,8 +65,8 @@ class AppPages {
       binding: GameComputerBindings(),
     ),
     GetPage(
-      name: AppRoutes.newGameVsComputerPage,
-      page: () => const GameComputerPage(),
+      name: AppRoutes.computerGamePage,
+      page: () => const ComputerGamePage(),
       binding: ComputerGameBinding(),
     ),
     GetPage(
@@ -108,6 +111,27 @@ class AppPages {
       page: () => const NewComputerGamePage(),
       binding: NewComputerGameBinding(),
     ),
+
+    // GetPage(
+    //   name: AppRoutes.computerGame,
+    //   page: () => const GameScreen(), // Reuse GameScreen with ComputerGameController
+    //   binding: ComputerGameBinding(),
+    //   transition: Transition.rightToLeft,
+    // ),
+
+    // GetPage(
+    //   name: AppRoutes.puzzles,
+    //   page: () => const PuzzlesScreen(),
+    //   binding: PuzzleBinding(),
+    //   transition: Transition.rightToLeft,
+    // ),
+
+    // GetPage(
+    //   name: AppRoutes.puzzlePlay,
+    //   page: () => const PuzzlePlayScreen(),
+    //   binding: PuzzleBinding(),
+    //   transition: Transition.rightToLeft,
+    // ),
     // GetPage(name: RouteNames.editPosition, page: () => EditPositionPage(positionController: positionController)),
     // GetPage(name: RouteNames.analysisScreen, page: () => AnalysisScreen()),
     // GetPage(name: '/puzzles', page: () => const PuzzlesView()),

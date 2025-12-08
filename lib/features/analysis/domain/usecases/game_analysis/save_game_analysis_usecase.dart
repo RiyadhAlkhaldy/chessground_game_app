@@ -1,3 +1,5 @@
+// lib/features/analysis/domain/usecases/game_analysis/save_game_analysis_usecase.dart
+
 import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/base/usecase.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
@@ -6,30 +8,31 @@ import 'package:chessground_game_app/features/analysis/domain/repositories/game_
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
-/// Use case for saving game analysis to database
-/// حالة استخدام لحفظ تحليل اللعبة في قاعدة البيانات
-class SaveGameAnalysisUseCase implements UseCase<void, SaveGameAnalysisParams> {
+/// Use case for saving game analysis
+/// حالة استخدام لحفظ تحليل اللعبة
+class SaveGameAnalysisUseCase
+    implements UseCase<GameAnalysisEntity, SaveGameAnalysisParams> {
   final GameAnalysisRepository repository;
 
   SaveGameAnalysisUseCase(this.repository);
 
   @override
-  Future<Either<Failure, void>> call(SaveGameAnalysisParams params) async {
+  Future<Either<Failure, GameAnalysisEntity>> call(
+    SaveGameAnalysisParams params,
+  ) async {
     try {
       AppLogger.info(
         'UseCase: Saving game analysis',
         tag: 'SaveGameAnalysisUseCase',
       );
 
-      // Validation
+      // Validate
       if (params.analysis.gameUuid.isEmpty) {
         return Left(ValidationFailure(message: 'Game UUID cannot be empty'));
       }
 
       if (params.analysis.moveEvaluations.isEmpty) {
-        return Left(
-          ValidationFailure(message: 'Move evaluations cannot be empty'),
-        );
+        return Left(ValidationFailure(message: 'No evaluations to save'));
       }
 
       final result = await repository.saveAnalysis(params.analysis);
@@ -39,7 +42,7 @@ class SaveGameAnalysisUseCase implements UseCase<void, SaveGameAnalysisParams> {
           'UseCase: Failed to save analysis - ${failure.message}',
           tag: 'SaveGameAnalysisUseCase',
         ),
-        (_) => AppLogger.info(
+        (analysis) => AppLogger.info(
           'UseCase: Analysis saved successfully',
           tag: 'SaveGameAnalysisUseCase',
         ),
@@ -55,9 +58,7 @@ class SaveGameAnalysisUseCase implements UseCase<void, SaveGameAnalysisParams> {
       );
 
       return Left(
-        DatabaseFailure(
-          message: 'Failed to save game analysis: ${e.toString()}',
-        ),
+        DatabaseFailure(message: 'Failed to save analysis: ${e.toString()}'),
       );
     }
   }

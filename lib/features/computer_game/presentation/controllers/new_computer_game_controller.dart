@@ -44,7 +44,7 @@ class NewComputerGameController extends GetxController {
 
     // Navigate to game page with arguments
     Get.offNamed(
-      AppRoutes.newGameVsComputerPage,
+      AppRoutes.computerGamePage,
       arguments: {
         'playerName': playerName,
         'playerSide': selectedSide.value,

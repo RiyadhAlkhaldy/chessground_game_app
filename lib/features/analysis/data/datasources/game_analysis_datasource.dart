@@ -1,43 +1,33 @@
+// lib/features/analysis/data/datasources/game_analysis_datasource.dart
+
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/analysis/data/collections/game_analysis.dart';
 import 'package:chessground_game_app/features/analysis/data/models/game_analysis_model.dart';
 import 'package:isar/isar.dart';
 
-/// Local data source for game analysis data
-/// مصدر البيانات المحلي لبيانات تحليل اللعبة
-abstract class GameAnalysisLocalDataSource {
-  /// Save game analysis to database
-  /// حفظ تحليل اللعبة في قاعدة البيانات
-  Future<void> saveAnalysis(GameAnalysisModel analysis);
-
-  /// Get game analysis by game UUID
-  /// الحصول على تحليل اللعبة باستخدام UUID
+/// DataSource for game analysis operations
+/// مصدر البيانات لعمليات تحليل الألعاب
+abstract class GameAnalysisDataSource {
+  Future<GameAnalysisModel> saveAnalysis(GameAnalysisModel analysis);
   Future<GameAnalysisModel?> getAnalysisByGameUuid(String gameUuid);
-
   Future<List<GameAnalysisModel>> getAllAnalyses();
-
-  /// Delete game analysis
-  /// حذف تحليل اللعبة
   Future<void> deleteAnalysis(String gameUuid);
-
-  /// Check if analysis exists for a game
-  /// التحقق من وجود تحليل للعبة
   Future<bool> hasAnalysis(String gameUuid);
 }
 
-/// Implementation of GameAnalysisLocalDataSource
-/// تنفيذ مصدر البيانات المحلي لتحليل اللعبة
-class GameAnalysisLocalDataSourceImpl implements GameAnalysisLocalDataSource {
+/// Implementation of GameAnalysisDataSource using Isar
+/// تنفيذ مصدر بيانات تحليل الألعاب باستخدام Isar
+class GameAnalysisDataSourceImpl implements GameAnalysisDataSource {
   final Isar isar;
 
-  GameAnalysisLocalDataSourceImpl({required this.isar});
+  GameAnalysisDataSourceImpl({required this.isar});
 
   @override
-  Future<void> saveAnalysis(GameAnalysisModel analysis) async {
+  Future<GameAnalysisModel> saveAnalysis(GameAnalysisModel analysis) async {
     try {
       AppLogger.info(
         'Saving game analysis for game: ${analysis.gameUuid}',
-        tag: 'GameAnalysisLocalDataSource',
+        tag: 'GameAnalysisDataSource',
       );
 
       final collection = GameAnalysis()
@@ -57,19 +47,32 @@ class GameAnalysisLocalDataSourceImpl implements GameAnalysisLocalDataSource {
         ..analyzedAt = analysis.analyzedAt;
 
       await isar.writeTxn(() async {
+        // Check if analysis already exists
+        final existing = await isar.gameAnalysis
+            .filter()
+            .gameUuidEqualTo(analysis.gameUuid)
+            .findFirst();
+
+        if (existing != null) {
+          // Update existing
+          collection.id = existing.id;
+        }
+
         await isar.gameAnalysis.put(collection);
       });
 
       AppLogger.info(
         'Game analysis saved successfully',
-        tag: 'GameAnalysisLocalDataSource',
+        tag: 'GameAnalysisDataSource',
       );
+
+      return collection.toModel();
     } catch (e, stackTrace) {
       AppLogger.error(
-        'Failed to save game analysis',
+        'Error saving game analysis',
         error: e,
         stackTrace: stackTrace,
-        tag: 'GameAnalysisLocalDataSource',
+        tag: 'GameAnalysisDataSource',
       );
       rethrow;
     }
@@ -79,8 +82,8 @@ class GameAnalysisLocalDataSourceImpl implements GameAnalysisLocalDataSource {
   Future<GameAnalysisModel?> getAnalysisByGameUuid(String gameUuid) async {
     try {
       AppLogger.info(
-        'Fetching analysis for game: $gameUuid',
-        tag: 'GameAnalysisLocalDataSource',
+        'Getting analysis for game: $gameUuid',
+        tag: 'GameAnalysisDataSource',
       );
 
       final result = await isar.gameAnalysis
@@ -88,25 +91,21 @@ class GameAnalysisLocalDataSourceImpl implements GameAnalysisLocalDataSource {
           .gameUuidEqualTo(gameUuid)
           .findFirst();
 
-      if (result != null) {
+      if (result == null) {
         AppLogger.info(
-          'Analysis found for game: $gameUuid',
-          tag: 'GameAnalysisLocalDataSource',
+          'No analysis found for game: $gameUuid',
+          tag: 'GameAnalysisDataSource',
         );
-        return result.toModel();
+        return null;
       }
 
-      AppLogger.info(
-        'No analysis found for game: $gameUuid',
-        tag: 'GameAnalysisLocalDataSource',
-      );
-      return null;
+      return result.toModel();
     } catch (e, stackTrace) {
       AppLogger.error(
-        'Failed to fetch game analysis',
+        'Error getting game analysis',
         error: e,
         stackTrace: stackTrace,
-        tag: 'GameAnalysisLocalDataSource',
+        tag: 'GameAnalysisDataSource',
       );
       rethrow;
     }
@@ -136,7 +135,7 @@ class GameAnalysisLocalDataSourceImpl implements GameAnalysisLocalDataSource {
     try {
       AppLogger.info(
         'Deleting analysis for game: $gameUuid',
-        tag: 'GameAnalysisLocalDataSource',
+        tag: 'GameAnalysisDataSource',
       );
 
       await isar.writeTxn(() async {
@@ -152,14 +151,14 @@ class GameAnalysisLocalDataSourceImpl implements GameAnalysisLocalDataSource {
 
       AppLogger.info(
         'Analysis deleted successfully',
-        tag: 'GameAnalysisLocalDataSource',
+        tag: 'GameAnalysisDataSource',
       );
     } catch (e, stackTrace) {
       AppLogger.error(
-        'Failed to delete game analysis',
+        'Error deleting analysis',
         error: e,
         stackTrace: stackTrace,
-        tag: 'GameAnalysisLocalDataSource',
+        tag: 'GameAnalysisDataSource',
       );
       rethrow;
     }
@@ -176,10 +175,10 @@ class GameAnalysisLocalDataSourceImpl implements GameAnalysisLocalDataSource {
       return count > 0;
     } catch (e, stackTrace) {
       AppLogger.error(
-        'Failed to check if analysis exists',
+        'Error checking analysis existence',
         error: e,
         stackTrace: stackTrace,
-        tag: 'GameAnalysisLocalDataSource',
+        tag: 'GameAnalysisDataSource',
       );
       return false;
     }
