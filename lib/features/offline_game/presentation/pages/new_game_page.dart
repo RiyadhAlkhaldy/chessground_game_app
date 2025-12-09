@@ -1,6 +1,7 @@
 // lib/presentation/pages/new_game_screen.dart
 
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/widgets.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
@@ -15,11 +16,6 @@ class NewGamePage extends GetView<BaseGameController> {
 
   @override
   Widget build(BuildContext context) {
-    final whiteNameController = TextEditingController(text: 'White Player');
-    final blackNameController = TextEditingController(text: 'Black Player');
-    final eventController = TextEditingController(text: 'Casual Game');
-    final siteController = TextEditingController(text: 'Local');
-
     return Scaffold(
       appBar: AppBar(title: const Text('New Game')),
       body: Padding(
@@ -96,13 +92,7 @@ class NewGamePage extends GetView<BaseGameController> {
               () => ElevatedButton(
                 onPressed: controller.isLoading
                     ? null
-                    : () => _startGame(
-                        context,
-                        whiteNameController.text,
-                        blackNameController.text,
-                        eventController.text,
-                        siteController.text,
-                      ),
+                    : () => _startGame(context),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   backgroundColor: Colors.green,
@@ -134,35 +124,61 @@ class NewGamePage extends GetView<BaseGameController> {
 
   /// Start new game
   /// بدء لعبة جديدة
-  Future<void> _startGame(
-    BuildContext context,
-    String whiteName,
-    String blackName,
-    String event,
-    String site,
-  ) async {
-    // Validate input
-    if (whiteName.trim().isEmpty || blackName.trim().isEmpty) {
+  Future<void> _startGame(BuildContext context) async {
+    try {
+      // Get or create guest players using the use case
+      final whitePlayerResult = await (controller as OfflineGameController)
+          .getOrCreateGuestPlayerUseCase(
+            GetOrCreateGuestPlayerParams(name: 'White Player'),
+          );
+
+      final blackPlayerResult = await (controller as OfflineGameController)
+          .getOrCreateGuestPlayerUseCase(
+            GetOrCreateGuestPlayerParams(name: 'Black Player'),
+          );
+
+      // Handle potential failures
+      final whiteName = whitePlayerResult.fold((failure) {
+        Get.snackbar(
+          'Error',
+          'Failed to load white player: ${failure.message}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return 'White Player';
+      }, (player) => player.name);
+
+      final blackName = blackPlayerResult.fold((failure) {
+        Get.snackbar(
+          'Error',
+          'Failed to load black player: ${failure.message}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return 'Black Player';
+      }, (player) => player.name);
+
+      await (controller as OfflineGameController).startNewGame(
+        whitePlayerName: whiteName,
+        blackPlayerName: blackName,
+        event: 'Casual Game',
+        site: 'Local',
+      );
+
+      // Navigate to game screen
+      if (!controller.isLoading && controller.errorMessage.isEmpty) {
+        Get.toNamed(AppRoutes.offlineGamePage);
+      }
+    } catch (e) {
       Get.snackbar(
-        'Invalid Input',
-        'Player names cannot be empty',
+        'Error',
+        'Failed to start game: $e',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-      return;
-    }
-
-    await (controller as OfflineGameController).startNewGame(
-      whitePlayerName: whiteName.trim(),
-      blackPlayerName: blackName.trim(),
-      event: event.trim().isNotEmpty ? event.trim() : null,
-      site: site.trim().isNotEmpty ? site.trim() : null,
-    );
-
-    // Navigate to game screen
-    if (!controller.isLoading && controller.errorMessage.isEmpty) {
-      Get.toNamed(AppRoutes.offlineGamePage);
     }
   }
 }

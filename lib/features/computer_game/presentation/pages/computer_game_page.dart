@@ -1,8 +1,10 @@
 // lib/presentation/pages/computer_game_screen.dart
 
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
+import 'package:dartchess/dartchess.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/game_info_widget.dart';
+// import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/game_info_widget.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/player_game_info_widget.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
 import 'package:chessground_game_app/features/analysis/presentation/widgets/move_list_widget.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_controller.dart';
@@ -94,13 +96,25 @@ class ComputerGamePage extends GetView<BaseGameController> {
           // Top player info (computer)
           // Obx(
           //   () =>
-          const GameInfoWidget(
-            // player: controller.game?.blackPlayer,
-            // isPlayerTurn: controller.currentTurn == Side.black,
-            // capturedPieces: controller.capturedPieces['white'] ?? [],
-            // timeRemaining: null,
-            // isTop: true,
-          ),
+          // Top player info
+          Obx(() {
+            final isFlipped = controller.orientation == Side.black;
+            final topSide = isFlipped ? Side.white : Side.black;
+            final player = topSide == Side.white
+                ? controller.currentGame?.whitePlayer
+                : controller.currentGame?.blackPlayer;
+            final captured = topSide == Side.white
+                ? controller.whiteCapturedList
+                : controller.blackCapturedList;
+
+            return PlayerGameInfoWidget(
+              side: topSide,
+              player: player,
+              isPlayerTurn: controller.currentTurn == topSide,
+              capturedPieces: captured,
+              isTop: true,
+            );
+          }),
           // ),
 
           // Computer thinking indicator
@@ -138,13 +152,25 @@ class ComputerGamePage extends GetView<BaseGameController> {
           // Bottom player info (human)
           // Obx(
           //   () =>
-          const GameInfoWidget(
-            // player: controller.game?.whitePlayer,
-            // isPlayerTurn: controller.currentTurn == Side.white,
-            // capturedPieces: controller.capturedPieces['black'] ?? [],
-            // timeRemaining: null,
-            // isTop: false,
-          ),
+          // Bottom player info
+          Obx(() {
+            final isFlipped = controller.orientation == Side.black;
+            final bottomSide = isFlipped ? Side.black : Side.white;
+            final player = bottomSide == Side.white
+                ? controller.currentGame?.whitePlayer
+                : controller.currentGame?.blackPlayer;
+            final captured = bottomSide == Side.white
+                ? controller.whiteCapturedList
+                : controller.blackCapturedList;
+
+            return PlayerGameInfoWidget(
+              side: bottomSide,
+              player: player,
+              isPlayerTurn: controller.currentTurn == bottomSide,
+              capturedPieces: captured,
+              isTop: false,
+            );
+          }),
           // ),
 
           // Move list
@@ -178,13 +204,25 @@ class ComputerGamePage extends GetView<BaseGameController> {
               // Computer info
               // Obx(
               //   () =>
-              const GameInfoWidget(
-                // player: controller.game?.blackPlayer,
-                // isPlayerTurn: controller.currentTurn == Side.black,
-                // capturedPieces: controller.capturedPieces['white'] ?? [],
-                // timeRemaining: null,
-                // isTop: true,
-              ),
+              // Top player info
+              Obx(() {
+                final isFlipped = controller.orientation == Side.black;
+                final topSide = isFlipped ? Side.white : Side.black;
+                final player = topSide == Side.white
+                    ? controller.currentGame?.whitePlayer
+                    : controller.currentGame?.blackPlayer;
+                final captured = topSide == Side.white
+                    ? controller.whiteCapturedList
+                    : controller.blackCapturedList;
+
+                return PlayerGameInfoWidget(
+                  side: topSide,
+                  player: player,
+                  isPlayerTurn: controller.currentTurn == topSide,
+                  capturedPieces: captured,
+                  isTop: true,
+                );
+              }),
               // ),
 
               // Board
@@ -200,13 +238,25 @@ class ComputerGamePage extends GetView<BaseGameController> {
               // Player info
               // Obx(
               //   () =>
-              const GameInfoWidget(
-                // player: controller.game?.whitePlayer,
-                // isPlayerTurn: controller.currentTurn == Side.white,
-                // capturedPieces: controller.capturedPieces['black'] ?? [],
-                // timeRemaining: null,
-                // isTop: false,
-              ),
+              // Bottom player info
+              Obx(() {
+                final isFlipped = controller.orientation == Side.black;
+                final bottomSide = isFlipped ? Side.black : Side.white;
+                final player = bottomSide == Side.white
+                    ? controller.currentGame?.whitePlayer
+                    : controller.currentGame?.blackPlayer;
+                final captured = bottomSide == Side.white
+                    ? controller.whiteCapturedList
+                    : controller.blackCapturedList;
+
+                return PlayerGameInfoWidget(
+                  side: bottomSide,
+                  player: player,
+                  isPlayerTurn: controller.currentTurn == bottomSide,
+                  capturedPieces: captured,
+                  isTop: false,
+                );
+              }),
               // ),
             ],
           ),

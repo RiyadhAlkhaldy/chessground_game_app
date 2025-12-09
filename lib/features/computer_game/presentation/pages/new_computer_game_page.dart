@@ -25,18 +25,6 @@ class NewComputerGamePage extends GetView<NewComputerGameController> {
 
             const SizedBox(height: 24),
 
-            // Player name
-            TextField(
-              controller: controller.nameController,
-              decoration: const InputDecoration(
-                labelText: 'Your Name',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
             // Choose side
             const Text(
               'Choose Your PlayerSide',

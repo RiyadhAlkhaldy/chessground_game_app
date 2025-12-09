@@ -4,6 +4,11 @@ import 'package:get/get.dart';
 class NewComputerGameBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<NewComputerGameController>(() => NewComputerGameController());
+    Get.lazyPut<NewComputerGameController>(
+      () => NewComputerGameController(
+        getOrCreateGuestPlayerUseCase: Get.find(),
+        boardSettingsController: Get.find(),
+      ),
+    );
   }
 }

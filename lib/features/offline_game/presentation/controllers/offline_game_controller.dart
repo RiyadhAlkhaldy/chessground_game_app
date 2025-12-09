@@ -31,6 +31,7 @@ class OfflineGameController extends BaseGameController
   final GetCachedGameStateUseCase getCachedGameStateUseCase;
   // ignore: unused_field
   final SavePlayerUseCase savePlayerUseCase;
+  final GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase;
 
   OfflineGameController({
     required super.plySound,
@@ -40,11 +41,10 @@ class OfflineGameController extends BaseGameController
     required CacheGameStateUseCase cacheGameStateUseCase,
     required this.getCachedGameStateUseCase,
     required this.savePlayerUseCase,
-    required GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase,
+    required this.getOrCreateGuestPlayerUseCase,
   }) {
     this.saveGameUseCase = saveGameUseCase;
     this.cacheGameStateUseCase = cacheGameStateUseCase;
-    this.getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
   }
   @override
   void onInit() {

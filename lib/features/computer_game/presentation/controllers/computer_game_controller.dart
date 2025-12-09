@@ -80,6 +80,7 @@ class ComputerGameController extends BaseGameController
     int difficulty = 10,
   }) async {
     try {
+      isLoading = true;
       this.playerSide = playerSide;
       _difficulty.value = difficulty;
 
@@ -107,14 +108,19 @@ class ComputerGameController extends BaseGameController
         site: 'Local',
       );
 
+      // Show board immediately after setup is done
+      isLoading = false;
+
       // If computer plays white, make first move
       if (playerSide == PlayerSide.black) {
+        // Delay slightly so user perceives the board before move
+        await Future.delayed(const Duration(milliseconds: 500));
         await _makeComputerMove();
       }
+
       currentFen = gameState.position.fen;
       validMoves = makeLegalMoves(gameState.position);
 
-      isLoading = false;
       debugPrint('Computer game started');
       debugPrint('setError($errorMessage)');
     } catch (e, stackTrace) {

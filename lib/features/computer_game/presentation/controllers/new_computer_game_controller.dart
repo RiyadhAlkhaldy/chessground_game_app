@@ -1,24 +1,24 @@
 import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
+import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class NewComputerGameController extends GetxController {
-  final nameController = TextEditingController(text: 'Player');
+  final GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase;
+  final ChessBoardSettingsController boardSettingsController;
+
+  NewComputerGameController({
+    required this.getOrCreateGuestPlayerUseCase,
+    required this.boardSettingsController,
+  });
 
   final Rx<PlayerSide> selectedSide = PlayerSide.white.obs;
-
   final RxInt selectedDifficulty = 10.obs;
-
   final RxBool isLoading = false.obs;
-
   final RxString errorMessage = ''.obs;
-
-  @override
-  void onClose() {
-    nameController.dispose();
-    super.onClose();
-  }
 
   void setSide(PlayerSide side) {
     selectedSide.value = side;
@@ -29,28 +29,44 @@ class NewComputerGameController extends GetxController {
   }
 
   Future<void> startGame() async {
-    final playerName = nameController.text.trim();
+    try {
+      isLoading.value = true;
 
-    if (playerName.isEmpty) {
-      Get.snackbar(
-        'Invalid Input',
-        'Please enter your name',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      // Get or create guest player
+      final playerResult = await getOrCreateGuestPlayerUseCase(
+        GetOrCreateGuestPlayerParams(name: 'Guest'),
       );
-      return;
-    }
 
-    // Navigate to game page with arguments
-    Get.offNamed(
-      AppRoutes.computerGamePage,
-      arguments: {
-        'playerName': playerName,
-        'playerSide': selectedSide.value,
-        'difficulty': selectedDifficulty.value,
-      },
-    );
+      final playerName = playerResult.fold((failure) {
+        Get.snackbar(
+          'Error',
+          'Failed to load player: ${failure.message}',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return 'Guest';
+      }, (player) => player.name);
+
+      // Set board orientation based on player side
+      if (selectedSide.value == PlayerSide.black) {
+        boardSettingsController.orientation.value = Side.black;
+      } else {
+        boardSettingsController.orientation.value = Side.white;
+      }
+
+      // Navigate to game page with arguments
+      Get.offNamed(
+        AppRoutes.computerGamePage,
+        arguments: {
+          'playerName': playerName,
+          'playerSide': selectedSide.value,
+          'difficulty': selectedDifficulty.value,
+        },
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   // Helpers for UI
