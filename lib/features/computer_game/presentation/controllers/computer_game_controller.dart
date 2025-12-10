@@ -36,6 +36,10 @@ class ComputerGameController extends BaseGameController
   final GetCachedGameStateUseCase getCachedGameStateUseCase;
   final SavePlayerUseCase savePlayerUseCase;
   final StockfishController stockfishController;
+
+  /// Check if Stockfish is ready
+  bool get isStockfishReady => stockfishController.isInitializedRx.value;
+
   ComputerGameController({
     required super.plySound,
     required this.updateGameUseCase,
@@ -108,21 +112,30 @@ class ComputerGameController extends BaseGameController
         site: 'Local',
       );
 
-      // Show board immediately after setup is done
-      isLoading = false;
-
       // If computer plays white, make first move
       if (playerSide == PlayerSide.black) {
-        // Delay slightly so user perceives the board before move
-        await Future.delayed(const Duration(milliseconds: 500));
-        await _makeComputerMove();
+        if (isStockfishReady) {
+          // Delay slightly so user perceives the board before move
+          await Future.delayed(const Duration(milliseconds: 500));
+          await _makeComputerMove();
+        } else {
+          // Wait for initialization then move
+          once(stockfishController.isInitializedRx, (isReady) async {
+            if (isReady && !isGameOver) {
+              await Future.delayed(const Duration(milliseconds: 500));
+              await _makeComputerMove();
+            }
+          });
+        }
       }
+
+      // Show board immediately after setup is done (loading state handled by UI now)
+      isLoading = false;
 
       currentFen = gameState.position.fen;
       validMoves = makeLegalMoves(gameState.position);
 
       debugPrint('Computer game started');
-      debugPrint('setError($errorMessage)');
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error starting computer game',

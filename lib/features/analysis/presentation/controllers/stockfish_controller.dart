@@ -48,6 +48,7 @@ class StockfishController extends GetxController {
   /// Engine initialization state
   final RxBool _isInitialized = false.obs;
   bool get isInitialized => _isInitialized.value;
+  RxBool get isInitializedRx => _isInitialized;
 
   /// Loading state
   final RxBool _isLoading = false.obs;

@@ -3,6 +3,7 @@
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/loading_chess_board_widget.dart';
 // import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/game_info_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/player_game_info_widget.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
@@ -93,9 +94,6 @@ class ComputerGamePage extends GetView<BaseGameController> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Top player info (computer)
-          // Obx(
-          //   () =>
           // Top player info
           Obx(() {
             final isFlipped = controller.orientation == Side.black;
@@ -115,7 +113,6 @@ class ComputerGamePage extends GetView<BaseGameController> {
               isTop: true,
             );
           }),
-          // ),
 
           // Computer thinking indicator
           Obx(() {
@@ -147,11 +144,15 @@ class ComputerGamePage extends GetView<BaseGameController> {
           }),
 
           // Chess board
-          AspectRatio(aspectRatio: 1.0, child: ChessBoardWidget()),
+          AspectRatio(
+            aspectRatio: 1.0,
+            child: Obx(
+              () => (controller as ComputerGameController).isStockfishReady
+                  ? ChessBoardWidget()
+                  : const LoadingChessBoardWidget(),
+            ),
+          ),
 
-          // Bottom player info (human)
-          // Obx(
-          //   () =>
           // Bottom player info
           Obx(() {
             final isFlipped = controller.orientation == Side.black;
@@ -171,7 +172,6 @@ class ComputerGamePage extends GetView<BaseGameController> {
               isTop: false,
             );
           }),
-          // ),
 
           // Move list
           SizedBox(
@@ -201,9 +201,6 @@ class ComputerGamePage extends GetView<BaseGameController> {
           flex: 6,
           child: Column(
             children: [
-              // Computer info
-              // Obx(
-              //   () =>
               // Top player info
               Obx(() {
                 final isFlipped = controller.orientation == Side.black;
@@ -223,21 +220,23 @@ class ComputerGamePage extends GetView<BaseGameController> {
                   isTop: true,
                 );
               }),
-              // ),
 
               // Board
               Expanded(
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: 1.0,
-                    child: ChessBoardWidget(),
+                    child: Obx(
+                      () =>
+                          (controller as ComputerGameController)
+                              .isStockfishReady
+                          ? ChessBoardWidget()
+                          : const LoadingChessBoardWidget(),
+                    ),
                   ),
                 ),
               ),
 
-              // Player info
-              // Obx(
-              //   () =>
               // Bottom player info
               Obx(() {
                 final isFlipped = controller.orientation == Side.black;
@@ -257,7 +256,6 @@ class ComputerGamePage extends GetView<BaseGameController> {
                   isTop: false,
                 );
               }),
-              // ),
             ],
           ),
         ),
