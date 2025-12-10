@@ -31,6 +31,9 @@ class ComputerGameController extends BaseGameController
   int get difficulty => _difficulty.value;
   set difficulty(int value) => _difficulty.value = value;
 
+  /// Show move hints
+  final RxBool showMoveHints = false.obs;
+
   final UpdateGameUseCase updateGameUseCase;
   final GetGameByUuidUseCase getGameByUuidUseCase;
   final GetCachedGameStateUseCase getCachedGameStateUseCase;
@@ -64,6 +67,7 @@ class ComputerGameController extends BaseGameController
       final playerName = args['playerName'] as String;
       final playerSide = args['playerSide'] as PlayerSide;
       final difficulty = args['difficulty'] as int;
+      final showHints = args['showMoveHints'] as bool? ?? false;
 
       // Start game automatically with provided arguments
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -71,6 +75,7 @@ class ComputerGameController extends BaseGameController
           playerName: playerName,
           playerSide: playerSide,
           difficulty: difficulty,
+          showMoveHints: showHints,
         );
       });
     }
@@ -82,11 +87,13 @@ class ComputerGameController extends BaseGameController
     required String playerName,
     required PlayerSide playerSide,
     int difficulty = 10,
+    bool showMoveHints = false,
   }) async {
     try {
       isLoading = true;
       this.playerSide = playerSide;
       _difficulty.value = difficulty;
+      this.showMoveHints.value = showMoveHints;
 
       // Set computer skill level
       await stockfishController.setSkillLevel(difficulty);

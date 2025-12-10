@@ -70,10 +70,14 @@ class ComputerGamePage extends GetView<BaseGameController> {
         ),
 
         // Hint button
-        IconButton(
-          icon: const Icon(Icons.lightbulb_outline),
-          tooltip: 'Get Hint',
-          onPressed: () => _getHint(context),
+        Obx(
+          () => (controller as ComputerGameController).showMoveHints.value
+              ? IconButton(
+                  icon: const Icon(Icons.lightbulb_outline),
+                  tooltip: 'Get Hint',
+                  onPressed: () => _getHint(context),
+                )
+              : const SizedBox.shrink(),
         ),
 
         // Menu
@@ -349,17 +353,22 @@ class ComputerGamePage extends GetView<BaseGameController> {
           const SizedBox(height: 8),
 
           // Hint button
-          ElevatedButton.icon(
-            onPressed:
-                !((controller as ComputerGameController).computerThinking)
-                ? () => _getHint(context)
-                : null,
-            icon: const Icon(Icons.lightbulb),
-            label: const Text('Get Hint'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber,
-              foregroundColor: Colors.black,
-            ),
+          Obx(
+            () => (controller as ComputerGameController).showMoveHints.value
+                ? ElevatedButton.icon(
+                    onPressed:
+                        !((controller as ComputerGameController)
+                            .computerThinking)
+                        ? () => _getHint(context)
+                        : null,
+                    icon: const Icon(Icons.lightbulb),
+                    label: const Text('Get Hint'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
 
           const SizedBox(height: 8),

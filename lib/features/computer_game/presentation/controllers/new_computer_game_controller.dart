@@ -17,6 +17,7 @@ class NewComputerGameController extends GetxController {
 
   final Rx<PlayerSide> selectedSide = PlayerSide.white.obs;
   final RxInt selectedDifficulty = 10.obs;
+  final RxBool showMoveHints = false.obs;
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
 
@@ -62,6 +63,7 @@ class NewComputerGameController extends GetxController {
           'playerName': playerName,
           'playerSide': selectedSide.value,
           'difficulty': selectedDifficulty.value,
+          'showMoveHints': showMoveHints.value,
         },
       );
     } finally {

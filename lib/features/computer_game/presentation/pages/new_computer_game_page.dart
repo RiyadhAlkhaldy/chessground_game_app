@@ -141,6 +141,25 @@ class NewComputerGamePage extends GetView<NewComputerGameController> {
               ),
             ),
 
+            const SizedBox(height: 24),
+
+            Obx(
+              () => Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "إظهار المساعدات",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Switch(
+                    value: controller.showMoveHints.value,
+                    onChanged: (val) => controller.showMoveHints.value = val,
+                    activeThumbColor: Colors.green,
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 32),
 
             // Start button
