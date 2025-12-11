@@ -6,6 +6,8 @@ import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/analysis/domain/entities/game_analysis_entity.dart';
 import 'package:chessground_game_app/features/analysis/domain/services/pgn_export_service.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -34,11 +36,9 @@ class ShareService {
       await file.writeAsString(fileData['content']!);
 
       // Share file
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject:
-            'Chess Game: ${game.whitePlayer.name} vs ${game.blackPlayer.name}',
-      );
+      await shareFile([
+        XFile(file.path),
+      ], 'Chess Game: ${game.whitePlayer.name} vs ${game.blackPlayer.name}');
 
       AppLogger.info('Game shared successfully', tag: 'ShareService');
     } catch (e, stackTrace) {
@@ -68,10 +68,9 @@ class ShareService {
         analysis,
       );
 
-      await Share.share(
+      await shareString(
         text,
-        subject:
-            'Chess Analysis: ${game.whitePlayer.name} vs ${game.blackPlayer.name}',
+        'Chess Analysis: ${game.whitePlayer.name} vs ${game.blackPlayer.name}',
       );
 
       AppLogger.info('Analysis shared successfully', tag: 'ShareService');
@@ -92,7 +91,7 @@ class ShareService {
     try {
       AppLogger.info('Sharing game URL', tag: 'ShareService');
 
-      await Share.share(gameUrl, subject: 'Check out this chess game!');
+      await shareString(gameUrl, 'Check out this chess game!');
 
       AppLogger.info('URL shared successfully', tag: 'ShareService');
     } catch (e, stackTrace) {
@@ -103,6 +102,32 @@ class ShareService {
         tag: 'ShareService',
       );
       rethrow;
+    }
+  }
+
+  static Future<void> shareString(String string, String? subject) async {
+    final result = await SharePlus.instance.share(
+      ShareParams(text: string, subject: subject),
+    );
+    if (result.status == ShareResultStatus.success) {
+      Get.snackbar(
+        'Success',
+        'Thank you for sharing..',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  static Future<void> shareFile(List<XFile> files, String subject) async {
+    final result = await SharePlus.instance.share(
+      ShareParams(files: files, subject: subject),
+    );
+    if (result.status == ShareResultStatus.success) {
+      Get.snackbar(
+        'Success',
+        'Thank you for sharing file..',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 }
