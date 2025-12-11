@@ -6,7 +6,11 @@ import 'package:flutter/material.dart';
 
 /// A simple widget that builds different things on different platforms.
 class PlatformWidget extends StatelessWidget {
-  const PlatformWidget({super.key, required this.androidBuilder, required this.iosBuilder});
+  const PlatformWidget({
+    super.key,
+    required this.androidBuilder,
+    required this.iosBuilder,
+  });
 
   final WidgetBuilder androidBuilder;
   final WidgetBuilder iosBuilder;
@@ -82,7 +86,8 @@ class PlatformScaffold extends StatelessWidget {
     // Check if a parent Scaffold has extendBody set to true.
     // This is the case if this scaffold is built inside a root tab where the main scaffold holds
     // the bottom navigation bar.
-    final hasExtendedBodyParentScaffold = MainTabScaffoldProperties.hasExtendedBody(context);
+    final hasExtendedBodyParentScaffold =
+        MainTabScaffoldProperties.hasExtendedBody(context);
 
     return Scaffold(
       extendBodyBehindAppBar: Theme.of(context).platform == TargetPlatform.iOS,
@@ -115,7 +120,11 @@ class PlatformAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.bottom,
     this.centerTitle,
     this.automaticallyImplyLeading = true,
-  }) : preferredSize = _PreferredAppBarSize(kToolbarHeight, bottom?.preferredSize.height);
+    this.elevation,
+  }) : preferredSize = _PreferredAppBarSize(
+         kToolbarHeight,
+         bottom?.preferredSize.height,
+       );
 
   final Widget? leading;
   final Widget? title;
@@ -123,6 +132,7 @@ class PlatformAppBar extends StatelessWidget implements PreferredSizeWidget {
   final PreferredSizeWidget? bottom;
   final bool? centerTitle;
   final bool automaticallyImplyLeading;
+  final double? elevation;
 
   @override
   final Size preferredSize;
@@ -137,6 +147,7 @@ class PlatformAppBar extends StatelessWidget implements PreferredSizeWidget {
       bottom: bottom,
       centerTitle: centerTitle,
       automaticallyImplyLeading: automaticallyImplyLeading,
+      elevation: elevation,
     );
 
     return isIOS
