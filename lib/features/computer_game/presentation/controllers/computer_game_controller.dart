@@ -59,12 +59,15 @@ class ComputerGameController extends BaseGameController
     this.getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
   }
 
+  /// Player name
+  String _playerName = 'Guest';
+
   @override
   void onInit() {
     super.onInit();
     final args = Get.arguments;
     if (args != null && args is Map) {
-      final playerName = args['playerName'] as String;
+      _playerName = args['playerName'] as String;
       final playerSide = args['playerSide'] as PlayerSide;
       final difficulty = args['difficulty'] as int;
       final showHints = args['showMoveHints'] as bool? ?? false;
@@ -72,13 +75,30 @@ class ComputerGameController extends BaseGameController
       // Start game automatically with provided arguments
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _startComputerGame(
-          playerName: playerName,
+          playerName: _playerName,
           playerSide: playerSide,
           difficulty: difficulty,
           showMoveHints: showHints,
         );
       });
     }
+  }
+
+  /// Retry game start
+  /// إعادة محاولة بدء اللعبة
+  Future<void> retryGame() async {
+    // Retry engine initialization if needed
+    if (!isStockfishReady) {
+      await stockfishController.retryInitialization();
+    }
+
+    // Restart game setup
+    await _startComputerGame(
+      playerName: _playerName,
+      playerSide: playerSide,
+      difficulty: difficulty,
+      showMoveHints: showMoveHints.value,
+    );
   }
 
   /// Start new game against computer
@@ -94,6 +114,28 @@ class ComputerGameController extends BaseGameController
       this.playerSide = playerSide;
       _difficulty.value = difficulty;
       this.showMoveHints.value = showMoveHints;
+
+      // Wait for engine initialization if needed
+      if (!isStockfishReady) {
+        AppLogger.info(
+          'Waiting for Stockfish initialization...',
+          tag: 'ComputerGameController',
+        );
+
+        // Wait up to 5 seconds for initialization
+        int retries = 0;
+        while (!isStockfishReady && retries < 50) {
+          if (stockfishController.errorMessage.isNotEmpty) {
+            throw Exception(stockfishController.errorMessage);
+          }
+          await Future.delayed(const Duration(milliseconds: 100));
+          retries++;
+        }
+
+        if (!isStockfishReady) {
+          throw Exception('Timeout waiting for Stockfish initialization');
+        }
+      }
 
       // Set computer skill level
       await stockfishController.setSkillLevel(difficulty);

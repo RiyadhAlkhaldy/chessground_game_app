@@ -102,6 +102,8 @@ class StockfishController extends GetxController {
   /// تهيئة محرك Stockfish
   Future<void> _initializeEngine() async {
     try {
+      if (_isInitialized.value) return;
+
       _setLoading(true);
       _clearError();
 
@@ -146,6 +148,12 @@ class StockfishController extends GetxController {
     } finally {
       _setLoading(false);
     }
+  }
+
+  /// Retry initialization
+  /// إعادة محاولة التهيئة
+  Future<void> retryInitialization() async {
+    await _initializeEngine();
   }
 
   /// Dispose Stockfish engine

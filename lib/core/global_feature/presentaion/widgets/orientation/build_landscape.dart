@@ -2,10 +2,10 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_settings_widgets.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/build_player_section_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/pgn_horizontal_row.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/orientation/build_control_buttons.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_with_time_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/widgets/chess_clock_widget.dart';
+import 'package:dartchess/dartchess.dart'; 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -20,7 +20,7 @@ class BuildLandScape extends GetView<BaseGameController> {
         children: [
           Expanded(
             child: GetBuilder<BaseGameController>(
-              builder: (_) =>  ChessBoardWidget(),
+              builder: (_) => ChessBoardWidget(),
             ),
           ),
 
@@ -38,26 +38,9 @@ class BuildLandScape extends GetView<BaseGameController> {
                     );
                   },
                 ),
-                ShowCircleAvatarAndTimerInUp(
-                  whitePlayer: controller.whitePlayer,
-                  blackPlayer: controller.blackPlayer,
-                  whiteCapturedList: controller.whiteCapturedList,
-                  blackCapturedList: controller.blackCapturedList,
-                  gameState: controller.gameState,
-                  clockCtrl: controller is GameComputerWithTimeController
-                      ? (controller as GameComputerWithTimeController).clockCtrl
-                      : null,
-                ),
-                ShowCircleAvatarAndTimerInDown(
-                  whitePlayer: controller.whitePlayer,
-                  blackPlayer: controller.blackPlayer,
-                  whiteCapturedList: controller.whiteCapturedList,
-                  blackCapturedList: controller.blackCapturedList,
-                  gameState: controller.gameState,
-                  clockCtrl: controller is GameComputerWithTimeController
-                      ? (controller as GameComputerWithTimeController).clockCtrl
-                      : null,
-                ),
+                BuildPlayerSectionWidget(side: Side.white, isTop: true),
+                BuildPlayerSectionWidget(side: Side.black, isTop: false),
+
                 const Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),
                 const BuildControlButtons(),

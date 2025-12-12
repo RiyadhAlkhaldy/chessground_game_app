@@ -148,14 +148,7 @@ class ComputerGamePage extends GetView<BaseGameController> {
           }),
 
           // Chess board
-          AspectRatio(
-            aspectRatio: 1.0,
-            child: Obx(
-              () => (controller as ComputerGameController).isStockfishReady
-                  ? ChessBoardWidget()
-                  : const LoadingChessBoardWidget(),
-            ),
-          ),
+          AspectRatio(aspectRatio: 1.0, child: _buildBoardOrError(context)),
 
           // Bottom player info
           Obx(() {
@@ -230,13 +223,7 @@ class ComputerGamePage extends GetView<BaseGameController> {
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: 1.0,
-                    child: Obx(
-                      () =>
-                          (controller as ComputerGameController)
-                              .isStockfishReady
-                          ? ChessBoardWidget()
-                          : const LoadingChessBoardWidget(),
-                    ),
+                    child: _buildBoardOrError(context),
                   ),
                 ),
               ),
@@ -444,6 +431,64 @@ class ComputerGamePage extends GetView<BaseGameController> {
         ),
       );
     }
+  }
+
+  /// Build board or error widget
+  Widget _buildBoardOrError(BuildContext context) {
+    return Obx(() {
+      final computerController = controller as ComputerGameController;
+
+      // Check for error first
+      if (computerController.stockfishController.errorMessage.isNotEmpty) {
+        return Container(
+          color: Colors.grey[200],
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Engine Error',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.red[700],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    computerController.stockfishController.errorMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[800]),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => computerController.retryGame(),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
+      // Show board or loading
+      return computerController.isStockfishReady
+          ? ChessBoardWidget()
+          : const LoadingChessBoardWidget();
+    });
   }
 
   /// Handle menu actions
