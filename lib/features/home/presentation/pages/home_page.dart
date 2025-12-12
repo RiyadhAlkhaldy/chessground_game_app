@@ -60,12 +60,26 @@ class HomePage extends StatelessWidget {
                       onTap: () {
                         controller.setVsComputer(value: true);
                         Get.toNamed(
+                          AppRoutes.newGameComputerPage,
+                          arguments: {"withTime": false},
+                        );
+                      },
+                    ),
+                    // Play Against Computer
+                    GameTypeCard(
+                      icon: Symbols.computer,
+                      label: "${context.l10n.playAgainstComputer} (Offline)",
+                      gradient: _getGradient(0, isDark),
+                      delay: 0,
+                      isDarkMode: isDark,
+                      onTap: () {
+                        controller.setVsComputer(value: true);
+                        Get.toNamed(
                           AppRoutes.sideChoosingPage,
                           arguments: {"withTime": false},
                         );
                       },
                     ),
-
                     // Play Online
                     GameTypeCard(
                       icon: Symbols.person,
@@ -91,7 +105,7 @@ class HomePage extends StatelessWidget {
                       isDarkMode: isDark,
                       onTap: () {
                         controller.setVsComputer(value: true);
-                        Get.toNamed(AppRoutes.newGamePage);
+                        Get.toNamed(AppRoutes.newOfflineGamePage);
                       },
                     ),
 

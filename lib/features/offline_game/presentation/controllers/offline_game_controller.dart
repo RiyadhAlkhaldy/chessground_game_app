@@ -20,6 +20,7 @@ import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_features.dart';
 import 'package:dartchess/dartchess.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class OfflineGameController extends BaseGameController
@@ -49,37 +50,70 @@ class OfflineGameController extends BaseGameController
   @override
   void onInit() {
     super.onInit();
-    startNewGame(
-      whitePlayerName: uuidKeyForUser,
-      blackPlayerName: uuidKeyForAI,
-    ).then((value) {
+    final args = Get.arguments;
+    if (args != null && args is Map) {
+      final playerName = args['playerName'] as String;
+      final playerSide = args['playerSide'] as PlayerSide;
+
+      // Start game automatically with provided arguments
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _startComputerGame(playerName: playerName, playerSide: playerSide);
+      });
+    }
+  }
+
+  /// Start new game against computer
+  /// بدء لعبة جديدة ضد الكمبيوتر
+  Future<void> _startComputerGame({
+    required String playerName,
+    required PlayerSide playerSide,
+  }) async {
+    try {
+      isLoading = true;
+      this.playerSide = playerSide;
+
+      AppLogger.gameEvent(
+        'StartComputerGame',
+        data: {'playerName': playerName, 'playerSide': playerSide.name},
+      );
+
+      // Start game with player and computer
+      await startNewGame(
+        whitePlayerName: playerSide == PlayerSide.white
+            ? playerName
+            : 'offline',
+        blackPlayerName: playerSide == PlayerSide.black
+            ? playerName
+            : 'offline',
+        event: 'Offline Game',
+        site: 'Local',
+      );
+
+      // Show board immediately after setup is done (loading state handled by UI now)
+      isLoading = false;
+
       currentFen = gameState.position.fen;
       validMoves = makeLegalMoves(gameState.position);
-      listenToGameStatus();
-      plySound.executeDongSound();
-      AppLogger.info('GameController initialized', tag: 'GameController');
 
-      // Set board orientation based on player's side choice
-      // if (choosingCtrl.playerColor.value == SideChoosing.black) {
-      //   playerSide = PlayerSide.black;
-      //   ctrlBoardSettings.orientation.value = Side.black;
-      // } else if (choosingCtrl.playerColor.value == SideChoosing.white) {
-      //   playerSide = PlayerSide.white;
-      //   ctrlBoardSettings.orientation.value = Side.white;
-      // } else {
-      //   // Random was chosen, determine based on playerSide after it's set
-      //   ctrlBoardSettings.orientation.value = playerSide == PlayerSide.black
-      //       ? Side.black
-      //       : Side.white;
-      // }
-    });
+      debugPrint('offline game started');
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error starting offline game',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'offline_game_controller',
+      );
+    }
   }
 
   // ========== Lifecycle Methods ==========
 
   @override
   void onClose() {
-    AppLogger.info('GameController disposed', tag: 'GameController');
+    AppLogger.info(
+      'OfflineGameController disposed',
+      tag: 'OfflineGameController',
+    );
     gameState.dispose();
     super.onClose();
   }
@@ -198,7 +232,7 @@ class OfflineGameController extends BaseGameController
         'Error loading game',
         error: e,
         stackTrace: stackTrace,
-        tag: 'GameController',
+        tag: 'OfflineGameController',
       );
       setError('Unexpected error: ${e.toString()}');
     } finally {

@@ -26,9 +26,17 @@ class MoveListWidget extends GetView<BaseGameController> {
         itemBuilder: (context, index) {
           final moveNumber = index + 1;
           final whiteMove = moves[index * 2];
-          final blackMove = (index * 2 + 1) < moves.length ? moves[index * 2 + 1] : null;
+          final blackMove = (index * 2 + 1) < moves.length
+              ? moves[index * 2 + 1]
+              : null;
 
-          return _buildMoveRow(context, moveNumber, whiteMove.san ?? '', blackMove?.san, index * 2);
+          return _buildMoveRow(
+            context,
+            moveNumber,
+            whiteMove.san ?? '',
+            blackMove?.san,
+            index * 2,
+          );
         },
       );
     });

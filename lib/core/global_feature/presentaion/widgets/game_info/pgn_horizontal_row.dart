@@ -19,52 +19,24 @@ String pieceSymbolFromSan(String san, {required bool isWhiteMove}) {
   debugPrint('san : $san');
   if (whiteMap.containsKey(pieceLetter)) {
     var char = san.substring(1, san.length);
-    char = isWhiteMove ? whiteMap[pieceLetter]! + char : blackMap[pieceLetter]! + char;
+    char = isWhiteMove
+        ? whiteMap[pieceLetter]! + char
+        : blackMap[pieceLetter]! + char;
     debugPrint('char: $char');
     return char;
   }
   debugPrint('char $san');
   return san;
 }
-// Widget _buildToken(BuildContext context, MoveDataModel t, bool isCurrent) {
-//   final theme = Theme.of(context);
-//   final bg = isCurrent
-//       ? theme.colorScheme.primary.withOpacity(0.15)
-//       : Colors.transparent;
-//   final borderColor = isCurrent
-//       ? theme.colorScheme.primary
-//       : Colors.transparent;
 
-//   return GestureDetector(
-//     onTap: () {
-//       if (widget.onJumpTo != null) widget.onJumpTo!(t.halfmoveIndex!);
-//     },
-//     onPanDown: (_) => _onUserInteraction(),
-//     child: Container(
-//       key: _itemKeys.putIfAbsent(t.halfmoveIndex!, () => GlobalKey()),
-//       margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-//       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-//       decoration: BoxDecoration(
-//         color: bg,
-//         borderRadius: BorderRadius.circular(12),
-//         border: Border.all(color: borderColor, width: 1.2),
-//       ),
-//       child: Row(
-//         mainAxisSize: MainAxisSize.min,
-//         children: [
-//           if (t.isWhiteMove!)
-//             Text('${t.moveNumber}.', style: theme.textTheme.bodySmall),
-//           const SizedBox(width: 6),
-//           Text(t.san!, style: theme.textTheme.bodyMedium),
-//         ],
-//       ),
-//     ),
-//   );
-// }
 Widget _buildToken(BuildContext context, MoveDataModel t, bool isCurrent) {
   final theme = Theme.of(context);
-  final bg = isCurrent ? theme.colorScheme.primary.withValues(alpha: 0.15) : Colors.transparent;
-  final borderColor = isCurrent ? theme.colorScheme.primary : Colors.transparent;
+  final bg = isCurrent
+      ? theme.colorScheme.primary.withValues(alpha: 0.15)
+      : Colors.transparent;
+  final borderColor = isCurrent
+      ? theme.colorScheme.primary
+      : Colors.transparent;
   final pieceSymbol = pieceSymbolFromSan(t.san!, isWhiteMove: t.isWhiteMove!);
   //   // نص الـ SAN قد يبدأ مثلاً "Bxf2" أو "exd6" أو "O-O"
   //   // سنعرض الرمز فقط إن كان غير فارغ
@@ -156,11 +128,15 @@ class _PgnHorizontalRowState extends State<PgnHorizontalRow> {
 
     // if tokens length increased or current index changed, attempt auto-scroll
     final tokensChanged = widget.tokens.length != oldWidget.tokens.length;
-    final indexChanged = widget.currentHalfmoveIndex != oldWidget.currentHalfmoveIndex;
+    final indexChanged =
+        widget.currentHalfmoveIndex != oldWidget.currentHalfmoveIndex;
 
     if (tokensChanged || indexChanged) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _maybeAutoScrollTo(widget.currentHalfmoveIndex, tokensAppended: tokensChanged);
+        _maybeAutoScrollTo(
+          widget.currentHalfmoveIndex,
+          tokensAppended: tokensChanged,
+        );
       });
     }
   }
@@ -184,7 +160,10 @@ class _PgnHorizontalRowState extends State<PgnHorizontalRow> {
     });
   }
 
-  Future<void> _maybeAutoScrollTo(int? halfmoveIndex, {bool tokensAppended = false}) async {
+  Future<void> _maybeAutoScrollTo(
+    int? halfmoveIndex, {
+    bool tokensAppended = false,
+  }) async {
     if (halfmoveIndex == null) return;
     if (_userInteracting) return;
 
@@ -237,7 +216,11 @@ class _PgnHorizontalRowState extends State<PgnHorizontalRow> {
       }
     }
     final target = (offset - 120).clamp(0.0, scroll.position.maxScrollExtent);
-    await scroll.animateTo(target, duration: widget.autoScrollDuration, curve: Curves.easeOutCubic);
+    await scroll.animateTo(
+      target,
+      duration: widget.autoScrollDuration,
+      curve: Curves.easeOutCubic,
+    );
   }
 
   @override
@@ -245,7 +228,9 @@ class _PgnHorizontalRowState extends State<PgnHorizontalRow> {
     if (widget.tokens.isEmpty) {
       return SizedBox(
         height: 56,
-        child: Center(child: Text('No moves', style: Theme.of(context).textTheme.bodySmall)),
+        child: Center(
+          child: Text('No moves', style: Theme.of(context).textTheme.bodySmall),
+        ),
       );
     }
 
