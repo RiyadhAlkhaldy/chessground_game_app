@@ -10,6 +10,8 @@ import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+/// Controller for games against computer with time control
+/// كنترولر للعب ضد الكمبيوتر مع التحكم بالوقت
 class GameComputerWithTimeController extends GameComputerController
     implements TimeOutInterface {
   final ChessClockService clockCtrl;
@@ -20,9 +22,6 @@ class GameComputerWithTimeController extends GameComputerController
     required super.dataSource,
     required super.plySound,
     required this.clockCtrl,
-    required super.saveGameUseCase,
-    required super.cacheGameStateUseCase,
-    required super.getOrCreateGuestPlayerUseCase,
   });
 
   @override
@@ -37,8 +36,6 @@ class GameComputerWithTimeController extends GameComputerController
     super.onClose();
   }
 
-  // playAiMove removed, using super implementation which calls makeMoveAi
-
   @override
   void makeMoveAi(String best) async {
     debugPrint("best move from stockfish: $best");
@@ -49,9 +46,6 @@ class GameComputerWithTimeController extends GameComputerController
     if (gameState.position.isLegal(bestMove)) {
       // Use base class applyMove
       applyMove(bestMove);
-
-      // Update Stockfish position - not needed
-      // engineService.setPosition(fen: currentFen);
 
       // Switch clock
       clockCtrl.switchTurn(gameState.turn.opposite);
@@ -79,7 +73,10 @@ class GameComputerWithTimeController extends GameComputerController
         data: {'loser': loser.name, 'winner': winner.name},
       );
 
-      // await _saveGameToDatabase();
+      // Save game via storage controller
+      if (currentGame != null) {
+        await storageController.updateGame(currentGame!, gameState);
+      }
 
       Get.snackbar(
         'Time Out!',
@@ -92,7 +89,7 @@ class GameComputerWithTimeController extends GameComputerController
         'Error in timeOut',
         error: e,
         stackTrace: stackTrace,
-        tag: 'OfflineGameController',
+        tag: 'GameComputerWithTimeController',
       );
     }
   }
@@ -115,13 +112,15 @@ void handleTimeout(Side timedOutSide) async {
 
   gameComputerWithTimeController.statusText.value =
       'انتهى وقت ${timedOutSide == Side.white ? "الأبيض" : "الأسود"}.';
-  // gameComputerWithTimeController.whitePlayer.refresh();
-  // gameComputerWithTimeController.blackPlayer.refresh();
   gameComputerWithTimeController.update();
   clockCtrl.blackTimeMs.refresh();
   clockCtrl.whiteTimeMs.refresh();
-  // احفظ اللعبة في الـ DB عبر GameStorageService
-  try {} catch (e) {
-    debugPrint('Error saving game on timeout: handleTimeout $e');
+
+  // Save game via storage controller
+  if (gameComputerWithTimeController.currentGame != null) {
+    await gameComputerWithTimeController.storageController.updateGame(
+      gameComputerWithTimeController.currentGame!,
+      gameComputerWithTimeController.gameState,
+    );
   }
 }

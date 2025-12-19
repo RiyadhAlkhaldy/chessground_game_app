@@ -1,107 +1,100 @@
-import 'package:chessground_game_app/core/errors/failures.dart';
+import 'package:chessground/chessground.dart';
+import 'package:chessground_game_app/core/board_theme.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/get_cached_game_state_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_game_by_uuid_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/game_storage_controller.dart';
+import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
-import 'package:dartz/dartz.dart';
-import 'package:fake_async/fake_async.dart';
+import 'package:dartz/dartz.dart' hide ISet;
+import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:mocktail/mocktail.dart';
 
+// === Mock Classes ===
 class MockPlaySoundUseCase extends Mock implements PlaySoundUseCase {}
 
-class MockSaveGameUseCase extends Mock implements SaveGameUseCase {}
+class MockGameStorageController extends Mock implements GameStorageController {}
 
-class MockUpdateGameUseCase extends Mock implements UpdateGameUseCase {}
+/// Real implementation of ChessBoardSettingsController for testing
+/// We use the real class since it doesn't have external dependencies
+class TestChessBoardSettingsController extends GetxController
+    implements ChessBoardSettingsController {
+  @override
+  Rx<Side> orientation = Side.white.obs;
 
-class MockGetGameByUuidUseCase extends Mock implements GetGameByUuidUseCase {}
+  @override
+  Rx<PieceSet> pieceSet = PieceSet.gioco.obs;
 
-class MockCacheGameStateUseCase extends Mock implements CacheGameStateUseCase {}
+  @override
+  Rx<PieceShiftMethod> pieceShiftMethod = PieceShiftMethod.either.obs;
 
-class MockGetCachedGameStateUseCase extends Mock
-    implements GetCachedGameStateUseCase {}
+  @override
+  Rx<DragTargetKind> dragTargetKind = DragTargetKind.circle.obs;
 
-class MockSavePlayerUseCase extends Mock implements SavePlayerUseCase {}
+  @override
+  Rx<BoardTheme> boardTheme = BoardTheme.brown.obs;
 
-class MockGetOrCreateGuestPlayerUseCase extends Mock
-    implements GetOrCreateGuestPlayerUseCase {}
+  @override
+  bool drawMode = true;
 
-class FakeGetOrCreateGuestPlayerParams extends Fake
-    implements GetOrCreateGuestPlayerParams {}
+  @override
+  RxBool pieceAnimation = true.obs;
 
-class FakeSaveGameParams extends Fake implements SaveGameParams {}
+  @override
+  RxBool dragMagnify = true.obs;
 
-class FakeUpdateGameParams extends Fake implements UpdateGameParams {}
+  @override
+  Rx<ISet<Shape>> shapes = ISet<Shape>().obs;
 
-class FakeCacheGameStateParams extends Fake implements CacheGameStateParams {}
+  @override
+  RxBool showBorder = false.obs;
 
-class FakeGetGameByUuidParams extends Fake implements GetGameByUuidParams {}
+  @override
+  void onCompleteShape(Shape shape) {
+    if (shapes.value.any((element) => element == shape)) {
+      shapes.value = shapes.value.remove(shape);
+      return;
+    } else {
+      shapes.value = shapes.value.add(shape);
+    }
+  }
 
-class FakeGetCachedGameStateParams extends Fake
-    implements GetCachedGameStateParams {}
+  @override
+  void showChoicesPicker<T extends Enum>(
+    BuildContext context, {
+    required List<T> choices,
+    required T selectedItem,
+    required Widget Function(T choice) labelBuilder,
+    required void Function(T choice) onSelectedItemChanged,
+  }) {
+    // No-op for testing
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   Get.testMode = true;
+
   late OfflineGameController offlineGameController;
   late MockPlaySoundUseCase mockPlaySoundUseCase;
-  late MockSaveGameUseCase mockSaveGameUseCase;
-  late MockUpdateGameUseCase mockUpdateGameUseCase;
-  late MockGetGameByUuidUseCase mockGetGameByUuidUseCase;
-  late MockCacheGameStateUseCase mockCacheGameStateUseCase;
-  late MockGetCachedGameStateUseCase mockGetCachedGameStateUseCase;
-  late MockSavePlayerUseCase mockSavePlayerUseCase;
-  late MockGetOrCreateGuestPlayerUseCase mockGetOrCreateGuestPlayerUseCase;
+  late MockGameStorageController mockGameStorageController;
+  late TestChessBoardSettingsController testChessBoardSettingsController;
 
-  setUpAll(() {
-    registerFallbackValue(FakeGetOrCreateGuestPlayerParams());
-    registerFallbackValue(FakeSaveGameParams());
-    registerFallbackValue(FakeUpdateGameParams());
-    registerFallbackValue(FakeCacheGameStateParams());
-    registerFallbackValue(FakeGetGameByUuidParams());
-    registerFallbackValue(FakeGetCachedGameStateParams());
-  });
-
-  setUp(() {
-    mockPlaySoundUseCase = MockPlaySoundUseCase();
-    mockSaveGameUseCase = MockSaveGameUseCase();
-    mockUpdateGameUseCase = MockUpdateGameUseCase();
-    mockGetGameByUuidUseCase = MockGetGameByUuidUseCase();
-    mockCacheGameStateUseCase = MockCacheGameStateUseCase();
-    mockGetCachedGameStateUseCase = MockGetCachedGameStateUseCase();
-    mockSavePlayerUseCase = MockSavePlayerUseCase();
-    mockGetOrCreateGuestPlayerUseCase = MockGetOrCreateGuestPlayerUseCase();
-
-    offlineGameController = OfflineGameController(
-      plySound: mockPlaySoundUseCase,
-      saveGameUseCase: mockSaveGameUseCase,
-      updateGameUseCase: mockUpdateGameUseCase,
-      getGameByUuidUseCase: mockGetGameByUuidUseCase,
-      cacheGameStateUseCase: mockCacheGameStateUseCase,
-      getCachedGameStateUseCase: mockGetCachedGameStateUseCase,
-      savePlayerUseCase: mockSavePlayerUseCase,
-      getOrCreateGuestPlayerUseCase: mockGetOrCreateGuestPlayerUseCase,
-    );
-  });
+  // Test Data
   final tPlayer1 = PlayerEntity(
-    uuid: 'white',
+    uuid: 'white-uuid',
     name: 'White Player',
     type: 'human',
     playerRating: 1500,
     createdAt: DateTime.now(),
   );
   final tPlayer2 = PlayerEntity(
-    uuid: 'black',
+    uuid: 'black-uuid',
     name: 'Black Player',
     type: 'human',
     playerRating: 1500,
@@ -112,35 +105,95 @@ void main() {
     whitePlayer: tPlayer1,
     blackPlayer: tPlayer2,
   );
+
+  setUp(() {
+    // Reset GetX before each test
+    Get.reset();
+
+    // Create mocks
+    mockPlaySoundUseCase = MockPlaySoundUseCase();
+    mockGameStorageController = MockGameStorageController();
+    testChessBoardSettingsController = TestChessBoardSettingsController();
+
+    // Register dependencies in GetX BEFORE creating the controller
+    Get.put<GameStorageController>(mockGameStorageController);
+    Get.put<ChessBoardSettingsController>(testChessBoardSettingsController);
+
+    // Default mock setup for PlaySoundUseCase
+    when(
+      () => mockPlaySoundUseCase.executeMoveSound(),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => mockPlaySoundUseCase.executeCaptureSound(),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => mockPlaySoundUseCase.executeCheckSound(),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => mockPlaySoundUseCase.executeCheckmateSound(),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => mockPlaySoundUseCase.executePromoteSound(),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => mockPlaySoundUseCase.executeDongSound(),
+    ).thenAnswer((_) async => const Right(null));
+    when(
+      () => mockPlaySoundUseCase.executeResignSound(),
+    ).thenAnswer((_) async => const Right(null));
+
+    // Create controller AFTER dependencies are registered
+    offlineGameController = OfflineGameController(
+      plySound: mockPlaySoundUseCase,
+    );
+  });
+
+  tearDown(() {
+    Get.reset();
+  });
+
   group('OfflineGameController', () {
-    test('initial values are correct', () {
-      expect(offlineGameController.currentGame, isNull);
-      expect(offlineGameController.isLoading, isFalse);
-      expect(offlineGameController.isGameOver, isFalse);
+    group('Initial State', () {
+      test('initial values are correct', () {
+        expect(offlineGameController.currentGame, isNull);
+        expect(offlineGameController.isLoading, isFalse);
+        expect(offlineGameController.isGameOver, isFalse);
+        expect(offlineGameController.currentFen, Chess.initial.fen);
+        expect(offlineGameController.currentTurn, Side.white);
+      });
+
+      test('gameState is initialized with initial position', () {
+        expect(offlineGameController.gameState, isNotNull);
+        expect(offlineGameController.gameState.position.fen, Chess.initial.fen);
+      });
     });
 
-    testWidgets('startNewGame should create a new game and update the state', (
-      WidgetTester tester,
-    ) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
+    group('startNewGame', () {
+      testWidgets('should create a new game and update the state', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
         // Arrange
         when(
-          () => mockGetOrCreateGuestPlayerUseCase(any()),
-        ).thenAnswer((_) async => Right(tPlayer1));
-        when(
-          () => mockSaveGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
 
         // Act
-        offlineGameController.startNewGame(
+        await offlineGameController.startNewGame(
           whitePlayerName: 'White Player',
           blackPlayerName: 'Black Player',
         );
-        async.flushTimers();
+        await tester.pumpAndSettle();
 
         // Assert
         expect(offlineGameController.currentGame, isNotNull);
@@ -154,345 +207,870 @@ void main() {
         );
         expect(offlineGameController.isLoading, isFalse);
         expect(offlineGameController.isGameOver, isFalse);
-      });
-    });
 
-    testWidgets('applyMove should update the game state and auto-save', (
-      WidgetTester tester,
-    ) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
+        verify(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: 'White Player',
+            blackPlayerName: 'Black Player',
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).called(1);
+      });
+
+      testWidgets('should handle failure when saving game fails', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
         // Arrange
         when(
-          () => mockGetOrCreateGuestPlayerUseCase(any()),
-        ).thenAnswer((_) async => Right(tPlayer1));
-        when(
-          () => mockSaveGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
-        when(
-          () => mockUpdateGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockPlaySoundUseCase.executeMoveSound(),
-        ).thenAnswer((_) async => const Right(null));
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => null);
 
-        offlineGameController.startNewGame(
+        // Act
+        await offlineGameController.startNewGame(
           whitePlayerName: 'White Player',
           blackPlayerName: 'Black Player',
         );
-        async.flushTimers();
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(offlineGameController.currentGame, isNull);
+        expect(offlineGameController.errorMessage, isNotEmpty);
+        expect(offlineGameController.isLoading, isFalse);
+      });
+    });
+
+    group('applyMove', () {
+      testWidgets('should apply a legal move and update game state', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange - Start a game first
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.autoSaveGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
 
         // Act
         offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
-        async.flushTimers();
+        await tester.pumpAndSettle();
 
         // Assert
         expect(offlineGameController.gameState.getMoveTokens.length, 1);
         expect(offlineGameController.gameState.getMoveTokens.first.san, 'e4');
-        verify(() => mockUpdateGameUseCase(any())).called(1);
+        expect(offlineGameController.currentTurn, Side.black);
+        verify(
+          () => mockGameStorageController.autoSaveGame(any(), any()),
+        ).called(1);
       });
-    });
 
-    testWidgets('undoMove should revert the game state', (
-      WidgetTester tester,
-    ) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
+      testWidgets('should play move sound after applying move', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
         // Arrange
         when(
-          () => mockGetOrCreateGuestPlayerUseCase(any()),
-        ).thenAnswer((_) async => Right(tPlayer1));
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
         when(
-          () => mockSaveGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
-        when(
-          () => mockUpdateGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockPlaySoundUseCase.executeMoveSound(),
-        ).thenAnswer((_) async => const Right(null));
+          () => mockGameStorageController.autoSaveGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
 
-        offlineGameController.startNewGame(
+        await offlineGameController.startNewGame(
           whitePlayerName: 'White Player',
           blackPlayerName: 'Black Player',
         );
-        async.flushTimers();
-        offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
-        async.flushTimers();
+        await tester.pumpAndSettle();
 
         // Act
-        offlineGameController.undoMove();
-        async.flushTimers();
+        offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
+        await tester.pumpAndSettle();
+
+        // Assert
+        verify(() => mockPlaySoundUseCase.executeMoveSound()).called(1);
+      });
+    });
+
+    group('undoMove', () {
+      testWidgets('should undo the last move', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.autoSaveGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
+        await tester.pumpAndSettle();
+
+        expect(offlineGameController.gameState.getMoveTokens.length, 1);
+
+        // Act
+        await offlineGameController.undoMove();
+        await tester.pumpAndSettle();
 
         // Assert
         expect(offlineGameController.gameState.getMoveTokens.length, 0);
-        verify(() => mockUpdateGameUseCase(any())).called(2);
+        expect(offlineGameController.currentTurn, Side.white);
       });
     });
 
-    testWidgets('redoMove should restore the game state', (
-      WidgetTester tester,
-    ) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
+    group('redoMove', () {
+      testWidgets('should redo the undone move', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
         // Arrange
         when(
-          () => mockGetOrCreateGuestPlayerUseCase(any()),
-        ).thenAnswer((_) async => Right(tPlayer1));
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
         when(
-          () => mockSaveGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
-        when(
-          () => mockUpdateGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockPlaySoundUseCase.executeMoveSound(),
-        ).thenAnswer((_) async => const Right(null));
+          () => mockGameStorageController.autoSaveGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
 
-        offlineGameController.startNewGame(
+        await offlineGameController.startNewGame(
           whitePlayerName: 'White Player',
           blackPlayerName: 'Black Player',
         );
-        async.flushTimers();
+        await tester.pumpAndSettle();
+
         offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
-        async.flushTimers();
-        offlineGameController.undoMove();
-        async.flushTimers();
+        await tester.pumpAndSettle();
+        await offlineGameController.undoMove();
+        await tester.pumpAndSettle();
+
+        expect(offlineGameController.gameState.getMoveTokens.length, 0);
 
         // Act
-        offlineGameController.redoMove();
-        async.flushTimers();
+        await offlineGameController.redoMove();
+        await tester.pumpAndSettle();
 
         // Assert
         expect(offlineGameController.gameState.getMoveTokens.length, 1);
         expect(offlineGameController.gameState.getMoveTokens.first.san, 'e4');
-        verify(() => mockUpdateGameUseCase(any())).called(3);
+        expect(offlineGameController.currentTurn, Side.black);
       });
     });
 
-    testWidgets('reset should reset the game state', (
-      WidgetTester tester,
-    ) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
+    group('reset', () {
+      testWidgets('should reset the game to initial position', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
         // Arrange
         when(
-          () => mockGetOrCreateGuestPlayerUseCase(any()),
-        ).thenAnswer((_) async => Right(tPlayer1));
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
         when(
-          () => mockSaveGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
-        when(
-          () => mockUpdateGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockPlaySoundUseCase.executeMoveSound(),
-        ).thenAnswer((_) async => const Right(null));
-        when(
-          () => mockPlaySoundUseCase.executeDongSound(),
-        ).thenAnswer((_) async => const Right(null));
+          () => mockGameStorageController.autoSaveGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
 
-        offlineGameController.startNewGame(
+        await offlineGameController.startNewGame(
           whitePlayerName: 'White Player',
           blackPlayerName: 'Black Player',
         );
-        async.flushTimers();
+        await tester.pumpAndSettle();
+
         offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
-        async.flushTimers();
+        await tester.pumpAndSettle();
 
         // Act
         offlineGameController.reset();
-        async.flushTimers();
+        await tester.pumpAndSettle();
 
         // Assert
         expect(offlineGameController.gameState.getMoveTokens.length, 0);
         expect(offlineGameController.gameState.position.fen, Chess.initial.fen);
+        expect(offlineGameController.currentTurn, Side.white);
+        verify(() => mockPlaySoundUseCase.executeDongSound()).called(1);
       });
     });
 
-    testWidgets('resign should end the game', (WidgetTester tester) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
+    group('resign', () {
+      testWidgets('should end the game when white resigns', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
         // Arrange
         when(
-          () => mockGetOrCreateGuestPlayerUseCase(any()),
-        ).thenAnswer((_) async => Right(tPlayer1));
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
         when(
-          () => mockSaveGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
-        when(
-          () => mockUpdateGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockPlaySoundUseCase.executeResignSound(),
-        ).thenAnswer((_) async => const Right(null));
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
 
-        offlineGameController.startNewGame(
+        await offlineGameController.startNewGame(
           whitePlayerName: 'White Player',
           blackPlayerName: 'Black Player',
         );
-        async.flushTimers();
+        await tester.pumpAndSettle();
 
         // Act
-        offlineGameController.resign(Side.white);
-        async.flushTimers();
+        await offlineGameController.resign(Side.white);
+        await tester.pumpAndSettle();
 
         // Assert
         expect(offlineGameController.isGameOver, isTrue);
         expect(offlineGameController.gameState.result!.winner, Side.black);
+        verify(() => mockPlaySoundUseCase.executeResignSound()).called(1);
+        verify(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).called(1);
       });
-    });
 
-    testWidgets('agreeDrawn should end the game with a draw', (
-      WidgetTester tester,
-    ) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
+      testWidgets('should end the game when black resigns', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
         // Arrange
         when(
-          () => mockGetOrCreateGuestPlayerUseCase(any()),
-        ).thenAnswer((_) async => Right(tPlayer1));
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
         when(
-          () => mockSaveGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
-        when(
-          () => mockUpdateGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
 
-        offlineGameController.startNewGame(
+        await offlineGameController.startNewGame(
           whitePlayerName: 'White Player',
           blackPlayerName: 'Black Player',
         );
-        async.flushTimers();
+        await tester.pumpAndSettle();
 
         // Act
-        offlineGameController.agreeDrawn();
-        async.flushTimers();
+        await offlineGameController.resign(Side.black);
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(offlineGameController.isGameOver, isTrue);
+        expect(offlineGameController.gameState.result!.winner, Side.white);
+      });
+    });
+
+    group('agreeDrawn', () {
+      testWidgets('should end the game with a draw', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        // Act
+        await offlineGameController.agreeDrawn();
+        await tester.pumpAndSettle();
 
         // Assert
         expect(offlineGameController.isGameOver, isTrue);
         expect(offlineGameController.gameState.result, Outcome.draw);
+        verify(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).called(1);
       });
     });
 
-    testWidgets('saveGame should call updateGameUseCase', (
-      WidgetTester tester,
-    ) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
+    group('saveGame', () {
+      testWidgets('should call storage controller saveGame', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
         // Arrange
         when(
-          () => mockGetOrCreateGuestPlayerUseCase(any()),
-        ).thenAnswer((_) async => Right(tPlayer1));
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
         when(
-          () => mockSaveGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
-        when(
-          () => mockUpdateGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
+          () => mockGameStorageController.saveGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
 
-        offlineGameController.startNewGame(
+        await offlineGameController.startNewGame(
           whitePlayerName: 'White Player',
           blackPlayerName: 'Black Player',
         );
-        async.flushTimers();
+        await tester.pumpAndSettle();
 
         // Act
-        offlineGameController.saveGame();
-        async.flushTimers();
+        await offlineGameController.saveGame();
+        await tester.pumpAndSettle();
 
         // Assert
-        verify(() => mockUpdateGameUseCase(any())).called(1);
+        verify(
+          () => mockGameStorageController.saveGame(any(), any()),
+        ).called(1);
       });
     });
 
-    testWidgets('jumpToHalfmove should jump to the correct move', (
-      WidgetTester tester,
-    ) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
-        // Arrange
-        when(
-          () => mockGetOrCreateGuestPlayerUseCase(any()),
-        ).thenAnswer((_) async => Right(tPlayer1));
-        when(
-          () => mockSaveGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
-        when(
-          () => mockUpdateGameUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockPlaySoundUseCase.executeMoveSound(),
-        ).thenAnswer((_) async => const Right(null));
-
-        offlineGameController.startNewGame(
-          whitePlayerName: 'White Player',
-          blackPlayerName: 'Black Player',
+    group('loadGame', () {
+      testWidgets('should load the game from storage', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
         );
-        async.flushTimers();
-        offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
-        async.flushTimers();
-        offlineGameController.applyMove(NormalMove.fromUci('e7e5'));
-        async.flushTimers();
 
-        // Act
-        offlineGameController.jumpToHalfmove(0);
-        async.flushTimers();
-
-        // Assert
-        expect(offlineGameController.gameState.getMoveTokens.length, 1);
-        expect(offlineGameController.gameState.getMoveTokens.first.san, 'e4');
-      });
-    });
-
-    testWidgets('loadGame should load the game from the database', (
-      WidgetTester tester,
-    ) async {
-      fakeAsync((async) {
-        tester.pumpWidget(GetMaterialApp(home: Scaffold(body: Container())));
         // Arrange
+        final gameState = GameState(initial: Chess.initial);
         when(
-          () => mockGetGameByUuidUseCase(any()),
-        ).thenAnswer((_) async => Right(tChessGame));
-        when(
-          () => mockGetCachedGameStateUseCase(any()),
-        ).thenAnswer((_) async => Left(CacheFailure(message: 'not found')));
-        when(
-          () => mockCacheGameStateUseCase(any()),
-        ).thenAnswer((_) async => const Right(null));
+          () => mockGameStorageController.loadGame(any()),
+        ).thenAnswer((_) async => Right((tChessGame, gameState)));
 
         // Act
-        offlineGameController.loadGame('game-uuid');
-        async.flushTimers();
+        await offlineGameController.loadGame('game-uuid');
+        await tester.pumpAndSettle();
 
         // Assert
         expect(offlineGameController.isLoading, isFalse);
         expect(offlineGameController.currentGame, isNotNull);
         expect(offlineGameController.currentGame!.uuid, 'game-uuid');
+        verify(() => mockGameStorageController.loadGame('game-uuid')).called(1);
+      });
+
+      testWidgets('should handle load failure', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.loadGame(any()),
+        ).thenAnswer((_) async => const Left('Failed to load game'));
+
+        // Act
+        await offlineGameController.loadGame('game-uuid');
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(offlineGameController.isLoading, isFalse);
+        expect(offlineGameController.errorMessage, isNotEmpty);
+      });
+    });
+
+    group('jumpToHalfmove', () {
+      testWidgets('should jump to the specified move index', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.autoSaveGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
+        await tester.pumpAndSettle();
+        offlineGameController.applyMove(NormalMove.fromUci('e7e5'));
+        await tester.pumpAndSettle();
+        offlineGameController.applyMove(NormalMove.fromUci('g1f3'));
+        await tester.pumpAndSettle();
+
+        expect(offlineGameController.gameState.getMoveTokens.length, 3);
+
+        // Act - Jump to first move (index 0)
+        offlineGameController.jumpToHalfmove(0);
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(offlineGameController.gameState.getMoveTokens.length, 1);
+        expect(offlineGameController.gameState.getMoveTokens.first.san, 'e4');
+      });
+    });
+
+    group('getCapturedPieces', () {
+      testWidgets('should return captured pieces for a side', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.autoSaveGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        // Italian Game opening with pawn capture
+        offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
+        await tester.pumpAndSettle();
+        offlineGameController.applyMove(NormalMove.fromUci('d7d5'));
+        await tester.pumpAndSettle();
+        offlineGameController.applyMove(NormalMove.fromUci('e4d5')); // Capture
+        await tester.pumpAndSettle();
+
+        // Assert
+        final blackCaptured = offlineGameController.getCapturedPieces(
+          Side.black,
+        );
+        expect(blackCaptured, isNotEmpty);
+        expect(blackCaptured.contains(Role.pawn), isTrue);
+      });
+    });
+
+    group('getPgnString', () {
+      testWidgets('should return PGN string with moves', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.autoSaveGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        offlineGameController.applyMove(NormalMove.fromUci('e2e4'));
+        await tester.pumpAndSettle();
+        offlineGameController.applyMove(NormalMove.fromUci('e7e5'));
+        await tester.pumpAndSettle();
+
+        // Act
+        final pgn = offlineGameController.getPgnString();
+
+        // Assert
+        expect(pgn, contains('White Player'));
+        expect(pgn, contains('Black Player'));
+        expect(pgn, contains('e4'));
+        expect(pgn, contains('e5'));
+      });
+    });
+
+    group('End Game Interface Methods', () {
+      testWidgets('agreeDraw should end game as draw', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        // Act
+        await offlineGameController.agreeDraw();
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(offlineGameController.isGameOver, isTrue);
+        expect(offlineGameController.gameState.result, Outcome.draw);
+      });
+
+      testWidgets('checkMate should update game and show result', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        // Act
+        await offlineGameController.checkMate();
+        await tester.pumpAndSettle();
+
+        // Assert
+        verify(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).called(1);
+      });
+
+      testWidgets('draw should end game as draw', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        // Act
+        await offlineGameController.draw();
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(offlineGameController.isGameOver, isTrue);
+        expect(offlineGameController.gameState.result, Outcome.draw);
+        verify(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).called(1);
+      });
+
+      testWidgets('fiftyMoveRule should update game', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        // Act
+        await offlineGameController.fiftyMoveRule();
+        await tester.pumpAndSettle();
+
+        // Assert
+        verify(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).called(1);
+      });
+
+      testWidgets('insufficientMaterial should update game', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        // Act
+        await offlineGameController.insufficientMaterial();
+        await tester.pumpAndSettle();
+
+        // Assert
+        verify(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).called(1);
+      });
+
+      testWidgets('staleMate should update game', (WidgetTester tester) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        // Act
+        await offlineGameController.staleMate();
+        await tester.pumpAndSettle();
+
+        // Assert
+        verify(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).called(1);
+      });
+
+      testWidgets('threefoldRepetition should update game', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          GetMaterialApp(home: Scaffold(body: Container())),
+        );
+
+        // Arrange
+        when(
+          () => mockGameStorageController.startAndSaveNewGame(
+            whitePlayerName: any(named: 'whitePlayerName'),
+            blackPlayerName: any(named: 'blackPlayerName'),
+            gameState: any(named: 'gameState'),
+            event: any(named: 'event'),
+            site: any(named: 'site'),
+            timeControl: any(named: 'timeControl'),
+          ),
+        ).thenAnswer((_) async => tChessGame);
+        when(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).thenAnswer((_) async => tChessGame);
+
+        await offlineGameController.startNewGame(
+          whitePlayerName: 'White Player',
+          blackPlayerName: 'Black Player',
+        );
+        await tester.pumpAndSettle();
+
+        // Act
+        await offlineGameController.threefoldRepetition();
+        await tester.pumpAndSettle();
+
+        // Assert
+        verify(
+          () => mockGameStorageController.updateGame(any(), any()),
+        ).called(1);
       });
     });
   });

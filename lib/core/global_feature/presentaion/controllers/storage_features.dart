@@ -1,21 +1,24 @@
-import 'package:chessground_game_app/core/game_termination_enum.dart';
-import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
-import 'package:chessground_game_app/core/global_feature/domain/converters/game_state_converter.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/game_storage_controller.dart';
 import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
-import 'package:uuid/uuid.dart';
 
+/// Mixin providing storage features for game controllers
+/// Uses GameStorageController for all storage operations
+///
+/// ميكسين يوفر ميزات التخزين لكنترولات اللعبة
+/// يستخدم GameStorageController لجميع عمليات التخزين
 mixin StorageFeatures on BaseGameController {
-  late final SaveGameUseCase saveGameUseCase;
-  late final CacheGameStateUseCase cacheGameStateUseCase;
-  late final GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase;
+  /// Storage controller instance - lazy loaded
+  /// كنترولر التخزين - تحميل كسول
+  GameStorageController get storageController =>
+      Get.find<GameStorageController>();
+
+  /// Start a new game and save it to the database
+  /// بدء لعبة جديدة وحفظها في قاعدة البيانات
   Future<void> startNewGame({
     required String whitePlayerName,
     required String blackPlayerName,
@@ -32,77 +35,39 @@ mixin StorageFeatures on BaseGameController {
         data: {'white': whitePlayerName, 'black': blackPlayerName},
       );
 
-      // Create or get players
-      final whitePlayerResult = await getOrCreateGuestPlayerUseCase(
-        GetOrCreateGuestPlayerParams(name: whitePlayerName),
-      );
-
-      final blackPlayerResult = await getOrCreateGuestPlayerUseCase(
-        GetOrCreateGuestPlayerParams(name: blackPlayerName),
-      );
-
-      if (whitePlayerResult.isLeft() || blackPlayerResult.isLeft()) {
-        setError('Failed to create players');
-        return;
-      }
-
-      final whitePlayer = whitePlayerResult.getOrElse(() => throw Exception());
-      final blackPlayer = blackPlayerResult.getOrElse(() => throw Exception());
-
-      // Generate UUID for new game
-      final gameUuid = const Uuid().v4();
-
       // Initialize GameState
       gameState = GameState(initial: Chess.initial);
 
-      // Create ChessGameEntity
-      final newGame = ChessGameEntity(
-        uuid: gameUuid,
-        event: event ?? 'Casual Game',
-        site: site ?? 'Local',
-        date: DateTime.now(),
-        round: '1',
-        whitePlayer: whitePlayer,
-        blackPlayer: blackPlayer,
-        result: '*',
-        termination: GameTermination.ongoing,
+      // Use storage controller to start and save the game
+      final savedGame = await storageController.startAndSaveNewGame(
+        whitePlayerName: whitePlayerName,
+        blackPlayerName: blackPlayerName,
+        gameState: gameState,
+        event: event,
+        site: site,
         timeControl: timeControl,
-        startingFen: Chess.initial.fen,
-        moves: const [],
-        movesCount: 0,
       );
 
-      // Save game to database
-      final saveResult = await saveGameUseCase(SaveGameParams(game: newGame));
+      if (savedGame != null) {
+        currentGame = savedGame;
+        whitePlayer.value = savedGame.whitePlayer;
+        blackPlayer.value = savedGame.blackPlayer;
+        updateReactiveState();
 
-      saveResult.fold(
-        (failure) {
-          setError('Failed to save game: ${failure.message}');
-          AppLogger.error('Failed to save game', tag: 'GameController');
-        },
-        (savedGame) async {
-          currentGame = savedGame;
-
-          // Cache game state
-          final stateEntity = GameStateConverter.toEntity(gameState, gameUuid);
-          await cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
-
-          updateReactiveState();
-
-          AppLogger.gameEvent('NewGameStarted', data: {'uuid': gameUuid});
-          Get.snackbar(
-            'Game Started',
-            'New game between $whitePlayerName vs $blackPlayerName',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        },
-      );
+        Get.snackbar(
+          'Game Started',
+          'New game between $whitePlayerName vs $blackPlayerName',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        setError('Failed to start new game');
+      }
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error starting new game',
         error: e,
         stackTrace: stackTrace,
-        tag: 'GameController',
+        tag: 'StorageFeatures',
       );
       setError('Unexpected error: ${e.toString()}');
     } finally {
@@ -126,55 +91,26 @@ mixin StorageFeatures on BaseGameController {
       setLoading(true);
       clearError();
 
-      // Convert moves from MoveDataModel to MoveDataEntity
-      final moveEntities = gameState.getMoveTokens
-          .map((move) => move.toEntity())
-          .toList();
-
-      // Get result string from Outcome
-      final String resultString = gameState.resultToPgnString(gameState.result);
-
-      // Update game entity with current state
-      final updatedGame = currentGame!.copyWith(
-        moves: moveEntities,
-        movesCount: gameState.getMoveTokens.length,
-        result: resultString,
-        termination: _getGameTermination(),
+      final savedGame = await storageController.saveGame(
+        currentGame!,
+        gameState,
       );
 
-      // Save to database
-      final saveResult = await saveGameUseCase(
-        SaveGameParams(game: updatedGame),
-      );
-
-      saveResult.fold(
-        (failure) {
-          setError('Failed to save game: ${failure.message}');
-          AppLogger.error('Failed to save game', tag: 'StorageFeatures');
-          Get.snackbar(
-            'Save Failed',
-            'Could not save game: ${failure.message}',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        },
-        (savedGame) async {
-          currentGame = savedGame;
-
-          // Cache game state
-          final stateEntity = GameStateConverter.toEntity(
-            gameState,
-            currentGame!.uuid,
-          );
-          await cacheGameStateUseCase(CacheGameStateParams(state: stateEntity));
-
-          AppLogger.gameEvent('GameSaved', data: {'uuid': currentGame!.uuid});
-          Get.snackbar(
-            'Game Saved',
-            'Game saved successfully',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        },
-      );
+      if (savedGame != null) {
+        currentGame = savedGame;
+        Get.snackbar(
+          'Game Saved',
+          'Game saved successfully',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        setError('Failed to save game');
+        Get.snackbar(
+          'Save Failed',
+          'Could not save game',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error saving game',
@@ -193,24 +129,63 @@ mixin StorageFeatures on BaseGameController {
     }
   }
 
-  /// Get current game termination status
-  /// الحصول على حالة إنهاء اللعبة الحالية
-  GameTermination _getGameTermination() {
-    if (gameState.isGameOver) {
-      if (gameState.isCheckmate) {
-        return GameTermination.checkmate;
-      } else if (gameState.isStalemate) {
-        return GameTermination.stalemate;
-      } else if (gameState.isInsufficientMaterial) {
-        return GameTermination.insufficientMaterial;
-      } else if (gameState.isThreefoldRepetition()) {
-        return GameTermination.threefoldRepetition;
-      } else if (gameState.isFiftyMoveRule()) {
-        return GameTermination.fiftyMoveRule;
-      }
-      // Default to agreement for other draws
-      return GameTermination.agreement;
+  /// Auto-save game (silent, no UI feedback)
+  /// الحفظ التلقائي للعبة (صامت، بدون تنبيهات)
+  Future<ChessGameEntity?> autoSaveGame() async {
+    final result = await storageController.autoSaveGame(currentGame, gameState);
+    if (result != null) {
+      currentGame = result;
     }
-    return GameTermination.ongoing;
+    return result;
+  }
+
+  /// Load a game from the database
+  /// تحميل لعبة من قاعدة البيانات
+  Future<void> loadGame(String gameUuid) async {
+    try {
+      setLoading(true);
+      clearError();
+
+      final result = await storageController.loadGame(gameUuid);
+
+      result.fold(
+        (error) {
+          setError(error);
+          Get.snackbar('Error', error, snackPosition: SnackPosition.BOTTOM);
+        },
+        (data) {
+          final (game, state) = data;
+          currentGame = game;
+          gameState = state;
+          whitePlayer.value = game.whitePlayer;
+          blackPlayer.value = game.blackPlayer;
+          updateReactiveState();
+
+          Get.snackbar(
+            'Game Loaded',
+            'Loaded game: ${game.event ?? 'Untitled'}',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        },
+      );
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Error loading game',
+        error: e,
+        stackTrace: stackTrace,
+        tag: 'StorageFeatures',
+      );
+      setError('Unexpected error: ${e.toString()}');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  /// Cache game state
+  /// تخزين حالة اللعبة مؤقتاً
+  Future<void> cacheState() async {
+    if (currentGame != null) {
+      await storageController.cacheGameState(gameState, currentGame!.uuid);
+    }
   }
 }

@@ -1,12 +1,5 @@
 import 'dart:math';
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/get_cached_game_state_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/get_game_by_uuid_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/save_game_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/save_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
@@ -15,18 +8,15 @@ import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+/// Controller for games against the computer (Stockfish AI)
+/// كنترولر للعب ضد الكمبيوتر (ذكاء اصطناعي Stockfish)
 class ComputerGameController extends BaseGameController
     with StorageFeatures, WidgetsBindingObserver {
-  /// Player side (white or black)
-  // final Rx<PlayerSide> playerSide = PlayerSide.white.obs;
-  // PlayerSide get playerSide => playerSide;
-  // set playerSide(PlayerSide value) => playerSide = value;
-
   /// Computer is thinking
   final RxBool _computerThinking = false.obs;
   bool get computerThinking => _computerThinking.value;
 
-  // / Computer difficulty level (0-20)
+  /// Computer difficulty level (0-20)
   final RxInt _difficulty = 10.obs;
   int get difficulty => _difficulty.value;
   set difficulty(int value) => _difficulty.value = value;
@@ -34,10 +24,6 @@ class ComputerGameController extends BaseGameController
   /// Show move hints
   final RxBool showMoveHints = false.obs;
 
-  final UpdateGameUseCase updateGameUseCase;
-  final GetGameByUuidUseCase getGameByUuidUseCase;
-  final GetCachedGameStateUseCase getCachedGameStateUseCase;
-  final SavePlayerUseCase savePlayerUseCase;
   final StockfishController stockfishController;
 
   /// Check if Stockfish is ready
@@ -45,19 +31,8 @@ class ComputerGameController extends BaseGameController
 
   ComputerGameController({
     required super.plySound,
-    required this.updateGameUseCase,
-    required this.getGameByUuidUseCase,
-    required this.getCachedGameStateUseCase,
-    required this.savePlayerUseCase,
     required this.stockfishController,
-    required SaveGameUseCase saveGameUseCase,
-    required CacheGameStateUseCase cacheGameStateUseCase,
-    required GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase,
-  }) {
-    this.saveGameUseCase = saveGameUseCase;
-    this.cacheGameStateUseCase = cacheGameStateUseCase;
-    this.getOrCreateGuestPlayerUseCase = getOrCreateGuestPlayerUseCase;
-  }
+  });
 
   /// Player name
   String _playerName = 'Guest';
@@ -178,7 +153,7 @@ class ComputerGameController extends BaseGameController
         }
       }
 
-      // Show board immediately after setup is done (loading state handled by UI now)
+      // Show board immediately after setup is done
       isLoading = false;
 
       currentFen = gameState.position.fen;
@@ -205,6 +180,11 @@ class ComputerGameController extends BaseGameController
   }) async {
     // Execute player's move
     super.onUserMove(move, isDrop: isDrop, isPremove: isPremove);
+
+    // Auto-save if enabled
+    if (autoSaveEnabled) {
+      await autoSaveGame();
+    }
 
     // Check if game is over
     if (isGameOver) return;
@@ -256,9 +236,6 @@ class ComputerGameController extends BaseGameController
 
         // Execute move without triggering another computer move
         super.onUserMove(move);
-
-        // Play sound
-        // TODO: Add sound feedback
       }
 
       _computerThinking.value = false;
@@ -281,19 +258,4 @@ class ComputerGameController extends BaseGameController
     if (difficulty < 14) return 15;
     return 20;
   }
-
-  /// Override undo to also undo computer's move
-  /// تجاوز التراجع للتراجع عن حركة الكمبيوتر أيضاً
-  // @override
-  // Future<void> undoMove() async {
-  //   if (!canUndo) return;
-
-  //   // Undo player's move
-  //    super.undoMove();
-
-  //   // If it's still computer's turn, undo computer's move too
-  //   if (currentTurn != playerSide && canUndo) {
-  //      super.undoMove();
-  //   }
-  // }
 }

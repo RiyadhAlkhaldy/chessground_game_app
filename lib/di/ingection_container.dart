@@ -48,6 +48,7 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/update_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/update_player_rating_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/update_player_usecase.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/game_storage_controller.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
@@ -245,6 +246,22 @@ class InjectionContainer {
     Get.lazyPut(() => GetGameAnalysisUseCase(sl()), fenix: true);
     Get.lazyPut(() => DeleteGameAnalysisUseCase(sl()), fenix: true);
     Get.lazyPut(() => GetAllAnalysesUseCase(sl()), fenix: true);
+
+    // ========== Controllers ==========
+    // GameStorageController - centralized storage operations
+    Get.lazyPut<GameStorageController>(
+      () => GameStorageController(
+        saveGameUseCase: sl(),
+        updateGameUseCase: sl(),
+        getGameByUuidUseCase: sl(),
+        savePlayerUseCase: sl(),
+        getOrCreateGuestPlayerUseCase: sl(),
+        cacheGameStateUseCase: sl(),
+        getCachedGameStateUseCase: sl(),
+      ),
+      fenix: true,
+    );
+
     AppLogger.debug('Use cases registered', tag: 'DI');
   }
 
