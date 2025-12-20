@@ -4,10 +4,6 @@ import 'package:chessground_game_app/features/analysis/presentation/pages/game_a
 import 'package:chessground_game_app/features/computer_game/presentation/pages/computer_game_page.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/pages/new_computer_game_page.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/stockfish_binding.dart';
-import 'package:chessground_game_app/features/computer_game/game_computer_binding.dart';
-import 'package:chessground_game_app/features/computer_game/game_computer_with_time_binding.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/pages/game_computer_page.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/pages/game_computer_with_time_page.dart';
 import 'package:chessground_game_app/features/home/presentation/pages/home_page.dart';
 import 'package:chessground_game_app/features/computer_game/new_computer_game_binding.dart';
 import 'package:chessground_game_app/features/offline_game/new_offline_game_binding.dart';
@@ -17,18 +13,12 @@ import 'package:chessground_game_app/features/offline_game/presentation/pages/of
 import 'package:chessground_game_app/features/recent_screen/presentation/pages/recent_page.dart';
 import 'package:chessground_game_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:chessground_game_app/features/home/presentation/pages/about_page.dart';
-import 'package:chessground_game_app/features/home/presentation/pages/game_start_up_screen.dart';
-import 'package:chessground_game_app/features/home/presentation/pages/game_time_page.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/pages/side_choosing_page.dart';
 import 'package:get/get.dart';
 
 abstract class AppRoutes {
   AppRoutes._();
 
   static String home = '/';
-  static String sideChoosingPage = '/sideChoosingPage';
-  static String gameComputerPage = '/gameComputerPage';
-  static String gameComputerWithTimePage = '/gameComputerWithTimePage';
   static String offlineGamePage = '/offlineGamePage';
   static String newOfflineGamePage = '/newOfflineGamePage';
   static String newGameComputerPage = '/newGameComputerPage';
@@ -42,9 +32,7 @@ abstract class AppRoutes {
 
   static String editPosition = '/EditPosition';
   static String analysisPage = '/AnalysisScreen';
-  static String gameTimePage = '/GameTimeScreen';
   static String settingsPage = '/SettingsScreen';
-  static String gameStartUpPage = '/gameStartUpPage';
   static String aboutPage = '/aboutPage';
   static String recentGamesPage = '/recentGamesPage';
   static String puzzles = '/Puzzles';
@@ -60,28 +48,13 @@ class AppPages {
     GetPage(name: AppRoutes.home, page: () => const HomePage()),
     // GetPage(name: '/online', page: () => const OnlineView()),
     GetPage(
-      name: AppRoutes.gameComputerPage,
-      page: () => const GameComputerPage(),
-      binding: GameComputerBindings(),
-    ),
-    GetPage(
       name: AppRoutes.computerGamePage,
       page: () => const ComputerGamePage(),
       binding: ComputerGameBinding(),
     ),
-    GetPage(
-      name: AppRoutes.gameComputerWithTimePage,
-      page: () => GameComputerWithTimePage(),
-      binding: GameComputerWithTimeBindings(),
-    ),
-    GetPage(name: AppRoutes.sideChoosingPage, page: () => SideChoosingPage()),
+
     GetPage(name: AppRoutes.aboutPage, page: () => const AboutPage()),
     GetPage(name: AppRoutes.settingsPage, page: () => const SettingsPage()),
-    GetPage(name: AppRoutes.gameTimePage, page: () => const GameTimePage()),
-    GetPage(
-      name: AppRoutes.gameStartUpPage,
-      page: () => const GameStartUpPage(isCustomTime: false, gameTime: '5'),
-    ),
     GetPage(
       name: AppRoutes.recentGamesPage,
       page: () => const RecentGamesPage(),

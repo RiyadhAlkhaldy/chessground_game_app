@@ -65,36 +65,6 @@ class HomePage extends StatelessWidget {
                         );
                       },
                     ),
-                    // Play Against Computer
-                    GameTypeCard(
-                      icon: Symbols.computer,
-                      label: "${context.l10n.playAgainstComputer} (Offline)",
-                      gradient: _getGradient(0, isDark),
-                      delay: 0,
-                      isDarkMode: isDark,
-                      onTap: () {
-                        controller.setVsComputer(value: true);
-                        Get.toNamed(
-                          AppRoutes.sideChoosingPage,
-                          arguments: {"withTime": false},
-                        );
-                      },
-                    ),
-                    // Play Online
-                    GameTypeCard(
-                      icon: Symbols.person,
-                      label: context.l10n.playONline,
-                      gradient: _getGradient(1, isDark),
-                      delay: 100,
-                      isDarkMode: isDark,
-                      onTap: () {
-                        controller.setVsComputer(value: false);
-                        Get.toNamed(
-                          AppRoutes.gameTimePage,
-                          arguments: {"withTime": false},
-                        );
-                      },
-                    ),
 
                     // Quick Play
                     GameTypeCard(

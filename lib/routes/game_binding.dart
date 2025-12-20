@@ -1,15 +1,12 @@
 import 'package:chessground_game_app/core/global_feature/data/repositories/games_respository_impl.dart';
-import 'package:chessground_game_app/core/global_feature/domain/repositories/games_repository.dart';
-import 'package:chessground_game_app/core/global_feature/domain/services/chess_clock_service.dart';
+import 'package:chessground_game_app/core/global_feature/domain/repositories/games_repository.dart'; 
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/service/sound_effect_service.dart';
 
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
-import 'package:chessground_game_app/core/utils/logger.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/game_computer_with_time_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/side_choosing_controller.dart';
+import 'package:chessground_game_app/core/utils/logger.dart'; 
 import 'package:chessground_game_app/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:chessground_game_app/features/home/presentation/controllers/game_start_up_controller.dart';
 import 'package:get/get.dart';
@@ -43,15 +40,6 @@ class GameBinding extends Bindings {
     /// services
     Get.lazyPut(() => SoundEffectService(), fenix: true);
 
-    Get.lazyPut(() {
-      final gameCtrl = Get.find<GameStartUpController>();
-      return ChessClockService(
-        initialTimeMs: (gameCtrl.whitesTime.inMinutes * 60 * 1000).toInt(),
-        incrementMs: gameCtrl.incrementalValue * 1000,
-        onTimeout: handleTimeout,
-      );
-    }, fenix: true);
-
     /// usecases
     Get.lazyPut(
       () => PlaySoundUseCase(Get.find<SoundEffectService>()),
@@ -65,10 +53,6 @@ class GameBinding extends Bindings {
     );
     Get.lazyPut(() => GameStartUpController(), fenix: true);
 
-    Get.lazyPut<SideChoosingController>(
-      () => SideChoosingController(),
-      fenix: true,
-    );
     // chess board settings controller
     Get.lazyPut(() => ChessBoardSettingsController(), fenix: true);
     // settings controller
