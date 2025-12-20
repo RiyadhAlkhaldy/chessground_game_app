@@ -1,13 +1,12 @@
 // lib/presentation/pages/computer_game_screen.dart
 
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/build_move_section_widget.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/loading_chess_board_widget.dart';
-// import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/game_info_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/player_game_info_widget.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
-import 'package:chessground_game_app/features/analysis/presentation/widgets/move_list_widget.dart';
 import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -178,10 +177,7 @@ class ComputerGamePage extends GetView<BaseGameController> {
                 return const Center(child: Text('No moves yet'));
               }
 
-              return MoveListWidget(
-                tokens: controller.gameState.getMoveTokens,
-                currentIndex: controller.gameState.getMoveTokens.length - 1,
-              );
+              return const BuildMoveSectionWidget();
             }),
           ),
         ],
@@ -294,11 +290,7 @@ class ComputerGamePage extends GetView<BaseGameController> {
                       return const Center(child: Text('No moves yet'));
                     }
 
-                    return MoveListWidget(
-                      tokens: controller.gameState.getMoveTokens,
-                      currentIndex:
-                          controller.gameState.getMoveTokens.length - 1,
-                    );
+                    return const BuildMoveSectionWidget();
                   }),
                 ),
 
