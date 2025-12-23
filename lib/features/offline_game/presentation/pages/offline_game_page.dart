@@ -8,6 +8,7 @@ import 'package:chessground_game_app/core/global_feature/presentaion/widgets/gam
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/captured_pieces_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/game_info_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/move_list_widget.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/enhanced_horizontal_move_list_widget.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:dartchess/dartchess.dart';
@@ -115,27 +116,31 @@ class OfflineGamePage extends GetView<BaseGameController> {
   /// Build portrait layout
   /// بناء تخطيط الوضع العمودي
   Widget _buildPortraitLayout(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // Top player info and captured pieces
-          const BuildPlayerSectionWidget(side: Side.black, isTop: true),
+    return Column(
+      children: [
+        // Top player info and captured pieces
+        const BuildPlayerSectionWidget(side: Side.black, isTop: true),
 
-          // Chess board
-          Padding(
-            padding: const EdgeInsetsGeometry.all(1),
+        // Chess board
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(8),
             child: ChessBoardWidget(),
           ),
+        ),
 
-          // Bottom player info and captured pieces
-          const BuildPlayerSectionWidget(side: Side.white, isTop: false),
-          // Game controls
-          const GameControlsWidget(),
+        // Bottom player info and captured pieces
+        const BuildPlayerSectionWidget(side: Side.white, isTop: false),
 
-          // Move list (collapsible)
-          const BuildMoveSectionWidget(),
-        ],
-      ),
+        // Enhanced horizontal move list
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: const EnhancedHorizontalMoveListWidget(),
+        ),
+
+        // Game controls
+        const GameControlsWidget(),
+      ],
     );
   }
 
