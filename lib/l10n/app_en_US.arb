@@ -1732,5 +1732,15 @@
   "timeagoNbYearsAgo": "{count, plural, =1{{count} year ago} other{{count} years ago}}",
   "timeagoNbMinutesRemaining": "{count, plural, =1{{count} minute remaining} other{{count} minutes remaining}}",
   "timeagoNbHoursRemaining": "{count, plural, =1{{count} hour remaining} other{{count} hours remaining}}",
-  "tfaTwoFactorAuth": "Two-factor authentication"
+  "tfaTwoFactorAuth": "Two-factor authentication",
+  "setupComputerGame": "Setup Computer Game",
+  "chooseYourSide": "Choose your side",
+  "difficultyBeginner": "Beginner",
+  "difficultyIntermediate": "Intermediate",
+  "difficultyAdvanced": "Advanced",
+  "difficultyMaster": "Master",
+  "showMoveHints": "Show move hints",
+  "startGame": "Start Game",
+  "errorTitle": "Error",
+  "failedToLoadPlayer": "Failed to load player: {message}"
 }

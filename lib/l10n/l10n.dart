@@ -62,17 +62,15 @@ import 'l10n_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
-  static AppLocalizations of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  static AppLocalizations? of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,33 +82,30 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
-    Locale('en', 'US'),
+    Locale('en'),
+    Locale('en', 'US')
   ];
-  String get playONline;
-
-  String get freePlay;
 
   /// No description provided for @mobileAccountPreferences.
   ///
   /// In en, this message translates to:
-  /// **'Account preferences'**
+  /// **'Account settings'**
   String get mobileAccountPreferences;
 
   /// No description provided for @mobileAccountPreferencesHelp.
   ///
   /// In en, this message translates to:
-  /// **'These preferences are applied to your Lichess account and will be used across all devices.'**
+  /// **'These settings are applied to your Lichess account and will be used across all devices.'**
   String get mobileAccountPreferencesHelp;
 
   /// No description provided for @mobileAllGames.
@@ -165,7 +160,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Good evening, {param}'**
-  String mobileGoodEvening(String param);
+  String mobileGoodEvening(Object param);
 
   /// No description provided for @mobileGoodEveningWithoutName.
   ///
@@ -177,7 +172,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Good day, {param}'**
-  String mobileGoodDay(String param);
+  String mobileGoodDay(Object param);
 
   /// No description provided for @mobileGoodDayWithoutName.
   ///
@@ -243,7 +238,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Players with \"{param}\"'**
-  String mobilePlayersMatchingSearchTerm(String param);
+  String mobilePlayersMatchingSearchTerm(Object param);
 
   /// No description provided for @mobilePositionLeft.
   ///
@@ -290,7 +285,7 @@ abstract class AppLocalizations {
   /// No description provided for @mobilePuzzleStreakAbortWarning.
   ///
   /// In en, this message translates to:
-  /// **'You will lose your current streak and your score will be saved.'**
+  /// **'You will lose your current streak, but your score will be saved.'**
   String get mobilePuzzleStreakAbortWarning;
 
   /// No description provided for @mobilePuzzleThemesSubtitle.
@@ -314,7 +309,7 @@ abstract class AppLocalizations {
   /// No description provided for @mobileRemoveBookmark.
   ///
   /// In en, this message translates to:
-  /// **'Remove bookmark'**
+  /// **'Remove the bookmark'**
   String get mobileRemoveBookmark;
 
   /// No description provided for @mobileServerAnalysis.
@@ -338,7 +333,7 @@ abstract class AppLocalizations {
   /// No description provided for @mobileSettingsDraggedPieceTarget.
   ///
   /// In en, this message translates to:
-  /// **'Dragged piece target'**
+  /// **'Target of dragged piece'**
   String get mobileSettingsDraggedPieceTarget;
 
   /// No description provided for @mobileSettingsDraggedTargetCircle.
@@ -374,13 +369,13 @@ abstract class AppLocalizations {
   /// No description provided for @mobileSettingsMaterialDifferenceCapturedPieces.
   ///
   /// In en, this message translates to:
-  /// **'Captured pieces'**
+  /// **'Pieces captured'**
   String get mobileSettingsMaterialDifferenceCapturedPieces;
 
   /// No description provided for @mobileSettingsPickAnImage.
   ///
   /// In en, this message translates to:
-  /// **'Pick an image'**
+  /// **'Choose an image'**
   String get mobileSettingsPickAnImage;
 
   /// No description provided for @mobileSettingsPickAnImageHelp.
@@ -531,7 +526,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Variant {param} is not supported in this version.'**
-  String mobileUnsupportedVariant(String param);
+  String mobileUnsupportedVariant(Object param);
 
   /// No description provided for @mobileWaitingForOpponentToJoin.
   ///
@@ -548,7 +543,7 @@ abstract class AppLocalizations {
   /// No description provided for @mobileWelcomeToLichessApp.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Lichess app!'**
+  /// **'Welcome to the Lichess app!'**
   String get mobileWelcomeToLichessApp;
 
   /// No description provided for @activityActivity.
@@ -567,7 +562,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Ranked #{param1} in {param2}'**
-  String activityRankedInSwissTournament(String param1, String param2);
+  String activityRankedInSwissTournament(Object param1, Object param2);
 
   /// No description provided for @activitySignedUp.
   ///
@@ -579,114 +574,109 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Supported lichess.org for {count} month as a {param2}} other{Supported lichess.org for {count} months as a {param2}}}'**
-  String activitySupportedNbMonths(int count, String param2);
+  String activitySupportedNbMonths(num count, Object param2);
 
   /// No description provided for @activityPracticedNbPositions.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{Practised {count} position on {param2}} other{Practised {count} positions on {param2}}}'**
-  String activityPracticedNbPositions(int count, String param2);
+  /// **'{count, plural, =1{Practiced {count} position on {param2}} other{Practiced {count} positions on {param2}}}'**
+  String activityPracticedNbPositions(num count, Object param2);
 
   /// No description provided for @activitySolvedNbPuzzles.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{Solved {count} training puzzle} other{Solved {count} training puzzles}}'**
-  String activitySolvedNbPuzzles(int count);
+  /// **'{count, plural, =1{Solved {count} tactical puzzle} other{Solved {count} tactical puzzles}}'**
+  String activitySolvedNbPuzzles(num count);
 
   /// No description provided for @activityPlayedNbGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Played {count} {param2} game} other{Played {count} {param2} games}}'**
-  String activityPlayedNbGames(int count, String param2);
+  String activityPlayedNbGames(num count, Object param2);
 
   /// No description provided for @activityPostedNbMessages.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Posted {count} message in {param2}} other{Posted {count} messages in {param2}}}'**
-  String activityPostedNbMessages(int count, String param2);
+  String activityPostedNbMessages(num count, Object param2);
 
   /// No description provided for @activityPlayedNbMoves.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Played {count} move} other{Played {count} moves}}'**
-  String activityPlayedNbMoves(int count);
+  String activityPlayedNbMoves(num count);
 
   /// No description provided for @activityInNbCorrespondenceGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{in {count} correspondence game} other{in {count} correspondence games}}'**
-  String activityInNbCorrespondenceGames(int count);
+  String activityInNbCorrespondenceGames(num count);
 
   /// No description provided for @activityCompletedNbGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Completed {count} correspondence game} other{Completed {count} correspondence games}}'**
-  String activityCompletedNbGames(int count);
+  String activityCompletedNbGames(num count);
 
   /// No description provided for @activityCompletedNbVariantGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Completed {count} {param2} correspondence game} other{Completed {count} {param2} correspondence games}}'**
-  String activityCompletedNbVariantGames(int count, String param2);
+  String activityCompletedNbVariantGames(num count, Object param2);
 
   /// No description provided for @activityFollowedNbPlayers.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Started following {count} player} other{Started following {count} players}}'**
-  String activityFollowedNbPlayers(int count);
+  String activityFollowedNbPlayers(num count);
 
   /// No description provided for @activityGainedNbFollowers.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Gained {count} new follower} other{Gained {count} new followers}}'**
-  String activityGainedNbFollowers(int count);
+  String activityGainedNbFollowers(num count);
 
   /// No description provided for @activityHostedNbSimuls.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Hosted {count} simultaneous exhibition} other{Hosted {count} simultaneous exhibitions}}'**
-  String activityHostedNbSimuls(int count);
+  String activityHostedNbSimuls(num count);
 
   /// No description provided for @activityJoinedNbSimuls.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Participated in {count} simultaneous exhibition} other{Participated in {count} simultaneous exhibitions}}'**
-  String activityJoinedNbSimuls(int count);
+  String activityJoinedNbSimuls(num count);
 
   /// No description provided for @activityCreatedNbStudies.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Created {count} new study} other{Created {count} new studies}}'**
-  String activityCreatedNbStudies(int count);
+  String activityCreatedNbStudies(num count);
 
   /// No description provided for @activityCompetedInNbTournaments.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Competed in {count} Arena tournament} other{Competed in {count} Arena tournaments}}'**
-  String activityCompetedInNbTournaments(int count);
+  String activityCompetedInNbTournaments(num count);
 
   /// No description provided for @activityRankedInTournament.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Ranked #{count} (top {param2}%) with {param3} game in {param4}} other{Ranked #{count} (top {param2}%) with {param3} games in {param4}}}'**
-  String activityRankedInTournament(
-    int count,
-    String param2,
-    String param3,
-    String param4,
-  );
+  String activityRankedInTournament(num count, Object param2, Object param3, Object param4);
 
   /// No description provided for @activityCompetedInNbSwissTournaments.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Competed in {count} Swiss tournament} other{Competed in {count} Swiss tournaments}}'**
-  String activityCompetedInNbSwissTournaments(int count);
+  String activityCompetedInNbSwissTournaments(num count);
 
   /// No description provided for @activityJoinedNbTeams.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Joined {count} team} other{Joined {count} teams}}'**
-  String activityJoinedNbTeams(int count);
+  String activityJoinedNbTeams(num count);
 
   /// No description provided for @arenaArena.
   ///
@@ -739,7 +729,7 @@ abstract class AppLocalizations {
   /// No description provided for @arenaHowAreScoresCalculatedAnswer.
   ///
   /// In en, this message translates to:
-  /// **'A win has a base score of 2 points, a draw 1 point, and a loss is worth no points.\nIf you win two games consecutively you will start a double-point streak, represented by a flame icon.\nThe following games will continue to be worth double points until you fail to win a game.\nThat is, a win will be worth 4 points, a draw 2 points and a loss will still not award any points.\n\nFor example, two wins followed by a draw will be worth 6 points: 2 + 2 + (2 x 1)'**
+  /// **'A win has a base score of 2 points, a draw 1 point, and a loss is worth no points.\nIf you win two games consecutively you will start a double point streak, represented by a flame icon.\nThe following games will continue to be worth double points until you fail to win a game.\nThat is, a win will be worth 4 points, a draw 2 points, and a loss will still not award any points.\n\nFor example, two wins followed by a draw will be worth 6 points: 2 + 2 + (2 × 1)'**
   String get arenaHowAreScoresCalculatedAnswer;
 
   /// No description provided for @arenaBerserk.
@@ -751,7 +741,7 @@ abstract class AppLocalizations {
   /// No description provided for @arenaBerserkAnswer.
   ///
   /// In en, this message translates to:
-  /// **'When a player clicks the Berserk button at the beginning of the game, they lose half of their clock time, but the win is worth one extra tournament point.\n\nGoing Berserk in time controls with an increment also cancels the increment (1+2 is an exception, it gives 1+0).\n\nBerserk is not available for games with zero initial time (0+1, 0+2).\n\nBerserk only grants an extra point if you play at least 7 moves in the game.'**
+  /// **'When a player clicks the Berserk button at the beginning of the game, they lose half of their clock time, but the win is worth one extra tournament point.\n\nGoing Berserk in time controls with an increment also cancels the increment. (1+2 is an exception, it gives 1+0)\n\nBerserk is not available for games with zero initial time (0+1, 0+2).\n\nBerserk only grants an extra point if you play at least 7 moves in the game.'**
   String get arenaBerserkAnswer;
 
   /// No description provided for @arenaHowIsTheWinnerDecided.
@@ -775,7 +765,7 @@ abstract class AppLocalizations {
   /// No description provided for @arenaHowDoesPairingWorkAnswer.
   ///
   /// In en, this message translates to:
-  /// **'At the beginning of the tournament, players are paired based on their rating.\nAs soon as you finish a game, return to the tournament lobby: you will then be paired with a player close to your ranking. This ensures minimum wait time, however, you may not face all other players in the tournament.\nPlay fast and return to the lobby to play more games and win more points.'**
+  /// **'At the beginning of the tournament, players are paired based on their rating.\nAs soon as you finish a game, return to the tournament lobby: you will then be paired with a player close to your ranking. This ensures minimum wait time, however you may not face all other players in the tournament.\nPlay fast and return to the lobby to play more games and win more points.'**
   String get arenaHowDoesPairingWorkAnswer;
 
   /// No description provided for @arenaHowDoesItEnd.
@@ -787,7 +777,7 @@ abstract class AppLocalizations {
   /// No description provided for @arenaHowDoesItEndAnswer.
   ///
   /// In en, this message translates to:
-  /// **'The tournament has a countdown clock. When it reaches zero, the tournament rankings are frozen, and the winner is announced. Games in progress must be finished, however, they don\'t count for the tournament.'**
+  /// **'The tournament has a countdown clock. When it reaches zero, the tournament rankings are frozen, and the winner is announced. Games in progress must be finished, however they don\'t count for the tournament.'**
   String get arenaHowDoesItEndAnswer;
 
   /// No description provided for @arenaOtherRules.
@@ -812,13 +802,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Share this URL to let people join: {param}'**
-  String arenaShareUrl(String param);
+  String arenaShareUrl(Object param);
 
   /// No description provided for @arenaDrawStreakStandard.
   ///
   /// In en, this message translates to:
-  /// **'Draw streaks: When a player has consecutive draws in an arena, only the first draw will result in a point or draws lasting more than {param} moves in standard games. The draw streak can only be broken by a win, not a loss or a draw.'**
-  String arenaDrawStreakStandard(String param);
+  /// **'Draw streaks: When a player has consecutive draws in an arena, only the first draw will result in a point; or draws lasting more than {param} moves in standard games. The draw streak can only be broken by a win, not by a loss or a draw.'**
+  String arenaDrawStreakStandard(Object param);
 
   /// No description provided for @arenaDrawStreakVariants.
   ///
@@ -998,7 +988,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'All averages on this page are {param}.'**
-  String arenaAllAveragesAreX(String param);
+  String arenaAllAveragesAreX(Object param);
 
   /// No description provided for @arenaTotal.
   ///
@@ -1064,13 +1054,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Drawing the game within the first {count} move will earn neither player any points.} other{Drawing the game within the first {count} moves will earn neither player any points.}}'**
-  String arenaDrawingWithinNbMoves(int count);
+  String arenaDrawingWithinNbMoves(num count);
 
   /// No description provided for @arenaViewAllXTeams.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{View the team} other{View all {count} teams}}'**
-  String arenaViewAllXTeams(int count);
+  String arenaViewAllXTeams(num count);
 
   /// No description provided for @broadcastBroadcasts.
   ///
@@ -1172,7 +1162,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Optional long description of the tournament. {param1} is available. Length must be less than {param2} characters.'**
-  String broadcastFullDescriptionHelp(String param1, String param2);
+  String broadcastFullDescriptionHelp(Object param1, Object param2);
 
   /// No description provided for @broadcastSourceSingleUrl.
   ///
@@ -1196,7 +1186,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Start date in the tournament local timezone: {param}'**
-  String broadcastStartDateTimeZone(String param);
+  String broadcastStartDateTimeZone(Object param);
 
   /// No description provided for @broadcastStartDateHelp.
   ///
@@ -1261,7 +1251,7 @@ abstract class AppLocalizations {
   /// No description provided for @broadcastShowScores.
   ///
   /// In en, this message translates to:
-  /// **'Show players scores based on game results'**
+  /// **'Show players\' scores based on game results'**
   String get broadcastShowScores;
 
   /// No description provided for @broadcastReplacePlayerTags.
@@ -1370,13 +1360,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Boards can be loaded with a source or via the {param}'**
-  String broadcastBoardsCanBeLoaded(String param);
+  String broadcastBoardsCanBeLoaded(Object param);
 
   /// No description provided for @broadcastStartsAfter.
   ///
   /// In en, this message translates to:
   /// **'Starts after {param}'**
-  String broadcastStartsAfter(String param);
+  String broadcastStartsAfter(Object param);
 
   /// No description provided for @broadcastStartVerySoon.
   ///
@@ -1406,7 +1396,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'More options on the {param}'**
-  String broadcastIframeHelp(String param);
+  String broadcastIframeHelp(Object param);
 
   /// No description provided for @broadcastWebmastersPage.
   ///
@@ -1520,25 +1510,25 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Created and managed by {param}.'**
-  String broadcastCreatedAndManagedBy(String param);
+  String broadcastCreatedAndManagedBy(Object param);
 
   /// No description provided for @broadcastNbBroadcasts.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} broadcast} other{{count} broadcasts}}'**
-  String broadcastNbBroadcasts(int count);
+  String broadcastNbBroadcasts(num count);
 
   /// No description provided for @broadcastNbViewers.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} viewer} other{{count} viewers}}'**
-  String broadcastNbViewers(int count);
+  String broadcastNbViewers(num count);
 
   /// No description provided for @challengeChallengesX.
   ///
   /// In en, this message translates to:
   /// **'Challenges: {param1}'**
-  String challengeChallengesX(String param1);
+  String challengeChallengesX(Object param1);
 
   /// No description provided for @challengeChallengeToPlay.
   ///
@@ -1561,7 +1551,7 @@ abstract class AppLocalizations {
   /// No description provided for @challengeChallengeCanceled.
   ///
   /// In en, this message translates to:
-  /// **'Challenge cancelled.'**
+  /// **'Challenge canceled.'**
   String get challengeChallengeCanceled;
 
   /// No description provided for @challengeRegisterToSendChallenges.
@@ -1574,31 +1564,31 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'You cannot challenge {param}.'**
-  String challengeYouCannotChallengeX(String param);
+  String challengeYouCannotChallengeX(Object param);
 
   /// No description provided for @challengeXDoesNotAcceptChallenges.
   ///
   /// In en, this message translates to:
   /// **'{param} does not accept challenges.'**
-  String challengeXDoesNotAcceptChallenges(String param);
+  String challengeXDoesNotAcceptChallenges(Object param);
 
   /// No description provided for @challengeYourXRatingIsTooFarFromY.
   ///
   /// In en, this message translates to:
   /// **'Your {param1} rating is too far from {param2}.'**
-  String challengeYourXRatingIsTooFarFromY(String param1, String param2);
+  String challengeYourXRatingIsTooFarFromY(Object param1, Object param2);
 
   /// No description provided for @challengeCannotChallengeDueToProvisionalXRating.
   ///
   /// In en, this message translates to:
   /// **'Cannot challenge due to provisional {param} rating.'**
-  String challengeCannotChallengeDueToProvisionalXRating(String param);
+  String challengeCannotChallengeDueToProvisionalXRating(Object param);
 
   /// No description provided for @challengeXOnlyAcceptsChallengesFromFriends.
   ///
   /// In en, this message translates to:
   /// **'{param} only accepts challenges from friends.'**
-  String challengeXOnlyAcceptsChallengesFromFriends(String param);
+  String challengeXOnlyAcceptsChallengesFromFriends(Object param);
 
   /// No description provided for @challengeDeclineGeneric.
   ///
@@ -1700,13 +1690,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Average score as white: {param}'**
-  String coordinatesAverageScoreAsWhiteX(String param);
+  String coordinatesAverageScoreAsWhiteX(Object param);
 
   /// No description provided for @coordinatesAverageScoreAsBlackX.
   ///
   /// In en, this message translates to:
   /// **'Average score as black: {param}'**
-  String coordinatesAverageScoreAsBlackX(String param);
+  String coordinatesAverageScoreAsBlackX(Object param);
 
   /// No description provided for @coordinatesKnowingTheChessBoard.
   ///
@@ -1723,13 +1713,13 @@ abstract class AppLocalizations {
   /// No description provided for @coordinatesTalkToYourChessFriends.
   ///
   /// In en, this message translates to:
-  /// **'It makes it easier to talk to your chess friends, since you both understand the \'language of chess\'.'**
+  /// **'It makes it easier to talk to your chess friends, since you both understand the \"language of chess\".'**
   String get coordinatesTalkToYourChessFriends;
 
   /// No description provided for @coordinatesYouCanAnalyseAGameMoreEffectively.
   ///
   /// In en, this message translates to:
-  /// **'You can analyse a game more effectively if you can quickly recognise coordinates.'**
+  /// **'You can analyze a game more effectively if you can quickly recognize coordinates.'**
   String get coordinatesYouCanAnalyseAGameMoreEffectively;
 
   /// No description provided for @coordinatesACoordinateAppears.
@@ -1820,7 +1810,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param} stats'**
-  String perfStatPerfStats(String param);
+  String perfStatPerfStats(Object param);
 
   /// No description provided for @perfStatViewTheGames.
   ///
@@ -1844,23 +1834,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Progression over the last {param} games:'**
-  String perfStatProgressOverLastXGames(String param);
+  String perfStatProgressOverLastXGames(Object param);
 
   /// No description provided for @perfStatRatingDeviation.
   ///
   /// In en, this message translates to:
   /// **'Rating deviation: {param}.'**
-  String perfStatRatingDeviation(String param);
+  String perfStatRatingDeviation(Object param);
 
   /// No description provided for @perfStatRatingDeviationTooltip.
   ///
   /// In en, this message translates to:
   /// **'Lower value means the rating is more stable. Above {param1}, the rating is considered provisional. To be included in the rankings, this value should be below {param2} (standard chess) or {param3} (variants).'**
-  String perfStatRatingDeviationTooltip(
-    String param1,
-    String param2,
-    String param3,
-  );
+  String perfStatRatingDeviationTooltip(Object param1, Object param2, Object param3);
 
   /// No description provided for @perfStatTotalGames.
   ///
@@ -1926,19 +1912,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Highest rating: {param}'**
-  String perfStatHighestRating(String param);
+  String perfStatHighestRating(Object param);
 
   /// No description provided for @perfStatLowestRating.
   ///
   /// In en, this message translates to:
   /// **'Lowest rating: {param}'**
-  String perfStatLowestRating(String param);
+  String perfStatLowestRating(Object param);
 
   /// No description provided for @perfStatFromXToY.
   ///
   /// In en, this message translates to:
   /// **'from {param1} to {param2}'**
-  String perfStatFromXToY(String param1, String param2);
+  String perfStatFromXToY(Object param1, Object param2);
 
   /// No description provided for @perfStatWinningStreak.
   ///
@@ -1956,13 +1942,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Longest streak: {param}'**
-  String perfStatLongestStreak(String param);
+  String perfStatLongestStreak(Object param);
 
   /// No description provided for @perfStatCurrentStreak.
   ///
   /// In en, this message translates to:
   /// **'Current streak: {param}'**
-  String perfStatCurrentStreak(String param);
+  String perfStatCurrentStreak(Object param);
 
   /// No description provided for @perfStatBestRated.
   ///
@@ -2093,7 +2079,7 @@ abstract class AppLocalizations {
   /// No description provided for @preferencesExplainShowPlayerRatings.
   ///
   /// In en, this message translates to:
-  /// **'This hides all ratings from Lichess, to help focus on the chess. Rated games still impact your rating, this is only about what you get to see.'**
+  /// **'This hides all ratings on Lichess to help you focus on the chess. Rated games still impact your rating; this only effects what you get to see.'**
   String get preferencesExplainShowPlayerRatings;
 
   /// No description provided for @preferencesDisplayBoardResizeHandle.
@@ -2159,7 +2145,7 @@ abstract class AppLocalizations {
   /// No description provided for @preferencesGameBehavior.
   ///
   /// In en, this message translates to:
-  /// **'Game behaviour'**
+  /// **'Game behavior'**
   String get preferencesGameBehavior;
 
   /// No description provided for @preferencesHowDoYouMovePieces.
@@ -2321,7 +2307,7 @@ abstract class AppLocalizations {
   /// No description provided for @preferencesCorrespondenceEmailNotification.
   ///
   /// In en, this message translates to:
-  /// **'Daily email listing your correspondence games'**
+  /// **'Daily mail notification listing your correspondence games'**
   String get preferencesCorrespondenceEmailNotification;
 
   /// No description provided for @preferencesNotifyStreamStart.
@@ -2369,7 +2355,7 @@ abstract class AppLocalizations {
   /// No description provided for @preferencesNotifyTimeAlarm.
   ///
   /// In en, this message translates to:
-  /// **'Correspondence clock running out'**
+  /// **'Correspondence time running out'**
   String get preferencesNotifyTimeAlarm;
 
   /// No description provided for @preferencesNotifyBell.
@@ -2489,13 +2475,13 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleUpVote.
   ///
   /// In en, this message translates to:
-  /// **'Up vote puzzle'**
+  /// **'Upvote puzzle'**
   String get puzzleUpVote;
 
   /// No description provided for @puzzleDownVote.
   ///
   /// In en, this message translates to:
-  /// **'Down vote puzzle'**
+  /// **'Downvote puzzle'**
   String get puzzleDownVote;
 
   /// No description provided for @puzzleYourPuzzleRatingWillNotChange.
@@ -2526,7 +2512,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Puzzle {param}'**
-  String puzzlePuzzleId(String param);
+  String puzzlePuzzleId(Object param);
 
   /// No description provided for @puzzlePuzzleOfTheDay.
   ///
@@ -2597,13 +2583,13 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleUseFindInPage.
   ///
   /// In en, this message translates to:
-  /// **'Use \"Find in page\" in the browser menu to find your favourite opening!'**
+  /// **'Use \"Find in page\" in the browser menu to find your favorite opening!'**
   String get puzzleUseFindInPage;
 
   /// No description provided for @puzzleUseCtrlF.
   ///
   /// In en, this message translates to:
-  /// **'Use Ctrl+f to find your favourite opening!'**
+  /// **'Use Ctrl+f to find your favorite opening!'**
   String get puzzleUseCtrlF;
 
   /// No description provided for @puzzleNotTheMove.
@@ -2622,7 +2608,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Rating: {param}'**
-  String puzzleRatingX(String param);
+  String puzzleRatingX(Object param);
 
   /// No description provided for @puzzleHidden.
   ///
@@ -2634,7 +2620,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'From game {param}'**
-  String puzzleFromGameLink(String param);
+  String puzzleFromGameLink(Object param);
 
   /// No description provided for @puzzleContinueTraining.
   ///
@@ -2748,7 +2734,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Your streak: {param}'**
-  String puzzleYourStreakX(String param);
+  String puzzleYourStreakX(Object param);
 
   /// No description provided for @puzzleStreakSkipExplanation.
   ///
@@ -2777,7 +2763,7 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleLookupOfPlayer.
   ///
   /// In en, this message translates to:
-  /// **'Lookup puzzles from a player\'s games'**
+  /// **'Search puzzles from a player\'s games'**
   String get puzzleLookupOfPlayer;
 
   /// No description provided for @puzzleSearchPuzzles.
@@ -2802,7 +2788,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param} solved'**
-  String puzzlePercentSolved(String param);
+  String puzzlePercentSolved(Object param);
 
   /// No description provided for @puzzleNoPuzzlesToShow.
   ///
@@ -2826,37 +2812,37 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Played {count} time} other{Played {count} times}}'**
-  String puzzlePlayedXTimes(int count);
+  String puzzlePlayedXTimes(num count);
 
   /// No description provided for @puzzleNbPointsBelowYourPuzzleRating.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{One point below your puzzle rating} other{{count} points below your puzzle rating}}'**
-  String puzzleNbPointsBelowYourPuzzleRating(int count);
+  String puzzleNbPointsBelowYourPuzzleRating(num count);
 
   /// No description provided for @puzzleNbPointsAboveYourPuzzleRating.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{One point above your puzzle rating} other{{count} points above your puzzle rating}}'**
-  String puzzleNbPointsAboveYourPuzzleRating(int count);
+  String puzzleNbPointsAboveYourPuzzleRating(num count);
 
   /// No description provided for @puzzlePuzzlesFoundInUserGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{One puzzle found in games by {param2}} other{{count} puzzles found in games by {param2}}}'**
-  String puzzlePuzzlesFoundInUserGames(int count, String param2);
+  String puzzlePuzzlesFoundInUserGames(num count, Object param2);
 
   /// No description provided for @puzzleNbPlayed.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, other{{count} played}}'**
-  String puzzleNbPlayed(int count);
+  /// **'{count, plural, =1{{count} played} other{{count} played}}'**
+  String puzzleNbPlayed(num count);
 
   /// No description provided for @puzzleNbToReplay.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, other{{count} to replay}}'**
-  String puzzleNbToReplay(int count);
+  /// **'{count, plural, =1{{count} to replay} other{{count} to replay}}'**
+  String puzzleNbToReplay(num count);
 
   /// No description provided for @puzzleThemeAdvancedPawn.
   ///
@@ -2987,7 +2973,7 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleThemeCapturingDefenderDescription.
   ///
   /// In en, this message translates to:
-  /// **'Removing a piece that is critical to defence of another piece, allowing the now undefended piece to be captured on a following move.'**
+  /// **'Removing a piece that is critical to defense of another piece, allowing the now undefended piece to be captured on a following move.'**
   String get puzzleThemeCapturingDefenderDescription;
 
   /// No description provided for @puzzleThemeCrushing.
@@ -3095,7 +3081,7 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleThemeDiscoveredAttackDescription.
   ///
   /// In en, this message translates to:
-  /// **'Moving a piece (such as a knight), that previously blocked an attack by a long range piece (such as a rook), out of the way of that piece.'**
+  /// **'Moving a piece that previously blocked an attack by another long range piece, such as a knight out of the way of a rook.'**
   String get puzzleThemeDiscoveredAttackDescription;
 
   /// No description provided for @puzzleThemeDoubleCheck.
@@ -3413,7 +3399,7 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleThemePromotionDescription.
   ///
   /// In en, this message translates to:
-  /// **'Promote one of your pawn to a queen or minor piece.'**
+  /// **'Promote one of your pawns to a queen or minor piece.'**
   String get puzzleThemePromotionDescription;
 
   /// No description provided for @puzzleThemeQueenEndgame.
@@ -3437,7 +3423,7 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleThemeQueenRookEndgameDescription.
   ///
   /// In en, this message translates to:
-  /// **'An endgame with only queens, rooks and pawns.'**
+  /// **'An endgame with only queens, rooks, and pawns.'**
   String get puzzleThemeQueenRookEndgameDescription;
 
   /// No description provided for @puzzleThemeQueensideAttack.
@@ -3461,7 +3447,7 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleThemeQuietMoveDescription.
   ///
   /// In en, this message translates to:
-  /// **'A move that does neither make a check or capture, nor an immediate threat to capture, but does prepare a more hidden unavoidable threat for a later move.'**
+  /// **'A move that does not make a check or capture, but does prepare an unavoidable threat for a later move.'**
   String get puzzleThemeQuietMoveDescription;
 
   /// No description provided for @puzzleThemeRookEndgame.
@@ -3605,7 +3591,7 @@ abstract class AppLocalizations {
   /// No description provided for @puzzleThemeMixDescription.
   ///
   /// In en, this message translates to:
-  /// **'A bit of everything. You don\'t know what to expect, so you remain ready for anything! Just like in real games.'**
+  /// **'A mix of everything. You don\'t know what to expect, so you remain ready for anything! Just like in real games.'**
   String get puzzleThemeMixDescription;
 
   /// No description provided for @puzzleThemePlayerGames.
@@ -3624,7 +3610,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'These puzzles are in the public domain, and can be downloaded from {param}.'**
-  String puzzleThemePuzzleDownloadInformation(String param);
+  String puzzleThemePuzzleDownloadInformation(Object param);
 
   /// No description provided for @searchSearch.
   ///
@@ -3647,13 +3633,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsManagedAccountCannotBeClosed.
   ///
   /// In en, this message translates to:
-  /// **'Your account is managed, and cannot be closed.'**
+  /// **'Your account is managed and cannot be closed.'**
   String get settingsManagedAccountCannotBeClosed;
 
   /// No description provided for @settingsCantOpenSimilarAccount.
   ///
   /// In en, this message translates to:
-  /// **'The username will NOT be available for registration again.'**
+  /// **'You will not be allowed to open a new account with the same name, even if the case is different.'**
   String get settingsCantOpenSimilarAccount;
 
   /// No description provided for @settingsCancelKeepAccount.
@@ -3750,7 +3736,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param1} level {param2}'**
-  String aiNameLevelAiLevel(String param1, String param2);
+  String aiNameLevelAiLevel(Object param1, Object param2);
 
   /// No description provided for @level.
   ///
@@ -3875,7 +3861,7 @@ abstract class AppLocalizations {
   /// No description provided for @kingInTheCenter.
   ///
   /// In en, this message translates to:
-  /// **'King in the centre'**
+  /// **'King in the center'**
   String get kingInTheCenter;
 
   /// No description provided for @threeChecks.
@@ -4026,7 +4012,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Depth {param}'**
-  String depthX(String param);
+  String depthX(Object param);
 
   /// No description provided for @usingServerAnalysis.
   ///
@@ -4091,7 +4077,7 @@ abstract class AppLocalizations {
   /// No description provided for @makeMainLine.
   ///
   /// In en, this message translates to:
-  /// **'Make mainline'**
+  /// **'Make main line'**
   String get makeMainLine;
 
   /// No description provided for @deleteFromHere.
@@ -4127,7 +4113,7 @@ abstract class AppLocalizations {
   /// No description provided for @copyMainLinePgn.
   ///
   /// In en, this message translates to:
-  /// **'Copy mainline PGN'**
+  /// **'Copy main line PGN'**
   String get copyMainLinePgn;
 
   /// No description provided for @move.
@@ -4212,7 +4198,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Average rating: {param}'**
-  String averageRatingX(String param);
+  String averageRatingX(Object param);
 
   /// No description provided for @recentGames.
   ///
@@ -4229,8 +4215,8 @@ abstract class AppLocalizations {
   /// No description provided for @masterDbExplanation.
   ///
   /// In en, this message translates to:
-  /// **'OTB games of {param1}+ FIDE-rated players from {param2} to {param3}'**
-  String masterDbExplanation(String param1, String param2, String param3);
+  /// **'OTB games of {param1}+ FIDE rated players from {param2} to {param3}'**
+  String masterDbExplanation(Object param1, Object param2, Object param3);
 
   /// No description provided for @dtzWithRounding.
   ///
@@ -4278,7 +4264,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param} opening explorer'**
-  String xOpeningExplorer(String param);
+  String xOpeningExplorer(Object param);
 
   /// No description provided for @playFirstOpeningEndgameExplorerMove.
   ///
@@ -4313,7 +4299,7 @@ abstract class AppLocalizations {
   /// No description provided for @unknownDueToRounding.
   ///
   /// In en, this message translates to:
-  /// **'Win/loss only guaranteed if recommended tablebase line has been followed since the last capture or pawn move, due to possible rounding of DTZ values in Syzygy tablebases.'**
+  /// **'Due to possible rounding of DTZ values in Syzygy tablebases, a win/loss is only guaranteed if the recommended tablebase line has been followed since the last capture or pawn move.'**
   String get unknownDueToRounding;
 
   /// No description provided for @allSet.
@@ -4494,7 +4480,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Joined {param}'**
-  String joinedX(String param);
+  String joinedX(Object param);
 
   /// No description provided for @viewInFullSize.
   ///
@@ -4554,7 +4540,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param1} posted in topic {param2}'**
-  String xPostedInForumY(String param1, String param2);
+  String xPostedInForumY(Object param1, Object param2);
 
   /// No description provided for @latestForumPosts.
   ///
@@ -4667,13 +4653,13 @@ abstract class AppLocalizations {
   /// No description provided for @username.
   ///
   /// In en, this message translates to:
-  /// **'Username'**
+  /// **'User name'**
   String get username;
 
   /// No description provided for @usernameOrEmail.
   ///
   /// In en, this message translates to:
-  /// **'Username or email'**
+  /// **'User name or email'**
   String get usernameOrEmail;
 
   /// No description provided for @changeUsername.
@@ -4697,7 +4683,7 @@ abstract class AppLocalizations {
   /// No description provided for @signupUsernameHint.
   ///
   /// In en, this message translates to:
-  /// **'Make sure to choose a username that\'s appropriate for all ages. You cannot change it later and any accounts with inappropriate usernames will get closed!'**
+  /// **'Be sure to choose a family-friendly username. You cannot change it later, and any accounts with inappropriate usernames will be closed!'**
   String get signupUsernameHint;
 
   /// No description provided for @signupEmailHint.
@@ -4745,7 +4731,7 @@ abstract class AppLocalizations {
   /// No description provided for @error_weakPassword.
   ///
   /// In en, this message translates to:
-  /// **'This password is extremely common, and too easy to guess.'**
+  /// **'This password is extremely common and too easy to guess.'**
   String get error_weakPassword;
 
   /// No description provided for @error_namePassword.
@@ -4776,7 +4762,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Proceed to {param}'**
-  String proceedToX(String param);
+  String proceedToX(Object param);
 
   /// No description provided for @passwordSuggestion.
   ///
@@ -4812,7 +4798,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'We couldn\'t find any user by this name: {param}.'**
-  String usernameNotFound(String param);
+  String usernameNotFound(Object param);
 
   /// No description provided for @usernameCanBeUsedForNewAccount.
   ///
@@ -4824,7 +4810,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'We have sent an email to {param}.'**
-  String emailSent(String param);
+  String emailSent(Object param);
 
   /// No description provided for @emailCanTakeSomeTime.
   ///
@@ -4847,14 +4833,14 @@ abstract class AppLocalizations {
   /// No description provided for @emailForSignupHelp.
   ///
   /// In en, this message translates to:
-  /// **'If everything else fails, then send us this email:'**
+  /// **'If you still have questions, please send us an email:'**
   String get emailForSignupHelp;
 
   /// No description provided for @copyTextToEmail.
   ///
   /// In en, this message translates to:
   /// **'Copy and paste the above text and send it to {param}'**
-  String copyTextToEmail(String param);
+  String copyTextToEmail(Object param);
 
   /// No description provided for @waitForSignupHelp.
   ///
@@ -4866,13 +4852,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'The user {param} is successfully confirmed.'**
-  String accountConfirmed(String param);
+  String accountConfirmed(Object param);
 
   /// No description provided for @accountCanLogin.
   ///
   /// In en, this message translates to:
   /// **'You can login right now as {param}.'**
-  String accountCanLogin(String param);
+  String accountCanLogin(Object param);
 
   /// No description provided for @accountConfirmationEmailNotNeeded.
   ///
@@ -4884,13 +4870,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'The account {param} is closed.'**
-  String accountClosed(String param);
+  String accountClosed(Object param);
 
   /// No description provided for @accountRegisteredWithoutEmail.
   ///
   /// In en, this message translates to:
   /// **'The account {param} was registered without an email.'**
-  String accountRegisteredWithoutEmail(String param);
+  String accountRegisteredWithoutEmail(Object param);
 
   /// No description provided for @rank.
   ///
@@ -4902,7 +4888,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Rank: {param}'**
-  String rankX(String param);
+  String rankX(Object param);
 
   /// No description provided for @gamesPlayed.
   ///
@@ -5093,7 +5079,7 @@ abstract class AppLocalizations {
   /// No description provided for @rematchOfferCanceled.
   ///
   /// In en, this message translates to:
-  /// **'Rematch offer cancelled'**
+  /// **'Rematch offer canceled'**
   String get rematchOfferCanceled;
 
   /// No description provided for @rematchOfferDeclined.
@@ -5334,7 +5320,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Your {param} rating is provisional'**
-  String yourPerfRatingIsProvisional(String param);
+  String yourPerfRatingIsProvisional(Object param);
 
   /// No description provided for @ratingRangeIsDisabledBecauseYourRatingIsProvisional.
   ///
@@ -5346,43 +5332,43 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Your {param1} rating ({param2}) is too high'**
-  String yourPerfRatingIsTooHigh(String param1, String param2);
+  String yourPerfRatingIsTooHigh(Object param1, Object param2);
 
   /// No description provided for @yourTopWeeklyPerfRatingIsTooHigh.
   ///
   /// In en, this message translates to:
   /// **'Your top weekly {param1} rating ({param2}) is too high'**
-  String yourTopWeeklyPerfRatingIsTooHigh(String param1, String param2);
+  String yourTopWeeklyPerfRatingIsTooHigh(Object param1, Object param2);
 
   /// No description provided for @yourPerfRatingIsTooLow.
   ///
   /// In en, this message translates to:
   /// **'Your {param1} rating ({param2}) is too low'**
-  String yourPerfRatingIsTooLow(String param1, String param2);
+  String yourPerfRatingIsTooLow(Object param1, Object param2);
 
   /// No description provided for @ratedMoreThanInPerf.
   ///
   /// In en, this message translates to:
   /// **'Rated ≥ {param1} in {param2}'**
-  String ratedMoreThanInPerf(String param1, String param2);
+  String ratedMoreThanInPerf(Object param1, Object param2);
 
   /// No description provided for @ratedLessThanInPerf.
   ///
   /// In en, this message translates to:
   /// **'Rated ≤ {param1} in {param2} for the last week'**
-  String ratedLessThanInPerf(String param1, String param2);
+  String ratedLessThanInPerf(Object param1, Object param2);
 
   /// No description provided for @mustBeInTeam.
   ///
   /// In en, this message translates to:
   /// **'Must be in team {param}'**
-  String mustBeInTeam(String param);
+  String mustBeInTeam(Object param);
 
   /// No description provided for @youAreNotInTeam.
   ///
   /// In en, this message translates to:
   /// **'You are not in the team {param}'**
-  String youAreNotInTeam(String param);
+  String youAreNotInTeam(Object param);
 
   /// No description provided for @backToGame.
   ///
@@ -5400,13 +5386,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param1} joined team {param2}'**
-  String xJoinedTeamY(String param1, String param2);
+  String xJoinedTeamY(Object param1, Object param2);
 
   /// No description provided for @xCreatedTeamY.
   ///
   /// In en, this message translates to:
   /// **'{param1} created team {param2}'**
-  String xCreatedTeamY(String param1, String param2);
+  String xCreatedTeamY(Object param1, Object param2);
 
   /// No description provided for @startedStreaming.
   ///
@@ -5418,7 +5404,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param} started streaming'**
-  String xStartedStreaming(String param);
+  String xStartedStreaming(Object param);
 
   /// No description provided for @averageElo.
   ///
@@ -5519,7 +5505,7 @@ abstract class AppLocalizations {
   /// No description provided for @importGameExplanation.
   ///
   /// In en, this message translates to:
-  /// **'Paste a game PGN to get a browsable replay of the main line, computer analysis, game chat and public shareable URL.'**
+  /// **'Paste a game PGN to get a browsable replay, computer analysis, game chat and public shareable URL.'**
   String get importGameExplanation;
 
   /// No description provided for @importGameDataPrivacyWarning.
@@ -5585,7 +5571,7 @@ abstract class AppLocalizations {
   /// No description provided for @favoriteOpponents.
   ///
   /// In en, this message translates to:
-  /// **'Favourite opponents'**
+  /// **'Favorite opponents'**
   String get favoriteOpponents;
 
   /// No description provided for @follow.
@@ -5610,13 +5596,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Follow {param}'**
-  String followX(String param);
+  String followX(Object param);
 
   /// No description provided for @unfollowX.
   ///
   /// In en, this message translates to:
   /// **'Unfollow {param}'**
-  String unfollowX(String param);
+  String unfollowX(Object param);
 
   /// No description provided for @block.
   ///
@@ -5640,7 +5626,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param1} started following {param2}'**
-  String xStartedFollowingY(String param1, String param2);
+  String xStartedFollowingY(Object param1, Object param2);
 
   /// No description provided for @more.
   ///
@@ -5658,7 +5644,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Active {param}'**
-  String lastSeenActive(String param);
+  String lastSeenActive(Object param);
 
   /// No description provided for @player.
   ///
@@ -5796,7 +5782,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Stand by {param}, pairing players, get ready!'**
-  String standByX(String param);
+  String standByX(Object param);
 
   /// No description provided for @pause.
   ///
@@ -5898,7 +5884,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Chess960 start position: {param}'**
-  String chess960StartPosition(String param);
+  String chess960StartPosition(Object param);
 
   /// No description provided for @startPosition.
   ///
@@ -5928,19 +5914,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Report {param} to moderators'**
-  String reportXToModerators(String param);
+  String reportXToModerators(Object param);
 
   /// No description provided for @profileCompletion.
   ///
   /// In en, this message translates to:
   /// **'Profile completion: {param}'**
-  String profileCompletion(String param);
+  String profileCompletion(Object param);
 
   /// No description provided for @xRating.
   ///
   /// In en, this message translates to:
   /// **'{param} rating'**
-  String xRating(String param);
+  String xRating(Object param);
 
   /// No description provided for @ifNoneLeaveEmpty.
   ///
@@ -6245,13 +6231,13 @@ abstract class AppLocalizations {
   /// No description provided for @reportCheatBoostHelp.
   ///
   /// In en, this message translates to:
-  /// **'Paste the link to the game(s) and explain what is wrong about this user\'s behaviour. Don\'t just say \"they cheat\", but tell us how you came to this conclusion.'**
+  /// **'Paste a link to the game(s) and explain what is wrong with this user\'s behavior. Don\'t just say \"they cheat,\" but tell us how you came to this conclusion.'**
   String get reportCheatBoostHelp;
 
   /// No description provided for @reportUsernameHelp.
   ///
   /// In en, this message translates to:
-  /// **'Explain what about this username is offensive. Don\'t just say \"it\'s offensive/inappropriate\", but tell us how you came to this conclusion, especially if the insult is obfuscated, not in english, is in slang, or is a historical/cultural reference.'**
+  /// **'Explain why this username is offensive. Don\'t just say \"it\'s offensive/inappropriate,\" but tell us how you came to this conclusion, especially if the offense is obscure, not in English, in slang, or a historical/cultural reference.'**
   String get reportUsernameHelp;
 
   /// No description provided for @reportProcessedFasterInEnglish.
@@ -6270,13 +6256,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'by {param}'**
-  String by(String param);
+  String by(Object param);
 
   /// No description provided for @importedByX.
   ///
   /// In en, this message translates to:
   /// **'Imported by {param}'**
-  String importedByX(String param);
+  String importedByX(Object param);
 
   /// No description provided for @thisTopicIsNowClosed.
   ///
@@ -6455,7 +6441,7 @@ abstract class AppLocalizations {
   /// No description provided for @allSquaresOfTheBoard.
   ///
   /// In en, this message translates to:
-  /// **'All squares of the board'**
+  /// **'All squares on the board'**
   String get allSquaresOfTheBoard;
 
   /// No description provided for @onSlowGames.
@@ -6480,7 +6466,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param1} competes in {param2}'**
-  String xCompetesInY(String param1, String param2);
+  String xCompetesInY(Object param1, Object param2);
 
   /// No description provided for @victory.
   ///
@@ -6498,19 +6484,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param1} vs {param2} in {param3}'**
-  String victoryVsYInZ(String param1, String param2, String param3);
+  String victoryVsYInZ(Object param1, Object param2, Object param3);
 
   /// No description provided for @defeatVsYInZ.
   ///
   /// In en, this message translates to:
   /// **'{param1} vs {param2} in {param3}'**
-  String defeatVsYInZ(String param1, String param2, String param3);
+  String defeatVsYInZ(Object param1, Object param2, Object param3);
 
   /// No description provided for @drawVsYInZ.
   ///
   /// In en, this message translates to:
   /// **'{param1} vs {param2} in {param3}'**
-  String drawVsYInZ(String param1, String param2, String param3);
+  String drawVsYInZ(Object param1, Object param2, Object param3);
 
   /// No description provided for @timeline.
   ///
@@ -6533,7 +6519,7 @@ abstract class AppLocalizations {
   /// No description provided for @biographyDescription.
   ///
   /// In en, this message translates to:
-  /// **'Talk about yourself, your interests, what you like in chess, your favourite openings, players, ...'**
+  /// **'Talk about yourself, your interests, what you like in chess, your favorite openings, players, ...'**
   String get biographyDescription;
 
   /// No description provided for @listBlockedPlayers.
@@ -6648,31 +6634,31 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Must be at least {param} characters long'**
-  String error_minLength(String param);
+  String error_minLength(Object param);
 
   /// No description provided for @error_maxLength.
   ///
   /// In en, this message translates to:
   /// **'Must be at most {param} characters long'**
-  String error_maxLength(String param);
+  String error_maxLength(Object param);
 
   /// No description provided for @error_min.
   ///
   /// In en, this message translates to:
   /// **'Must be at least {param}'**
-  String error_min(String param);
+  String error_min(Object param);
 
   /// No description provided for @error_max.
   ///
   /// In en, this message translates to:
   /// **'Must be at most {param}'**
-  String error_max(String param);
+  String error_max(Object param);
 
   /// No description provided for @ifRatingIsPlusMinusX.
   ///
   /// In en, this message translates to:
   /// **'If rating is ± {param}'**
-  String ifRatingIsPlusMinusX(String param);
+  String ifRatingIsPlusMinusX(Object param);
 
   /// No description provided for @ifRegistered.
   ///
@@ -6720,7 +6706,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Time spent playing: {param}'**
-  String tpTimeSpentPlaying(String param);
+  String tpTimeSpentPlaying(Object param);
 
   /// No description provided for @watchGames.
   ///
@@ -6732,7 +6718,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Time featured on TV: {param}'**
-  String tpTimeSpentOnTV(String param);
+  String tpTimeSpentOnTV(Object param);
 
   /// No description provided for @watch.
   ///
@@ -6774,13 +6760,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'About {param}'**
-  String aboutX(String param);
+  String aboutX(Object param);
 
   /// No description provided for @xIsAFreeYLibreOpenSourceChessServer.
   ///
   /// In en, this message translates to:
   /// **'{param1} is a free ({param2}), libre, no-ads, open source chess server.'**
-  String xIsAFreeYLibreOpenSourceChessServer(String param1, String param2);
+  String xIsAFreeYLibreOpenSourceChessServer(Object param1, Object param2);
 
   /// No description provided for @really.
   ///
@@ -6827,8 +6813,8 @@ abstract class AppLocalizations {
   /// No description provided for @hostColorX.
   ///
   /// In en, this message translates to:
-  /// **'Host colour: {param}'**
-  String hostColorX(String param);
+  /// **'Host color: {param}'**
+  String hostColorX(Object param);
 
   /// No description provided for @yourPendingSimuls.
   ///
@@ -6851,7 +6837,7 @@ abstract class AppLocalizations {
   /// No description provided for @signUpToHostOrJoinASimul.
   ///
   /// In en, this message translates to:
-  /// **'Sign up to host or join a simul'**
+  /// **'Sign up to join or host a simul'**
   String get signUpToHostOrJoinASimul;
 
   /// No description provided for @noSimulFound.
@@ -7127,7 +7113,7 @@ abstract class AppLocalizations {
   /// No description provided for @tournamentMayHaveBeenCanceled.
   ///
   /// In en, this message translates to:
-  /// **'The tournament may have been cancelled if all players left before it started.'**
+  /// **'The tournament may have been canceled if all players left before it started.'**
   String get tournamentMayHaveBeenCanceled;
 
   /// No description provided for @returnToTournamentsHomepage.
@@ -7140,41 +7126,37 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Weekly {param} rating distribution'**
-  String weeklyPerfTypeRatingDistribution(String param);
+  String weeklyPerfTypeRatingDistribution(Object param);
 
   /// No description provided for @yourPerfTypeRatingIsRating.
   ///
   /// In en, this message translates to:
   /// **'Your {param1} rating is {param2}.'**
-  String yourPerfTypeRatingIsRating(String param1, String param2);
+  String yourPerfTypeRatingIsRating(Object param1, Object param2);
 
   /// No description provided for @youAreBetterThanPercentOfPerfTypePlayers.
   ///
   /// In en, this message translates to:
   /// **'You are better than {param1} of {param2} players.'**
-  String youAreBetterThanPercentOfPerfTypePlayers(String param1, String param2);
+  String youAreBetterThanPercentOfPerfTypePlayers(Object param1, Object param2);
 
   /// No description provided for @userIsBetterThanPercentOfPerfTypePlayers.
   ///
   /// In en, this message translates to:
   /// **'{param1} is better than {param2} of {param3} players.'**
-  String userIsBetterThanPercentOfPerfTypePlayers(
-    String param1,
-    String param2,
-    String param3,
-  );
+  String userIsBetterThanPercentOfPerfTypePlayers(Object param1, Object param2, Object param3);
 
   /// No description provided for @betterThanPercentPlayers.
   ///
   /// In en, this message translates to:
   /// **'Better than {param1} of {param2} players'**
-  String betterThanPercentPlayers(String param1, String param2);
+  String betterThanPercentPlayers(Object param1, Object param2);
 
   /// No description provided for @youDoNotHaveAnEstablishedPerfTypeRating.
   ///
   /// In en, this message translates to:
   /// **'You do not have an established {param} rating.'**
-  String youDoNotHaveAnEstablishedPerfTypeRating(String param);
+  String youDoNotHaveAnEstablishedPerfTypeRating(Object param);
 
   /// No description provided for @yourRating.
   ///
@@ -7228,25 +7210,25 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Verify that {param} is your email address'**
-  String verifyYourAddress(String param);
+  String verifyYourAddress(Object param);
 
   /// No description provided for @weHaveSentYouAnEmailTo.
   ///
   /// In en, this message translates to:
   /// **'We\'ve sent an email to {param}. Click the link in the email to reset your password.'**
-  String weHaveSentYouAnEmailTo(String param);
+  String weHaveSentYouAnEmailTo(Object param);
 
   /// No description provided for @byRegisteringYouAgreeToBeBoundByOur.
   ///
   /// In en, this message translates to:
   /// **'By registering, you agree to the {param}.'**
-  String byRegisteringYouAgreeToBeBoundByOur(String param);
+  String byRegisteringYouAgreeToBeBoundByOur(Object param);
 
   /// No description provided for @readAboutOur.
   ///
   /// In en, this message translates to:
   /// **'Read about our {param}.'**
-  String readAboutOur(String param);
+  String readAboutOur(Object param);
 
   /// No description provided for @networkLagBetweenYouAndLichess.
   ///
@@ -7293,7 +7275,7 @@ abstract class AppLocalizations {
   /// No description provided for @youCanAlsoScrollOverTheBoardToMoveInTheGame.
   ///
   /// In en, this message translates to:
-  /// **'Scroll over the board to move in the game.'**
+  /// **'You can also scroll over the board to move in the game.'**
   String get youCanAlsoScrollOverTheBoardToMoveInTheGame;
 
   /// No description provided for @scrollOverComputerVariationsToPreviewThem.
@@ -7366,7 +7348,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'In kid mode, the Lichess logo gets a {param} icon, so you know your kids are safe.'**
-  String inKidModeTheLichessLogoGetsIconX(String param);
+  String inKidModeTheLichessLogoGetsIconX(Object param);
 
   /// No description provided for @askYourChessTeacherAboutLiftingKidMode.
   ///
@@ -7432,19 +7414,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param1} hosts {param2}'**
-  String xHostsY(String param1, String param2);
+  String xHostsY(Object param1, Object param2);
 
   /// No description provided for @xJoinsY.
   ///
   /// In en, this message translates to:
   /// **'{param1} joins {param2}'**
-  String xJoinsY(String param1, String param2);
+  String xJoinsY(Object param1, Object param2);
 
   /// No description provided for @xLikesY.
   ///
   /// In en, this message translates to:
   /// **'{param1} likes {param2}'**
-  String xLikesY(String param1, String param2);
+  String xLikesY(Object param1, Object param2);
 
   /// No description provided for @quickPairing.
   ///
@@ -7468,7 +7450,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Your score: {param}'**
-  String yourScore(String param);
+  String yourScore(Object param);
 
   /// No description provided for @language.
   ///
@@ -7551,7 +7533,7 @@ abstract class AppLocalizations {
   /// No description provided for @boardReset.
   ///
   /// In en, this message translates to:
-  /// **'Reset colours to default'**
+  /// **'Reset colors to default'**
   String get boardReset;
 
   /// No description provided for @pieceSet.
@@ -7642,19 +7624,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Notifications: {param1}'**
-  String notificationsX(String param1);
+  String notificationsX(Object param1);
 
   /// No description provided for @perfRatingX.
   ///
   /// In en, this message translates to:
   /// **'Rating: {param}'**
-  String perfRatingX(String param);
+  String perfRatingX(Object param);
 
   /// No description provided for @yourRatingIsX.
   ///
   /// In en, this message translates to:
   /// **'Your rating is {param}'**
-  String yourRatingIsX(String param);
+  String yourRatingIsX(Object param);
 
   /// No description provided for @practiceWithComputer.
   ///
@@ -7666,13 +7648,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Another was {param}'**
-  String anotherWasX(String param);
+  String anotherWasX(Object param);
 
   /// No description provided for @bestWasX.
   ///
   /// In en, this message translates to:
   /// **'Best was {param}'**
-  String bestWasX(String param);
+  String bestWasX(Object param);
 
   /// No description provided for @youBrowsedAway.
   ///
@@ -7689,7 +7671,7 @@ abstract class AppLocalizations {
   /// No description provided for @drawByFiftyMoves.
   ///
   /// In en, this message translates to:
-  /// **'The game has been drawn by the fifty move rule.'**
+  /// **'The game has been drawn by the fifty-move rule.'**
   String get drawByFiftyMoves;
 
   /// No description provided for @theGameIsADraw.
@@ -7713,7 +7695,7 @@ abstract class AppLocalizations {
   /// No description provided for @hideBestMove.
   ///
   /// In en, this message translates to:
-  /// **'Hide best move'**
+  /// **'Hide the best move'**
   String get hideBestMove;
 
   /// No description provided for @getAHint.
@@ -7768,7 +7750,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param} was played'**
-  String xWasPlayed(String param);
+  String xWasPlayed(Object param);
 
   /// No description provided for @findBetterMoveForWhite.
   ///
@@ -7821,25 +7803,25 @@ abstract class AppLocalizations {
   /// No description provided for @noMistakesFoundForWhite.
   ///
   /// In en, this message translates to:
-  /// **'No mistakes found for white'**
+  /// **'No significant mistakes found for White'**
   String get noMistakesFoundForWhite;
 
   /// No description provided for @noMistakesFoundForBlack.
   ///
   /// In en, this message translates to:
-  /// **'No mistakes found for black'**
+  /// **'No significant mistakes found for Black'**
   String get noMistakesFoundForBlack;
 
   /// No description provided for @doneReviewingWhiteMistakes.
   ///
   /// In en, this message translates to:
-  /// **'Done reviewing white mistakes'**
+  /// **'Done reviewing White mistakes'**
   String get doneReviewingWhiteMistakes;
 
   /// No description provided for @doneReviewingBlackMistakes.
   ///
   /// In en, this message translates to:
-  /// **'Done reviewing black mistakes'**
+  /// **'Done reviewing Black mistakes'**
   String get doneReviewingBlackMistakes;
 
   /// No description provided for @doItAgain.
@@ -7851,13 +7833,13 @@ abstract class AppLocalizations {
   /// No description provided for @reviewWhiteMistakes.
   ///
   /// In en, this message translates to:
-  /// **'Review white mistakes'**
+  /// **'Review White mistakes'**
   String get reviewWhiteMistakes;
 
   /// No description provided for @reviewBlackMistakes.
   ///
   /// In en, this message translates to:
-  /// **'Review black mistakes'**
+  /// **'Review Black mistakes'**
   String get reviewBlackMistakes;
 
   /// No description provided for @advantage.
@@ -7912,13 +7894,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Play {param}'**
-  String playX(String param);
+  String playX(Object param);
 
   /// No description provided for @challengeX.
   ///
   /// In en, this message translates to:
   /// **'Challenge {param}'**
-  String challengeX(String param);
+  String challengeX(Object param);
 
   /// No description provided for @showUnreadLichessMessage.
   ///
@@ -7995,7 +7977,7 @@ abstract class AppLocalizations {
   /// No description provided for @temporaryInconvenience.
   ///
   /// In en, this message translates to:
-  /// **'We apologise for the temporary inconvenience,'**
+  /// **'We apologize for the temporary inconvenience,'**
   String get temporaryInconvenience;
 
   /// No description provided for @wishYouGreatGames.
@@ -8038,7 +8020,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'I agree that I will not create multiple accounts (except for the reasons stated in the {param}).'**
-  String agreementMultipleAccounts(String param);
+  String agreementMultipleAccounts(Object param);
 
   /// No description provided for @agreementPolicy.
   ///
@@ -8134,19 +8116,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Your question may already have an answer {param1}'**
-  String yourQuestionMayHaveBeenAnswered(String param1);
+  String yourQuestionMayHaveBeenAnswered(Object param1);
 
   /// No description provided for @inTheFAQ.
   ///
   /// In en, this message translates to:
-  /// **'in the FAQ'**
+  /// **'in the F.A.Q.'**
   String get inTheFAQ;
 
   /// No description provided for @toReportSomeoneForCheatingOrBadBehavior.
   ///
   /// In en, this message translates to:
-  /// **'To report a user for cheating or bad behaviour, {param1}'**
-  String toReportSomeoneForCheatingOrBadBehavior(String param1);
+  /// **'To report a user for cheating or bad behavior, {param1}'**
+  String toReportSomeoneForCheatingOrBadBehavior(Object param1);
 
   /// No description provided for @useTheReportForm.
   ///
@@ -8158,7 +8140,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'To request support, {param1}'**
-  String toRequestSupport(String param1);
+  String toRequestSupport(Object param1);
 
   /// No description provided for @tryTheContactPage.
   ///
@@ -8170,7 +8152,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Make sure to read {param1}'**
-  String makeSureToRead(String param1);
+  String makeSureToRead(Object param1);
 
   /// No description provided for @theForumEtiquette.
   ///
@@ -8188,13 +8170,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Join the {param1}, to post in this forum'**
-  String joinTheTeamXToPost(String param1);
+  String joinTheTeamXToPost(Object param1);
 
   /// No description provided for @teamNamedX.
   ///
   /// In en, this message translates to:
   /// **'{param1} team'**
-  String teamNamedX(String param1);
+  String teamNamedX(Object param1);
 
   /// No description provided for @youCannotPostYetPlaySomeGames.
   ///
@@ -8218,25 +8200,25 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'mentioned you in \"{param1}\".'**
-  String mentionedYouInX(String param1);
+  String mentionedYouInX(Object param1);
 
   /// No description provided for @xMentionedYouInY.
   ///
   /// In en, this message translates to:
   /// **'{param1} mentioned you in \"{param2}\".'**
-  String xMentionedYouInY(String param1, String param2);
+  String xMentionedYouInY(Object param1, Object param2);
 
   /// No description provided for @invitedYouToX.
   ///
   /// In en, this message translates to:
   /// **'invited you to \"{param1}\".'**
-  String invitedYouToX(String param1);
+  String invitedYouToX(Object param1);
 
   /// No description provided for @xInvitedYouToY.
   ///
   /// In en, this message translates to:
   /// **'{param1} invited you to \"{param2}\".'**
-  String xInvitedYouToY(String param1, String param2);
+  String xInvitedYouToY(Object param1, Object param2);
 
   /// No description provided for @youAreNowPartOfTeam.
   ///
@@ -8248,7 +8230,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'You have joined \"{param1}\".'**
-  String youHaveJoinedTeamX(String param1);
+  String youHaveJoinedTeamX(Object param1);
 
   /// No description provided for @someoneYouReportedWasBanned.
   ///
@@ -8266,13 +8248,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Game vs {param1}'**
-  String gameVsX(String param1);
+  String gameVsX(Object param1);
 
   /// No description provided for @resVsX.
   ///
   /// In en, this message translates to:
   /// **'{param1} vs {param2}'**
-  String resVsX(String param1, String param2);
+  String resVsX(Object param1, Object param2);
 
   /// No description provided for @lostAgainstTOSViolator.
   ///
@@ -8284,7 +8266,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Refund: {param1} {param2} rating points.'**
-  String refundXpointsTimeControlY(String param1, String param2);
+  String refundXpointsTimeControlY(Object param1, Object param2);
 
   /// No description provided for @timeAlmostUp.
   ///
@@ -8374,7 +8356,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Paste a valid FEN to start every game from a given position.\nIt only works for standard games, not with variants.\nYou can use the {param} to generate a FEN position, then paste it here.\nLeave empty to start games from the normal initial position.'**
-  String positionInputHelp(String param);
+  String positionInputHelp(Object param);
 
   /// No description provided for @cancelSimul.
   ///
@@ -8385,7 +8367,7 @@ abstract class AppLocalizations {
   /// No description provided for @simulHostcolor.
   ///
   /// In en, this message translates to:
-  /// **'Host colour for each game'**
+  /// **'Host color for each game'**
   String get simulHostcolor;
 
   /// No description provided for @estimatedStart.
@@ -8398,13 +8380,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Feature on {param}'**
-  String simulFeatured(String param);
+  String simulFeatured(Object param);
 
   /// No description provided for @simulFeaturedHelp.
   ///
   /// In en, this message translates to:
   /// **'Show your simul to everyone on {param}. Disable for private simuls.'**
-  String simulFeaturedHelp(String param);
+  String simulFeaturedHelp(Object param);
 
   /// No description provided for @simulDescription.
   ///
@@ -8422,7 +8404,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param} is available for more advanced syntax.'**
-  String markdownAvailable(String param);
+  String markdownAvailable(Object param);
 
   /// No description provided for @embedsAvailable.
   ///
@@ -8517,7 +8499,7 @@ abstract class AppLocalizations {
   /// No description provided for @reopenYourAccountDescription.
   ///
   /// In en, this message translates to:
-  /// **'If you closed your account, but have since changed your mind, you get a chance of getting your account back.'**
+  /// **'If you closed your account but have since changed your mind, you may reopen it now.'**
   String get reopenYourAccountDescription;
 
   /// No description provided for @emailAssociatedToaccount.
@@ -8548,7 +8530,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'You have a game in progress with {param}.'**
-  String gameInProgress(String param);
+  String gameInProgress(Object param);
 
   /// No description provided for @abortTheGame.
   ///
@@ -8583,7 +8565,7 @@ abstract class AppLocalizations {
   /// No description provided for @lichessDbExplanation.
   ///
   /// In en, this message translates to:
-  /// **'Rated games played on Lichess'**
+  /// **'Rated games sampled from all Lichess players'**
   String get lichessDbExplanation;
 
   /// No description provided for @switchSides.
@@ -8601,7 +8583,7 @@ abstract class AppLocalizations {
   /// No description provided for @ourEventTips.
   ///
   /// In en, this message translates to:
-  /// **'Our tips for organising events'**
+  /// **'Our tips for organizing events'**
   String get ourEventTips;
 
   /// No description provided for @instructions.
@@ -8692,271 +8674,271 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Your opponent left the game. You can claim victory in {count} second.} other{Your opponent left the game. You can claim victory in {count} seconds.}}'**
-  String opponentLeftCounter(int count);
+  String opponentLeftCounter(num count);
 
   /// No description provided for @mateInXHalfMoves.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Mate in {count} half-move} other{Mate in {count} half-moves}}'**
-  String mateInXHalfMoves(int count);
+  String mateInXHalfMoves(num count);
 
   /// No description provided for @nbBlunders.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} blunder} other{{count} blunders}}'**
-  String nbBlunders(int count);
+  String nbBlunders(num count);
 
   /// No description provided for @numberBlunders.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} Blunder} other{{count} Blunders}}'**
-  String numberBlunders(int count);
+  String numberBlunders(num count);
 
   /// No description provided for @nbMistakes.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} mistake} other{{count} mistakes}}'**
-  String nbMistakes(int count);
+  String nbMistakes(num count);
 
   /// No description provided for @numberMistakes.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} Mistake} other{{count} Mistakes}}'**
-  String numberMistakes(int count);
+  String numberMistakes(num count);
 
   /// No description provided for @nbInaccuracies.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} inaccuracy} other{{count} inaccuracies}}'**
-  String nbInaccuracies(int count);
+  String nbInaccuracies(num count);
 
   /// No description provided for @numberInaccuracies.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} Inaccuracy} other{{count} Inaccuracies}}'**
-  String numberInaccuracies(int count);
+  String numberInaccuracies(num count);
 
   /// No description provided for @nbPlayers.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} player} other{{count} players}}'**
-  String nbPlayers(int count);
+  String nbPlayers(num count);
 
   /// No description provided for @nbGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} game} other{{count} games}}'**
-  String nbGames(int count);
+  String nbGames(num count);
 
   /// No description provided for @ratingXOverYGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} rating over {param2} game} other{{count} rating over {param2} games}}'**
-  String ratingXOverYGames(int count, String param2);
+  String ratingXOverYGames(num count, Object param2);
 
   /// No description provided for @nbBookmarks.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} bookmark} other{{count} bookmarks}}'**
-  String nbBookmarks(int count);
+  String nbBookmarks(num count);
 
   /// No description provided for @nbDays.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} day} other{{count} days}}'**
-  String nbDays(int count);
+  String nbDays(num count);
 
   /// No description provided for @nbHours.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} hour} other{{count} hours}}'**
-  String nbHours(int count);
+  String nbHours(num count);
 
   /// No description provided for @nbMinutes.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} minute} other{{count} minutes}}'**
-  String nbMinutes(int count);
+  String nbMinutes(num count);
 
   /// No description provided for @rankIsUpdatedEveryNbMinutes.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Rank is updated every minute} other{Rank is updated every {count} minutes}}'**
-  String rankIsUpdatedEveryNbMinutes(int count);
+  String rankIsUpdatedEveryNbMinutes(num count);
 
   /// No description provided for @nbPuzzles.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} puzzle} other{{count} puzzles}}'**
-  String nbPuzzles(int count);
+  String nbPuzzles(num count);
 
   /// No description provided for @nbGamesWithYou.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} game with you} other{{count} games with you}}'**
-  String nbGamesWithYou(int count);
+  String nbGamesWithYou(num count);
 
   /// No description provided for @nbRated.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} rated} other{{count} rated}}'**
-  String nbRated(int count);
+  String nbRated(num count);
 
   /// No description provided for @nbWins.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} win} other{{count} wins}}'**
-  String nbWins(int count);
+  String nbWins(num count);
 
   /// No description provided for @nbLosses.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} loss} other{{count} losses}}'**
-  String nbLosses(int count);
+  String nbLosses(num count);
 
   /// No description provided for @nbDraws.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} draw} other{{count} draws}}'**
-  String nbDraws(int count);
+  String nbDraws(num count);
 
   /// No description provided for @nbPlaying.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} playing} other{{count} playing}}'**
-  String nbPlaying(int count);
+  String nbPlaying(num count);
 
   /// No description provided for @giveNbSeconds.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Give {count} second} other{Give {count} seconds}}'**
-  String giveNbSeconds(int count);
+  String giveNbSeconds(num count);
 
   /// No description provided for @nbTournamentPoints.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} tournament point} other{{count} tournament points}}'**
-  String nbTournamentPoints(int count);
+  String nbTournamentPoints(num count);
 
   /// No description provided for @nbStudies.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} study} other{{count} studies}}'**
-  String nbStudies(int count);
+  String nbStudies(num count);
 
   /// No description provided for @nbSimuls.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} simul} other{{count} simuls}}'**
-  String nbSimuls(int count);
+  String nbSimuls(num count);
 
   /// No description provided for @moreThanNbRatedGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{≥ {count} rated game} other{≥ {count} rated games}}'**
-  String moreThanNbRatedGames(int count);
+  String moreThanNbRatedGames(num count);
 
   /// No description provided for @moreThanNbPerfRatedGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{≥ {count} {param2} rated game} other{≥ {count} {param2} rated games}}'**
-  String moreThanNbPerfRatedGames(int count, String param2);
+  String moreThanNbPerfRatedGames(num count, Object param2);
 
   /// No description provided for @needNbMorePerfGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{You need to play {count} more {param2} rated game} other{You need to play {count} more {param2} rated games}}'**
-  String needNbMorePerfGames(int count, String param2);
+  String needNbMorePerfGames(num count, Object param2);
 
   /// No description provided for @needNbMoreGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{You need to play {count} more rated game} other{You need to play {count} more rated games}}'**
-  String needNbMoreGames(int count);
+  String needNbMoreGames(num count);
 
   /// No description provided for @nbImportedGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} imported game} other{{count} imported games}}'**
-  String nbImportedGames(int count);
+  String nbImportedGames(num count);
 
   /// No description provided for @nbFriendsOnline.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} friend online} other{{count} friends online}}'**
-  String nbFriendsOnline(int count);
+  String nbFriendsOnline(num count);
 
   /// No description provided for @nbFollowers.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} follower} other{{count} followers}}'**
-  String nbFollowers(int count);
+  String nbFollowers(num count);
 
   /// No description provided for @nbFollowing.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} following} other{{count} following}}'**
-  String nbFollowing(int count);
+  String nbFollowing(num count);
 
   /// No description provided for @lessThanNbMinutes.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Less than {count} minute} other{Less than {count} minutes}}'**
-  String lessThanNbMinutes(int count);
+  String lessThanNbMinutes(num count);
 
   /// No description provided for @nbGamesInPlay.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} game in play} other{{count} games in play}}'**
-  String nbGamesInPlay(int count);
+  String nbGamesInPlay(num count);
 
   /// No description provided for @maximumNbCharacters.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Maximum: {count} character.} other{Maximum: {count} characters.}}'**
-  String maximumNbCharacters(int count);
+  String maximumNbCharacters(num count);
 
   /// No description provided for @blocks.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} block} other{{count} blocks}}'**
-  String blocks(int count);
+  String blocks(num count);
 
   /// No description provided for @nbForumPosts.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} forum post} other{{count} forum posts}}'**
-  String nbForumPosts(int count);
+  String nbForumPosts(num count);
 
   /// No description provided for @nbPerfTypePlayersThisWeek.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} {param2} player this week.} other{{count} {param2} players this week.}}'**
-  String nbPerfTypePlayersThisWeek(int count, String param2);
+  String nbPerfTypePlayersThisWeek(num count, Object param2);
 
   /// No description provided for @availableInNbLanguages.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Available in {count} language!} other{Available in {count} languages!}}'**
-  String availableInNbLanguages(int count);
+  String availableInNbLanguages(num count);
 
   /// No description provided for @nbSecondsToPlayTheFirstMove.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} second to play the first move} other{{count} seconds to play the first move}}'**
-  String nbSecondsToPlayTheFirstMove(int count);
+  String nbSecondsToPlayTheFirstMove(num count);
 
   /// No description provided for @nbSeconds.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} second} other{{count} seconds}}'**
-  String nbSeconds(int count);
+  String nbSeconds(num count);
 
   /// No description provided for @andSaveNbPremoveLines.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{and save {count} premove line} other{and save {count} premove lines}}'**
-  String andSaveNbPremoveLines(int count);
+  String andSaveNbPremoveLines(num count);
 
   /// No description provided for @stormMoveToStart.
   ///
@@ -9010,7 +8992,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Previous highscore was {param}'**
-  String stormPreviousHighscoreWasX(String param);
+  String stormPreviousHighscoreWasX(Object param);
 
   /// No description provided for @stormPlayAgain.
   ///
@@ -9022,7 +9004,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Highscore: {param}'**
-  String stormHighscoreX(String param);
+  String stormHighscoreX(Object param);
 
   /// No description provided for @stormScore.
   ///
@@ -9148,7 +9130,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Your rank: {param}'**
-  String stormYourRankX(String param);
+  String stormYourRankX(Object param);
 
   /// No description provided for @stormWaitForRematch.
   ///
@@ -9268,13 +9250,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 run} other{{count} runs}}'**
-  String stormXRuns(int count);
+  String stormXRuns(num count);
 
   /// No description provided for @stormPlayedNbRunsOfPuzzleStorm.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Played one run of {param2}} other{Played {count} runs of {param2}}}'**
-  String stormPlayedNbRunsOfPuzzleStorm(int count, String param2);
+  String stormPlayedNbRunsOfPuzzleStorm(num count, Object param2);
 
   /// No description provided for @streamerLichessStreamers.
   ///
@@ -9315,7 +9297,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyMyFavoriteStudies.
   ///
   /// In en, this message translates to:
-  /// **'My favourite studies'**
+  /// **'My favorite studies'**
   String get studyMyFavoriteStudies;
 
   /// No description provided for @studyWhatAreStudies.
@@ -9334,7 +9316,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Studies created by {param}'**
-  String studyStudiesCreatedByX(String param);
+  String studyStudiesCreatedByX(Object param);
 
   /// No description provided for @studyNoneYet.
   ///
@@ -9489,7 +9471,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyTheChapterIsTooShortToBeAnalysed.
   ///
   /// In en, this message translates to:
-  /// **'The chapter is too short to be analysed.'**
+  /// **'The chapter is too short to be analyzed.'**
   String get studyTheChapterIsTooShortToBeAnalysed;
 
   /// No description provided for @studyOnlyContributorsCanRequestAnalysis.
@@ -9537,7 +9519,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyShowEvalBar.
   ///
   /// In en, this message translates to:
-  /// **'Evaluation bars'**
+  /// **'Evaluation gauge'**
   String get studyShowEvalBar;
 
   /// No description provided for @studyNext.
@@ -9616,7 +9598,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Start at {param}'**
-  String studyStartAtX(String param);
+  String studyStartAtX(Object param);
 
   /// No description provided for @studyEmbedInYourWebsite.
   ///
@@ -9646,7 +9628,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param1}, brought to you by {param2}'**
-  String studyXBroughtToYouByY(String param1, String param2);
+  String studyXBroughtToYouByY(Object param1, Object param2);
 
   /// No description provided for @studyStudyNotFound.
   ///
@@ -9670,7 +9652,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Import from {param}'**
-  String studyImportFromChapterX(String param);
+  String studyImportFromChapterX(Object param);
 
   /// No description provided for @studyOrientation.
   ///
@@ -9717,13 +9699,13 @@ abstract class AppLocalizations {
   /// No description provided for @studyDeleteThisChapter.
   ///
   /// In en, this message translates to:
-  /// **'Delete this chapter. There is no going back!'**
+  /// **'Delete this chapter? There is no going back!'**
   String get studyDeleteThisChapter;
 
   /// No description provided for @studyClearAllCommentsInThisChapter.
   ///
   /// In en, this message translates to:
-  /// **'Clear all comments, glyphs and drawn shapes in this chapter'**
+  /// **'Clear all comments, glyphs and drawn shapes in this chapter?'**
   String get studyClearAllCommentsInThisChapter;
 
   /// No description provided for @studyRightUnderTheBoard.
@@ -9760,7 +9742,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Chapter {param}'**
-  String studyChapterX(String param);
+  String studyChapterX(Object param);
 
   /// No description provided for @studyEmpty.
   ///
@@ -9789,7 +9771,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyLoadAGameByUrl.
   ///
   /// In en, this message translates to:
-  /// **'Load games by URLs'**
+  /// **'Load games by URL'**
   String get studyLoadAGameByUrl;
 
   /// No description provided for @studyLoadAPositionFromFen.
@@ -9952,7 +9934,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Delete the entire study? There is no going back! Type the name of the study to confirm: {param}'**
-  String studyConfirmDeleteStudy(String param);
+  String studyConfirmDeleteStudy(Object param);
 
   /// No description provided for @studyWhereDoYouWantToStudyThat.
   ///
@@ -10174,7 +10156,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param} per page'**
-  String studyPerPage(String param);
+  String studyPerPage(Object param);
 
   /// No description provided for @studyGetTheTour.
   ///
@@ -10191,7 +10173,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyWelcomeToLichessStudyText.
   ///
   /// In en, this message translates to:
-  /// **'This is a shared analysis board.<br><br>Use it to analyse and annotate games,<br>discuss positions with friends,<br>and of course for chess lessons!<br><br>It\'s a powerful tool, let\'s take some time to see how it works.'**
+  /// **'This is a shared analysis board.<br><br>Use it to analyze and annotate games,<br>to discuss positions with friends,<br>and of course for chess lessons!<br><br>It\'s a powerful tool. Let\'s take some time to see how it works.'**
   String get studyWelcomeToLichessStudyText;
 
   /// No description provided for @studySharedAndSaveTitle.
@@ -10216,13 +10198,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{param1} Spectators can view the study and talk in the chat.<br><br>{param2} Contributors can make moves and update the study.'**
-  String studyStudyMembersText(String param1, String param2);
+  String studyStudyMembersText(Object param1, Object param2);
 
   /// No description provided for @studyAddMembersText.
   ///
   /// In en, this message translates to:
-  /// **'Click the {param} button.<br>Then decide who can contribute or not.'**
-  String studyAddMembersText(String param);
+  /// **'Click the {param} button.<br>Then decide who can contribute.'**
+  String studyAddMembersText(Object param);
 
   /// No description provided for @studyStudyChaptersTitle.
   ///
@@ -10246,7 +10228,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Click the {param} button, or right click on the move list on the right.<br>Comments are shared and saved.'**
-  String studyCommentPositionText(String param);
+  String studyCommentPositionText(Object param);
 
   /// No description provided for @studyAnnotatePositionTitle.
   ///
@@ -10257,7 +10239,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyAnnotatePositionText.
   ///
   /// In en, this message translates to:
-  /// **'Click the !? button, or a right click on the move list on the right.<br>Annotation glyphs are shared and saved.'**
+  /// **'Click the !? button, or right click on the move list on the right.<br>Annotation glyphs are shared and saved.'**
   String get studyAnnotatePositionText;
 
   /// No description provided for @studyConclusionTitle.
@@ -10269,7 +10251,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyConclusionText.
   ///
   /// In en, this message translates to:
-  /// **'You can find your <a href=\'/study/mine/hot\'>previous studies</a> from your profile page.<br>There is also a <a href=\'//lichess.org/blog/V0KrLSkAAMo3hsi4/study-chess-the-lichess-way\'>blog post about studies</a>.<br>Power users might want to press \"?\" to see keyboard shortcuts.<br>Have fun!'**
+  /// **'You can find your <a href=\'/study/mine/hot\'>previous studies</a> on your profile page.<br>There is also a <a href=\'//lichess.org/blog/V0KrLSkAAMo3hsi4/study-chess-the-lichess-way\'>blog post about studies</a>.<br>Power users might want to press \"?\" to see keyboard shortcuts.<br>Have fun!'**
   String get studyConclusionText;
 
   /// No description provided for @studyCreateChapterTitle.
@@ -10281,7 +10263,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyCreateChapterText.
   ///
   /// In en, this message translates to:
-  /// **'A study can have several chapters.<br>Each chapter has a distinct move tree,<br>and can be created in various ways.'**
+  /// **'A study can have several chapters.<br>Each chapter has a distinct move tree <br>and can be created in various ways.'**
   String get studyCreateChapterText;
 
   /// No description provided for @studyFromInitialPositionTitle.
@@ -10305,7 +10287,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyCustomPositionText.
   ///
   /// In en, this message translates to:
-  /// **'Setup the board your way.<br>Suited to explore endgames.'**
+  /// **'Set up the board your way.<br>Suited to explore endgames.'**
   String get studyCustomPositionText;
 
   /// No description provided for @studyLoadExistingLichessGameTitle.
@@ -10317,7 +10299,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyLoadExistingLichessGameText.
   ///
   /// In en, this message translates to:
-  /// **'Paste a lichess game URL<br>(like lichess.org/7fHIU0XI)<br>to load the game moves in the chapter.'**
+  /// **'Paste a Lichess game URL<br>(like lichess.org/7fHIU0XI)<br>to load the game moves in the chapter.'**
   String get studyLoadExistingLichessGameText;
 
   /// No description provided for @studyFromFenStringTitle.
@@ -10341,7 +10323,7 @@ abstract class AppLocalizations {
   /// No description provided for @studyFromPgnGameText.
   ///
   /// In en, this message translates to:
-  /// **'Paste a game in PGN format.<br>to load moves, comments and variations in the chapter.'**
+  /// **'Paste a game in PGN format<br>to load moves, comments, and variations in the chapter.'**
   String get studyFromPgnGameText;
 
   /// No description provided for @studyVariantsAreSupportedTitle.
@@ -10384,25 +10366,25 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} Chapter} other{{count} Chapters}}'**
-  String studyNbChapters(int count);
+  String studyNbChapters(num count);
 
   /// No description provided for @studyNbGames.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} Game} other{{count} Games}}'**
-  String studyNbGames(int count);
+  String studyNbGames(num count);
 
   /// No description provided for @studyNbMembers.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} Member} other{{count} Members}}'**
-  String studyNbMembers(int count);
+  String studyNbMembers(num count);
 
   /// No description provided for @studyPasteYourPgnTextHereUpToNbGames.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{Paste your PGN text here, up to {count} game} other{Paste games as PGN text here. For each game, a new chapter is created. The study can have up to {count} chapters.}}'**
-  String studyPasteYourPgnTextHereUpToNbGames(int count);
+  /// **'{count, plural, =1{Paste your PGN text here, up to {count} game} other{Paste your PGN text here, up to {count} games}}'**
+  String studyPasteYourPgnTextHereUpToNbGames(num count);
 
   /// No description provided for @timeagoJustNow.
   ///
@@ -10426,101 +10408,160 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{in {count} second} other{in {count} seconds}}'**
-  String timeagoInNbSeconds(int count);
+  String timeagoInNbSeconds(num count);
 
   /// No description provided for @timeagoInNbMinutes.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{in {count} minute} other{in {count} minutes}}'**
-  String timeagoInNbMinutes(int count);
+  String timeagoInNbMinutes(num count);
 
   /// No description provided for @timeagoInNbHours.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{in {count} hour} other{in {count} hours}}'**
-  String timeagoInNbHours(int count);
+  String timeagoInNbHours(num count);
 
   /// No description provided for @timeagoInNbDays.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{in {count} day} other{in {count} days}}'**
-  String timeagoInNbDays(int count);
+  String timeagoInNbDays(num count);
 
   /// No description provided for @timeagoInNbWeeks.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{in {count} week} other{in {count} weeks}}'**
-  String timeagoInNbWeeks(int count);
+  String timeagoInNbWeeks(num count);
 
   /// No description provided for @timeagoInNbMonths.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{in {count} month} other{in {count} months}}'**
-  String timeagoInNbMonths(int count);
+  String timeagoInNbMonths(num count);
 
   /// No description provided for @timeagoInNbYears.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{in {count} year} other{in {count} years}}'**
-  String timeagoInNbYears(int count);
+  String timeagoInNbYears(num count);
 
   /// No description provided for @timeagoNbMinutesAgo.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} minute ago} other{{count} minutes ago}}'**
-  String timeagoNbMinutesAgo(int count);
+  String timeagoNbMinutesAgo(num count);
 
   /// No description provided for @timeagoNbHoursAgo.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} hour ago} other{{count} hours ago}}'**
-  String timeagoNbHoursAgo(int count);
+  String timeagoNbHoursAgo(num count);
 
   /// No description provided for @timeagoNbDaysAgo.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} day ago} other{{count} days ago}}'**
-  String timeagoNbDaysAgo(int count);
+  String timeagoNbDaysAgo(num count);
 
   /// No description provided for @timeagoNbWeeksAgo.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} week ago} other{{count} weeks ago}}'**
-  String timeagoNbWeeksAgo(int count);
+  String timeagoNbWeeksAgo(num count);
 
   /// No description provided for @timeagoNbMonthsAgo.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} month ago} other{{count} months ago}}'**
-  String timeagoNbMonthsAgo(int count);
+  String timeagoNbMonthsAgo(num count);
 
   /// No description provided for @timeagoNbYearsAgo.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} year ago} other{{count} years ago}}'**
-  String timeagoNbYearsAgo(int count);
+  String timeagoNbYearsAgo(num count);
 
   /// No description provided for @timeagoNbMinutesRemaining.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} minute remaining} other{{count} minutes remaining}}'**
-  String timeagoNbMinutesRemaining(int count);
+  String timeagoNbMinutesRemaining(num count);
 
   /// No description provided for @timeagoNbHoursRemaining.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{{count} hour remaining} other{{count} hours remaining}}'**
-  String timeagoNbHoursRemaining(int count);
+  String timeagoNbHoursRemaining(num count);
 
   /// No description provided for @tfaTwoFactorAuth.
   ///
   /// In en, this message translates to:
   /// **'Two-factor authentication'**
   String get tfaTwoFactorAuth;
+
+  /// No description provided for @setupComputerGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup Computer Game'**
+  String get setupComputerGame;
+
+  /// No description provided for @chooseYourSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your side'**
+  String get chooseYourSide;
+
+  /// No description provided for @difficultyBeginner.
+  ///
+  /// In en, this message translates to:
+  /// **'Beginner'**
+  String get difficultyBeginner;
+
+  /// No description provided for @difficultyIntermediate.
+  ///
+  /// In en, this message translates to:
+  /// **'Intermediate'**
+  String get difficultyIntermediate;
+
+  /// No description provided for @difficultyAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get difficultyAdvanced;
+
+  /// No description provided for @difficultyMaster.
+  ///
+  /// In en, this message translates to:
+  /// **'Master'**
+  String get difficultyMaster;
+
+  /// No description provided for @showMoveHints.
+  ///
+  /// In en, this message translates to:
+  /// **'Show move hints'**
+  String get showMoveHints;
+
+  /// No description provided for @startGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Game'**
+  String get startGame;
+
+  /// No description provided for @errorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get errorTitle;
+
+  /// No description provided for @failedToLoadPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load player: {message}'**
+  String failedToLoadPlayer(Object message);
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -10529,89 +10570,34 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) => <String>[
-    'af',
-    'ar',
-    'az',
-    'be',
-    'bg',
-    'bn',
-    'bs',
-    'ca',
-    'cs',
-    'da',
-    'de',
-    'el',
-    'en',
-    'eo',
-    'es',
-    'et',
-    'eu',
-    'fa',
-    'fi',
-    'fr',
-    'gl',
-    'gsw',
-    'he',
-    'hi',
-    'hr',
-    'hu',
-    'hy',
-    'id',
-    'it',
-    'ja',
-    'kk',
-    'ko',
-    'lt',
-    'lv',
-    'mk',
-    'nb',
-    'nl',
-    'pl',
-    'pt',
-    'ro',
-    'ru',
-    'sk',
-    'sl',
-    'sq',
-    'sr',
-    'sv',
-    'tr',
-    'uk',
-    'vi',
-    'zh',
-  ].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['ar', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
   // Lookup logic when language+country codes are specified.
   switch (locale.languageCode) {
-    case 'en':
-      {
-        switch (locale.countryCode) {
-          case 'US':
-            return AppLocalizationsEnUs();
-        }
-        break;
-      }
+    case 'en': {
+  switch (locale.countryCode) {
+    case 'US': return AppLocalizationsEnUs();
+   }
+  break;
+   }
   }
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'ar':
-      return AppLocalizationsAr();
-
-    case 'en':
-      return AppLocalizationsEn();
+    case 'ar': return AppLocalizationsAr();
+    case 'en': return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

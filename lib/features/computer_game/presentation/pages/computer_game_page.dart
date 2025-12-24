@@ -3,6 +3,7 @@
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/build_move_section_widget.dart';
 import 'package:dartchess/dartchess.dart';
+import 'package:chessground/chessground.dart' show PlayerSide;
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/loading_chess_board_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/player_game_info_widget.dart';
@@ -545,8 +546,9 @@ class ComputerGamePage extends GetView<BaseGameController> {
     );
 
     if (confirmed == true) {
-      // TODO: Implement resign logic
-      Get.back();
+      final side =
+          controller.playerSide == PlayerSide.white ? Side.white : Side.black;
+      await controller.resign(side);
     }
   }
 }

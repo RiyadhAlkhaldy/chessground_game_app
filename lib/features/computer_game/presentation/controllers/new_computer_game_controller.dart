@@ -3,7 +3,6 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/player_
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:dartchess/dartchess.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class NewComputerGameController extends GetxController {
@@ -32,6 +31,7 @@ class NewComputerGameController extends GetxController {
   Future<void> startGame() async {
     try {
       isLoading.value = true;
+      errorMessage.value = '';
 
       // Get or create guest player
       final playerResult = await getOrCreateGuestPlayerUseCase(
@@ -39,15 +39,17 @@ class NewComputerGameController extends GetxController {
       );
 
       final playerName = playerResult.fold((failure) {
-        Get.snackbar(
-          'Error',
-          'Failed to load player: ${failure.message}',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-        return 'Guest';
+        errorMessage.value = failure.message; // Store error to be handled by view if needed
+        return 'Guest'; // Fallback
       }, (player) => player.name);
+      
+      if(errorMessage.isNotEmpty) {
+         // Optionally show snackbar here or let the view listen to errorMessage
+         // For now, we proceed as 'Guest' but could stop.
+         // Let's just log or show snackbar in View.
+         // But clean architecture prefers Controller to drive logic.
+         // We will proceed.
+      }
 
       // Set board orientation based on player side
       if (selectedSide.value == PlayerSide.black) {
@@ -69,20 +71,5 @@ class NewComputerGameController extends GetxController {
     } finally {
       isLoading.value = false;
     }
-  }
-
-  // Helpers for UI
-  String getDifficultyLabel(int level) {
-    if (level <= 5) return 'Beginner';
-    if (level <= 10) return 'Intermediate';
-    if (level <= 15) return 'Advanced';
-    return 'Master';
-  }
-
-  Color getDifficultyColor(int level) {
-    if (level <= 5) return Colors.green;
-    if (level <= 10) return Colors.orange;
-    if (level <= 15) return Colors.red;
-    return Colors.purple;
   }
 }
