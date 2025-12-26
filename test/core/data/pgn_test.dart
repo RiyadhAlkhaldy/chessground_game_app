@@ -421,8 +421,8 @@ the players are also trying to learn as much as possible about the opponent's pr
       expect(games[0].headers['C'], 'A]]');
       expect(games[0].headers['D'], 'A]][');
       expect(games[0].headers['E'], '"A]]["');
-      expect(games[0].headers['F'], '"A]]["\\');
-      expect(games[0].headers['G'], '"]');
+      expect(games[0].headers['F'], '"A]][\\"');
+      expect(games[0].headers['G'], r'\"');
       expect(games.length, 1);
     });
 

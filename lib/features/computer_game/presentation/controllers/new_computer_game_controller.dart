@@ -47,17 +47,19 @@ class NewComputerGameController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
-      // Get localization
-      final l10n = Get.context!.l10n;
+      // Get localization safely
+      final guestName = Get.context != null ? Get.context!.l10n.guest : 'Guest';
+      final stockfishName =
+          Get.context != null ? Get.context!.l10n.stockfish : 'Stockfish';
 
       // Get or create guest player
       final playerResult = await getOrCreateGuestPlayerUseCase(
-        GetOrCreateGuestPlayerParams(name: l10n.guest),
+        GetOrCreateGuestPlayerParams(name: guestName),
       );
 
       final playerName = playerResult.fold((failure) {
         errorMessage.value = failure.message;
-        return l10n.guest;
+        return guestName;
       }, (player) => player.name);
 
       // Set board orientation based on player side
@@ -72,7 +74,7 @@ class NewComputerGameController extends GetxController {
         AppRoutes.computerGamePage,
         arguments: {
           'playerName': playerName,
-          'stockfishName': l10n.stockfish,
+          'stockfishName': stockfishName,
           'playerSide': selectedSide.value,
           'difficulty': selectedDifficulty.value,
           'showMoveHints': showMoveHints.value,

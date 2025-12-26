@@ -38,16 +38,16 @@ class NewOfflineGameController extends GetxController {
   Future<void> startGame() async {
     try {
       isLoading.value = true;
-      final l10n = Get.context!.l10n;
+      final guestName = Get.context != null ? Get.context!.l10n.guest : 'Guest';
 
       // Get or create guest player
       final playerResult = await getOrCreateGuestPlayerUseCase(
-        GetOrCreateGuestPlayerParams(name: l10n.guest),
+        GetOrCreateGuestPlayerParams(name: guestName),
       );
 
       final playerName = playerResult.fold((failure) {
         errorMessage.value = failure.message;
-        return l10n.guest;
+        return guestName;
       }, (player) => player.name);
 
       // Set board orientation based on player side
@@ -58,7 +58,7 @@ class NewOfflineGameController extends GetxController {
       }
 
       // Navigate to game page with arguments
-      Get.offNamed(
+      await Get.offNamed(
         AppRoutes.offlineGamePage,
         arguments: {'playerName': playerName, 'playerSide': selectedSide.value},
       );

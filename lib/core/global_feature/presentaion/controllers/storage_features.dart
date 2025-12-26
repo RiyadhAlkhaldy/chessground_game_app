@@ -54,11 +54,13 @@ mixin StorageFeatures on BaseGameController {
         blackPlayer.value = savedGame.blackPlayer;
         updateReactiveState();
 
-        Get.snackbar(
-          'Game Started',
-          'New game between $whitePlayerName vs $blackPlayerName',
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        if (!Get.testMode && Get.context != null) {
+          Get.snackbar(
+            'Game Started',
+            'New game between $whitePlayerName vs $blackPlayerName',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
       } else {
         setError('Failed to start new game');
       }

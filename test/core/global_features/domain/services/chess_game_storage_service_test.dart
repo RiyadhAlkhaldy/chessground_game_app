@@ -24,7 +24,7 @@ void main() async {
   late ChessGameStorageService storage;
   late Player white;
   late Player black;
-  late ChessGame game;
+  late ChessGame activeGame;
 
   setUpAll(() async {
     // تسجيل mock بدلاً من path_provider الحقيقي
@@ -40,9 +40,9 @@ void main() async {
     await storage.clearAll();
   });
   group('ChessGameStorageService tests', () {
-    tearDown(() async {
-      await storage.clearAll();
-    });
+    // tearDown(() async {
+    //   await storage.clearAll();
+    // });
 
     group('🧩 Isar Database Initialization', () {
       test('يتم تهيئة قاعدة البيانات بنجاح', () async {
@@ -84,6 +84,7 @@ void main() async {
 
     group('♟️ Game Lifecycle', () {
       setUp(() async {
+        await storage.clearAll();
         white = Player(uuid: const Uuid().v4(), name: 'Riyadh', type: 'human', playerRating: 1500);
         black = Player(
           uuid: const Uuid().v4(),
@@ -91,27 +92,24 @@ void main() async {
           type: 'computer',
           playerRating: 3200,
         );
-      });
-
-      test('بدء لعبة جديدة وتخزينها', () async {
+        
         final headers = <String, String>{'Event': 'Casual Game', 'Site': 'MyApp', 'Round': '1'};
-
-        game = ChessGame();
-        final created = await storage.startNewGame(
-          chessGame: game,
+        activeGame = ChessGame();
+        activeGame = await storage.startNewGame(
+          chessGame: activeGame,
           white: white,
           black: black,
           headers: headers,
         );
+      });
 
-        expect(created.id, greaterThan(0));
-        expect(created.whitePlayer.value!.name, equals('Riyadh'));
-        expect(created.blackPlayer.value!.name, contains('Stockfish'));
+      test('بدء لعبة جديدة وتخزينها', () async {
+        expect(activeGame.id, greaterThan(0));
+        expect(activeGame.whitePlayer.value!.name, equals('Riyadh'));
+        expect(activeGame.blackPlayer.value!.name, contains('Stockfish'));
       });
 
       test('إضافة حركة وتحديث PGN', () async {
-        final gameId = game.id;
-
         final move = MoveData()
           ..san = 'e4'
           ..lan = 'e2e4'
@@ -120,7 +118,7 @@ void main() async {
           ..halfmoveIndex = 0
           ..moveNumber = 1;
 
-        final updated = await storage.addMoveToGame(gameId, move);
+        final updated = await storage.addMoveToGame(activeGame.id, move);
 
         expect(updated.moves.length, equals(1));
         expect(updated.moves.first.san, equals('e4'));
@@ -138,9 +136,9 @@ void main() async {
         };
 
         final ended = await storage.endGame(
-          game,
+          activeGame,
           result: '1-0',
-          movesData: game.moves,
+          movesData: activeGame.moves,
           headers: headers,
         );
 
@@ -161,9 +159,7 @@ void main() async {
       });
 
       test('حذف لعبة والتأكد من حذفها', () async {
-        final allBefore = await storage.getAllGames();
-        final id = allBefore.first.id;
-
+        final id = activeGame.id;
         await storage.deleteGame(id);
 
         final allAfter = await storage.getAllGames();

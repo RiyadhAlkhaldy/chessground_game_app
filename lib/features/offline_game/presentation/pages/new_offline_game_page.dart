@@ -74,7 +74,7 @@ class NewOfflineGamePage extends GetView<NewOfflineGameController> {
                   () => FilledButton(
                     onPressed: controller.isLoading.value
                         ? null
-                        : () => controller.startGame(),
+                        : () async => await controller.startGame(),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -119,7 +119,9 @@ class NewOfflineGamePage extends GetView<NewOfflineGameController> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? colorScheme.primaryContainer : colorScheme.surfaceContainerHighest,
+          color: isSelected
+              ? colorScheme.primaryContainer
+              : colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? colorScheme.primary : colorScheme.outline,

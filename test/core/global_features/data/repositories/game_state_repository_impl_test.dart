@@ -11,9 +11,15 @@ import 'package:mocktail/mocktail.dart';
 class MockGameStateCacheDataSource extends Mock
     implements GameStateCacheDataSource {}
 
+class FakeGameStateModel extends Fake implements GameStateModel {}
+
 void main() {
   late MockGameStateCacheDataSource mockCacheDataSource;
   late GameStateRepositoryImpl repository;
+
+  setUpAll(() {
+    registerFallbackValue(FakeGameStateModel());
+  });
 
   setUp(() {
     mockCacheDataSource = MockGameStateCacheDataSource();

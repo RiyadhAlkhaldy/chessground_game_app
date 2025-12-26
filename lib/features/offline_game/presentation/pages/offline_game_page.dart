@@ -1,3 +1,4 @@
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_controls_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/build_player_section_widget.dart';
@@ -16,7 +17,7 @@ import 'package:share_plus/share_plus.dart';
 
 /// Main game screen displaying the chess board and game controls
 /// شاشة اللعبة الرئيسية التي تعرض رقعة الشطرنج وعناصر التحكم
-class OfflineGamePage extends GetView<OfflineGameController> {
+class OfflineGamePage extends GetView<BaseGameController> {
   const OfflineGamePage({super.key});
 
   @override
@@ -39,7 +40,11 @@ class OfflineGamePage extends GetView<OfflineGameController> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, size: 64, color: Theme.of(context).colorScheme.error),
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       controller.errorMessage,
@@ -93,7 +98,7 @@ class OfflineGamePage extends GetView<OfflineGameController> {
         IconButton(
           icon: const Icon(Icons.save),
           tooltip: l10n.saveGame,
-          onPressed: () => controller.saveGame(),
+          onPressed: () => (controller as OfflineGameController).saveGame(),
         ),
         // Settings button
         IconButton(
@@ -193,7 +198,10 @@ class OfflineGamePage extends GetView<OfflineGameController> {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   l10n.capturedPieces,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const Expanded(child: CapturedPiecesWidget(side: Side.white)),
@@ -276,7 +284,9 @@ class OfflineGamePage extends GetView<OfflineGameController> {
   /// Confirm resign
   void _confirmResign(BuildContext context) {
     final l10n = context.l10n;
-    final sideText = controller.currentTurn == Side.white ? l10n.white : l10n.black;
+    final sideText = controller.currentTurn == Side.white
+        ? l10n.white
+        : l10n.black;
     Get.dialog(
       AlertDialog(
         title: Text(l10n.resign),
@@ -289,8 +299,9 @@ class OfflineGamePage extends GetView<OfflineGameController> {
               controller.resign(controller.currentTurn);
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error,
-                foregroundColor: Theme.of(context).colorScheme.onError),
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
             child: Text(l10n.resign),
           ),
         ],
@@ -310,7 +321,7 @@ class OfflineGamePage extends GetView<OfflineGameController> {
           ElevatedButton(
             onPressed: () {
               Get.back();
-              controller.agreeDrawn();
+              (controller as OfflineGameController).agreeDrawn();
             },
             child: Text(l10n.agreeDraw),
           ),
@@ -322,7 +333,7 @@ class OfflineGamePage extends GetView<OfflineGameController> {
   /// Export PGN
   void _exportPgn(BuildContext context) {
     final l10n = context.l10n;
-    final pgn = controller.getPgnString();
+    final pgn = (controller as OfflineGameController).getPgnString();
 
     if (pgn.isEmpty) {
       Get.snackbar(

@@ -242,7 +242,7 @@ class ChessGameStorageService {
       await g.whitePlayer.load();
       await g.blackPlayer.load();
 
-      g.moves.add(moveData);
+      g.moves = [...g.moves, moveData];
       g.movesCount = g.moves.length;
 
       final headers = <String, String>{
