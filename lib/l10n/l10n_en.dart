@@ -2368,6 +2368,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recentGames => 'Recent games';
 
   @override
+  String get noGamesYet => 'No games yet';
+
+  @override
   String get topGames => 'Top games';
 
   @override
@@ -3733,6 +3736,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get about => 'About';
+
+  @override
+  String get aboutDescription => 'A professional chess application built with Flutter, focusing on performance, clean architecture, and a great user experience.';
 
   @override
   String aboutX(Object param) {
@@ -6283,6 +6289,144 @@ class AppLocalizationsEn extends AppLocalizations {
   String failedToLoadPlayer(Object message) {
     return 'Failed to load player: $message';
   }
+
+  @override
+  String get computerGameVsStockfish => 'vs Stockfish';
+
+  @override
+  String computerGameLevel(Object level) => 'Level $level';
+
+  @override
+  String get undoMove => 'Undo Move';
+
+  @override
+  String get getHint => 'Get Hint';
+
+  @override
+  String get newGame => 'New Game';
+
+  @override
+  String get saveGame => 'Save Game';
+
+  @override
+  String get noMovesYet => 'No moves yet';
+
+  @override
+  String get wait => 'Please wait...';
+
+  @override
+  String get hintTitle => 'Hint';
+
+  @override
+  String get hintSuggestedMove => 'Suggested move:';
+
+  @override
+  String get timeoutStockfish => 'Engine timeout';
+
+  @override
+  String get engineErrorTitle => 'Engine Error';
+
+  @override
+  String get retryGame => 'Retry';
+
+  @override
+  String get guest => 'Guest';
+
+  @override
+  String get stockfish => 'Stockfish';
+
+  @override
+  String get setupOfflineGame => 'Setup Offline Game';
+
+  @override
+  String get playOfflineGame => 'Play Offline Game';
+
+  @override
+  String get choosePlayerSide => 'Choose Player Side';
+
+  @override
+  String get chessGame => 'Chess Game';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get redo => 'Redo';
+
+  @override
+  String get first => 'First';
+
+  @override
+  String get last => 'Last';
+
+  @override
+  String get flip => 'Flip';
+
+  @override
+  String get goBack => 'Go Back';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get exportPgn => 'Export PGN';
+
+  @override
+  String get capturedPieces => 'Captured Pieces';
+
+  @override
+  String get gameSettings => 'Game Settings';
+
+  @override
+  String get autoSave => 'Auto-save';
+
+  @override
+  String get autoSaveDesc => 'Automatically save after each move';
+
+  @override
+  String get startNewGameTitle => 'Start New Game';
+
+  @override
+  String get startNewGameConfirm => 'Are you sure you want to start a new game? Current game will be saved.';
+
+  @override
+  String resignConfirm(Object side) => 'Are you sure $side wants to resign?';
+
+  @override
+  String get offerDrawTitle => 'Offer Draw';
+
+  @override
+  String get offerDrawConfirm => 'Do both players agree to a draw?';
+
+  @override
+  String get agreeDraw => 'Agree Draw';
+
+  @override
+  String get pgnNotAvailable => 'PGN not available.';
+
+  @override
+  String get pgnCopied => 'PGN Copied';
+
+  @override
+  String get pgnCopiedToClipboard => 'PGN copied to clipboard';
+
+  @override
+  String get sharePgnSuccess => 'Thank you for sharing PGN..';
+
+  @override
+  String get chooseGameMode => 'Choose your preferred game mode';
+
+  @override
+  String get newGameConfirmation => 'Start a new game? Current game will be lost if not saved.';
+
+  @override
+  String get resignConfirmation => 'Are you sure you want to resign?';
 }
 
 /// The translations for English, as used in the United States (`en_US`).
@@ -8649,6 +8793,9 @@ class AppLocalizationsEnUs extends AppLocalizationsEn {
   String get recentGames => 'Recent games';
 
   @override
+  String get noGamesYet => 'No games yet';
+
+  @override
   String get topGames => 'Top games';
 
   @override
@@ -10014,6 +10161,9 @@ class AppLocalizationsEnUs extends AppLocalizationsEn {
 
   @override
   String get about => 'About';
+
+  @override
+  String get aboutDescription => 'A professional chess application built with Flutter, focusing on performance, clean architecture, and a great user experience.';
 
   @override
   String aboutX(Object param) {
@@ -12564,4 +12714,142 @@ class AppLocalizationsEnUs extends AppLocalizationsEn {
   String failedToLoadPlayer(Object message) {
     return 'Failed to load player: $message';
   }
+
+  @override
+  String get computerGameVsStockfish => 'vs Stockfish';
+
+  @override
+  String computerGameLevel(Object level) => 'Level $level';
+
+  @override
+  String get undoMove => 'Undo Move';
+
+  @override
+  String get getHint => 'Get Hint';
+
+  @override
+  String get newGame => 'New Game';
+
+  @override
+  String get saveGame => 'Save Game';
+
+  @override
+  String get noMovesYet => 'No moves yet';
+
+  @override
+  String get wait => 'Please wait...';
+
+  @override
+  String get hintTitle => 'Hint';
+
+  @override
+  String get hintSuggestedMove => 'Suggested move:';
+
+  @override
+  String get timeoutStockfish => 'Engine timeout';
+
+  @override
+  String get engineErrorTitle => 'Engine Error';
+
+  @override
+  String get retryGame => 'Retry';
+
+  @override
+  String get guest => 'Guest';
+
+  @override
+  String get stockfish => 'Stockfish';
+
+  @override
+  String get setupOfflineGame => 'Setup Offline Game';
+
+  @override
+  String get playOfflineGame => 'Play Offline Game';
+
+  @override
+  String get choosePlayerSide => 'Choose Player Side';
+
+  @override
+  String get chessGame => 'Chess Game';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get redo => 'Redo';
+
+  @override
+  String get first => 'First';
+
+  @override
+  String get last => 'Last';
+
+  @override
+  String get flip => 'Flip';
+
+  @override
+  String get goBack => 'Go Back';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get exportPgn => 'Export PGN';
+
+  @override
+  String get capturedPieces => 'Captured Pieces';
+
+  @override
+  String get gameSettings => 'Game Settings';
+
+  @override
+  String get autoSave => 'Auto-save';
+
+  @override
+  String get autoSaveDesc => 'Automatically save after each move';
+
+  @override
+  String get startNewGameTitle => 'Start New Game';
+
+  @override
+  String get startNewGameConfirm => 'Are you sure you want to start a new game? Current game will be saved.';
+
+  @override
+  String resignConfirm(Object side) => 'Are you sure $side wants to resign?';
+
+  @override
+  String get offerDrawTitle => 'Offer Draw';
+
+  @override
+  String get offerDrawConfirm => 'Do both players agree to a draw?';
+
+  @override
+  String get agreeDraw => 'Agree Draw';
+
+  @override
+  String get pgnNotAvailable => 'PGN not available.';
+
+  @override
+  String get pgnCopied => 'PGN Copied';
+
+  @override
+  String get pgnCopiedToClipboard => 'PGN copied to clipboard';
+
+  @override
+  String get sharePgnSuccess => 'Thank you for sharing PGN..';
+
+  @override
+  String get chooseGameMode => 'Choose your preferred game mode';
+
+  @override
+  String get newGameConfirmation => 'Start a new game? Current game will be lost if not saved.';
+
+  @override
+  String get resignConfirmation => 'Are you sure you want to resign?';
 }

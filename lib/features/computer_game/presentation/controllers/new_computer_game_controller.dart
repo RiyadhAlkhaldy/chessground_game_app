@@ -1,6 +1,8 @@
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
+import 'package:chessground_game_app/core/l10n_build_context.dart';
+import 'package:chessground_game_app/l10n/l10n.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
@@ -20,6 +22,18 @@ class NewComputerGameController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    // Reactive Error Handling
+    ever(errorMessage, (String msg) {
+      if (msg.isNotEmpty) {
+        Get.snackbar('Error', msg, snackPosition: SnackPosition.BOTTOM);
+        errorMessage.value = '';
+      }
+    });
+  }
+
   void setSide(PlayerSide side) {
     selectedSide.value = side;
   }
@@ -33,23 +47,18 @@ class NewComputerGameController extends GetxController {
       isLoading.value = true;
       errorMessage.value = '';
 
+      // Get localization
+      final l10n = Get.context!.l10n;
+
       // Get or create guest player
       final playerResult = await getOrCreateGuestPlayerUseCase(
-        GetOrCreateGuestPlayerParams(name: 'Guest'),
+        GetOrCreateGuestPlayerParams(name: l10n.guest),
       );
 
       final playerName = playerResult.fold((failure) {
-        errorMessage.value = failure.message; // Store error to be handled by view if needed
-        return 'Guest'; // Fallback
+        errorMessage.value = failure.message;
+        return l10n.guest;
       }, (player) => player.name);
-      
-      if(errorMessage.isNotEmpty) {
-         // Optionally show snackbar here or let the view listen to errorMessage
-         // For now, we proceed as 'Guest' but could stop.
-         // Let's just log or show snackbar in View.
-         // But clean architecture prefers Controller to drive logic.
-         // We will proceed.
-      }
 
       // Set board orientation based on player side
       if (selectedSide.value == PlayerSide.black) {
@@ -63,6 +72,7 @@ class NewComputerGameController extends GetxController {
         AppRoutes.computerGamePage,
         arguments: {
           'playerName': playerName,
+          'stockfishName': l10n.stockfish,
           'playerSide': selectedSide.value,
           'difficulty': selectedDifficulty.value,
           'showMoveHints': showMoveHints.value,

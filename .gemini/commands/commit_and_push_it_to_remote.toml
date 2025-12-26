@@ -1,0 +1,4 @@
+# Invoked via: /git:fix "commit_and_push_it_to_remote"
+# DESCRIPTION: Whrite a professional commit for the project changes and then push it to the remote repository.
+
+prompt = """Whrite a professional commit for the project changes and then push it to the remote repository."""

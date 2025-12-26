@@ -10,11 +10,9 @@ import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_features.dart';
 import 'package:dartchess/dartchess.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
-/// Controller for offline (2-player pass-and-play) games
-/// كنترولر للعب المحلي (لاعبان على نفس الجهاز)
 class OfflineGameController extends BaseGameController
     with StorageFeatures, SetupGameVsAiMixin
     implements OfflineFeatures {
@@ -28,16 +26,13 @@ class OfflineGameController extends BaseGameController
       final playerName = args['playerName'] as String;
       final playerSide = args['playerSide'] as PlayerSide;
 
-      // Start game automatically with provided arguments
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _startOfflineGame(playerName: playerName, playerSide: playerSide);
+        startOfflineGame(playerName: playerName, playerSide: playerSide);
       });
     }
   }
 
-  /// Start new offline game
-  /// بدء لعبة جديدة
-  Future<void> _startOfflineGame({
+  Future<void> startOfflineGame({
     required String playerName,
     required PlayerSide playerSide,
   }) async {
@@ -50,25 +45,15 @@ class OfflineGameController extends BaseGameController
         data: {'playerName': playerName, 'playerSide': playerSide.name},
       );
 
-      // Start game with player and opponent
       await startNewGame(
-        whitePlayerName: playerSide == PlayerSide.white
-            ? playerName
-            : 'Player 2',
-        blackPlayerName: playerSide == PlayerSide.black
-            ? playerName
-            : 'Player 2',
+        whitePlayerName: playerSide == PlayerSide.white ? playerName : 'Player 2',
+        blackPlayerName: playerSide == PlayerSide.black ? playerName : 'Player 2',
         event: 'Offline Game',
         site: 'Local',
       );
 
-      // Show board immediately after setup is done
       isLoading = false;
-
-      currentFen = gameState.position.fen;
-      validMoves = makeLegalMoves(gameState.position);
-
-      debugPrint('Offline game started');
+      updateReactiveState();
     } catch (e, stackTrace) {
       AppLogger.error(
         'Error starting offline game',
@@ -76,24 +61,16 @@ class OfflineGameController extends BaseGameController
         stackTrace: stackTrace,
         tag: 'OfflineGameController',
       );
+      setError(e.toString());
     }
   }
 
-  // ========== Lifecycle Methods ==========
-
   @override
   void onClose() {
-    AppLogger.info(
-      'OfflineGameController disposed',
-      tag: 'OfflineGameController',
-    );
-    gameState.dispose();
+    AppLogger.info('OfflineGameController disposed', tag: 'OfflineGameController');
     super.onClose();
   }
 
-  // ========== Public Methods ==========
-
-  /// Override startNewGame to set board orientation based on player color
   @override
   Future<void> startNewGame({
     required String whitePlayerName,
@@ -102,7 +79,6 @@ class OfflineGameController extends BaseGameController
     String? site,
     String? timeControl,
   }) async {
-    // Call parent implementation to initialize the game
     await super.startNewGame(
       whitePlayerName: whitePlayerName,
       blackPlayerName: blackPlayerName,
@@ -111,27 +87,14 @@ class OfflineGameController extends BaseGameController
       timeControl: timeControl,
     );
 
-    // Set board orientation based on player color choice
     final ctrlBoardSettings = Get.find<ChessBoardSettingsController>();
-    if (playerSide == PlayerSide.black) {
-      ctrlBoardSettings.orientation.value = Side.black;
-      AppLogger.debug(
-        'Board orientation set to black',
-        tag: 'OfflineGameController',
-      );
-    } else {
-      ctrlBoardSettings.orientation.value = Side.white;
-      AppLogger.debug(
-        'Board orientation set to white',
-        tag: 'OfflineGameController',
-      );
-    }
+    ctrlBoardSettings.orientation.value =
+        playerSide == PlayerSide.black ? Side.black : Side.white;
   }
 
   @override
   void applyMove(NormalMove move) async {
     super.applyMove(move);
-    // Auto-save if enabled
     if (autoSaveEnabled) {
       await autoSaveGame();
     }
@@ -139,124 +102,48 @@ class OfflineGameController extends BaseGameController
 
   @override
   Future<void> undoMove() async {
-    try {
-      if (!gameState.canUndo) {
-        Get.snackbar(
-          'Cannot Undo',
-          'No moves to undo',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
-
-      final success = gameState.undoMove();
-
-      if (success) {
-        updateReactiveState();
-
-        // Auto-save if enabled
-        if (autoSaveEnabled) {
-          await autoSaveGame();
-        }
-
-        AppLogger.gameEvent('MoveUndone');
-      }
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error undoing move',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-      setError('Failed to undo move: ${e.toString()}');
+    if (!gameState.canUndo) {
+      setError('noMovesToUndo');
+      return;
+    }
+    super.undoMove();
+    if (autoSaveEnabled) {
+      await autoSaveGame();
     }
   }
 
   @override
   Future<void> redoMove() async {
-    try {
-      if (!gameState.canRedo) {
-        Get.snackbar(
-          'Cannot Redo',
-          'No moves to redo',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        return;
-      }
-
-      final success = gameState.redoMove();
-
-      if (success) {
-        updateReactiveState();
-
-        // Auto-save if enabled
-        if (autoSaveEnabled) {
-          await autoSaveGame();
-        }
-
-        AppLogger.gameEvent('MoveRedone');
-      }
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error redoing move',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-      setError('Failed to redo move: ${e.toString()}');
+    if (!gameState.canRedo) {
+      setError('noMovesToRedo');
+      return;
+    }
+    super.redoMove();
+    if (autoSaveEnabled) {
+      await autoSaveGame();
     }
   }
 
   @override
   Future<void> resign(Side side) async {
-    try {
-      super.resign(side);
+    super.resign(side);
+    if (currentGame != null) {
       await storageController.updateGame(currentGame!, gameState);
-      Get.snackbar(
-        'Game Over',
-        '${side == Side.white ? 'White' : 'Black'} resigned',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error resigning',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-      setError('Failed to resign: ${e.toString()}');
     }
   }
 
   @override
   Future<void> agreeDrawn() async {
-    try {
-      gameState.setAgreementDraw();
-      updateReactiveState();
-
+    setAgreementDraw();
+    if (currentGame != null) {
       await storageController.updateGame(currentGame!, gameState);
-
-      AppLogger.gameEvent('DrawByAgreement');
-
-      Get.snackbar(
-        'Game Over',
-        'Draw by agreement',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error setting draw',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-      setError('Failed to set draw: ${e.toString()}');
     }
+    AppLogger.gameEvent('DrawByAgreement');
   }
 
   @override
   void reset() {
-    gameState = GameState(initial: Chess.initial);
+    gameState = GameState(); // Use default constructor for initial position
     updateReactiveState();
     promotionMove.value = null;
     premove.value = null;
@@ -266,7 +153,6 @@ class OfflineGameController extends BaseGameController
   @override
   String getPgnString() {
     if (currentGame == null) return '';
-
     return gameState.pgnString(
       headers: {
         'Event': currentGame!.event ?? '?',
@@ -278,186 +164,52 @@ class OfflineGameController extends BaseGameController
       },
     );
   }
+  
+  @override
+  List<Role> getCapturedPieces(Side side) => gameState.getCapturedPiecesList(side);
 
   @override
-  List<Role> getCapturedPieces(Side side) {
-    return gameState.getCapturedPiecesList(side);
-  }
-
-  @override
-  int getMaterialOnBoard(Side side) {
-    return gameState.materialOnBoard(side);
-  }
+  int getMaterialOnBoard(Side side) => gameState.materialOnBoard(side);
 
   @override
   void jumpToHalfmove(int index) {
-    final allMoves = gameState.getMoveObjectsCopy();
-    final newState = GameState(initial: Chess.initial);
-
-    for (int i = 0; i <= index && i < allMoves.length; i++) {
-      newState.play(allMoves[i]);
-    }
-
-    gameState = newState;
-    updateReactiveState();
+    super.jumpToHalfmove(index);
   }
+  
+  @override
+  List<MoveDataModel> get pgnTokens => super.pgnTokens;
 
   @override
-  List<MoveDataModel> get pgnTokens => gameState.getMoveTokens;
-
+  int get currentHalfmoveIndex => super.currentHalfmoveIndex;
+  
   @override
-  int get currentHalfmoveIndex => gameState.currentHalfmoveIndex;
-
-  // ========== End Game Interface Methods ==========
-
-  @override
-  Future<void> agreeDraw() async {
-    try {
-      await agreeDrawn();
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error in agreeDraw',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-    }
-  }
+  Future<void> agreeDraw() => agreeDrawn();
 
   @override
   Future<void> checkMate() async {
-    try {
-      final winner = gameState.turn == Side.white ? Side.black : Side.white;
-      AppLogger.gameEvent('Checkmate', data: {'winner': winner.name});
-
-      await storageController.updateGame(currentGame!, gameState);
-
-      Get.snackbar(
-        'Checkmate!',
-        '${winner == Side.white ? 'White' : 'Black'} wins by checkmate!',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error in checkMate',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-    }
+     if (currentGame != null) await storageController.updateGame(currentGame!, gameState);
   }
 
   @override
-  Future<void> draw() async {
-    try {
-      gameState.setAgreementDraw();
-      updateReactiveState();
-      await storageController.updateGame(currentGame!, gameState);
-
-      AppLogger.gameEvent('Draw');
-
-      Get.snackbar(
-        'Game Drawn',
-        'The game ended in a draw',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error in draw',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-    }
-  }
+  Future<void> draw() => agreeDrawn();
 
   @override
   Future<void> fiftyMoveRule() async {
-    try {
-      AppLogger.gameEvent('FiftyMoveRule');
-      await storageController.updateGame(currentGame!, gameState);
-
-      Get.snackbar(
-        'Draw by Fifty-Move Rule',
-        'Game drawn due to fifty-move rule',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error in fiftyMoveRule',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-    }
+     if (currentGame != null) await storageController.updateGame(currentGame!, gameState);
   }
 
   @override
   Future<void> insufficientMaterial() async {
-    try {
-      AppLogger.gameEvent('InsufficientMaterial');
-      await storageController.updateGame(currentGame!, gameState);
-
-      Get.snackbar(
-        'Draw by Insufficient Material',
-        'Game drawn due to insufficient material',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error in insufficientMaterial',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-    }
+     if (currentGame != null) await storageController.updateGame(currentGame!, gameState);
   }
 
   @override
   Future<void> staleMate() async {
-    try {
-      AppLogger.gameEvent('Stalemate');
-      await storageController.updateGame(currentGame!, gameState);
-
-      Get.snackbar(
-        'Stalemate!',
-        'Game ended in a stalemate - it\'s a draw',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error in staleMate',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-    }
+     if (currentGame != null) await storageController.updateGame(currentGame!, gameState);
   }
 
   @override
   Future<void> threefoldRepetition() async {
-    try {
-      AppLogger.gameEvent('ThreefoldRepetition');
-      await storageController.updateGame(currentGame!, gameState);
-
-      Get.snackbar(
-        'Draw by Threefold Repetition',
-        'Game drawn due to threefold repetition',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 3),
-      );
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error in threefoldRepetition',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'OfflineGameController',
-      );
-    }
+     if (currentGame != null) await storageController.updateGame(currentGame!, gameState);
   }
 }

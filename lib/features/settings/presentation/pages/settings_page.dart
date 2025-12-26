@@ -6,33 +6,38 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class SettingsPage extends GetView<SettingsController> {
-  const SettingsPage({super.key, superkey});
+  const SettingsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
-    // 1 استخراج مجموعة من رموز اللغة الفريدة (مثل: {'en', 'ar', 'fr'})
+    final l10n = context.l10n;
+    
     final uniqueLanguageCodes = AppLocalizations.supportedLocales
         .map((l) => l.languageCode)
-        .toSet() // تحويل إلى Set لإزالة أي تكرار
-        .toList(); // تحويلها مرة أخرى إلى قائمة لعرضها
+        .toSet()
+        .toList();
 
     final currentLanguageCode = Get.locale?.languageCode;
 
-    debugPrint("Current Locale Code: $currentLanguageCode");
-    debugPrint("Unique Codes for Dropdown: $uniqueLanguageCodes");
-
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.settingsSettings)),
-      body: Column(
+      appBar: AppBar(
+        title: Text(l10n.settingsSettings),
+        elevation: 0,
+      ),
+      body: ListView(
         children: [
+          _buildSectionHeader(context, l10n.language),
           ListTile(
-            title: Text(context.l10n.language),
+            leading: const Icon(Icons.language),
+            title: Text(l10n.language),
+            subtitle: Text(_getLanguageName(currentLanguageCode ?? 'en')),
             trailing: DropdownButton<String>(
-              // القيمة الحالية يجب أن تكون موجودة في قائمة العناصر (items) مرة واحدة فقط
               value: currentLanguageCode,
+              underline: const SizedBox.shrink(),
               items: uniqueLanguageCodes.map((code) {
                 return DropdownMenuItem<String>(
-                  value: code, // <--- الآن كل قيمة (value) ستكون فريدة
-                  child: AutoSizeText(code),
+                  value: code,
+                  child: Text(_getLanguageName(code)),
                 );
               }).toList(),
               onChanged: (val) {
@@ -40,8 +45,33 @@ class SettingsPage extends GetView<SettingsController> {
               },
             ),
           ),
+          const Divider(),
         ],
       ),
     );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        title.toUpperCase(),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+      ),
+    );
+  }
+
+  String _getLanguageName(String code) {
+    switch (code) {
+      case 'en':
+        return 'English';
+      case 'ar':
+        return 'العربية';
+      default:
+        return code;
+    }
   }
 }

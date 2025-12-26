@@ -1,7 +1,7 @@
-// lib/presentation/pages/computer_game_screen.dart
-
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/build_move_section_widget.dart';
+import 'package:chessground_game_app/core/l10n_build_context.dart';
+import 'package:chessground_game_app/l10n/l10n.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:chessground/chessground.dart' show PlayerSide;
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
@@ -35,21 +35,20 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
   /// Build app bar
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final l10n = context.l10n;
     return AppBar(
       title: Obx(() {
-        // if (controller.game == null) {
-        //   return const Text('vs Computer');
-        // }
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'vs Stockfish',
+              l10n.computerGameVsStockfish,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             Text(
-              'Level ${(controller as ComputerGameController).difficulty}',
+              l10n.computerGameLevel(
+                (controller as ComputerGameController).difficulty,
+              ),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -60,7 +59,7 @@ class ComputerGamePage extends GetView<BaseGameController> {
         Obx(
           () => IconButton(
             icon: const Icon(Icons.undo),
-            tooltip: 'Undo Move',
+            tooltip: l10n.undoMove,
             onPressed:
                 controller.canUndo.value &&
                     !((controller as ComputerGameController)).computerThinking
@@ -74,7 +73,7 @@ class ComputerGamePage extends GetView<BaseGameController> {
           () => (controller as ComputerGameController).showMoveHints.value
               ? IconButton(
                   icon: const Icon(Icons.lightbulb_outline),
-                  tooltip: 'Get Hint',
+                  tooltip: l10n.getHint,
                   onPressed: () => _getHint(context),
                 )
               : const SizedBox.shrink(),
@@ -84,9 +83,9 @@ class ComputerGamePage extends GetView<BaseGameController> {
         PopupMenuButton<String>(
           onSelected: (value) => _handleMenuAction(value, context),
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'new', child: Text('New Game')),
-            const PopupMenuItem(value: 'save', child: Text('Save Game')),
-            const PopupMenuItem(value: 'resign', child: Text('Resign')),
+            PopupMenuItem(value: 'new', child: Text(l10n.newGame)),
+            PopupMenuItem(value: 'save', child: Text(l10n.saveGame)),
+            PopupMenuItem(value: 'resign', child: Text(l10n.resign)),
           ],
         ),
       ],
@@ -95,6 +94,8 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
   /// Build portrait layout
   Widget _buildPortraitLayout(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -133,9 +134,9 @@ class ComputerGamePage extends GetView<BaseGameController> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Computer is thinking...',
+                      l10n.computerThinking,
                       style: TextStyle(
-                        color: Colors.grey[600],
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
                         fontSize: 14,
                         fontStyle: FontStyle.italic,
                       ),
@@ -175,7 +176,7 @@ class ComputerGamePage extends GetView<BaseGameController> {
             height: 120,
             child: Obx(() {
               if (controller.gameState.getMoveTokens.isEmpty) {
-                return const Center(child: Text('No moves yet'));
+                return Center(child: Text(l10n.noMovesYet));
               }
 
               return const BuildMoveSectionWidget();
@@ -188,6 +189,8 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
   /// Build landscape layout
   Widget _buildLandscapeLayout(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Row(
       children: [
         // Left: Board
@@ -253,8 +256,8 @@ class ComputerGamePage extends GetView<BaseGameController> {
           flex: 4,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey[100],
-              border: const Border(left: BorderSide(color: Colors.grey)),
+              color: theme.colorScheme.surfaceContainerHighest,
+              border: Border(left: BorderSide(color: theme.dividerColor)),
             ),
             child: Column(
               children: [
@@ -263,19 +266,22 @@ class ComputerGamePage extends GetView<BaseGameController> {
                   if ((controller as ComputerGameController).computerThinking) {
                     return Container(
                       padding: const EdgeInsets.all(16),
-                      color: Colors.blue[50],
-                      child: const Row(
+                      color: theme.colorScheme.secondaryContainer,
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Text(
-                            'Computer is thinking...',
-                            style: TextStyle(fontWeight: FontWeight.w500),
+                            l10n.computerThinking,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: theme.colorScheme.onSecondaryContainer,
+                            ),
                           ),
                         ],
                       ),
@@ -288,7 +294,7 @@ class ComputerGamePage extends GetView<BaseGameController> {
                 Expanded(
                   child: Obx(() {
                     if (controller.gameState.getMoveTokens.isEmpty) {
-                      return const Center(child: Text('No moves yet'));
+                      return Center(child: Text(l10n.noMovesYet));
                     }
 
                     return const BuildMoveSectionWidget();
@@ -307,11 +313,13 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
   /// Build game controls
   Widget _buildGameControls(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[300]!)),
+        color: theme.colorScheme.surface,
+        border: Border(top: BorderSide(color: theme.dividerColor)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -325,8 +333,10 @@ class ComputerGamePage extends GetView<BaseGameController> {
                   ? () => controller.undoMove()
                   : null,
               icon: const Icon(Icons.undo),
-              label: const Text('Undo Move'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              label: Text(l10n.undoMove),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.secondary,
+              ),
             ),
           ),
 
@@ -342,10 +352,10 @@ class ComputerGamePage extends GetView<BaseGameController> {
                         ? () => _getHint(context)
                         : null,
                     icon: const Icon(Icons.lightbulb),
-                    label: const Text('Get Hint'),
+                    label: Text(l10n.getHint),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
+                      backgroundColor: theme.colorScheme.tertiary,
+                      foregroundColor: theme.colorScheme.onTertiary,
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -355,10 +365,13 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
           // Resign button
           ElevatedButton.icon(
-            onPressed: () => _confirmResign(context),
+            onPressed: () => _confirmResign(context, l10n),
             icon: const Icon(Icons.flag),
-            label: const Text('Resign'),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            label: Text(l10n.resign),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.colorScheme.error,
+              foregroundColor: theme.colorScheme.onError,
+            ),
           ),
         ],
       ),
@@ -367,10 +380,12 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
   /// Get hint
   Future<void> _getHint(BuildContext context) async {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
     if ((controller as ComputerGameController).computerThinking) {
       Get.snackbar(
-        'Please Wait',
-        'Computer is thinking...',
+        l10n.wait,
+        l10n.computerThinking,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -384,11 +399,11 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
       Get.dialog(
         AlertDialog(
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.lightbulb, color: Colors.amber),
-              SizedBox(width: 8),
-              Text('Hint'),
+              Icon(Icons.lightbulb, color: theme.colorScheme.tertiary),
+              const SizedBox(width: 8),
+              Text(l10n.hintTitle),
             ],
           ),
           content: Column(
@@ -396,30 +411,34 @@ class ComputerGamePage extends GetView<BaseGameController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Suggested move:',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                l10n.hintSuggestedMove,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.amber[50],
+                  color: theme.colorScheme.tertiaryContainer,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber),
+                  border: Border.all(color: theme.colorScheme.tertiary),
                 ),
                 child: Text(
                   hint.san ?? hint.uci,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'monospace',
+                    color: theme.colorScheme.onTertiaryContainer,
                   ),
                 ),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Get.back(), child: const Text('Close')),
+            TextButton(onPressed: () => Get.back(), child: Text(l10n.close)),
           ],
         ),
       );
@@ -428,42 +447,53 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
   /// Build board or error widget
   Widget _buildBoardOrError(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
     return Obx(() {
       final computerController = controller as ComputerGameController;
+      String errorMessage = computerController.stockfishController.errorMessage;
 
-      // Check for error first
-      if (computerController.stockfishController.errorMessage.isNotEmpty) {
+      if (errorMessage.isNotEmpty) {
+        // Translate error key if possible
+        if (errorMessage == "timeoutStockfish") {
+          errorMessage = l10n.timeoutStockfish;
+        }
+
         return Container(
-          color: Colors.grey[200],
+          color: theme.colorScheme.errorContainer,
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  Icon(
+                    Icons.error_outline,
+                    color: theme.colorScheme.error,
+                    size: 48,
+                  ),
                   const SizedBox(height: 16),
                   Text(
-                    'Engine Error',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.red[700],
+                    l10n.engineErrorTitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.onErrorContainer,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    computerController.stockfishController.errorMessage,
+                    errorMessage,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[800]),
+                    style: TextStyle(color: theme.colorScheme.onErrorContainer),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     onPressed: () => computerController.retryGame(),
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    label: Text(l10n.retryGame),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
+                      backgroundColor: theme.colorScheme.primary,
+                      foregroundColor: theme.colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -486,35 +516,37 @@ class ComputerGamePage extends GetView<BaseGameController> {
 
   /// Handle menu actions
   void _handleMenuAction(String action, BuildContext context) {
+    final l10n = context.l10n;
     switch (action) {
       case 'new':
-        _confirmNewGame(context);
+        _confirmNewGame(context, l10n);
         break;
       case 'save':
         (controller as ComputerGameController).saveGame();
         break;
       case 'resign':
-        _confirmResign(context);
+        _confirmResign(context, l10n);
         break;
     }
   }
 
   /// Confirm new game
-  Future<void> _confirmNewGame(BuildContext context) async {
+  Future<void> _confirmNewGame(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('New Game'),
-        content: const Text(
-          'Start a new game? Current game will be lost if not saved.',
-        ),
+        title: Text(l10n.newGame),
+        content: Text(l10n.newGameConfirmation),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Get.back(result: true),
-            child: const Text('New Game'),
+            child: Text(l10n.newGame),
           ),
         ],
       ),
@@ -526,28 +558,37 @@ class ComputerGamePage extends GetView<BaseGameController> {
   }
 
   /// Confirm resign
-  Future<void> _confirmResign(BuildContext context) async {
+  Future<void> _confirmResign(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
     final confirmed = await Get.dialog<bool>(
       AlertDialog(
-        title: const Text('Resign'),
-        content: const Text('Are you sure you want to resign?'),
+        title: Text(l10n.resign),
+        content: Text(l10n.resignConfirmation),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () => Get.back(result: true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Resign'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(
+              l10n.resign,
+              style: TextStyle(color: Theme.of(context).colorScheme.onError),
+            ),
           ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      final side =
-          controller.playerSide == PlayerSide.white ? Side.white : Side.black;
+      final side = controller.playerSide == PlayerSide.white
+          ? Side.white
+          : Side.black;
       await controller.resign(side);
     }
   }

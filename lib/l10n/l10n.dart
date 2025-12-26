@@ -4200,16 +4200,8 @@ abstract class AppLocalizations {
   /// **'Average rating: {param}'**
   String averageRatingX(Object param);
 
-  /// No description provided for @recentGames.
-  ///
-  /// In en, this message translates to:
-  /// **'Recent games'**
   String get recentGames;
-
-  /// No description provided for @topGames.
-  ///
-  /// In en, this message translates to:
-  /// **'Top games'**
+  String get noGamesYet;
   String get topGames;
 
   /// No description provided for @masterDbExplanation.
@@ -6755,11 +6747,7 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'About'**
   String get about;
-
-  /// No description provided for @aboutX.
-  ///
-  /// In en, this message translates to:
-  /// **'About {param}'**
+  String get aboutDescription;
   String aboutX(Object param);
 
   /// No description provided for @xIsAFreeYLibreOpenSourceChessServer.
@@ -10559,6 +10547,53 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load player: {message}'**
   String failedToLoadPlayer(Object message);
+
+  String get computerGameVsStockfish;
+  String computerGameLevel(Object level);
+  String get undoMove;
+  String get getHint;
+  String get newGame;
+  String get saveGame;
+  String get noMovesYet;
+  String get wait;
+  String get hintTitle;
+  String get hintSuggestedMove;
+  String get timeoutStockfish;
+  String get engineErrorTitle;
+  String get retryGame;
+  String get guest;
+  String get stockfish;
+  String get setupOfflineGame;
+  String get playOfflineGame;
+  String get choosePlayerSide;
+  String get chessGame;
+  String get copy;
+  String get share;
+  String get undo;
+  String get redo;
+  String get first;
+  String get last;
+  String get flip;
+  String get goBack;
+  String get settings;
+  String get exportPgn;
+  String get capturedPieces;
+  String get gameSettings;
+  String get autoSave;
+  String get autoSaveDesc;
+  String get startNewGameTitle;
+  String get startNewGameConfirm;
+  String resignConfirm(Object side);
+  String get offerDrawTitle;
+  String get offerDrawConfirm;
+  String get agreeDraw;
+  String get pgnNotAvailable;
+  String get pgnCopied;
+  String get pgnCopiedToClipboard;
+  String get sharePgnSuccess;
+  String get chooseGameMode;
+  String get newGameConfirmation;
+  String get resignConfirmation;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

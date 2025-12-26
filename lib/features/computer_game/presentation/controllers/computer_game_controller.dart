@@ -5,28 +5,22 @@ import 'package:chessground_game_app/core/global_feature/presentaion/controllers
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:chessground_game_app/features/analysis/presentation/controllers/stockfish_controller.dart';
 import 'package:dartchess/dartchess.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
-/// Controller for games against the computer (Stockfish AI)
-/// كنترولر للعب ضد الكمبيوتر (ذكاء اصطناعي Stockfish)
 class ComputerGameController extends BaseGameController
     with StorageFeatures, WidgetsBindingObserver {
-  /// Computer is thinking
   final RxBool _computerThinking = false.obs;
   bool get computerThinking => _computerThinking.value;
 
-  /// Computer difficulty level (0-20)
   final RxInt _difficulty = 10.obs;
   int get difficulty => _difficulty.value;
   set difficulty(int value) => _difficulty.value = value;
 
-  /// Show move hints
   final RxBool showMoveHints = false.obs;
 
   final StockfishController stockfishController;
 
-  /// Check if Stockfish is ready
   bool get isStockfishReady => stockfishController.isInitializedRx.value;
 
   ComputerGameController({
@@ -34,8 +28,8 @@ class ComputerGameController extends BaseGameController
     required this.stockfishController,
   });
 
-  /// Player name
   String _playerName = 'Guest';
+  String _stockfishName = 'Stockfish';
 
   @override
   void onInit() {
@@ -43,14 +37,15 @@ class ComputerGameController extends BaseGameController
     final args = Get.arguments;
     if (args != null && args is Map) {
       _playerName = args['playerName'] as String;
+      _stockfishName = args['stockfishName'] as String? ?? 'Stockfish';
       final playerSide = args['playerSide'] as PlayerSide;
       final difficulty = args['difficulty'] as int;
       final showHints = args['showMoveHints'] as bool? ?? false;
 
-      // Start game automatically with provided arguments
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _startComputerGame(
           playerName: _playerName,
+          stockfishName: _stockfishName,
           playerSide: playerSide,
           difficulty: difficulty,
           showMoveHints: showHints,
@@ -59,27 +54,23 @@ class ComputerGameController extends BaseGameController
     }
   }
 
-  /// Retry game start
-  /// إعادة محاولة بدء اللعبة
   Future<void> retryGame() async {
-    // Retry engine initialization if needed
     if (!isStockfishReady) {
       await stockfishController.retryInitialization();
     }
 
-    // Restart game setup
     await _startComputerGame(
       playerName: _playerName,
+      stockfishName: _stockfishName,
       playerSide: playerSide,
       difficulty: difficulty,
       showMoveHints: showMoveHints.value,
     );
   }
 
-  /// Start new game against computer
-  /// بدء لعبة جديدة ضد الكمبيوتر
   Future<void> _startComputerGame({
     required String playerName,
+    required String stockfishName,
     required PlayerSide playerSide,
     int difficulty = 10,
     bool showMoveHints = false,
@@ -90,14 +81,8 @@ class ComputerGameController extends BaseGameController
       _difficulty.value = difficulty;
       this.showMoveHints.value = showMoveHints;
 
-      // Wait for engine initialization if needed
       if (!isStockfishReady) {
-        AppLogger.info(
-          'Waiting for Stockfish initialization...',
-          tag: 'ComputerGameController',
-        );
-
-        // Wait up to 5 seconds for initialization
+        AppLogger.info('Waiting for Stockfish initialization...', tag: 'ComputerGameController');
         int retries = 0;
         while (!isStockfishReady && retries < 50) {
           if (stockfishController.errorMessage.isNotEmpty) {
@@ -106,46 +91,29 @@ class ComputerGameController extends BaseGameController
           await Future.delayed(const Duration(milliseconds: 100));
           retries++;
         }
-
         if (!isStockfishReady) {
-          throw Exception('Timeout waiting for Stockfish initialization');
+          setError("timeoutStockfish");
+          isLoading = false;
+          return;
         }
       }
 
-      // Set computer skill level
       await stockfishController.setSkillLevel(difficulty);
 
-      AppLogger.gameEvent(
-        'StartComputerGame',
-        data: {
-          'playerName': playerName,
-          'playerSide': playerSide.name,
-          'difficulty': difficulty,
-        },
-      );
-
-      // Start game with player and computer
       await startNewGame(
-        whitePlayerName: playerSide == PlayerSide.white
-            ? playerName
-            : 'Stockfish',
-        blackPlayerName: playerSide == PlayerSide.black
-            ? playerName
-            : 'Stockfish',
+        whitePlayerName: playerSide == PlayerSide.white ? playerName : stockfishName,
+        blackPlayerName: playerSide == PlayerSide.black ? playerName : stockfishName,
         event: 'Computer Game',
         site: 'Local',
       );
 
-      // If computer plays white, make first move
       if (playerSide == PlayerSide.black) {
         if (isStockfishReady) {
-          // Delay slightly so user perceives the board before move
           await Future.delayed(const Duration(milliseconds: 500));
           await _makeComputerMove();
         } else {
-          // Wait for initialization then move
           once(stockfishController.isInitializedRx, (isReady) async {
-            if (isReady && !isGameOver) {
+            if (isReady == true && !isGameOver) {
               await Future.delayed(const Duration(milliseconds: 500));
               await _makeComputerMove();
             }
@@ -153,107 +121,53 @@ class ComputerGameController extends BaseGameController
         }
       }
 
-      // Show board immediately after setup is done
       isLoading = false;
-
-      currentFen = gameState.position.fen;
-      validMoves = makeLegalMoves(gameState.position);
-
-      debugPrint('Computer game started');
+      updateReactiveState();
     } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error starting computer game',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'ComputerGameController',
-      );
+      AppLogger.error('Error starting computer game', error: e, stackTrace: stackTrace, tag: 'ComputerGameController');
+      setError(e.toString());
+      isLoading = false;
     }
   }
 
-  /// Override onUserMove to trigger computer response
-  /// تجاوز onUserMove لتشغيل استجابة الكمبيوتر
   @override
-  Future<void> onUserMove(
-    NormalMove move, {
-    bool? isDrop,
-    bool? isPremove,
-  }) async {
-    // Execute player's move
+  Future<void> onUserMove(NormalMove move, {bool? isDrop, bool? isPremove}) async {
     super.onUserMove(move, isDrop: isDrop, isPremove: isPremove);
-
-    // Auto-save if enabled
-    if (autoSaveEnabled) {
-      await autoSaveGame();
-    }
-
-    // Check if game is over
+    if (autoSaveEnabled) await autoSaveGame();
     if (isGameOver) return;
-
-    // Check if it's computer's turn
     if (currentTurn.name != playerSide.name) {
       await _makeComputerMove();
     }
   }
 
-  /// Make computer move
-  /// تنفيذ حركة الكمبيوتر
   Future<void> _makeComputerMove() async {
     try {
       if (isGameOver) return;
-
       _computerThinking.value = true;
-
-      AppLogger.info('Computer is thinking...', tag: 'ComputerGameController');
-
-      // Add small delay for better UX
       await Future.delayed(const Duration(milliseconds: 500));
 
-      final randomTime = Random().nextInt(3000) + 2000; // 2000ms to 5000ms
+      final randomTime = Random().nextInt(3000) + 2000;
       await stockfishController.getBestMoveWithTimeAndDepth(
         currentFen,
         depth: _getDepthForDifficulty(difficulty),
         timeMilliseconds: randomTime,
       );
       final bestMoveResult = stockfishController.bestMove;
-      if (bestMoveResult == null) {
-        AppLogger.error(
-          'Computer failed to find move',
-          tag: 'ComputerGameController',
-        );
-        _computerThinking.value = false;
-        return;
+
+      if (bestMoveResult != null) {
+        final move = Move.parse(bestMoveResult.uci);
+        if (move is NormalMove) {
+          super.onUserMove(move);
+        }
       }
-
-      // Parse and execute move
-      final moveUci = bestMoveResult.uci;
-      final move = Move.parse(moveUci);
-
-      if (move is NormalMove) {
-        AppLogger.info(
-          'Computer plays: $moveUci',
-          tag: 'ComputerGameController',
-        );
-
-        // Execute move without triggering another computer move
-        super.onUserMove(move);
-      }
-
       _computerThinking.value = false;
     } catch (e, stackTrace) {
-      AppLogger.error(
-        'Error making computer move',
-        error: e,
-        stackTrace: stackTrace,
-        tag: 'ComputerGameController',
-      );
+      AppLogger.error('Error making computer move', error: e, stackTrace: stackTrace, tag: 'ComputerGameController');
       _computerThinking.value = false;
     }
   }
 
-  /// Get analysis depth based on difficulty
-  /// الحصول على عمق التحليل بناءً على الصعوبة
   int _getDepthForDifficulty(int difficulty) {
-    // Easy: 5-8, Medium: 10-15, Hard: 18-22
     if (difficulty < 7) return 8;
     if (difficulty < 14) return 15;
     return 20;

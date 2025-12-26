@@ -1,178 +1,173 @@
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/board_theme.dart';
+import 'package:chessground_game_app/core/l10n_build_context.dart';
+import 'package:chessground_game_app/features/home/presentation/controllers/board_editor_controller.dart';
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-class BoardEditorPage extends StatefulWidget {
+class BoardEditorPage extends GetView<BoardEditorController> {
   const BoardEditorPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => _BoardEditorPageState();
-}
-
-class _BoardEditorPageState extends State<BoardEditorPage> {
-  Pieces pieces = readFen(kInitialFEN);
-
-  /// The piece to add when a square is touched. If null, will delete the piece.
-  Piece? pieceToAddOnTouch;
-
-  EditorPointerMode pointerMode = EditorPointerMode.drag;
-
-  @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
     final double screenWidth = MediaQuery.of(context).size.width;
 
+    // Use a fixed piece set for now or get from settings
     const PieceSet pieceSet = PieceSet.merida;
 
-    final settings = ChessboardSettings(
-      pieceAssets: pieceSet.assets,
-      colorScheme: BoardTheme.blue.colors,
-      enableCoordinates: true,
-    );
-    final boardEditor = ChessboardEditor(
-      size: screenWidth,
-      orientation: Side.white,
-      pieces: pieces,
-      settings: settings,
-      pointerMode: pointerMode,
-      onEditedSquare: (squareId) => setState(() {
-        if (pieceToAddOnTouch != null) {
-          pieces[squareId] = pieceToAddOnTouch!;
-        } else {
-          pieces.remove(squareId);
-        }
-      }),
-      onDiscardedPiece: (squareId) => setState(() {
-        pieces.remove(squareId);
-      }),
-      onDroppedPiece: (origin, destination, piece) => setState(() {
-        pieces[destination] = piece;
-        if (origin != null && origin != destination) {
-          pieces.remove(origin);
-        }
-      }),
-    );
-
-    makePieceMenu(side) => PieceMenu(
-      side: side,
-      pieceSet: pieceSet,
-      squareSize: boardEditor.squareSize,
-      settings: settings,
-      pieceEdition: pointerMode == EditorPointerMode.edit ? pieceToAddOnTouch : null,
-      pieceTapped: (role) => setState(() {
-        pieceToAddOnTouch = Piece(role: role, color: side);
-        pointerMode = EditorPointerMode.edit;
-      }),
-      pointerMode: pointerMode,
-      deleteTapped: () => setState(() {
-        pieceToAddOnTouch = null;
-        pointerMode = EditorPointerMode.edit;
-      }),
-      pointerModeTapped: () => setState(() {
-        pointerMode = EditorPointerMode.drag;
-      }),
-    );
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Board Editor')),
-      body: Center(
+      appBar: AppBar(
+        title: Text(l10n.boardEditor),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: l10n.startPosition,
+            onPressed: () => controller.resetToInitial(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.layers_clear),
+            tooltip: l10n.clearBoard,
+            onPressed: () => controller.clearBoard(),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            makePieceMenu(Side.black),
-            boardEditor,
-            makePieceMenu(Side.white),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: SizedBox(height: 50, child: Text('FEN: ${writeFen(pieces)}')),
+            const SizedBox(height: 16),
+            Obx(() => _buildPieceMenu(context, Side.black, pieceSet)),
+            const SizedBox(height: 16),
+            Obx(() {
+              final settings = ChessboardSettings(
+                pieceAssets: pieceSet.assets,
+                colorScheme: BoardTheme.blue.colors,
+                enableCoordinates: true,
+              );
+              return ChessboardEditor(
+                size: screenWidth > 600 ? 600 : screenWidth,
+                orientation: Side.white,
+                pieces: controller.pieces.value,
+                settings: settings,
+                pointerMode: controller.pointerMode.value,
+                onEditedSquare: controller.onEditedSquare,
+                onDiscardedPiece: controller.onDiscardedPiece,
+                onDroppedPiece: controller.onDroppedPiece,
+              );
+            }),
+            const SizedBox(height: 16),
+            Obx(() => _buildPieceMenu(context, Side.white, pieceSet)),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'FEN:',
+                    style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Obx(() => SelectableText(
+                        controller.fen,
+                        style: const TextStyle(fontFamily: 'monospace'),
+                      )),
+                ],
+              ),
             ),
+            const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
-}
 
-class PieceMenu extends StatelessWidget {
-  const PieceMenu({
-    super.key,
-    required this.side,
-    required this.pieceSet,
-    required this.squareSize,
-    required this.pieceEdition,
-    required this.pointerMode,
-    required this.settings,
-    required this.pieceTapped,
-    required this.deleteTapped,
-    required this.pointerModeTapped,
-  });
-
-  final Side side;
-  final PieceSet pieceSet;
-  final double squareSize;
-
-  /// The piece that is currently being edited.
-  ///
-  /// If null while [pointerMode] is [EditorPointerMode.edit], the user is in delete mode.
-  final Piece? pieceEdition;
-
-  final EditorPointerMode pointerMode;
-  final ChessboardSettings settings;
-  final Function(Role role) pieceTapped;
-  final Function() deleteTapped;
-  final Function() pointerModeTapped;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildPieceMenu(BuildContext context, Side side, PieceSet pieceSet) {
     return Container(
-      color: Colors.grey,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            color: pointerMode == EditorPointerMode.drag ? Colors.green : Colors.transparent,
-            child: GestureDetector(
-              onTap: () => pointerModeTapped(),
-              child: Icon(Icons.pan_tool_alt_outlined, size: squareSize),
-            ),
+          _buildToolButton(
+            icon: Icons.pan_tool_alt_outlined,
+            isSelected: controller.pointerMode.value == EditorPointerMode.drag,
+            onTap: () => controller.selectDrag(),
+            color: Colors.green,
           ),
+          const VerticalDivider(),
           ...Role.values.mapIndexed((i, role) {
             final piece = Piece(role: role, color: side);
-            final pieceWidget = PieceWidget(
-              piece: piece,
-              size: squareSize,
-              pieceAssets: pieceSet.assets,
-            );
+            final isSelected = controller.pointerMode.value == EditorPointerMode.edit &&
+                controller.pieceToAddOnTouch.value == piece;
 
-            return Container(
-              color: pieceEdition == piece ? Colors.blue : Colors.transparent,
-              child: GestureDetector(
-                onTap: () => pieceTapped(role),
-                child: Draggable(
-                  data: piece,
-                  feedback: PieceDragFeedback(
-                    scale: settings.dragFeedbackScale,
-                    squareSize: squareSize,
-                    piece: piece,
-                    pieceAssets: pieceSet.assets,
-                  ),
-                  child: pieceWidget,
-                ),
-              ),
-            );
+            return _buildPieceButton(piece, pieceSet, isSelected, () {
+              controller.selectPiece(role, side);
+            });
           }),
-          Container(
-            color: pointerMode == EditorPointerMode.edit && pieceEdition == null
-                ? Colors.red
-                : Colors.transparent,
-            child: GestureDetector(
-              onTap: () => deleteTapped(),
-              child: Icon(Icons.delete_outline, size: squareSize),
-            ),
+          const VerticalDivider(),
+          _buildToolButton(
+            icon: Icons.delete_outline,
+            isSelected: controller.pointerMode.value == EditorPointerMode.edit &&
+                controller.pieceToAddOnTouch.value == null,
+            onTap: () => controller.selectDelete(),
+            color: Colors.red,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildToolButton({
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? color : Colors.transparent),
+        ),
+        child: Icon(icon, color: isSelected ? color : null, size: 32),
+      ),
+    );
+  }
+
+  Widget _buildPieceButton(Piece piece, PieceSet pieceSet, bool isSelected, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: isSelected ? Colors.blue : Colors.transparent),
+        ),
+        child: PieceWidget(
+          piece: piece,
+          size: 32,
+          pieceAssets: pieceSet.assets,
+        ),
       ),
     );
   }

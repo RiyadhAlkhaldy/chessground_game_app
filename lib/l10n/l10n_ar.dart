@@ -2480,6 +2480,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get recentGames => 'أحدث المباريات';
 
   @override
+  String get noGamesYet => 'لا توجد مباريات بعد';
+
+  @override
   String get topGames => 'أفضل الالعاب';
 
   @override
@@ -3844,7 +3847,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get webmasters => 'مدراء المواقع';
 
   @override
-  String get about => 'عن';
+  String get about => 'عن التطبيق';
+
+  @override
+  String get aboutDescription => 'تطبيق شطرنج احترافي تم بناؤه باستخدام Flutter، مع التركيز على الأداء، الهندسة النظيفة، وتجربة مستخدم رائعة.';
 
   @override
   String aboutX(Object param) {
@@ -6659,4 +6665,142 @@ class AppLocalizationsAr extends AppLocalizations {
   String failedToLoadPlayer(Object message) {
     return 'فشل تحميل اللاعب: $message';
   }
+
+  @override
+  String get computerGameVsStockfish => 'ضد ستوكفيش';
+
+  @override
+  String computerGameLevel(Object level) => 'مستوى $level';
+
+  @override
+  String get undoMove => 'تراجع عن الحركة';
+
+  @override
+  String get getHint => 'الحصول على تلميح';
+
+  @override
+  String get newGame => 'لعبة جديدة';
+
+  @override
+  String get saveGame => 'حفظ اللعبة';
+
+  @override
+  String get noMovesYet => 'لا توجد حركات بعد';
+
+  @override
+  String get wait => 'الرجاء الانتظار...';
+
+  @override
+  String get hintTitle => 'تلميح';
+
+  @override
+  String get hintSuggestedMove => 'الحركة المقترحة:';
+
+  @override
+  String get timeoutStockfish => 'انتهى وقت المحرك';
+
+  @override
+  String get engineErrorTitle => 'خطأ في المحرك';
+
+  @override
+  String get retryGame => 'إعادة المحاولة';
+
+  @override
+  String get guest => 'ضيف';
+
+  @override
+  String get stockfish => 'ستوكفيش';
+
+  @override
+  String get setupOfflineGame => 'إعداد لعبة محلية';
+
+  @override
+  String get playOfflineGame => 'لعب لعبة محلية';
+
+  @override
+  String get choosePlayerSide => 'اختر جانب اللاعب';
+
+  @override
+  String get chessGame => 'لعبة شطرنج';
+
+  @override
+  String get copy => 'نسخ';
+
+  @override
+  String get share => 'مشاركة';
+
+  @override
+  String get undo => 'تراجع';
+
+  @override
+  String get redo => 'إعادة';
+
+  @override
+  String get first => 'الأول';
+
+  @override
+  String get last => 'الأخير';
+
+  @override
+  String get flip => 'قلب';
+
+  @override
+  String get goBack => 'العودة';
+
+  @override
+  String get settings => 'الإعدادات';
+
+  @override
+  String get exportPgn => 'تصدير PGN';
+
+  @override
+  String get capturedPieces => 'القطع المأسورة';
+
+  @override
+  String get gameSettings => 'إعدادات اللعبة';
+
+  @override
+  String get autoSave => 'حفظ تلقائي';
+
+  @override
+  String get autoSaveDesc => 'حفظ تلقائي بعد كل حركة';
+
+  @override
+  String get startNewGameTitle => 'بدء لعبة جديدة';
+
+  @override
+  String get startNewGameConfirm => 'هل أنت متأكد أنك تريد بدء لعبة جديدة؟ سيتم حفظ اللعبة الحالية.';
+
+  @override
+  String resignConfirm(Object side) => 'هل أنت متأكد أن $side يريد الاستسلام؟';
+
+  @override
+  String get offerDrawTitle => 'عرض تعادل';
+
+  @override
+  String get offerDrawConfirm => 'هل يوافق كلا اللاعبين على التعادل؟';
+
+  @override
+  String get agreeDraw => 'الموافقة على التعادل';
+
+  @override
+  String get pgnNotAvailable => 'PGN غير متاح.';
+
+  @override
+  String get pgnCopied => 'تم نسخ PGN';
+
+  @override
+  String get pgnCopiedToClipboard => 'تم نسخ PGN إلى الحافظة';
+
+  @override
+  String get sharePgnSuccess => 'شكرا لمشاركة PGN..';
+
+  @override
+  String get chooseGameMode => 'اختر وضع اللعب المناسب لك';
+
+  @override
+  String get newGameConfirmation => 'بدء لعبة جديدة؟ ستفقد اللعبة الحالية إذا لم يتم حفظها.';
+
+  @override
+  String get resignConfirmation => 'هل أنت متأكد أنك تريد الاستسلام؟';
 }

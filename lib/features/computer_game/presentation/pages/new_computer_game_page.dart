@@ -10,7 +10,6 @@ class NewComputerGamePage extends GetView<NewComputerGameController> {
 
   @override
   Widget build(BuildContext context) {
-    // Responsive layout wrapper
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.setupComputerGame)),
       body: Center(
@@ -72,7 +71,7 @@ class NewComputerGamePage extends GetView<NewComputerGameController> {
 
                 // Difficulty
                 Text(
-                  context.l10n.puzzleDifficultyLevel, // "Difficulty level"
+                  context.l10n.puzzleDifficultyLevel,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
 
@@ -147,7 +146,7 @@ class NewComputerGamePage extends GetView<NewComputerGameController> {
                     title: Text(context.l10n.showMoveHints),
                     value: controller.showMoveHints.value,
                     onChanged: (val) => controller.showMoveHints.value = val,
-                    activeColor: Colors.green, // Keep green as positive action or use Theme
+                    activeColor: Theme.of(context).colorScheme.primary,
                   ),
                 ),
 
@@ -155,45 +154,30 @@ class NewComputerGamePage extends GetView<NewComputerGameController> {
 
                 // Start button
                 Obx(
-                  () {
-                    if (controller.errorMessage.isNotEmpty) {
-                         WidgetsBinding.instance.addPostFrameCallback((_) {
-                           Get.snackbar(
-                             context.l10n.errorTitle,
-                             context.l10n.failedToLoadPlayer(controller.errorMessage.value),
-                             snackPosition: SnackPosition.BOTTOM,
-                             backgroundColor: Theme.of(context).colorScheme.error,
-                             colorText: Theme.of(context).colorScheme.onError,
-                           );
-                           controller.errorMessage.value = ''; // Reset after showing
-                         });
-                    }
-
-                    return FilledButton(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : () => controller.startGame(),
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: controller.isLoading.value
-                          ? SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            )
-                          : Text(
-                              context.l10n.startGame,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                  () => FilledButton(
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : () => controller.startGame(),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: controller.isLoading.value
+                        ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Theme.of(context).colorScheme.onPrimary,
                             ),
-                    );
-                  }
+                          )
+                        : Text(
+                            context.l10n.startGame,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  ),
                 ),
               ],
             ),
@@ -252,9 +236,10 @@ class NewComputerGamePage extends GetView<NewComputerGameController> {
   }
 
   Color _getDifficultyColor(BuildContext context, int level) {
-    if (level <= 5) return Colors.green;
+    final colorScheme = Theme.of(context).colorScheme;
+    if (level <= 5) return Colors.green; // Semantic colors might be needed in theme extension
     if (level <= 10) return Colors.orange;
-    if (level <= 15) return Colors.red;
-    return Colors.purple;
+    if (level <= 15) return colorScheme.error;
+    return colorScheme.tertiary; 
   }
 }

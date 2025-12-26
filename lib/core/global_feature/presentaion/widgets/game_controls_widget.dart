@@ -1,6 +1,5 @@
-// lib/presentation/widgets/game_controls_widget.dart
-
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
+import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,20 +10,27 @@ class GameControlsWidget extends GetView<BaseGameController> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[300]!)),
+        color: theme.colorScheme.surface,
+        border: Border(top: BorderSide(color: theme.dividerColor)),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Wrap(
+        alignment: WrapAlignment.spaceEvenly,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
         children: [
           // Undo button
           Obx(
             () => _buildControlButton(
+              context,
               icon: Icons.undo,
-              label: 'Undo',
+              label: l10n.undo,
               onPressed: controller.canUndo.value ? () => controller.undoMove() : null,
               enabled: controller.canUndo.value,
             ),
@@ -33,8 +39,9 @@ class GameControlsWidget extends GetView<BaseGameController> {
           // Redo button
           Obx(
             () => _buildControlButton(
+              context,
               icon: Icons.redo,
-              label: 'Redo',
+              label: l10n.redo,
               onPressed: controller.canRedo.value ? () => controller.redoMove() : null,
               enabled: controller.canRedo.value,
             ),
@@ -42,24 +49,27 @@ class GameControlsWidget extends GetView<BaseGameController> {
 
           // First move button
           _buildControlButton(
+            context,
             icon: Icons.first_page,
-            label: 'First',
+            label: l10n.first,
             onPressed: () => _goToFirstMove(),
             enabled: true,
           ),
 
           // Last move button
           _buildControlButton(
+            context,
             icon: Icons.last_page,
-            label: 'Last',
+            label: l10n.last,
             onPressed: () => _goToLastMove(),
             enabled: true,
           ),
 
           // Flip board button
           _buildControlButton(
+            context,
             icon: Icons.flip,
-            label: 'Flip',
+            label: l10n.flip,
             onPressed: () => _flipBoard(),
             enabled: true,
           ),
@@ -69,32 +79,44 @@ class GameControlsWidget extends GetView<BaseGameController> {
   }
 
   /// Build control button
-  /// بناء زر التحكم
-  Widget _buildControlButton({
+  Widget _buildControlButton(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required VoidCallback? onPressed,
     required bool enabled,
   }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        IconButton(
-          icon: Icon(icon),
-          onPressed: onPressed,
-          color: enabled ? Colors.blue : Colors.grey,
-          iconSize: 24,
-          tooltip: label,
+    final theme = Theme.of(context);
+    final color = enabled ? theme.colorScheme.primary : theme.disabledColor;
+    
+    return Tooltip(
+      message: label,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: enabled ? theme.colorScheme.onSurface : theme.disabledColor,
+                ),
+              ),
+            ],
+          ),
         ),
-        Text(label, style: TextStyle(fontSize: 10, color: enabled ? Colors.black87 : Colors.grey)),
-      ],
+      ),
     );
   }
 
   /// Navigate to first move
-  /// الانتقال إلى أول حركة
   void _goToFirstMove() {
-    // TODO: Implement navigation to first move
     Get.snackbar(
       'Navigate',
       'Go to first move',
@@ -104,9 +126,7 @@ class GameControlsWidget extends GetView<BaseGameController> {
   }
 
   /// Navigate to last move
-  /// الانتقال إلى آخر حركة
   void _goToLastMove() {
-    // TODO: Implement navigation to last move
     Get.snackbar(
       'Navigate',
       'Go to last move',
@@ -116,9 +136,7 @@ class GameControlsWidget extends GetView<BaseGameController> {
   }
 
   /// Flip board orientation
-  /// قلب اتجاه الرقعة
   void _flipBoard() {
-    // TODO: Implement board flip
     Get.snackbar(
       'Flip Board',
       'Board flipped',

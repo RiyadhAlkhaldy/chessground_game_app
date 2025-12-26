@@ -1,14 +1,11 @@
-// lib/features/offline_game/presentation/pages/offline_game_page.dart
-
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_controls_widget.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/build_move_section_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/build_player_section_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/captured_pieces_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/game_info_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/move_list_widget.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/enhanced_horizontal_move_list_widget.dart';
+import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:dartchess/dartchess.dart';
@@ -19,11 +16,12 @@ import 'package:share_plus/share_plus.dart';
 
 /// Main game screen displaying the chess board and game controls
 /// شاشة اللعبة الرئيسية التي تعرض رقعة الشطرنج وعناصر التحكم
-class OfflineGamePage extends GetView<BaseGameController> {
+class OfflineGamePage extends GetView<OfflineGameController> {
   const OfflineGamePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: _buildAppBar(context),
       body: SafeArea(
@@ -36,22 +34,26 @@ class OfflineGamePage extends GetView<BaseGameController> {
           // Show error message
           if (controller.errorMessage.isNotEmpty) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text(
-                    controller.errorMessage,
-                    style: const TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Get.back(),
-                    child: const Text('Go Back'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 64, color: Theme.of(context).colorScheme.error),
+                    const SizedBox(height: 16),
+                    Text(
+                      controller.errorMessage,
+                      style: const TextStyle(fontSize: 16),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    FilledButton.icon(
+                      onPressed: () => Get.back(),
+                      icon: const Icon(Icons.arrow_back),
+                      label: Text(l10n.goBack),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -72,14 +74,14 @@ class OfflineGamePage extends GetView<BaseGameController> {
   }
 
   /// Build app bar
-  /// بناء شريط التطبيق
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final l10n = context.l10n;
     return AppBar(
       title: Obx(() {
         final result = controller.getResult;
         if (result != null) return Text(controller.gameResult);
         final game = controller.currentGame;
-        if (game == null) return const Text('Chess Game');
+        if (game == null) return Text(l10n.chessGame);
 
         return Text(
           '${game.whitePlayer.name} vs ${game.blackPlayer.name}',
@@ -90,23 +92,23 @@ class OfflineGamePage extends GetView<BaseGameController> {
         // Save button
         IconButton(
           icon: const Icon(Icons.save),
-          tooltip: 'Save Game',
-          onPressed: () => (controller as OfflineGameController).saveGame(),
+          tooltip: l10n.saveGame,
+          onPressed: () => controller.saveGame(),
         ),
         // Settings button
         IconButton(
           icon: const Icon(Icons.settings),
-          tooltip: 'Settings',
+          tooltip: l10n.settings,
           onPressed: () => _showSettingsDialog(context),
         ),
         // Menu button
         PopupMenuButton<String>(
           onSelected: (value) => _handleMenuAction(value, context),
           itemBuilder: (context) => [
-            const PopupMenuItem(value: 'new_game', child: Text('New Game')),
-            const PopupMenuItem(value: 'resign', child: Text('Resign')),
-            const PopupMenuItem(value: 'draw', child: Text('Offer Draw')),
-            const PopupMenuItem(value: 'export_pgn', child: Text('Export PGN')),
+            PopupMenuItem(value: 'new_game', child: Text(l10n.newGame)),
+            PopupMenuItem(value: 'resign', child: Text(l10n.resign)),
+            PopupMenuItem(value: 'draw', child: Text(l10n.offerDraw)),
+            PopupMenuItem(value: 'export_pgn', child: Text(l10n.exportPgn)),
           ],
         ),
       ],
@@ -114,7 +116,6 @@ class OfflineGamePage extends GetView<BaseGameController> {
   }
 
   /// Build portrait layout
-  /// بناء تخطيط الوضع العمودي
   Widget _buildPortraitLayout(BuildContext context) {
     return Column(
       children: [
@@ -133,9 +134,9 @@ class OfflineGamePage extends GetView<BaseGameController> {
         const BuildPlayerSectionWidget(side: Side.white, isTop: false),
 
         // Enhanced horizontal move list
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: const EnhancedHorizontalMoveListWidget(),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: EnhancedHorizontalMoveListWidget(),
         ),
 
         // Game controls
@@ -145,8 +146,9 @@ class OfflineGamePage extends GetView<BaseGameController> {
   }
 
   /// Build landscape layout
-  /// بناء تخطيط الوضع الأفقي
   Widget _buildLandscapeLayout(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
     return Row(
       children: [
         // Left side: Game info and move list
@@ -183,20 +185,20 @@ class OfflineGamePage extends GetView<BaseGameController> {
         ),
 
         // Right side: Captured pieces
-        const Expanded(
+        Expanded(
           flex: 2,
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'Captured Pieces',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  l10n.capturedPieces,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
-              Expanded(child: CapturedPiecesWidget(side: Side.white)),
-              Divider(),
-              Expanded(child: CapturedPiecesWidget(side: Side.black)),
+              const Expanded(child: CapturedPiecesWidget(side: Side.white)),
+              const Divider(),
+              const Expanded(child: CapturedPiecesWidget(side: Side.black)),
             ],
           ),
         ),
@@ -205,18 +207,18 @@ class OfflineGamePage extends GetView<BaseGameController> {
   }
 
   /// Show settings dialog
-  /// عرض مربع حوار الإعدادات
   void _showSettingsDialog(BuildContext context) {
+    final l10n = context.l10n;
     Get.dialog(
       AlertDialog(
-        title: const Text('Game Settings'),
+        title: Text(l10n.gameSettings),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Obx(
               () => SwitchListTile(
-                title: const Text('Auto-save'),
-                subtitle: const Text('Automatically save after each move'),
+                title: Text(l10n.autoSave),
+                subtitle: Text(l10n.autoSaveDesc),
                 value: controller.autoSaveEnabled,
                 onChanged: (value) {
                   controller.autoSaveEnabled = value;
@@ -226,14 +228,13 @@ class OfflineGamePage extends GetView<BaseGameController> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Close')),
+          TextButton(onPressed: () => Get.back(), child: Text(l10n.close)),
         ],
       ),
     );
   }
 
   /// Handle menu actions
-  /// معالجة إجراءات القائمة
   void _handleMenuAction(String action, BuildContext context) {
     switch (action) {
       case 'new_game':
@@ -252,22 +253,20 @@ class OfflineGamePage extends GetView<BaseGameController> {
   }
 
   /// Confirm new game
-  /// تأكيد لعبة جديدة
   void _confirmNewGame(BuildContext context) {
+    final l10n = context.l10n;
     Get.dialog(
       AlertDialog(
-        title: const Text('Start New Game'),
-        content: const Text(
-          'Are you sure you want to start a new game? Current game will be saved.',
-        ),
+        title: Text(l10n.startNewGameTitle),
+        content: Text(l10n.startNewGameConfirm),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Get.back(), child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () {
               Get.back();
               Get.offNamed(AppRoutes.offlineGamePage);
             },
-            child: const Text('New Game'),
+            child: Text(l10n.newGame),
           ),
         ],
       ),
@@ -275,23 +274,24 @@ class OfflineGamePage extends GetView<BaseGameController> {
   }
 
   /// Confirm resign
-  /// تأكيد الاستسلام
   void _confirmResign(BuildContext context) {
+    final l10n = context.l10n;
+    final sideText = controller.currentTurn == Side.white ? l10n.white : l10n.black;
     Get.dialog(
       AlertDialog(
-        title: const Text('Resign'),
-        content: Text(
-          'Are you sure ${controller.currentTurn == Side.white ? 'White' : 'Black'} wants to resign?',
-        ),
+        title: Text(l10n.resign),
+        content: Text(l10n.resignConfirm(sideText)),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Get.back(), child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () {
               Get.back();
               controller.resign(controller.currentTurn);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Resign'),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError),
+            child: Text(l10n.resign),
           ),
         ],
       ),
@@ -299,20 +299,20 @@ class OfflineGamePage extends GetView<BaseGameController> {
   }
 
   /// Confirm draw
-  /// تأكيد التعادل
   void _confirmDraw(BuildContext context) {
+    final l10n = context.l10n;
     Get.dialog(
       AlertDialog(
-        title: const Text('Offer Draw'),
-        content: const Text('Do both players agree to a draw?'),
+        title: Text(l10n.offerDrawTitle),
+        content: Text(l10n.offerDrawConfirm),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Get.back(), child: Text(l10n.cancel)),
           ElevatedButton(
             onPressed: () {
               Get.back();
-              (controller as OfflineGameController).agreeDrawn();
+              controller.agreeDrawn();
             },
-            child: const Text('Agree Draw'),
+            child: Text(l10n.agreeDraw),
           ),
         ],
       ),
@@ -320,14 +320,14 @@ class OfflineGamePage extends GetView<BaseGameController> {
   }
 
   /// Export PGN
-  /// تصدير PGN
   void _exportPgn(BuildContext context) {
-    final pgn = (controller as OfflineGameController).getPgnString();
+    final l10n = context.l10n;
+    final pgn = controller.getPgnString();
 
     if (pgn.isEmpty) {
       Get.snackbar(
-        'Error',
-        'PGN not available.',
+        l10n.errorTitle,
+        l10n.pgnNotAvailable,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -337,47 +337,51 @@ class OfflineGamePage extends GetView<BaseGameController> {
   }
 
   void _showExportPgnDialog(BuildContext context, String pgn) {
+    final l10n = context.l10n;
     Get.dialog(
       AlertDialog(
-        title: const Text('Export PGN'),
-        content: SingleChildScrollView(child: SelectableText(pgn)),
+        title: Text(l10n.exportPgn),
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 300),
+          child: SingleChildScrollView(child: SelectableText(pgn)),
+        ),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Close')),
+          TextButton(onPressed: () => Get.back(), child: Text(l10n.close)),
           ElevatedButton.icon(
-            onPressed: () => _copyPgn(pgn),
+            onPressed: () => _copyPgn(context, pgn),
             icon: const Icon(Icons.copy),
-            label: const Text('Copy'),
+            label: Text(l10n.copy),
           ),
           ElevatedButton.icon(
-            onPressed: () => _sharePgn(pgn),
+            onPressed: () => _sharePgn(context, pgn),
             icon: const Icon(Icons.share),
-            label: const Text('Share'),
+            label: Text(l10n.share),
           ),
         ],
       ),
     );
   }
 
-  void _copyPgn(String pgn) {
+  void _copyPgn(BuildContext context, String pgn) {
+    final l10n = context.l10n;
     Clipboard.setData(ClipboardData(text: pgn));
     Get.back();
     Get.snackbar(
-      'PGN Copied',
-      'PGN copied to clipboard',
+      l10n.pgnCopied,
+      l10n.pgnCopiedToClipboard,
       snackPosition: SnackPosition.BOTTOM,
     );
   }
 
-  void _sharePgn(String pgn) async {
-    final result = await SharePlus.instance.share(ShareParams(text: pgn));
+  void _sharePgn(BuildContext context, String pgn) async {
+    final l10n = context.l10n;
+    final result = await Share.share(pgn);
     if (result.status == ShareResultStatus.success) {
       Get.snackbar(
-        'Success',
-        'Thank you for sharing PGN..',
+        l10n.success,
+        l10n.sharePgnSuccess,
         snackPosition: SnackPosition.BOTTOM,
       );
     }
   }
-
-  // lib/presentation/pages/game_screen.dart - تحديث buildChessBoard method
 }
