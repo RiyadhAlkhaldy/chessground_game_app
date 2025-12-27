@@ -51,7 +51,7 @@ class BoardEditorPage extends GetView<BoardEditorController> {
               return ChessboardEditor(
                 size: screenWidth > 600 ? 600 : screenWidth,
                 orientation: Side.white,
-                pieces: controller.pieces.value,
+                pieces: controller.pieces,
                 settings: settings,
                 pointerMode: controller.pointerMode.value,
                 onEditedSquare: controller.onEditedSquare,

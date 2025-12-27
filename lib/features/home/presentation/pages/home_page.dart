@@ -61,7 +61,7 @@ class HomePage extends StatelessWidget {
                       onTap: () {
                         controller.setVsComputer(value: true);
                         Get.toNamed(
-                          AppRoutes.newGameComputerPage,
+                          AppRoutes.computerGameSetup,
                           arguments: {"withTime": false},
                         );
                       },
@@ -76,7 +76,7 @@ class HomePage extends StatelessWidget {
                       isDarkMode: isDark,
                       onTap: () {
                         controller.setVsComputer(value: true);
-                        Get.toNamed(AppRoutes.newOfflineGamePage);
+                        Get.toNamed(AppRoutes.offlineGameSetup);
                       },
                     ),
 

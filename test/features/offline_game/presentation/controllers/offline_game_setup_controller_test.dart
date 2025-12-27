@@ -3,7 +3,7 @@ import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
-import 'package:chessground_game_app/features/offline_game/presentation/controllers/new_offline_game_controller.dart';
+import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_setup_controller.dart';
 import 'package:chessground_game_app/l10n/l10n.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:dartz/dartz.dart';
@@ -26,7 +26,7 @@ class MockAppLocalizations extends Mock implements AppLocalizations {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late NewOfflineGameController controller;
+  late OfflineGameSetupController controller;
   late MockGetOrCreateGuestPlayerUseCase mockGetGuestPlayerUseCase;
   late MockChessBoardSettingsController mockBoardSettingsController;
   late MockAppLocalizations mockL10n;
@@ -44,13 +44,15 @@ void main() {
     Get.put<AppLocalizations>(mockL10n);
 
     final rxOrientation = Side.white.obs;
-    when(() => mockBoardSettingsController.orientation).thenReturn(rxOrientation);
+    when(
+      () => mockBoardSettingsController.orientation,
+    ).thenReturn(rxOrientation);
 
-    controller = NewOfflineGameController(
+    controller = OfflineGameSetupController(
       getOrCreateGuestPlayerUseCase: mockGetGuestPlayerUseCase,
       boardSettingsController: mockBoardSettingsController,
     );
-    
+
     Get.testMode = true;
   });
 
@@ -58,7 +60,7 @@ void main() {
     Get.reset();
   });
 
-  group('NewOfflineGameController', () {
+  group('OfflineGameSetupController', () {
     test('initial state should be correct', () {
       expect(controller.selectedSide.value, PlayerSide.white);
       expect(controller.isLoading.value, false);
@@ -72,10 +74,11 @@ void main() {
     test('startGame success should navigate to offline game page', () async {
       final player = MockPlayerEntity();
       when(() => player.name).thenReturn('Guest Player');
-      
-      when(() => mockGetGuestPlayerUseCase(any()))
-          .thenAnswer((_) async => Right(player));
-      
+
+      when(
+        () => mockGetGuestPlayerUseCase(any()),
+      ).thenAnswer((_) async => Right(player));
+
       await controller.startGame();
 
       expect(controller.isLoading.value, false);

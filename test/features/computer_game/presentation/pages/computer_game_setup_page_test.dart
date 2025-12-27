@@ -1,16 +1,16 @@
 import 'package:chessground/chessground.dart' show PlayerSide;
 import 'package:chessground_game_app/l10n/l10n.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/new_computer_game_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/pages/new_computer_game_page.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_setup_controller.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/pages/computer_game_setup_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockNewComputerGameController extends GetxController
+class MockComputerGameSetupController extends GetxController
     with Mock
-    implements NewComputerGameController {
+    implements ComputerGameSetupController {
       @override
       final Rx<PlayerSide> selectedSide = PlayerSide.white.obs;
       @override
@@ -29,11 +29,11 @@ class MockNewComputerGameController extends GetxController
 }
 
 void main() {
-  late MockNewComputerGameController mockController;
+  late MockComputerGameSetupController mockController;
 
   setUp(() {
-    mockController = MockNewComputerGameController();
-    Get.put<NewComputerGameController>(mockController);
+    mockController = MockComputerGameSetupController();
+    Get.put<ComputerGameSetupController>(mockController);
     Get.testMode = true;
   });
 
@@ -54,11 +54,11 @@ void main() {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: themeMode,
-      home: const NewComputerGamePage(),
+      home: const ComputerGameSetupPage(),
     );
   }
 
-  testWidgets('NewComputerGamePage renders correctly in Light Mode',
+  testWidgets('ComputerGameSetupPage renders correctly in Light Mode',
       (WidgetTester tester) async {
     await tester.pumpWidget(createWidgetUnderTest(ThemeMode.light, const Locale('en')));
     await tester.pumpAndSettle();
@@ -72,7 +72,7 @@ void main() {
     expect(find.text('Start Game'), findsOneWidget);
   });
 
-  testWidgets('NewComputerGamePage renders correctly in Arabic (RTL)',
+  testWidgets('ComputerGameSetupPage renders correctly in Arabic (RTL)',
       (WidgetTester tester) async {
     await tester.pumpWidget(createWidgetUnderTest(ThemeMode.light, const Locale('ar')));
     await tester.pumpAndSettle();
@@ -84,7 +84,7 @@ void main() {
     expect(directionality.textDirection, TextDirection.rtl);
   });
 
-  testWidgets('NewComputerGamePage adapts to Mobile size', (WidgetTester tester) async {
+  testWidgets('ComputerGameSetupPage adapts to Mobile size', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1.0;
 

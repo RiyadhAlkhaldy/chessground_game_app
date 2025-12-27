@@ -2,16 +2,15 @@ import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
-import 'package:chessground_game_app/l10n/l10n.dart';
 import 'package:chessground_game_app/routes/app_pages.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:get/get.dart';
 
-class NewOfflineGameController extends GetxController {
+class OfflineGameSetupController extends GetxController {
   final GetOrCreateGuestPlayerUseCase getOrCreateGuestPlayerUseCase;
   final ChessBoardSettingsController boardSettingsController;
 
-  NewOfflineGameController({
+  OfflineGameSetupController({
     required this.getOrCreateGuestPlayerUseCase,
     required this.boardSettingsController,
   });

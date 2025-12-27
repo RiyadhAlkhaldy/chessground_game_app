@@ -1,12 +1,12 @@
 import 'package:chessground/chessground.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/new_computer_game_controller.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_setup_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 /// Screen for setting up a new computer game
-class NewComputerGamePage extends GetView<NewComputerGameController> {
-  const NewComputerGamePage({super.key});
+class ComputerGameSetupPage extends GetView<ComputerGameSetupController> {
+  const ComputerGameSetupPage({super.key});
 
   @override
   Widget build(BuildContext context) {

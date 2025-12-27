@@ -3,7 +3,7 @@ import 'package:chessground_game_app/core/errors/failures.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/get_or_create_gust_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
-import 'package:chessground_game_app/features/computer_game/presentation/controllers/new_computer_game_controller.dart';
+import 'package:chessground_game_app/features/computer_game/presentation/controllers/computer_game_setup_controller.dart';
 import 'package:chessground_game_app/l10n/l10n.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:dartz/dartz.dart';
@@ -26,7 +26,7 @@ class MockAppLocalizations extends Mock implements AppLocalizations {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late NewComputerGameController controller;
+  late ComputerGameSetupController controller;
   late MockGetOrCreateGuestPlayerUseCase mockGetGuestPlayerUseCase;
   late MockChessBoardSettingsController mockBoardSettingsController;
   late MockAppLocalizations mockL10n;
@@ -49,7 +49,7 @@ void main() {
     final rxOrientation = Side.white.obs;
     when(() => mockBoardSettingsController.orientation).thenReturn(rxOrientation);
 
-    controller = NewComputerGameController(
+    controller = ComputerGameSetupController(
       getOrCreateGuestPlayerUseCase: mockGetGuestPlayerUseCase,
       boardSettingsController: mockBoardSettingsController,
     );
@@ -61,7 +61,7 @@ void main() {
     Get.reset();
   });
 
-  group('NewComputerGameController', () {
+  group('ComputerGameSetupController', () {
     test('initial state should be correct', () {
       expect(controller.selectedSide.value, PlayerSide.white);
       expect(controller.selectedDifficulty.value, 10);

@@ -173,7 +173,9 @@ class GameState {
     final String san = record.$2;
 
     // when playing a new move after undo, clear redo stacks
-    if (_redoPositonStack.isNotEmpty || _redoMoveStack.isNotEmpty || _redoMoveObjStack.isNotEmpty) {
+    if (_redoPositonStack.isNotEmpty ||
+        _redoMoveStack.isNotEmpty ||
+        _redoMoveObjStack.isNotEmpty) {
       _redoPositonStack.clear();
       _redoMoveStack.clear();
       _redoMoveObjStack.clear();
@@ -192,7 +194,13 @@ class GameState {
     bool wasCapture = false;
     // simple detection: any role count decreased for the side that lost material
     // determine which side lost material by comparing totals
-    for (final r in [Role.pawn, Role.knight, Role.bishop, Role.rook, Role.queen]) {
+    for (final r in [
+      Role.pawn,
+      Role.knight,
+      Role.bishop,
+      Role.rook,
+      Role.queen,
+    ]) {
       final beforeW = beforeCounts[r] ?? 0;
       final afterW = afterWhiteCounts[r] ?? 0;
       final beforeB = beforeBlackCounts[r] ?? 0;
@@ -465,7 +473,11 @@ class GameState {
     return true;
   }
 
-  void replayToHalfmove(int halfmoveIndex, {Position? initial, List<Move>? moves}) {
+  void replayToHalfmove(
+    int halfmoveIndex, {
+    Position? initial,
+    List<Move>? moves,
+  }) {
     final start = initial ?? Chess.initial;
 
     _pos = start;
@@ -485,7 +497,9 @@ class GameState {
 
     if (halfmoveIndex < 0 || moves == null || moves.isEmpty) return;
 
-    final upto = (halfmoveIndex < moves.length) ? halfmoveIndex : moves.length - 1;
+    final upto = (halfmoveIndex < moves.length)
+        ? halfmoveIndex
+        : moves.length - 1;
 
     for (int i = 0; i <= upto; i++) {
       play(moves[i]);
