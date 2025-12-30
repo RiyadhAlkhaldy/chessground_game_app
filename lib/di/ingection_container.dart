@@ -13,6 +13,7 @@ import 'package:chessground_game_app/core/global_feature/data/repositories/playe
 import 'package:chessground_game_app/core/global_feature/domain/repositories/chess_game_repository.dart';
 import 'package:chessground_game_app/core/global_feature/domain/repositories/game_state_repository.dart';
 import 'package:chessground_game_app/core/global_feature/domain/repositories/player_repository.dart';
+import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/service/sound_effect_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/delete_game_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_state/cache_game_state_usecase.dart';
@@ -49,6 +50,7 @@ import 'package:chessground_game_app/core/global_feature/domain/usecases/game_us
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/update_player_rating_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/player_usecases/update_player_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/game_storage_controller.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
 import 'package:chessground_game_app/core/utils/logger.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
@@ -122,6 +124,9 @@ class InjectionContainer {
     // Register Isar as singleton
     Get.put<Isar>(isar, permanent: true);
 
+    // Register GetStorageControllerImp
+    Get.put<GetStorageControllerImp>(GetStorageControllerImp(), permanent: true);
+
     AppLogger.info('Isar database initialized', tag: 'DI');
   }
 
@@ -129,6 +134,12 @@ class InjectionContainer {
   /// تهيئة مصادر البيانات
   static void _initDataSources() {
     AppLogger.debug('Registering data sources', tag: 'DI');
+
+    // Services
+    Get.lazyPut<ChessGameStorageService>(
+      () => ChessGameStorageService(sl<Isar>()),
+      fenix: true,
+    );
 
     // Local data sources
     Get.lazyPut<ChessGameLocalDataSource>(

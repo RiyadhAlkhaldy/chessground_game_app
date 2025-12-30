@@ -22,10 +22,6 @@ class MockComputerGameSetupController extends GetxController
       @override
       final RxString errorMessage = ''.obs;
       
-      @override
-      void onInit() {
-        super.onInit();
-      }
 }
 
 void main() {

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:chessground/chessground.dart';
-import 'package:chessground_game_app/core/global_feature/data/models/move_data_model.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/setup_game_vs_ai_mixin.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/storage_features.dart';
@@ -171,16 +170,8 @@ class OfflineGameController extends BaseGameController
   @override
   int getMaterialOnBoard(Side side) => gameState.materialOnBoard(side);
 
-  @override
-  void jumpToHalfmove(int index) {
-    super.jumpToHalfmove(index);
-  }
   
-  @override
-  List<MoveDataModel> get pgnTokens => super.pgnTokens;
 
-  @override
-  int get currentHalfmoveIndex => super.currentHalfmoveIndex;
   
   @override
   Future<void> agreeDraw() => agreeDrawn();

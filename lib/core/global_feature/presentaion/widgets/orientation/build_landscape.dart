@@ -38,8 +38,8 @@ class BuildLandScape extends GetView<BaseGameController> {
                     );
                   },
                 ),
-                BuildPlayerSectionWidget(side: Side.white, isTop: true),
-                BuildPlayerSectionWidget(side: Side.black, isTop: false),
+                const BuildPlayerSectionWidget(side: Side.white, isTop: true),
+                const BuildPlayerSectionWidget(side: Side.black, isTop: false),
 
                 const Expanded(child: ChessBoardSettingsWidgets()),
                 const SizedBox(height: screenPortraitSplitter),

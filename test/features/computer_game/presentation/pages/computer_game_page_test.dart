@@ -65,17 +65,15 @@ class MockComputerGameController extends GetxController
   
   @override
   final Rx<NormalMove?> premove = Rx<NormalMove?>(null);
-
-  @override
-  void onInit() {}
   
   @override
   String get currentFen => gameState.position.fen;
   
-  @override
   final Rx<ValidMoves> validMovesRx = ValidMoves(const {}).obs;
   @override
   ValidMoves get validMoves => validMovesRx.value;
+  @override
+  set validMoves(ValidMoves value) => validMovesRx.value = value;
 }
 
 class MockStockfishController extends GetxController
@@ -83,7 +81,7 @@ class MockStockfishController extends GetxController
     implements StockfishController {
   @override
   final RxBool isInitializedRx = true.obs;
-  @override
+  
   final RxString errorMessageRx = ''.obs;
   @override
   String get errorMessage => errorMessageRx.value;

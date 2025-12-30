@@ -1,7 +1,7 @@
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/build_move_section_widget.dart';
+import 'package:chessground_game_app/core/global_feature/presentaion/widgets/game_info/enhanced_horizontal_move_list_widget.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
-import 'package:chessground_game_app/l10n/l10n.dart';
+import 'package:chessground_game_app/l10n/l10n.dart'; 
 import 'package:dartchess/dartchess.dart';
 import 'package:chessground/chessground.dart' show PlayerSide;
 import 'package:chessground_game_app/core/global_feature/presentaion/widgets/chess_board_widget.dart';
@@ -179,7 +179,8 @@ class ComputerGamePage extends GetView<BaseGameController> {
                 return Center(child: Text(l10n.noMovesYet));
               }
 
-              return const BuildMoveSectionWidget();
+              return // Enhanced horizontal move list
+              const EnhancedHorizontalMoveListWidget();
             }),
           ),
         ],
@@ -297,7 +298,8 @@ class ComputerGamePage extends GetView<BaseGameController> {
                       return Center(child: Text(l10n.noMovesYet));
                     }
 
-                    return const BuildMoveSectionWidget();
+                    return const // Enhanced horizontal move list
+                    EnhancedHorizontalMoveListWidget();
                   }),
                 ),
 

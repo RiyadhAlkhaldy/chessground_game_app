@@ -31,9 +31,9 @@ class BuildPortrait extends GetView<BaseGameController> {
             ),
             Column(
               children: [
-                BuildPlayerSectionWidget(side: Side.white, isTop: true),
+                const BuildPlayerSectionWidget(side: Side.white, isTop: true),
                 ChessBoardWidget(),
-                BuildPlayerSectionWidget(side: Side.black, isTop: false),
+                const BuildPlayerSectionWidget(side: Side.black, isTop: false),
               ],
             ),
 

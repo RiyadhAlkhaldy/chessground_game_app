@@ -1,32 +1,14 @@
 import 'package:chessground_game_app/core/global_feature/data/repositories/games_respository_impl.dart';
 import 'package:chessground_game_app/core/global_feature/domain/repositories/games_repository.dart'; 
-import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
 import 'package:chessground_game_app/core/global_feature/domain/services/service/sound_effect_service.dart';
 
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/get_storage_controller.dart';
-import 'package:chessground_game_app/core/utils/logger.dart'; 
 import 'package:chessground_game_app/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:chessground_game_app/features/home/presentation/controllers/game_start_up_controller.dart';
 import 'package:get/get.dart';
 import 'package:isar/isar.dart';
-
-Future<void> initFirstDependencies() async {
-  await Get.putAsync<Isar>(() async {
-    await ChessGameStorageService.init();
-    return ChessGameStorageService.db!;
-  }, permanent: true);
-  Get.put(ChessGameStorageService(), permanent: true);
-  Get.lazyPut(() => GetStorageControllerImp(), fenix: true);
-  Get.put<AppLoggerr>(AppLoggerr(), permanent: true);
-  // Get.put<NetworkInfo>(
-  //   NetworkInfoImpl(DataConnectionChecker()),
-  //   permanent: true,
-  // );
-  // Get.put(Dio(), permanent: true);
-  // Get.put<ApiConsumer>(DioConsumer(dio: Get.find<Dio>()), permanent: true);
-}
 
 /// [GameBinding]
 /// يربط الاعتمادات (dependencies) لوحدة اللعبة.

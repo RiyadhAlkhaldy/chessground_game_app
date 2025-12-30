@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:chessground_game_app/core/l10n_build_context.dart';
 import 'package:chessground_game_app/l10n/l10n.dart';
 import 'package:chessground_game_app/features/settings/presentation/controllers/settings_controller.dart';

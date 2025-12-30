@@ -1,12 +1,10 @@
 import 'package:chessground_game_app/core/global_feature/domain/entities/chess_game_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/entities/player_entity.dart';
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
-import 'package:chessground_game_app/core/global_feature/presentaion/controllers/base_game_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/chess_board_settings_controller.dart';
 import 'package:chessground_game_app/core/global_feature/presentaion/controllers/game_storage_controller.dart';
 import 'package:chessground_game_app/features/offline_game/presentation/controllers/offline_game_controller.dart';
 import 'package:dartchess/dartchess.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:mocktail/mocktail.dart';
@@ -99,7 +97,7 @@ void main() {
 
     test('onUserMove should switch turns correctly', () async {
       await controller.startOfflineGame(playerName: 'P1', playerSide: chessground.PlayerSide.white);
-      final move = NormalMove.fromUci('e2e4')!;
+      final move = NormalMove.fromUci('e2e4');
       
       expect(controller.currentTurn, Side.white);
       controller.onUserMove(move);

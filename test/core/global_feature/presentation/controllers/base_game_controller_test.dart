@@ -1,5 +1,4 @@
 import 'package:chessground_game_app/core/global_feature/domain/usecases/game_usecases/play_sound_usecase.dart';
-import 'package:chessground_game_app/core/utils/game_state/game_state.dart';
 import 'package:dartchess/dartchess.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';

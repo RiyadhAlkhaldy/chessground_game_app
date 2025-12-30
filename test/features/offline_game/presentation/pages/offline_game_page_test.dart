@@ -52,7 +52,6 @@ class MockOfflineGameController extends GetxController
   @override
   set isLoading(bool value) => _isLoadingRx.value = value;
   
-  @override
   final RxString errorMessageRx = ''.obs;
   @override
   String get errorMessage => errorMessageRx.value;
@@ -67,17 +66,15 @@ class MockOfflineGameController extends GetxController
   bool get autoSaveEnabled => _autoSaveEnabledRx.value;
   @override
   set autoSaveEnabled(bool value) => _autoSaveEnabledRx.value = value;
-
-  @override
-  void onInit() {}
   
   @override
   String get currentFen => gameState.position.fen;
   
-  @override
   final Rx<ValidMoves> validMovesRx = ValidMoves(const {}).obs;
   @override
   ValidMoves get validMoves => validMovesRx.value;
+  @override
+  set validMoves(ValidMoves value) => validMovesRx.value = value;
   
   @override
   List<Role> getCapturedPieces(Side side) => [];
@@ -85,7 +82,6 @@ class MockOfflineGameController extends GetxController
   @override
   String getPgnString() => '';
   
-  @override
   final Rx<Outcome?> gameResultRx = Rx<Outcome?>(null);
   @override
   Outcome? get getResult => gameResultRx.value;

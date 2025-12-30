@@ -153,7 +153,6 @@ class OfflineGamePage extends GetView<BaseGameController> {
   /// Build landscape layout
   Widget _buildLandscapeLayout(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
     return Row(
       children: [
         // Left side: Game info and move list

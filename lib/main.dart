@@ -13,16 +13,15 @@ import 'package:l10n_esperanto/l10n_esperanto.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
-  await initFirstDependencies();
-  // تأكد أن تُنشئ الـ Guest مبكراً
-  // final storage = Get.find<GetStorageControllerImp>();
-
-  await createOrGetGustPlayer();
+  
   try {
     AppLogger.info('Starting Chess Game Application', tag: 'Main');
 
-    // Initialize dependency injection
+    // Initialize dependency injection (Isar, Repositories, etc.)
     await InjectionContainer.init();
+    
+    // Create guest player after DB is ready
+    await createOrGetGustPlayer();
 
     AppLogger.info('Application initialized successfully', tag: 'Main');
 

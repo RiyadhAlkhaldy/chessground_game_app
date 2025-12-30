@@ -6,6 +6,7 @@ import 'package:chessground_game_app/core/global_feature/data/collections/player
 import 'package:chessground_game_app/core/global_feature/domain/services/chess_game_storage_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:isar/isar.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:uuid/uuid.dart';
 
@@ -21,6 +22,7 @@ class TestPathProviderPlatform extends PathProviderPlatform {
 void main() async {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  late Isar isar;
   late ChessGameStorageService storage;
   late Player white;
   late Player black;
@@ -29,16 +31,26 @@ void main() async {
   setUpAll(() async {
     // تسجيل mock بدلاً من path_provider الحقيقي
     PathProviderPlatform.instance = TestPathProviderPlatform();
+    await Isar.initializeIsarCore(download: true);
 
-    await ChessGameStorageService.initForTest(
-      await PathProviderPlatform.instance.getApplicationSupportPath().then((value) => value!),
-    ); // استخدم المسار من mock
-    await ChessGameStorageService.init();
-    storage = ChessGameStorageService();
+    final dir = await PathProviderPlatform.instance.getApplicationSupportPath();
+    
+    isar = await Isar.open(
+      [ChessGameSchema, PlayerSchema],
+      directory: dir!,
+      name: 'test_instance_${const Uuid().v4()}', // Unique name
+    );
+    
+    storage = ChessGameStorageService(isar);
 
     // تنظيف قاعدة البيانات قبل كل الاختبارات
     await storage.clearAll();
   });
+
+  tearDownAll(() async {
+    await isar.close();
+  });
+
   group('ChessGameStorageService tests', () {
     // tearDown(() async {
     //   await storage.clearAll();
@@ -46,7 +58,7 @@ void main() async {
 
     group('🧩 Isar Database Initialization', () {
       test('يتم تهيئة قاعدة البيانات بنجاح', () async {
-        expect(ChessGameStorageService.db, isNotNull);
+        expect(storage.isar, isNotNull);
       });
     });
 
@@ -170,8 +182,12 @@ void main() async {
   });
   group('PGN builder', () {
     test('builds simple pgn with moves, nags, comment and variations', () {
-      // await ChessGameStorageService.init();
-      final svc = ChessGameStorageService();
+      // Create a dummy service or reuse storage from setUpAll
+      // Ideally should be separate but since we need Isar instance...
+      // We can create a dummy one if we pass null? No, type is non-nullable.
+      // We can use the 'storage' from main scope.
+      
+      final svc = storage;
 
       final headers = {
         'Event': 'TestEvent',

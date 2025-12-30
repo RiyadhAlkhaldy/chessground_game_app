@@ -32,7 +32,7 @@ void main() {
   late MockAppLocalizations mockL10n;
 
   setUpAll(() {
-    registerFallbackValue(GetOrCreateGuestPlayerParams(name: 'Guest'));
+    registerFallbackValue(const GetOrCreateGuestPlayerParams(name: 'Guest'));
   });
 
   setUp(() {
